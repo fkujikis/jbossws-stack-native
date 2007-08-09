@@ -51,7 +51,7 @@ public class BufferedStreamResult extends StreamResult
    {
       try
       {
-         IOUtils.copyStream(getOutputStream(), new ByteArrayInputStream(xmlFragment.getBytes()));
+         IOUtils.copyStream(getOutputStream(), new ByteArrayInputStream(xmlFragment.getBytes("UTF-8")));
       }
       catch (IOException e)
       {
