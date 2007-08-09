@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import javax.xml.transform.Result;
@@ -80,7 +81,14 @@ public class XMLFragment
 
    public XMLFragment(String xmlString)
    {
-      source = new BufferedStreamSource(xmlString.getBytes());
+      try
+      {
+         source = new BufferedStreamSource(xmlString.getBytes("UTF-8"));
+      }
+      catch (UnsupportedEncodingException e)
+      {
+         WSException.rethrow(e);
+      }
    }
 
    public XMLFragment(Result result)
