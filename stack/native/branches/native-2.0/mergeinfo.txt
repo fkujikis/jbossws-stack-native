@@ -40,3 +40,10 @@ svn merge -r4366:4369 https://svn.jboss.org/repos/jbossws/stack/native/branches/
 svn merge -r4371:4372 https://svn.jboss.org/repos/jbossws/stack/native/branches/native-2.0
 svn merge -r4377:4378 https://svn.jboss.org/repos/jbossws/stack/native/branches/native-2.0
 svn merge -r4382:4383 https://svn.jboss.org/repos/jbossws/stack/native/branches/native-2.0
+
+thomas.diesler@jboss.com 17-Aug-2007
+svn merge -r4289:4294 https://svn.jboss.org/repos/jbossws/stack/native/branches/native-2.0
+svn merge -r4310:4311 https://svn.jboss.org/repos/jbossws/stack/native/branches/native-2.0
+svn merge -r4322:4326 https://svn.jboss.org/repos/jbossws/stack/native/branches/native-2.0
+svn merge -r4329:4356 https://svn.jboss.org/repos/jbossws/stack/native/branches/native-2.0
+svn merge -r4390:4426 https://svn.jboss.org/repos/jbossws/stack/native/branches/native-2.0
