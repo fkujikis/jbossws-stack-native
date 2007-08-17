@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ====================================================================== -->
+<!--                                                                        -->
+<!--  JBoss, the OpenSource J2EE webOS                                      -->
+<!--                                                                        -->
+<!--  Distributable under LGPL license.                                     -->
+<!--  See terms of license at http://www.gnu.org.                           -->
+<!--                                                                        -->
+<!-- ====================================================================== -->
+
+<!-- $Id$ -->
+
+<project>
+
+  <!-- Release to jboss.local.repository -->
+  <target name="release" depends="jars,check-svn-externals,warn-svn-externals" 
+    description="Release to jboss.local.repository">
+
+    <!-- jboss/jbossws -->
+    <property name="jboss.repository.dir" value="${jboss.local.repository}/jboss"/>
+    <mkdir dir="${jboss.repository.dir}/jbossws/${repository.id}/lib"/>
+    <copy todir="${jboss.repository.dir}/jbossws/${repository.id}/lib" overwrite="true">
+      <fileset dir="${core.output.lib.dir}">
+        <include name="jbossws-client.jar"/>
+        <include name="jbossws-core.jar"/>
+        <include name="jboss-jaxrpc.jar"/>
+        <include name="jboss-jaxws.jar"/>
+        <include name="jboss-saaj.jar"/>
+        <include name="jbossws-core-src.zip"/>
+        <include name="jbossws-core-scripts.zip"/>
+      </fileset>
+    </copy>
+    <copy tofile="${jboss.repository.dir}/jbossws/${repository.id}/component-info.xml" file="${core.output.etc.dir}/component-info.xml" filtering="true" overwrite="true">
+      <filterset>
+        <filtersfile file="${core.dir}/version.properties"/>
+      </filterset>
+    </copy>
+	  
+    <!-- jboss/jbossws-native50 -->
+    <property name="jboss.repository.dir" value="${jboss.local.repository}/jboss"/>
+    <mkdir dir="${jboss.repository.dir}/jbossws-native50/${repository.id}/lib"/>
+    <copy todir="${jboss.repository.dir}/jbossws-native50/${repository.id}/lib" overwrite="true">
+      <fileset dir="${core.dir}/output/lib">
+        <include name="jbossws-native50.sar"/>
+        <include name="jbossws-native50-deployer.zip"/>
+      </fileset>
+    </copy>
+    <copy tofile="${jboss.repository.dir}/jbossws-native50/${repository.id}/component-info.xml" file="${core.etc.dir}/component-info50.xml" filtering="true" overwrite="true">
+      <filterset>
+        <filtersfile file="${core.dir}/version.properties"/>
+      </filterset>
+    </copy>
+    
+    <!-- jboss/jbossws-native42 -->
+    <property name="jboss.repository.dir" value="${jboss.local.repository}/jboss"/>
+    <mkdir dir="${jboss.repository.dir}/jbossws-native42/${repository.id}/lib"/>
+    <copy todir="${jboss.repository.dir}/jbossws-native42/${repository.id}/lib" overwrite="true">
+      <fileset dir="${core.dir}/output/lib">
+        <include name="jbossws-native42.sar"/>
+      </fileset>
+    </copy>
+    <copy tofile="${jboss.repository.dir}/jbossws-native42/${repository.id}/component-info.xml" file="${core.etc.dir}/component-info42.xml" filtering="true" overwrite="true">
+      <filterset>
+        <filtersfile file="${core.dir}/version.properties"/>
+      </filterset>
+    </copy>
+    
+    <!-- jboss/jbossws-native40 -->
+    <property name="jboss.repository.dir" value="${jboss.local.repository}/jboss"/>
+    <mkdir dir="${jboss.repository.dir}/jbossws-native40/${repository.id}/lib"/>
+    <copy todir="${jboss.repository.dir}/jbossws-native40/${repository.id}/lib" overwrite="true">
+      <fileset dir="${core.dir}/output/lib">
+        <include name="jbossws-native40.sar"/>
+      </fileset>
+    </copy>
+    <copy tofile="${jboss.repository.dir}/jbossws-native40/${repository.id}/component-info.xml" file="${core.etc.dir}/component-info40.xml" filtering="true" overwrite="true">
+      <filterset>
+        <filtersfile file="${core.dir}/version.properties"/>
+      </filterset>
+    </copy>
+  </target>
+
+  <target name="check-svn-externals" depends="init">
+    <exec dir="${core.dir}/src/test-framework" executable="svn" failonerror="true" output="${core.dir}/output/svn-info.xml">
+      <arg line="info"/>
+      <arg line="--xml"/>
+    </exec>
+    <xmlproperty file="${core.dir}/output/svn-info.xml"/>
+    <condition property="framework.externals.ok">
+      <or>
+        <contains string="${info.entry.url}" substring="https://svn.jboss.org/repos/jbossws/framework/tags"/>
+        <equals arg1="${repository.id}" arg2="snapshot"/>
+      </or>
+    </condition>
+  </target>
+  <target name="warn-svn-externals" depends="init" unless="framework.externals.ok">
+    <echo>
+      ***********************************************
+      *  External link to framework is not tagged!  *
+      *  Run: svn pe svn:externals src              *
+      ***********************************************
+    </echo>
+  </target>
+  
+</project>
