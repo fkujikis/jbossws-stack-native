@@ -476,6 +476,16 @@
 			</webinf>
 		</war>
 
+                <!-- jaxws-wsrm -->
+                <war warfile="${tests.output.dir}/libs/jaxws-wsrm.war" webxml="${tests.output.dir}/resources/jaxws/wsrm/WEB-INF/web.xml">
+                  <classes dir="${tests.output.dir}/classes">
+                    <include name="org/jboss/test/ws/jaxws/wsrm/OneWayServiceIface.class"/>
+                    <include name="org/jboss/test/ws/jaxws/wsrm/OneWayServiceImpl.class"/>
+                    <include name="org/jboss/test/ws/jaxws/wsrm/ReqResServiceIface.class"/>
+                    <include name="org/jboss/test/ws/jaxws/wsrm/ReqResServiceImpl.class"/>
+                  </classes>
+                </war>
+
 		<!-- Please add alphabetically -->
 
 		<antcall target="build-interop-jars"/>
