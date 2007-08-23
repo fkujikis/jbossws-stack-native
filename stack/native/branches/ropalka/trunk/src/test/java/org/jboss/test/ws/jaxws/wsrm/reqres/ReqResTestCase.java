@@ -46,6 +46,9 @@ import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.common.DOMWriter;
 import org.jboss.test.ws.jaxws.wsrm.ReqResServiceIface;
 
+import org.jboss.ws.extensions.wsrm.RMSequence;
+import org.jboss.ws.extensions.wsrm.RMSequenceFactory;
+
 /**
  * Reliable JBoss WebService client invoking req/res methods
  *
@@ -61,6 +64,11 @@ public class ReqResTestCase extends JBossWSTest
    private boolean asyncHandlerCalled;
    private ReqResServiceIface proxy;
    private Dispatch<Source> dispatch;
+   
+   private enum InvocationType
+   {
+      SYNC, ASYNC, ASYNC_DISPATCH, ASYNC_FUTURE
+   }
 
    public static Test suite()
    {
@@ -78,26 +86,41 @@ public class ReqResTestCase extends JBossWSTest
       Service service = Service.create(wsdlURL, serviceName);
       dispatch = service.createDispatch(portName, Source.class, Mode.PAYLOAD);
       proxy = (ReqResServiceIface)service.getPort(ReqResServiceIface.class);
-      handlerException = null;
-      asyncHandlerCalled = false;
    }
    
-   public void testInvokeSync() throws Exception
+   public void testSynchronousInvocation() throws Exception
    {
-      System.out.println("FIXME [JBWS-515] Provide an initial implementation for WS-ReliableMessaging");
+      doReliableMessageExchange(proxy, InvocationType.SYNC);
+   }
+   
+   public void testAsynchronousInvocation() throws Exception
+   {
+      doReliableMessageExchange(proxy, InvocationType.ASYNC);
+   }
+   
+   public void testAsynchronousInvocationUsingFuture() throws Exception
+   {
+      doReliableMessageExchange(proxy, InvocationType.ASYNC_FUTURE);
+   }
+   
+   public void testAsynchronousInvocationUsingDispatch() throws Exception
+   {
+      doReliableMessageExchange(dispatch, InvocationType.ASYNC_DISPATCH);
+   }
+   
+   private void doSynchronousInvocation() throws Exception
+   {
       assertEquals(proxy.echo(HELLO_WORLD_MSG), HELLO_WORLD_MSG);
    }
-
-   public void testInvokeAsync() throws Exception
+   
+   private void doAsynchronousInvocation() throws Exception
    {
-      System.out.println("FIXME [JBWS-515] Provide an initial implementation for WS-ReliableMessaging");
       Response<String> response = proxy.echoAsync(HELLO_WORLD_MSG);
-      assertEquals(response.get(), HELLO_WORLD_MSG); // concurrency future pattern
+      assertEquals(response.get(), HELLO_WORLD_MSG); // hidden future pattern
    }
 
-   public void testInvokeAsyncHandler() throws Exception
+   private void doAsynchronousInvocationUsingFuture() throws Exception
    {
-      System.out.println("FIXME [JBWS-515] Provide an initial implementation for WS-ReliableMessaging");
       AsyncHandler<String> handler = new AsyncHandler<String>()
       {
          public void handleResponse(Response<String> response)
@@ -119,9 +142,8 @@ public class ReqResTestCase extends JBossWSTest
       ensureAsyncStatus();
    }
    
-   public void testInvokeAsyncHandlerWithDispach() throws Exception
+   private void doAsynchronousInvocationUsingDispatch() throws Exception
    {
-      System.out.println("FIXME [JBWS-515] Provide an initial implementation for WS-ReliableMessaging");
       AsyncHandler<Source> handler = new AsyncHandler<Source>()
       {
          public void handleResponse(Response<Source> response)
@@ -147,6 +169,8 @@ public class ReqResTestCase extends JBossWSTest
    {
       if (handlerException != null) throw handlerException;
       assertTrue("Async handler called", asyncHandlerCalled);
+      handlerException = null;
+      asyncHandlerCalled = false;
    }
    
    private void verifyResponse(Source result) throws IOException
@@ -154,5 +178,32 @@ public class ReqResTestCase extends JBossWSTest
       Element resElement = DOMUtils.sourceToElement(result);
       String resStr = DOMWriter.printNode(resElement, false);
       assertTrue("Unexpected response: " + resStr, resStr.contains("<result>" + HELLO_WORLD_MSG + "</result>"));
+   }
+   
+   private void invokeWebServiceMethod(InvocationType invocationType) throws Exception
+   {
+      switch (invocationType) {
+         case SYNC: doSynchronousInvocation(); break;
+         case ASYNC: doAsynchronousInvocation(); break;
+         case ASYNC_FUTURE: doAsynchronousInvocationUsingFuture(); break;
+         case ASYNC_DISPATCH: doAsynchronousInvocationUsingDispatch(); break;
+         default : fail("Unknown invocation type");
+      }
+   }
+   
+   private void doReliableMessageExchange(Object proxyObject, InvocationType invocationType) throws Exception
+   {
+      System.out.println("FIXME [JBWS-515] Provide an initial implementation for WS-ReliableMessaging");
+      RMSequence sequence = RMSequenceFactory.newInstance(proxyObject);
+      System.out.println("Created sequence with id=" + sequence.getId());
+      invokeWebServiceMethod(invocationType);
+      invokeWebServiceMethod(invocationType);
+      sequence.setLastMessage();
+      invokeWebServiceMethod(invocationType);
+      if (!sequence.completed(1000, TimeUnit.MILLISECONDS)) {
+         fail("Sequence not completed within specified time amount");
+      } else {
+         sequence.terminate();
+      }
    }
 }
