@@ -22,12 +22,15 @@
 package org.jboss.test.ws.jaxws.wsrm.oneway;
 
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
 import junit.framework.Test;
 
+import org.jboss.ws.extensions.wsrm.RMSequence;
+import org.jboss.ws.extensions.wsrm.RMSequenceFactory;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 import org.jboss.test.ws.jaxws.wsrm.OneWayServiceIface;
@@ -52,19 +55,25 @@ public class OneWayTestCase extends JBossWSTest
    protected void setUp() throws Exception
    {
       super.setUp();
-
       QName serviceName = new QName(targetNS, "OneWayService");
       URL wsdlURL = new URL("http://" + getServerHost() + ":8080/jaxws-wsrm/OneWayService?wsdl");
-
       Service service = Service.create(wsdlURL, serviceName);
       proxy = (OneWayServiceIface)service.getPort(OneWayServiceIface.class);
    }
    
-   public void testReliableOneWayInvocations() throws Exception
+   public void testOneWayMethods() throws Exception
    {
       System.out.println("FIXME [JBWS-515] Provide an initial implementation for WS-ReliableMessaging");
+      RMSequence sequence = RMSequenceFactory.newInstance(proxy);
+      System.out.println("Created sequence with id=" + sequence.getId());
       proxy.method1();
       proxy.method2("Hello World");
+      sequence.setLastMessage();
       proxy.method3(new String[] {"Hello","World"});
+      if (!sequence.completed(1000, TimeUnit.MILLISECONDS)) {
+         fail("Sequence not completed within specified time amount");
+      } else {
+         sequence.terminate();
+      }
    }
 }
