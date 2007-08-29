@@ -97,7 +97,8 @@ final class RMChannelRequest implements Callable<RMChannelResponse>
          client.disconnect();
 
          // trace the incomming response message
-         MessageTrace.traceMessage("Incoming RM Response Message", rmResponse.getPayload());
+         if (rmResponse != null && rmResponse.getPayload() != null)
+            MessageTrace.traceMessage("Incoming RM Response Message", rmResponse.getPayload());
 
          return new RMChannelResponse(rmResponse);
       }
