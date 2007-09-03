@@ -19,43 +19,47 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm.spi;
+package org.jboss.ws.extensions.wsrm.spec200702;
 
-/**
- * WS-RM Provider SPI facade. Each WS-RM provider must override this class.
- *
+import org.jboss.ws.extensions.wsrm.spi.MessageFactory;
+import org.jboss.ws.extensions.wsrm.spi.Provider;
+
+/*
  * @author richard.opalka@jboss.com
+ * @see org.jboss.ws.extensions.wsrm.spi.Provider
  */
-public abstract class Provider
+public final class ProviderImpl extends Provider
 {
-   /**
-    * Must be overriden in the subclasses
-    * @param targetNamespace
-    */
-   protected Provider()
+   
+   static final String IMPLEMENTATION_VERSION = "http://docs.oasis-open.org/ws-rx/wsrm/200702";
+   private static final Provider INSTANCE = new ProviderImpl();
+   
+   private ProviderImpl()
    {
+      // forbidden inheritance
    }
    
-   /**
-    * Returns the namespace associated with current WS-RM provider implementation
-    * @return
-    */
-   public abstract String getNamespaceURI();
-   
-   /**
-    * Returns WS-RM provider specific message factory
-    * @return message factory
-    */
-   public abstract MessageFactory getMessageFactory();
-   
-   /**
-    * Gets WS-RM provider by <b>wsrmNamespace</b>
-    * @param namespace associated with the WS-RM provider
-    * @return WS-RM provider instance
-    * @throws IllegalArgumentException if specified <b>wsrmNamespace</b> has no associated WS-RM provider 
-    */
-   public static Provider getInstance(String wsrmNamespace)
+   public static Provider getInstance()
    {
-      return null; // TODO: implement
+      return INSTANCE;
    }
+   
+   /*
+    * @see org.jboss.ws.extensions.wsrm.spi.Provider#getMessageFactory()
+    */
+   @Override
+   public final MessageFactory getMessageFactory()
+   {
+      return MessageFactoryImpl.getInstance();
+   }
+
+   /*
+    * @see org.jboss.ws.extensions.wsrm.spi.Provider#getNamespaceURI()
+    */
+   @Override
+   public final String getNamespaceURI()
+   {
+      return IMPLEMENTATION_VERSION;
+   }
+   
 }
