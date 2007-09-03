@@ -74,5 +74,5 @@ public interface TerminateSequence extends XMLSerializable
     * Getter
     * @return last message number
     */
-   void getLastMsgNumber();
+   long getLastMsgNumber();
 }

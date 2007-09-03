@@ -21,6 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.spec200702;
 
+import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence;
 import org.w3c.dom.Element;
 
@@ -30,6 +31,9 @@ import org.w3c.dom.Element;
  */
 final class TerminateSequenceImpl implements TerminateSequence
 {
+   
+   private String identifier;
+   private long lastMsgNumber;
    
    TerminateSequenceImpl()
    {
@@ -41,17 +45,15 @@ final class TerminateSequenceImpl implements TerminateSequence
     */
    public String getIdentifier()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.identifier;
    }
 
    /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence#getLastMsgNumber()
     */
-   public void getLastMsgNumber()
+   public long getLastMsgNumber()
    {
-      // TODO Auto-generated method stub
-
+      return this.lastMsgNumber;
    }
 
    /*
@@ -59,8 +61,12 @@ final class TerminateSequenceImpl implements TerminateSequence
     */
    public void setIdentifier(String identifier)
    {
-      // TODO Auto-generated method stub
-
+      if ((identifier == null) || (identifier.trim().equals("")))
+         throw new IllegalArgumentException("Identifier cannot be null nor empty string");
+      if (this.identifier != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.identifier = identifier;
    }
 
    /*
@@ -68,8 +74,12 @@ final class TerminateSequenceImpl implements TerminateSequence
     */
    public void setLastMsgNumber(long lastMsgNumber)
    {
-      // TODO Auto-generated method stub
-
+      if (lastMsgNumber <= 0)
+         throw new IllegalArgumentException("Value must be greater than 0");
+      if (this.lastMsgNumber > 0)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.lastMsgNumber = lastMsgNumber;
    }
 
    /*
@@ -77,8 +87,9 @@ final class TerminateSequenceImpl implements TerminateSequence
     */
    public void fromXML(Element e)
    {
-      // TODO Auto-generated method stub
-
+      // TODO: implement deserialization using object set methods
+      if (true) throw new NotImplementedException();
+      ensureLegalState();
    }
 
    /*
@@ -86,8 +97,15 @@ final class TerminateSequenceImpl implements TerminateSequence
     */
    public Element toXML()
    {
-      // TODO Auto-generated method stub
-      return null;
+      ensureLegalState();
+      // TODO implement serialization using object instance fields
+      throw new NotImplementedException();
+   }
+
+   private void ensureLegalState()
+   {
+      if (this.identifier == null)
+         throw new IllegalStateException();
    }
 
 }

@@ -21,6 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.spec200702;
 
+import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
 import org.jboss.ws.extensions.wsrm.spi.protocol.IncompleteSequenceBehavior;
 import org.w3c.dom.Element;
@@ -31,6 +32,11 @@ import org.w3c.dom.Element;
  */
 final class CreateSequenceResponseImpl implements CreateSequenceResponse
 {
+   
+   private String identifier;
+   private String expires;
+   private Accept accept;
+   private IncompleteSequenceBehavior incompleteSequenceBehavior;
 
    CreateSequenceResponseImpl()
    {
@@ -42,17 +48,15 @@ final class CreateSequenceResponseImpl implements CreateSequenceResponse
     */
    public Accept getAccept()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.accept;
    }
 
    /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse#getDuration()
     */
-   public String getDuration()
+   public String getExpires()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.expires;
    }
 
    /*
@@ -60,8 +64,7 @@ final class CreateSequenceResponseImpl implements CreateSequenceResponse
     */
    public String getIdentifier()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.identifier;
    }
 
    /*
@@ -69,8 +72,7 @@ final class CreateSequenceResponseImpl implements CreateSequenceResponse
     */
    public IncompleteSequenceBehavior getIncompleteSequenceBehavior()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.incompleteSequenceBehavior;
    }
 
    /*
@@ -78,8 +80,7 @@ final class CreateSequenceResponseImpl implements CreateSequenceResponse
     */
    public Accept newAccept()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return new AcceptImpl();
    }
 
    /*
@@ -87,8 +88,14 @@ final class CreateSequenceResponseImpl implements CreateSequenceResponse
     */
    public void setAccept(Accept accept)
    {
-      // TODO Auto-generated method stub
-
+      if (accept == null)
+         throw new IllegalArgumentException("Accept cannot be null");
+      if (!(accept instanceof AcceptImpl))
+         throw new IllegalArgumentException();
+      if (this.accept != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.accept = accept;
    }
 
    /*
@@ -96,8 +103,12 @@ final class CreateSequenceResponseImpl implements CreateSequenceResponse
     */
    public void setExpires(String duration)
    {
-      // TODO Auto-generated method stub
-
+      if ((duration == null) || (duration.trim().equals("")))
+         throw new IllegalArgumentException("Duration cannot be null nor empty string");
+      if (this.expires != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.expires = duration;
    }
 
    /*
@@ -105,17 +116,25 @@ final class CreateSequenceResponseImpl implements CreateSequenceResponse
     */
    public void setIdentifier(String identifier)
    {
-      // TODO Auto-generated method stub
-
+      if ((identifier == null) || (identifier.trim().equals("")))
+         throw new IllegalArgumentException("Identifier cannot be null nor empty string");
+      if (this.identifier != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.identifier = identifier;
    }
 
    /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse#setIncompleteSequenceBehavior(org.jboss.ws.extensions.wsrm.spi.protocol.IncompleteSequenceBehavior)
     */
-   public void setIncompleteSequenceBehavior(IncompleteSequenceBehavior incompletSequenceBehaviour)
+   public void setIncompleteSequenceBehavior(IncompleteSequenceBehavior incompleteSequenceBehavior)
    {
-      // TODO Auto-generated method stub
-
+      if (incompleteSequenceBehavior == null)
+         throw new IllegalArgumentException("Sequence behavior type cannot be null");
+      if (this.incompleteSequenceBehavior != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.incompleteSequenceBehavior = incompleteSequenceBehavior;
    }
 
    /*
@@ -123,8 +142,9 @@ final class CreateSequenceResponseImpl implements CreateSequenceResponse
     */
    public void fromXML(Element e)
    {
-      // TODO Auto-generated method stub
-
+      // TODO: implement deserialization using object set methods
+      if (true) throw new NotImplementedException();
+      ensureLegalState();
    }
 
    /*
@@ -132,8 +152,72 @@ final class CreateSequenceResponseImpl implements CreateSequenceResponse
     */
    public Element toXML()
    {
-      // TODO Auto-generated method stub
-      return null;
+      ensureLegalState();
+      // TODO implement serialization using object instance fields
+      throw new NotImplementedException();
+   }
+   
+   private void ensureLegalState()
+   {
+      if (this.identifier == null)
+         throw new IllegalStateException();
+   }
+   
+   /*
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse.Accept
+    */
+   private static final class AcceptImpl implements CreateSequenceResponse.Accept
+   {
+
+      private String acksTo;
+      
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse.Accept#getAcksTo()
+       */
+      public String getAcksTo()
+      {
+         return this.acksTo;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse.Accept#setAcksTo(java.lang.String)
+       */
+      public void setAcksTo(String address)
+      {
+         if ((address == null) || (address.trim().equals("")))
+            throw new IllegalArgumentException("Address cannot be null nor empty string");
+         if (this.acksTo != null)
+            throw new UnsupportedOperationException("Value already set, cannot be overriden");
+         
+         this.acksTo = address;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.XMLSerializable#fromXML(org.w3c.dom.Element)
+       */
+      public void fromXML(Element e)
+      {
+         // TODO: implement deserialization using object set methods
+         if (true) throw new NotImplementedException();
+         ensureLegalState();
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.XMLSerializable#toXML()
+       */
+      public Element toXML()
+      {
+         ensureLegalState();
+         // TODO implement serialization using object instance fields
+         throw new NotImplementedException();
+      }
+
+      private void ensureLegalState()
+      {
+         if (this.acksTo == null)
+            throw new IllegalStateException();
+      }
+      
    }
 
 }

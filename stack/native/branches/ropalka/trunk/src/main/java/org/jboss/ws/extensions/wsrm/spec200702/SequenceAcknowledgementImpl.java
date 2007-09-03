@@ -22,7 +22,10 @@
 package org.jboss.ws.extensions.wsrm.spec200702;
 
 import java.util.List;
+import java.util.LinkedList;
+import java.util.Collections;
 
+import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement;
 import org.w3c.dom.Element;
 
@@ -33,6 +36,12 @@ import org.w3c.dom.Element;
 final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
 {
    
+   private final List<Long> nacks = new LinkedList<Long>();
+   private final List<AcknowledgementRange> acknowledgementRanges = new LinkedList<AcknowledgementRange>(); 
+   private String identifier;
+   private boolean isFinal;
+   private boolean isNone;
+   
    SequenceAcknowledgementImpl()
    {
       // allow inside package use only
@@ -41,10 +50,20 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
    /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement#addAcknowledgementRange(org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement.AcknowledgementRange)
     */
-   public void addAcknowledgementRange(AcknowledgementRange acknowledgementRange)
+   public void addAcknowledgementRange(AcknowledgementRange newAcknowledgementRange)
    {
-      // TODO Auto-generated method stub
-
+      if ((newAcknowledgementRange == null) || (!(newAcknowledgementRange instanceof AcknowledgementRangeImpl)))
+         throw new IllegalArgumentException();
+      if (this.nacks.size() != 0)
+         throw new IllegalStateException("There are already some nacks specified");
+      if (this.isNone)
+         throw new IllegalStateException("There is already none specified");
+      if ((newAcknowledgementRange.getLower() == 0) || (newAcknowledgementRange.getUpper() == 0))
+         throw new IllegalArgumentException("Both, lower and upper values must be specified");
+      for (AcknowledgementRange alreadyAccepted : acknowledgementRanges)
+         checkOverlap(alreadyAccepted, newAcknowledgementRange);
+      
+      this.acknowledgementRanges.add(newAcknowledgementRange);
    }
 
    /*
@@ -52,8 +71,16 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
     */
    public void addNack(long messageNumber)
    {
-      // TODO Auto-generated method stub
+      if (this.isFinal)
+         throw new IllegalStateException("There is already final specified");
+      if (this.isNone)
+         throw new IllegalStateException("There is already none specified");
+      if (this.acknowledgementRanges.size() != 0)
+         throw new IllegalStateException("There are already some acknowledgement ranges specified");
+      if (this.nacks.contains(messageNumber))
+         throw new IllegalArgumentException("There is already nack with value " + messageNumber + " specified");
 
+      this.nacks.add(messageNumber);
    }
 
    /*
@@ -61,8 +88,7 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
     */
    public List<AcknowledgementRange> getAcknowledgementRanges()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return Collections.unmodifiableList(acknowledgementRanges);
    }
 
    /*
@@ -70,8 +96,7 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
     */
    public String getIdentifier()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.identifier;
    }
 
    /*
@@ -79,8 +104,7 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
     */
    public List<Long> getNacks()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return Collections.unmodifiableList(nacks);
    }
 
    /*
@@ -88,8 +112,7 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
     */
    public boolean isFinal()
    {
-      // TODO Auto-generated method stub
-      return false;
+      return this.isFinal;
    }
 
    /*
@@ -97,8 +120,7 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
     */
    public boolean isNone()
    {
-      // TODO Auto-generated method stub
-      return false;
+      return this.isNone;
    }
 
    /*
@@ -106,17 +128,18 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
     */
    public AcknowledgementRange newAcknowledgementRange()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return new AcknowledgementRangeImpl();
    }
 
    /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement#setFinal(boolean)
     */
-   public void setFinal(boolean isFinal)
+   public void setFinal()
    {
-      // TODO Auto-generated method stub
+      if (this.nacks.size() != 0)
+         throw new IllegalStateException("There are already some nacks specified");
 
+      this.isFinal = true;
    }
 
    /*
@@ -124,17 +147,25 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
     */
    public void setIdentifier(String identifier)
    {
-      // TODO Auto-generated method stub
-
+      if ((identifier == null) || (identifier.trim().equals("")))
+         throw new IllegalArgumentException("Identifier cannot be null nor empty string");
+      if (this.identifier != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.identifier = identifier;
    }
 
    /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement#setNone(boolean)
     */
-   public void setNone(boolean isNone)
+   public void setNone()
    {
-      // TODO Auto-generated method stub
-
+      if (this.acknowledgementRanges.size() != 0)
+         throw new IllegalStateException("There are already some acknowledgement ranges specified");
+      if (this.nacks.size() != 0)
+         throw new IllegalStateException("There are already some nacks specified");
+      
+      this.isNone = true;
    }
 
    /*
@@ -142,17 +173,122 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
     */
    public void fromXML(Element e)
    {
-      // TODO Auto-generated method stub
-
+      // TODO: implement deserialization using object set methods
+      if (true) throw new NotImplementedException();
+      ensureLegalState();
    }
-
+   
    /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.XMLSerializable#toXML()
     */
    public Element toXML()
    {
-      // TODO Auto-generated method stub
-      return null;
+      ensureLegalState();
+      // TODO implement serialization using object instance fields
+      throw new NotImplementedException();
+   }
+   
+   private void ensureLegalState()
+   {
+      if ((this.acknowledgementRanges.size() == 0) && (this.nacks.size() == 0) && (!this.isNone))
+         throw new IllegalStateException();
+   }
+
+   private static void checkOverlap(AcknowledgementRange currentRange, AcknowledgementRange newRange)
+   {
+      if ((currentRange.getLower() <= newRange.getLower()) && (newRange.getLower() <= currentRange.getUpper()))
+         throw new IllegalArgumentException(
+            "Overlap detected: " + currentRange + " vs. " + newRange);
+      if ((currentRange.getLower() <= newRange.getUpper()) && (newRange.getUpper() <= currentRange.getUpper()))
+         throw new IllegalArgumentException(
+            "Overlap detected: " + currentRange + " vs. " + newRange);
+   }
+   
+   private static final class AcknowledgementRangeImpl implements SequenceAcknowledgement.AcknowledgementRange
+   {
+      
+      private long lower;
+      private long upper;
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement.AcknowledgementRange#getLower()
+       */
+      public long getLower()
+      {
+         return this.lower;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement.AcknowledgementRange#getUpper()
+       */
+      public long getUpper()
+      {
+         return this.upper;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement.AcknowledgementRange#setLower(long)
+       */
+      public void setLower(long lower)
+      {
+         if (lower <= 0)
+            throw new IllegalArgumentException("Value must be greater than 0");
+         if (this.lower > 0)
+            throw new UnsupportedOperationException("Value already set, cannot be overriden");
+         if ((this.upper > 0) && (lower > this.upper))
+            throw new IllegalArgumentException("Value must be lower or equal to " + this.upper);
+         
+         this.lower = lower;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement.AcknowledgementRange#setUpper(long)
+       */
+      public void setUpper(long upper)
+      {
+         if (upper <= 0)
+            throw new IllegalArgumentException("Value must be greater than 0");
+         if (this.upper > 0)
+            throw new UnsupportedOperationException("Value already set, cannot be overriden");
+         if ((this.lower > 0) && (this.lower > upper))
+            throw new IllegalArgumentException("Value must be greater or equal to " + this.lower);
+
+         this.upper = upper;
+      }
+      
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.XMLSerializable#fromXML(org.w3c.dom.Element)
+       */
+      public void fromXML(Element e)
+      {
+         // TODO: implement deserialization using object set methods
+         if (true) throw new NotImplementedException();
+         ensureLegalState();
+      }
+      
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.XMLSerializable#toXML()
+       */
+      public Element toXML()
+      {
+         ensureLegalState();
+         // TODO implement serialization using object instance fields
+         throw new NotImplementedException();
+      }
+
+      public String toString()
+      {
+         return "<" + lower + "; " + upper + ">";
+      }
+
+      private void ensureLegalState()
+      {
+         if (this.lower == 0)
+            throw new IllegalStateException();
+         if (this.upper == 0)
+            throw new IllegalStateException();
+      }
+
    }
 
 }

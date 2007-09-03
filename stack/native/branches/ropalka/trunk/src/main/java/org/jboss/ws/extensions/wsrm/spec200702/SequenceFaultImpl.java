@@ -21,6 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.spec200702;
 
+import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFault;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFaultCode;
 import org.w3c.dom.Element;
@@ -31,6 +32,9 @@ import org.w3c.dom.Element;
  */
 final class SequenceFaultImpl implements SequenceFault
 {
+   
+   private SequenceFaultCode faultCode;
+   private Exception detail;
 
    SequenceFaultImpl()
    {
@@ -42,8 +46,7 @@ final class SequenceFaultImpl implements SequenceFault
     */
    public Exception getDetail()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.detail;
    }
 
    /*
@@ -51,8 +54,7 @@ final class SequenceFaultImpl implements SequenceFault
     */
    public SequenceFaultCode getFaultCode()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.faultCode;
    }
 
    /*
@@ -60,8 +62,12 @@ final class SequenceFaultImpl implements SequenceFault
     */
    public void setDetail(Exception detail)
    {
-      // TODO Auto-generated method stub
+      if (detail == null)
+         throw new IllegalArgumentException("Detail cannot be null");
+      if (this.detail != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
 
+      this.detail = detail;
    }
 
    /*
@@ -69,8 +75,12 @@ final class SequenceFaultImpl implements SequenceFault
     */
    public void setFaultCode(SequenceFaultCode faultCode)
    {
-      // TODO Auto-generated method stub
+      if (faultCode == null)
+         throw new IllegalArgumentException("Fault code cannot be null");
+      if (this.faultCode != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
 
+      this.faultCode = faultCode;
    }
 
    /*
@@ -78,8 +88,9 @@ final class SequenceFaultImpl implements SequenceFault
     */
    public void fromXML(Element e)
    {
-      // TODO Auto-generated method stub
-
+      // TODO: implement deserialization using object set methods
+      if (true) throw new NotImplementedException();
+      ensureLegalState();
    }
 
    /*
@@ -87,8 +98,15 @@ final class SequenceFaultImpl implements SequenceFault
     */
    public Element toXML()
    {
-      // TODO Auto-generated method stub
-      return null;
+      ensureLegalState();
+      // TODO implement serialization using object instance fields
+      throw new NotImplementedException();
+   }
+
+   private void ensureLegalState()
+   {
+      if (this.faultCode == null)
+         throw new IllegalStateException();
    }
 
 }

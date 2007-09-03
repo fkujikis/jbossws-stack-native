@@ -57,13 +57,13 @@ public interface AckRequested extends XMLSerializable
     * <b>MessageNumber</b> sent by the RM Source within a Sequence. If present, it MAY be treated
     * as a hint to the RM Destination as an optimization to the process of preparing to transmit a
     * <b>SequenceAcknowledgement</b>.
-    * @param lastMessageId
+    * @param lastMessageNumber
     */
-   void setMessage(long lastMessageId);
+   void setMessageNumber(long lastMessageNumber);
    
    /**
     * Getter
     * @return last message number in the sequence
     */
-   long getMessage();
+   long getMessageNumber();
 }

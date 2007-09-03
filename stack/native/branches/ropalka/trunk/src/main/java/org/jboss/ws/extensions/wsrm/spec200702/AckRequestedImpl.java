@@ -21,6 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.spec200702;
 
+import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
 import org.w3c.dom.Element;
 
@@ -30,6 +31,8 @@ import org.w3c.dom.Element;
  */
 final class AckRequestedImpl implements AckRequested
 {
+   
+   private String identifier;
    
    AckRequestedImpl()
    {
@@ -41,17 +44,15 @@ final class AckRequestedImpl implements AckRequested
     */
    public String getIdentifier()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.identifier;
    }
 
    /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested#getMessage()
     */
-   public long getMessage()
+   public long getMessageNumber()
    {
-      // TODO Auto-generated method stub
-      return 0;
+      return 0; // always return zero for this version of the RM protocol
    }
 
    /*
@@ -59,17 +60,20 @@ final class AckRequestedImpl implements AckRequested
     */
    public void setIdentifier(String identifier)
    {
-      // TODO Auto-generated method stub
-
+      if ((identifier == null) || (identifier.trim().equals("")))
+         throw new IllegalArgumentException("Identifier cannot be null nor empty string");
+      if (this.identifier != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.identifier = identifier;
    }
 
    /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested#setMessage(long)
     */
-   public void setMessage(long lastMessageId)
+   public void setMessageNumber(long lastMessageNumber)
    {
-      // TODO Auto-generated method stub
-
+      // do nothing for this version of the RM protocol
    }
 
    /*
@@ -77,8 +81,9 @@ final class AckRequestedImpl implements AckRequested
     */
    public void fromXML(Element e)
    {
-      // TODO Auto-generated method stub
-
+      // TODO: implement deserialization using object set methods
+      if (true) throw new NotImplementedException();
+      ensureLegalState();
    }
 
    /*
@@ -86,8 +91,15 @@ final class AckRequestedImpl implements AckRequested
     */
    public Element toXML()
    {
-      // TODO Auto-generated method stub
-      return null;
+      ensureLegalState();
+      // TODO implement serialization using object instance fields
+      throw new NotImplementedException();
    }
-   
+
+   private void ensureLegalState()
+   {
+      if (this.identifier == null)
+         throw new IllegalStateException();
+   }
+
 }

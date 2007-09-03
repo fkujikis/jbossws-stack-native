@@ -48,7 +48,7 @@ public final class ProviderImpl extends Provider
     * @see org.jboss.ws.extensions.wsrm.spi.Provider#getMessageFactory()
     */
    @Override
-   public final MessageFactory getMessageFactory()
+   public MessageFactory getMessageFactory()
    {
       return MessageFactoryImpl.getInstance();
    }
@@ -57,7 +57,7 @@ public final class ProviderImpl extends Provider
     * @see org.jboss.ws.extensions.wsrm.spi.Provider#getNamespaceURI()
     */
    @Override
-   public final String getNamespaceURI()
+   public String getNamespaceURI()
    {
       return IMPLEMENTATION_VERSION;
    }

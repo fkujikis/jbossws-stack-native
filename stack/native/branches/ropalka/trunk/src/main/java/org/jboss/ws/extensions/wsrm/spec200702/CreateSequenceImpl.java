@@ -21,7 +21,9 @@
  */
 package org.jboss.ws.extensions.wsrm.spec200702;
 
+import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence;
+import org.jboss.ws.extensions.wsrm.spi.protocol.IncompleteSequenceBehavior;
 import org.w3c.dom.Element;
 
 /*
@@ -30,6 +32,10 @@ import org.w3c.dom.Element;
  */
 final class CreateSequenceImpl implements CreateSequence
 {
+   
+   private String acksTo;
+   private String expires;
+   private Offer offer;
 
    CreateSequenceImpl()
    {
@@ -41,8 +47,7 @@ final class CreateSequenceImpl implements CreateSequence
     */
    public String getAcksTo()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.acksTo;
    }
 
    /*
@@ -50,8 +55,7 @@ final class CreateSequenceImpl implements CreateSequence
     */
    public String getExpires()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.expires;
    }
 
    /*
@@ -59,8 +63,7 @@ final class CreateSequenceImpl implements CreateSequence
     */
    public Offer getOffer()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.offer;
    }
 
    /*
@@ -68,8 +71,7 @@ final class CreateSequenceImpl implements CreateSequence
     */
    public Offer newOffer()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return new OfferImpl();
    }
 
    /*
@@ -77,8 +79,12 @@ final class CreateSequenceImpl implements CreateSequence
     */
    public void setAcksTo(String address)
    {
-      // TODO Auto-generated method stub
-
+      if ((address == null) || (address.trim().equals("")))
+         throw new IllegalArgumentException("Address cannot be null nor empty string");
+      if (this.acksTo != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.acksTo = address;
    }
 
    /*
@@ -86,8 +92,12 @@ final class CreateSequenceImpl implements CreateSequence
     */
    public void setExpires(String duration)
    {
-      // TODO Auto-generated method stub
-
+      if ((duration == null) || (duration.trim().equals("")))
+         throw new IllegalArgumentException("Duration cannot be null nor empty string");
+      if (this.expires != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.expires = duration;
    }
 
    /*
@@ -95,8 +105,14 @@ final class CreateSequenceImpl implements CreateSequence
     */
    public void setOffer(Offer offer)
    {
-      // TODO Auto-generated method stub
-
+      if (offer == null)
+         throw new IllegalArgumentException("Offer cannot be null");
+      if (!(offer instanceof OfferImpl))
+         throw new IllegalArgumentException();
+      if (this.offer != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.offer = offer;
    }
 
    /*
@@ -104,8 +120,9 @@ final class CreateSequenceImpl implements CreateSequence
     */
    public void fromXML(Element e)
    {
-      // TODO Auto-generated method stub
-
+      // TODO: implement deserialization using object set methods
+      if (true) throw new NotImplementedException();
+      ensureLegalState();
    }
 
    /*
@@ -113,8 +130,144 @@ final class CreateSequenceImpl implements CreateSequence
     */
    public Element toXML()
    {
-      // TODO Auto-generated method stub
-      return null;
+      ensureLegalState();
+      // TODO implement serialization using object instance fields
+      throw new NotImplementedException();
    }
 
+   private void ensureLegalState()
+   {
+      if (this.acksTo == null)
+         throw new IllegalStateException();
+   }
+   
+   /*
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence.Offer
+    */
+   private static final class OfferImpl implements CreateSequence.Offer
+   {
+      
+      private String endpoint;
+      private String duration;
+      private String identifier;
+      private IncompleteSequenceBehavior incompleteSequenceBehavior;
+      
+      private OfferImpl()
+      {
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence.Offer#getEndpoint()
+       */
+      public String getEndpoint()
+      {
+         return this.endpoint;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence.Offer#getExpires()
+       */
+      public String getExpires()
+      {
+         return this.duration;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence.Offer#getIdentifier()
+       */
+      public String getIdentifier()
+      {
+         return this.identifier;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence.Offer#getIncompleteSequenceBehavior()
+       */
+      public IncompleteSequenceBehavior getIncompleteSequenceBehavior()
+      {
+         return this.incompleteSequenceBehavior;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence.Offer#setEndpoint(java.lang.String)
+       */
+      public void setEndpoint(String address)
+      {
+         if ((address == null) || (address.trim().equals("")))
+            throw new IllegalArgumentException("Address cannot be null nor empty string");
+         if (this.endpoint != null)
+            throw new UnsupportedOperationException("Value already set, cannot be overriden");
+         
+         this.endpoint = address;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence.Offer#setExpires(java.lang.String)
+       */
+      public void setExpires(String duration)
+      {
+         if ((duration == null) || (duration.trim().equals("")))
+            throw new IllegalArgumentException("Duration cannot be null nor empty string");
+         if (this.duration != null)
+            throw new UnsupportedOperationException("Value already set, cannot be overriden");
+         
+         this.duration = duration;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence.Offer#setIdentifier(java.lang.String)
+       */
+      public void setIdentifier(String identifier)
+      {
+         if ((identifier == null) || (identifier.trim().equals("")))
+            throw new IllegalArgumentException("Identifier cannot be null nor empty string");
+         if (this.identifier != null)
+            throw new UnsupportedOperationException("Value already set, cannot be overriden");
+         
+         this.identifier = identifier;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence.Offer#setIncompleteSequenceBehavior(org.jboss.ws.extensions.wsrm.spi.protocol.IncompleteSequenceBehavior)
+       */
+      public void setIncompleteSequenceBehavior(IncompleteSequenceBehavior incompleteSequenceBehavior)
+      {
+         if (incompleteSequenceBehavior == null)
+            throw new IllegalArgumentException("Sequence behavior type cannot be null");
+         if (this.incompleteSequenceBehavior != null)
+            throw new UnsupportedOperationException("Value already set, cannot be overriden");
+         
+         this.incompleteSequenceBehavior = incompleteSequenceBehavior;
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.XMLSerializable#fromXML(org.w3c.dom.Element)
+       */
+      public void fromXML(Element e)
+      {
+         // TODO: implement deserialization using object set methods
+         if (true) throw new NotImplementedException();
+         ensureLegalState();
+      }
+
+      /*
+       * @see org.jboss.ws.extensions.wsrm.spi.protocol.XMLSerializable#toXML()
+       */
+      public Element toXML()
+      {
+         ensureLegalState();
+         // TODO implement serialization using object instance fields
+         throw new NotImplementedException();
+      }
+
+      private void ensureLegalState()
+      {
+         if (this.identifier == null)
+            throw new IllegalStateException();
+         if (this.endpoint == null)
+            throw new IllegalStateException();
+      }
+      
+   }
+   
 }

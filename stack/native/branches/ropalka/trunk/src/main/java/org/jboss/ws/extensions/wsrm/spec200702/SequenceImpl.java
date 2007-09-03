@@ -23,6 +23,7 @@ package org.jboss.ws.extensions.wsrm.spec200702;
 
 import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
 import org.w3c.dom.Element;
+import org.jboss.util.NotImplementedException;
 
 /*
  * @author richard.opalka@jboss.com
@@ -30,6 +31,9 @@ import org.w3c.dom.Element;
  */
 final class SequenceImpl implements Sequence
 {
+   
+   private String identifier;
+   private long messageNumber;
 
    SequenceImpl()
    {
@@ -41,8 +45,7 @@ final class SequenceImpl implements Sequence
     */
    public String getIdentifier()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return this.identifier;
    }
 
    /*
@@ -50,8 +53,7 @@ final class SequenceImpl implements Sequence
     */
    public long getMessageNumber()
    {
-      // TODO Auto-generated method stub
-      return 0;
+      return messageNumber;
    }
 
    /*
@@ -59,8 +61,7 @@ final class SequenceImpl implements Sequence
     */
    public boolean isLastMessage()
    {
-      // TODO Auto-generated method stub
-      return false;
+      return false; // always return false for this version of the RM protocol
    }
 
    /*
@@ -68,8 +69,12 @@ final class SequenceImpl implements Sequence
     */
    public void setIdentifier(String identifier)
    {
-      // TODO Auto-generated method stub
-
+      if ((identifier == null) || (identifier.trim().equals("")))
+         throw new IllegalArgumentException("Identifier cannot be null nor empty string");
+      if (this.identifier != null)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.identifier = identifier;
    }
 
    /*
@@ -77,8 +82,7 @@ final class SequenceImpl implements Sequence
     */
    public void setLastMessage(boolean lastMessage)
    {
-      // TODO Auto-generated method stub
-
+      // do nothing for this version of the RM protocol
    }
 
    /*
@@ -86,17 +90,22 @@ final class SequenceImpl implements Sequence
     */
    public void setMessageNumber(long messageNumber)
    {
-      // TODO Auto-generated method stub
-
+      if (messageNumber <= 0)
+         throw new IllegalArgumentException("Value must be greater than 0");
+      if (this.messageNumber > 0)
+         throw new UnsupportedOperationException("Value already set, cannot be overriden");
+      
+      this.messageNumber = messageNumber;
    }
-
+   
    /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.XMLSerializable#fromXML(org.w3c.dom.Element)
     */
    public void fromXML(Element e)
    {
-      // TODO Auto-generated method stub
-
+      // TODO: implement deserialization using object set methods
+      if (true) throw new NotImplementedException();
+      ensureLegalState();
    }
 
    /*
@@ -104,8 +113,17 @@ final class SequenceImpl implements Sequence
     */
    public Element toXML()
    {
-      // TODO Auto-generated method stub
-      return null;
+      ensureLegalState();
+      // TODO implement serialization using object instance fields
+      throw new NotImplementedException();
+   }
+
+   private void ensureLegalState()
+   {
+      if (this.identifier == null)
+         throw new IllegalStateException();
+      if (this.messageNumber == 0)
+         throw new IllegalStateException();
    }
 
 }

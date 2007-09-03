@@ -70,9 +70,8 @@ public interface SequenceAcknowledgement extends XMLSerializable
     * Destination MUST include this element when the Sequence is closed. The RM Destination MUST
     * NOT include this element when sending a <b>Nack</b>; it can only be used when sending
     * <b>AcknowledgementRange</b> elements or a <b>None</b>.
-    * @param isFinal
     */
-   void setFinal(boolean isFinal);
+   void setFinal();
    
    /**
     * Getter
@@ -85,9 +84,8 @@ public interface SequenceAcknowledgement extends XMLSerializable
     * block if the RM Destination has not accepted any messages for the specified Sequence. The RM
     * Destination MUST NOT include this element if a sibling <b>AcknowledgementRange</b> or <b>Nack</b>
     * element is also present as a child of the <b>SequenceAcknowledgement</b>.
-    * @param isNone
     */
-   void setNone(boolean isNone);
+   void setNone();
    
    /**
     * Getter

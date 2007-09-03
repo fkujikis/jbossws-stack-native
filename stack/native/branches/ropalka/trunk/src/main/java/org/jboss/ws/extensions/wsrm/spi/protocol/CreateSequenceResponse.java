@@ -78,7 +78,7 @@ public interface CreateSequenceResponse extends XMLSerializable
     * Getter
     * @return sequence duration
     */
-   String getDuration();
+   String getExpires();
    
    /**
     * This element, if present, specifies the behavior that the destination will exhibit upon the closure or
