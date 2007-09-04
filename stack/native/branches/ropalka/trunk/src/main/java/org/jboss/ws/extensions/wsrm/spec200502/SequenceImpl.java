@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm.spec200702;
+package org.jboss.ws.extensions.wsrm.spec200502;
 
 import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
 import javax.xml.soap.SOAPMessage;
@@ -34,6 +34,7 @@ final class SequenceImpl implements Sequence
    
    private String identifier;
    private long messageNumber;
+   private boolean isLastMessage;
 
    SequenceImpl()
    {
@@ -61,7 +62,7 @@ final class SequenceImpl implements Sequence
     */
    public boolean isLastMessage()
    {
-      return false; // always return false for this version of the RM protocol
+      return this.isLastMessage;
    }
 
    /*
@@ -82,7 +83,7 @@ final class SequenceImpl implements Sequence
     */
    public void setLastMessage()
    {
-      // do nothing for this version of the RM protocol
+      this.isLastMessage = true;
    }
 
    /*
@@ -107,6 +108,7 @@ final class SequenceImpl implements Sequence
       final int prime = 31;
       int result = 1;
       result = prime * result + ((identifier == null) ? 0 : identifier.hashCode());
+      result = prime * result + (isLastMessage ? 1231 : 1237);
       result = prime * result + (int)(messageNumber ^ (messageNumber >>> 32));
       return result;
    }
@@ -130,6 +132,8 @@ final class SequenceImpl implements Sequence
             return false;
       }
       else if (!identifier.equals(other.identifier))
+         return false;
+      if (isLastMessage != other.isLastMessage)
          return false;
       if (messageNumber != other.messageNumber)
          return false;

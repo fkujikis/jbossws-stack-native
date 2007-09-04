@@ -76,7 +76,7 @@ public interface Sequence extends Serializable
     * This element MAY be included by the RM Source endpoint. The <b>LastMessage</b> element has no content.
     * @param lastMessage
     */
-   void setLastMessage(boolean lastMessage);
+   void setLastMessage();
    
    /**
     * Getter

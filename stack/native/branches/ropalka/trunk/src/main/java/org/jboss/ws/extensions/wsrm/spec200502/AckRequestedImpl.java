@@ -19,29 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm.spec200702;
+package org.jboss.ws.extensions.wsrm.spec200502;
 
-import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
-import javax.xml.soap.SOAPMessage;
 import org.jboss.util.NotImplementedException;
+import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
+import javax.xml.soap.SOAPMessage;
 
 /*
  * @author richard.opalka@jboss.com
- * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence
+ * @see org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested
  */
-final class SequenceImpl implements Sequence
+final class AckRequestedImpl implements AckRequested
 {
    
    private String identifier;
-   private long messageNumber;
-
-   SequenceImpl()
+   private long lastMessageNumber;
+   
+   AckRequestedImpl()
    {
       // allow inside package use only
    }
-   
+
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#getIdentifier()
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested#getIdentifier()
     */
    public String getIdentifier()
    {
@@ -49,23 +49,15 @@ final class SequenceImpl implements Sequence
    }
 
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#getMessageNumber()
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested#getMessage()
     */
    public long getMessageNumber()
    {
-      return messageNumber;
+      return this.lastMessageNumber;
    }
 
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#isLastMessage()
-    */
-   public boolean isLastMessage()
-   {
-      return false; // always return false for this version of the RM protocol
-   }
-
-   /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#setIdentifier(java.lang.String)
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested#setIdentifier(java.lang.String)
     */
    public void setIdentifier(String identifier)
    {
@@ -78,26 +70,18 @@ final class SequenceImpl implements Sequence
    }
 
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#setLastMessage(boolean)
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested#setMessage(long)
     */
-   public void setLastMessage()
+   public void setMessageNumber(long lastMessageNumber)
    {
-      // do nothing for this version of the RM protocol
-   }
-
-   /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#setMessageNumber(long)
-    */
-   public void setMessageNumber(long messageNumber)
-   {
-      if (messageNumber <= 0)
+      if (lastMessageNumber <= 0)
          throw new IllegalArgumentException("Value must be greater than 0");
-      if (this.messageNumber > 0)
+      if (this.lastMessageNumber > 0)
          throw new UnsupportedOperationException("Value already set, cannot be overriden");
       
-      this.messageNumber = messageNumber;
+      this.lastMessageNumber = lastMessageNumber;
    }
-   
+
    /*
     * @see java.lang.Object#hashCode()
     */
@@ -107,7 +91,7 @@ final class SequenceImpl implements Sequence
       final int prime = 31;
       int result = 1;
       result = prime * result + ((identifier == null) ? 0 : identifier.hashCode());
-      result = prime * result + (int)(messageNumber ^ (messageNumber >>> 32));
+      result = prime * result + (int)(lastMessageNumber ^ (lastMessageNumber >>> 32));
       return result;
    }
 
@@ -121,9 +105,9 @@ final class SequenceImpl implements Sequence
          return true;
       if (obj == null)
          return false;
-      if (!(obj instanceof SequenceImpl))
+      if (!(obj instanceof AckRequestedImpl))
          return false;
-      final SequenceImpl other = (SequenceImpl)obj;
+      final AckRequestedImpl other = (AckRequestedImpl)obj;
       if (identifier == null)
       {
          if (other.identifier != null)
@@ -131,7 +115,7 @@ final class SequenceImpl implements Sequence
       }
       else if (!identifier.equals(other.identifier))
          return false;
-      if (messageNumber != other.messageNumber)
+      if (lastMessageNumber != other.lastMessageNumber)
          return false;
       return true;
    }
@@ -159,8 +143,6 @@ final class SequenceImpl implements Sequence
    private void ensureLegalState()
    {
       if (this.identifier == null)
-         throw new IllegalStateException();
-      if (this.messageNumber == 0)
          throw new IllegalStateException();
    }
 

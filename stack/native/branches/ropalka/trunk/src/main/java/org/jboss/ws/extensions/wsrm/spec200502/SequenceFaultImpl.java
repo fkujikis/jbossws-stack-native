@@ -19,85 +19,70 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm.spec200702;
+package org.jboss.ws.extensions.wsrm.spec200502;
 
-import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
-import javax.xml.soap.SOAPMessage;
 import org.jboss.util.NotImplementedException;
+import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFault;
+import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFaultCode;
+import javax.xml.soap.SOAPMessage;
 
 /*
  * @author richard.opalka@jboss.com
- * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence
+ * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFault
  */
-final class SequenceImpl implements Sequence
+final class SequenceFaultImpl implements SequenceFault
 {
    
-   private String identifier;
-   private long messageNumber;
+   private SequenceFaultCode faultCode;
+   private Exception detail;
 
-   SequenceImpl()
+   SequenceFaultImpl()
    {
       // allow inside package use only
    }
    
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#getIdentifier()
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFault#getDetail()
     */
-   public String getIdentifier()
+   public Exception getDetail()
    {
-      return this.identifier;
+      return this.detail;
    }
 
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#getMessageNumber()
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFault#getFaultCode()
     */
-   public long getMessageNumber()
+   public SequenceFaultCode getFaultCode()
    {
-      return messageNumber;
+      return this.faultCode;
    }
 
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#isLastMessage()
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFault#setDetail(java.lang.Exception)
     */
-   public boolean isLastMessage()
+   public void setDetail(Exception detail)
    {
-      return false; // always return false for this version of the RM protocol
-   }
-
-   /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#setIdentifier(java.lang.String)
-    */
-   public void setIdentifier(String identifier)
-   {
-      if ((identifier == null) || (identifier.trim().equals("")))
-         throw new IllegalArgumentException("Identifier cannot be null nor empty string");
-      if (this.identifier != null)
+      if (detail == null)
+         throw new IllegalArgumentException("Detail cannot be null");
+      if (this.detail != null)
          throw new UnsupportedOperationException("Value already set, cannot be overriden");
-      
-      this.identifier = identifier;
+
+      this.detail = detail;
    }
 
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#setLastMessage(boolean)
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFault#setFaultCode(org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFaultCode)
     */
-   public void setLastMessage()
+   public void setFaultCode(SequenceFaultCode faultCode)
    {
-      // do nothing for this version of the RM protocol
-   }
-
-   /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#setMessageNumber(long)
-    */
-   public void setMessageNumber(long messageNumber)
-   {
-      if (messageNumber <= 0)
-         throw new IllegalArgumentException("Value must be greater than 0");
-      if (this.messageNumber > 0)
+      if (faultCode == null)
+         throw new IllegalArgumentException("Fault code cannot be null");
+      if (this.faultCode != null)
          throw new UnsupportedOperationException("Value already set, cannot be overriden");
-      
-      this.messageNumber = messageNumber;
+
+      this.faultCode = faultCode;
    }
-   
+
    /*
     * @see java.lang.Object#hashCode()
     */
@@ -106,8 +91,8 @@ final class SequenceImpl implements Sequence
    {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((identifier == null) ? 0 : identifier.hashCode());
-      result = prime * result + (int)(messageNumber ^ (messageNumber >>> 32));
+      result = prime * result + ((detail == null) ? 0 : detail.getMessage().hashCode());
+      result = prime * result + ((faultCode == null) ? 0 : faultCode.hashCode());
       return result;
    }
 
@@ -121,17 +106,22 @@ final class SequenceImpl implements Sequence
          return true;
       if (obj == null)
          return false;
-      if (!(obj instanceof SequenceImpl))
+      if (!(obj instanceof SequenceFaultImpl))
          return false;
-      final SequenceImpl other = (SequenceImpl)obj;
-      if (identifier == null)
+      final SequenceFaultImpl other = (SequenceFaultImpl)obj;
+      if (detail == null)
       {
-         if (other.identifier != null)
+         if (other.detail != null)
             return false;
       }
-      else if (!identifier.equals(other.identifier))
+      else if (!detail.getMessage().equals(other.detail.getMessage()))
          return false;
-      if (messageNumber != other.messageNumber)
+      if (faultCode == null)
+      {
+         if (other.faultCode != null)
+            return false;
+      }
+      else if (!faultCode.equals(other.faultCode))
          return false;
       return true;
    }
@@ -158,9 +148,7 @@ final class SequenceImpl implements Sequence
 
    private void ensureLegalState()
    {
-      if (this.identifier == null)
-         throw new IllegalStateException();
-      if (this.messageNumber == 0)
+      if (this.faultCode == null)
          throw new IllegalStateException();
    }
 

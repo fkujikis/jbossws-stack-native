@@ -19,29 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm.spec200702;
+package org.jboss.ws.extensions.wsrm.spec200502;
 
-import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
-import javax.xml.soap.SOAPMessage;
 import org.jboss.util.NotImplementedException;
+import org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence;
+import javax.xml.soap.SOAPMessage;
 
 /*
  * @author richard.opalka@jboss.com
- * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence
+ * @see org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence
  */
-final class SequenceImpl implements Sequence
+final class TerminateSequenceImpl implements TerminateSequence
 {
    
    private String identifier;
-   private long messageNumber;
-
-   SequenceImpl()
+   
+   TerminateSequenceImpl()
    {
       // allow inside package use only
    }
-   
+
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#getIdentifier()
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence#getIdentifier()
     */
    public String getIdentifier()
    {
@@ -49,23 +48,15 @@ final class SequenceImpl implements Sequence
    }
 
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#getMessageNumber()
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence#getLastMsgNumber()
     */
-   public long getMessageNumber()
+   public long getLastMsgNumber()
    {
-      return messageNumber;
+      return 0; // always return zero for this version of the RM protocol
    }
 
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#isLastMessage()
-    */
-   public boolean isLastMessage()
-   {
-      return false; // always return false for this version of the RM protocol
-   }
-
-   /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#setIdentifier(java.lang.String)
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence#setIdentifier(java.lang.String)
     */
    public void setIdentifier(String identifier)
    {
@@ -78,26 +69,13 @@ final class SequenceImpl implements Sequence
    }
 
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#setLastMessage(boolean)
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence#setLastMsgNumber(long)
     */
-   public void setLastMessage()
+   public void setLastMsgNumber(long lastMsgNumber)
    {
       // do nothing for this version of the RM protocol
    }
 
-   /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Sequence#setMessageNumber(long)
-    */
-   public void setMessageNumber(long messageNumber)
-   {
-      if (messageNumber <= 0)
-         throw new IllegalArgumentException("Value must be greater than 0");
-      if (this.messageNumber > 0)
-         throw new UnsupportedOperationException("Value already set, cannot be overriden");
-      
-      this.messageNumber = messageNumber;
-   }
-   
    /*
     * @see java.lang.Object#hashCode()
     */
@@ -107,7 +85,6 @@ final class SequenceImpl implements Sequence
       final int prime = 31;
       int result = 1;
       result = prime * result + ((identifier == null) ? 0 : identifier.hashCode());
-      result = prime * result + (int)(messageNumber ^ (messageNumber >>> 32));
       return result;
    }
 
@@ -121,17 +98,15 @@ final class SequenceImpl implements Sequence
          return true;
       if (obj == null)
          return false;
-      if (!(obj instanceof SequenceImpl))
+      if (!(obj instanceof TerminateSequenceImpl))
          return false;
-      final SequenceImpl other = (SequenceImpl)obj;
+      final TerminateSequenceImpl other = (TerminateSequenceImpl)obj;
       if (identifier == null)
       {
          if (other.identifier != null)
             return false;
       }
       else if (!identifier.equals(other.identifier))
-         return false;
-      if (messageNumber != other.messageNumber)
          return false;
       return true;
    }
@@ -159,8 +134,6 @@ final class SequenceImpl implements Sequence
    private void ensureLegalState()
    {
       if (this.identifier == null)
-         throw new IllegalStateException();
-      if (this.messageNumber == 0)
          throw new IllegalStateException();
    }
 
