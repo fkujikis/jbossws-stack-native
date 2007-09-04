@@ -35,7 +35,7 @@ package org.jboss.ws.extensions.wsrm.spi.protocol;
  *  
  * @author richard.opalka@jboss.com
  */
-public interface AckRequested extends XMLSerializable
+public interface AckRequested extends Serializable
 {
    /**
     * An RM Source that includes an <b>AckRequested</b> header block in a SOAP envelope MUST include

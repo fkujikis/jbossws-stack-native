@@ -41,7 +41,7 @@ package org.jboss.ws.extensions.wsrm.spi.protocol;
  * 
  * @author richard.opalka@jboss.com
  */
-public interface Sequence extends XMLSerializable
+public interface Sequence extends Serializable
 {
    /**
     * An RM Source that includes a <b>Sequence</b> header block in a SOAP envelope MUST include this

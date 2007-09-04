@@ -44,7 +44,7 @@ package org.jboss.ws.extensions.wsrm.spi.protocol;
  *  
  * @author richard.opalka@jboss.com
  */
-public interface CreateSequenceResponse extends XMLSerializable
+public interface CreateSequenceResponse extends Serializable
 {
    /**
     * The RM Destination MUST include this element within any CreateSequenceResponse message it
@@ -119,7 +119,7 @@ public interface CreateSequenceResponse extends XMLSerializable
     * <b>CreateSequence</b> that did contain a child Offer, then the RM Source MAY immediately reclaim
     * any resources associated with the unused offered Sequence.</p>
     */
-   interface Accept extends XMLSerializable
+   interface Accept extends Serializable
    {
       /**
        * <p>The RM Destination MUST include this element, of type <b>wsa:EndpointReferenceType</b> (as

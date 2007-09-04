@@ -39,7 +39,7 @@ package org.jboss.ws.extensions.wsrm.spi.protocol;
  * 
  * @author richard.opalka@jboss.com
  */
-public interface SequenceFault extends XMLSerializable
+public interface SequenceFault extends Serializable
 {
    /**
     * WS-ReliableMessaging nodes that generate a <b>SequenceFault</b> MUST set the value of this

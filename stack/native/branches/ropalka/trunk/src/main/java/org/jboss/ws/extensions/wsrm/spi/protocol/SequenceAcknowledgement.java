@@ -44,7 +44,7 @@ import java.util.List;
  *  
  * @author richard.opalka@jboss.com
  */
-public interface SequenceAcknowledgement extends XMLSerializable
+public interface SequenceAcknowledgement extends Serializable
 {
    /**
     * An RM Destination that includes a <b>SequenceAcknowledgement</b> header block in a SOAP
@@ -139,7 +139,7 @@ public interface SequenceAcknowledgement extends XMLSerializable
     * Destination MUST NOT include this element if a sibling <b>Nack</b> or <b>None</b> element is also present as
     * a child of <b>SequenceAcknowledgement</b>.
     */
-   interface AcknowledgementRange extends XMLSerializable
+   interface AcknowledgementRange extends Serializable
    {
       /**
        * The RM Destination MUST set the value of this attribute equal to the message number of the

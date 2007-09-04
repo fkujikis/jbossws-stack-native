@@ -46,7 +46,7 @@ package org.jboss.ws.extensions.wsrm.spi.protocol;
  *  
  * @author richard.opalka@jboss.com
  */
-public interface TerminateSequence extends XMLSerializable
+public interface TerminateSequence extends Serializable
 {
    /**
     * The RM Source or RM Destination MUST include this element in any TerminateSequence

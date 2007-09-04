@@ -47,7 +47,7 @@ package org.jboss.ws.extensions.wsrm.spi.protocol;
  *  
  * @author richard.opalka@jboss.com
  */
-public interface CreateSequence extends XMLSerializable
+public interface CreateSequence extends Serializable
 {
    /**
     * <p>The RM Source MUST include this element in any CreateSequence message it sends. This
@@ -106,7 +106,7 @@ public interface CreateSequence extends XMLSerializable
     * This element, if present, enables an RM Source to offer a corresponding Sequence for the reliable
     * exchange of messages Transmitted from RM Destination to RM Source.
     */
-   interface Offer extends XMLSerializable
+   interface Offer extends Serializable
    {
       /**
        * The RM Source MUST set the value of this element to an absolute URI (conformant with

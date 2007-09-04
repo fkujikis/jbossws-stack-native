@@ -37,7 +37,7 @@ package org.jboss.ws.extensions.wsrm.spi.protocol;
  *  
  * @author richard.opalka@jboss.com
  */
-public interface CloseSequence extends XMLSerializable
+public interface CloseSequence extends Serializable
 {
    /**
     * The RM Source or RM Destination MUST include this element in any <b>CloseSequence</b> messages it
