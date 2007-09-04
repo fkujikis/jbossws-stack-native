@@ -109,6 +109,10 @@ final class CreateSequenceImpl implements CreateSequence
          throw new IllegalArgumentException("Offer cannot be null");
       if (!(offer instanceof OfferImpl))
          throw new IllegalArgumentException();
+      if (offer.getIdentifier() == null)
+         throw new IllegalArgumentException("Offer identifier must be specified");
+      if (offer.getEndpoint() == null)
+         throw new IllegalArgumentException("Offer endpoint address must be specified");
       if (this.offer != null)
          throw new UnsupportedOperationException("Value already set, cannot be overriden");
       

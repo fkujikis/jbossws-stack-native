@@ -92,6 +92,8 @@ final class CreateSequenceResponseImpl implements CreateSequenceResponse
          throw new IllegalArgumentException("Accept cannot be null");
       if (!(accept instanceof AcceptImpl))
          throw new IllegalArgumentException();
+      if (accept.getAcksTo() == null)
+         throw new IllegalArgumentException("Accept acksTo must be specified");
       if (this.accept != null)
          throw new UnsupportedOperationException("Value already set, cannot be overriden");
       
