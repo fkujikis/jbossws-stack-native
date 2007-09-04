@@ -140,6 +140,65 @@ final class CreateSequenceResponseImpl implements CreateSequenceResponse
    }
 
    /*
+    * @see java.lang.Object#hashCode()
+    */
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((accept == null) ? 0 : accept.hashCode());
+      result = prime * result + ((expires == null) ? 0 : expires.hashCode());
+      result = prime * result + ((identifier == null) ? 0 : identifier.hashCode());
+      result = prime * result + ((incompleteSequenceBehavior == null) ? 0 : incompleteSequenceBehavior.hashCode());
+      return result;
+   }
+
+   /*
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (!(obj instanceof CreateSequenceResponseImpl))
+         return false;
+      final CreateSequenceResponseImpl other = (CreateSequenceResponseImpl)obj;
+      if (accept == null)
+      {
+         if (other.accept != null)
+            return false;
+      }
+      else if (!accept.equals(other.accept))
+         return false;
+      if (expires == null)
+      {
+         if (other.expires != null)
+            return false;
+      }
+      else if (!expires.equals(other.expires))
+         return false;
+      if (identifier == null)
+      {
+         if (other.identifier != null)
+            return false;
+      }
+      else if (!identifier.equals(other.identifier))
+         return false;
+      if (incompleteSequenceBehavior == null)
+      {
+         if (other.incompleteSequenceBehavior != null)
+            return false;
+      }
+      else if (!incompleteSequenceBehavior.equals(other.incompleteSequenceBehavior))
+         return false;
+      return true;
+   }
+
+   /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#deserializeFrom(javax.xml.soap.SOAPMessage)
     */
    public void deserializeFrom(SOAPMessage soapMessage)
@@ -192,6 +251,41 @@ final class CreateSequenceResponseImpl implements CreateSequenceResponse
             throw new UnsupportedOperationException("Value already set, cannot be overriden");
          
          this.acksTo = address;
+      }
+
+      /*
+       * @see java.lang.Object#hashCode()
+       */
+      @Override
+      public int hashCode()
+      {
+         final int prime = 31;
+         int result = 1;
+         result = prime * result + ((acksTo == null) ? 0 : acksTo.hashCode());
+         return result;
+      }
+
+      /*
+       * @see java.lang.Object#equals(java.lang.Object)
+       */
+      @Override
+      public boolean equals(Object obj)
+      {
+         if (this == obj)
+            return true;
+         if (obj == null)
+            return false;
+         if (!(obj instanceof AcceptImpl))
+            return false;
+         final AcceptImpl other = (AcceptImpl)obj;
+         if (acksTo == null)
+         {
+            if (other.acksTo != null)
+               return false;
+         }
+         else if (!acksTo.equals(other.acksTo))
+            return false;
+         return true;
       }
 
       /*

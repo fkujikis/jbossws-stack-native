@@ -27,6 +27,7 @@ import java.util.Collections;
 
 import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement;
+
 import javax.xml.soap.SOAPMessage;
 
 /*
@@ -169,6 +170,63 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
    }
 
    /*
+    * @see java.lang.Object#hashCode()
+    */
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((identifier == null) ? 0 : identifier.hashCode());
+      result = prime * result + (isFinal ? 1231 : 1237);
+      result = prime * result + (isNone ? 1231 : 1237);
+      result = prime * result + ((nacks == null) ? 0 : nacks.hashCode());
+      result = prime * result + ((acknowledgementRanges == null) ? 0 : acknowledgementRanges.hashCode());
+      return result;
+   }
+
+   /*
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (!(obj instanceof SequenceAcknowledgementImpl))
+         return false;
+      final SequenceAcknowledgementImpl other = (SequenceAcknowledgementImpl)obj;
+      if (acknowledgementRanges == null)
+      {
+         if (other.acknowledgementRanges != null)
+            return false;
+      }
+      else if (!acknowledgementRanges.equals(other.acknowledgementRanges))
+         return false;
+      if (identifier == null)
+      {
+         if (other.identifier != null)
+            return false;
+      }
+      else if (!identifier.equals(other.identifier))
+         return false;
+      if (isFinal != other.isFinal)
+         return false;
+      if (isNone != other.isNone)
+         return false;
+      if (nacks == null)
+      {
+         if (other.nacks != null)
+            return false;
+      }
+      else if (!nacks.equals(other.nacks))
+         return false;
+      return true;
+   }
+
+   /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#deserializeFrom(javax.xml.soap.SOAPMessage)
     */
    public void deserializeFrom(SOAPMessage soapMessage)
@@ -256,6 +314,39 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
          this.upper = upper;
       }
       
+      /*
+       * @see java.lang.Object#hashCode()
+       */
+      @Override
+      public int hashCode()
+      {
+         final int prime = 31;
+         int result = 1;
+         result = prime * result + (int)(lower ^ (lower >>> 32));
+         result = prime * result + (int)(upper ^ (upper >>> 32));
+         return result;
+      }
+
+      /*
+       * @see java.lang.Object#equals(java.lang.Object)
+       */
+      @Override
+      public boolean equals(Object obj)
+      {
+         if (this == obj)
+            return true;
+         if (obj == null)
+            return false;
+         if (!(obj instanceof AcknowledgementRangeImpl))
+            return false;
+         final AcknowledgementRangeImpl other = (AcknowledgementRangeImpl)obj;
+         if (lower != other.lower)
+            return false;
+         if (upper != other.upper)
+            return false;
+         return true;
+      }
+
       /*
        * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#deserializeFrom(javax.xml.soap.SOAPMessage)
        */

@@ -120,6 +120,57 @@ final class CreateSequenceImpl implements CreateSequence
    }
 
    /*
+    * @see java.lang.Object#hashCode()
+    */
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((acksTo == null) ? 0 : acksTo.hashCode());
+      result = prime * result + ((expires == null) ? 0 : expires.hashCode());
+      result = prime * result + ((offer == null) ? 0 : offer.hashCode());
+      return result;
+   }
+
+   /*
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (!(obj instanceof CreateSequenceImpl))
+         return false;
+      final CreateSequenceImpl other = (CreateSequenceImpl)obj;
+      if (acksTo == null)
+      {
+         if (other.acksTo != null)
+            return false;
+      }
+      else if (!acksTo.equals(other.acksTo))
+         return false;
+      if (expires == null)
+      {
+         if (other.expires != null)
+            return false;
+      }
+      else if (!expires.equals(other.expires))
+         return false;
+      if (offer == null)
+      {
+         if (other.offer != null)
+            return false;
+      }
+      else if (!offer.equals(other.offer))
+         return false;
+      return true;
+   }
+
+   /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#deserializeFrom(javax.xml.soap.SOAPMessage)
     */
    public void deserializeFrom(SOAPMessage soapMessage)
@@ -243,7 +294,66 @@ final class CreateSequenceImpl implements CreateSequence
          
          this.incompleteSequenceBehavior = incompleteSequenceBehavior;
       }
+      
+      /*
+       * @see java.lang.Object#hashCode()
+       */
+      @Override
+      public int hashCode()
+      {
+         final int prime = 31;
+         int result = 1;
+         result = prime * result + ((duration == null) ? 0 : duration.hashCode());
+         result = prime * result + ((endpoint == null) ? 0 : endpoint.hashCode());
+         result = prime * result + ((identifier == null) ? 0 : identifier.hashCode());
+         result = prime * result + ((incompleteSequenceBehavior == null) ? 0 : incompleteSequenceBehavior.hashCode());
+         return result;
+      }
 
+      /*
+       * @see java.lang.Object#equals(java.lang.Object)
+       */
+      @Override
+      public boolean equals(Object obj)
+      {
+         if (this == obj)
+            return true;
+         if (obj == null)
+            return false;
+         if (!(obj instanceof OfferImpl))
+            return false;
+         final OfferImpl other = (OfferImpl)obj;
+         if (duration == null)
+         {
+            if (other.duration != null)
+               return false;
+         }
+         else if (!duration.equals(other.duration))
+            return false;
+         if (endpoint == null)
+         {
+            if (other.endpoint != null)
+               return false;
+         }
+         else if (!endpoint.equals(other.endpoint))
+            return false;
+         if (identifier == null)
+         {
+            if (other.identifier != null)
+               return false;
+         }
+         else if (!identifier.equals(other.identifier))
+            return false;
+         if (incompleteSequenceBehavior == null)
+         {
+            if (other.incompleteSequenceBehavior != null)
+               return false;
+         }
+         else if (!incompleteSequenceBehavior.equals(other.incompleteSequenceBehavior))
+            return false;
+         return true;
+      }
+      
       /*
        * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#deserializeFrom(javax.xml.soap.SOAPMessage)
        */

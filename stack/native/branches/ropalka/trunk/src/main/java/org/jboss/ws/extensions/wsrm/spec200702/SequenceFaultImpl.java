@@ -84,6 +84,49 @@ final class SequenceFaultImpl implements SequenceFault
    }
 
    /*
+    * @see java.lang.Object#hashCode()
+    */
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((detail == null) ? 0 : detail.getMessage().hashCode());
+      result = prime * result + ((faultCode == null) ? 0 : faultCode.hashCode());
+      return result;
+   }
+
+   /*
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (!(obj instanceof SequenceFaultImpl))
+         return false;
+      final SequenceFaultImpl other = (SequenceFaultImpl)obj;
+      if (detail == null)
+      {
+         if (other.detail != null)
+            return false;
+      }
+      else if (!detail.getMessage().equals(other.detail.getMessage()))
+         return false;
+      if (faultCode == null)
+      {
+         if (other.faultCode != null)
+            return false;
+      }
+      else if (!faultCode.equals(other.faultCode))
+         return false;
+      return true;
+   }
+
+   /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#deserializeFrom(javax.xml.soap.SOAPMessage)
     */
    public void deserializeFrom(SOAPMessage soapMessage)
