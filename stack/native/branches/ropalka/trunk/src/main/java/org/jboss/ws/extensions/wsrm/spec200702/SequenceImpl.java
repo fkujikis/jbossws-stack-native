@@ -22,7 +22,7 @@
 package org.jboss.ws.extensions.wsrm.spec200702;
 
 import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
-import org.w3c.dom.Element;
+import javax.xml.soap.SOAPMessage;
 import org.jboss.util.NotImplementedException;
 
 /*
@@ -99,9 +99,9 @@ final class SequenceImpl implements Sequence
    }
    
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.XMLSerializable#fromXML(org.w3c.dom.Element)
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#deserializeFrom(javax.xml.soap.SOAPMessage)
     */
-   public void fromXML(Element e)
+   public void deserializeFrom(SOAPMessage soapMessage)
    {
       // TODO: implement deserialization using object set methods
       if (true) throw new NotImplementedException();
@@ -109,9 +109,9 @@ final class SequenceImpl implements Sequence
    }
 
    /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.XMLSerializable#toXML()
+    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#serializeTo(javax.xml.soap.SOAPMessage)
     */
-   public Element toXML()
+   public void serializeTo(SOAPMessage soapMessage)
    {
       ensureLegalState();
       // TODO implement serialization using object instance fields
