@@ -21,6 +21,9 @@
  */
 package org.jboss.ws.extensions.wsrm.spi;
 
+import java.util.Map;
+import java.util.HashMap;
+
 /**
  * WS-RM Provider SPI facade. Each WS-RM provider must override this class.
  *
@@ -28,8 +31,21 @@ package org.jboss.ws.extensions.wsrm.spi;
  */
 public abstract class Provider
 {
+   
+   private static final Map<String, Provider> REGISTERED_PROVIDERS = new HashMap<String, Provider>();
+   
+   static
+   {
+      REGISTERED_PROVIDERS.put(
+         org.jboss.ws.extensions.wsrm.spec200702.ProviderImpl.getInstance().getNamespaceURI(),
+         org.jboss.ws.extensions.wsrm.spec200702.ProviderImpl.getInstance());
+      REGISTERED_PROVIDERS.put(
+         org.jboss.ws.extensions.wsrm.spec200502.ProviderImpl.getInstance().getNamespaceURI(),
+         org.jboss.ws.extensions.wsrm.spec200502.ProviderImpl.getInstance());
+   }
+   
    /**
-    * Must be overriden in the subclasses
+    * Must be overriden in subclasses
     * @param targetNamespace
     */
    protected Provider()
@@ -56,6 +72,10 @@ public abstract class Provider
     */
    public static Provider getInstance(String wsrmNamespace)
    {
-      return null; // TODO: implement
+      if (!REGISTERED_PROVIDERS.keySet().contains(wsrmNamespace))
+         throw new IllegalArgumentException("No WS-RM provider registered for namespace " + wsrmNamespace);
+
+      return REGISTERED_PROVIDERS.get(wsrmNamespace);
    }
+   
 }
