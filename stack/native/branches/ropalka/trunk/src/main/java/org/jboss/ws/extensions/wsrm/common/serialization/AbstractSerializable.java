@@ -19,11 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm.common;
+package org.jboss.ws.extensions.wsrm.common.serialization;
 
 import javax.xml.soap.SOAPMessage;
-
-import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
@@ -45,9 +43,8 @@ public abstract class AbstractSerializable implements Serializable
     */
    public final void deserializeFrom(SOAPMessage soapMessage)
    {
-      // TODO: implement deserialization using object set methods
-      if (true) throw new NotImplementedException();
-      validate();
+      SerializationRepository.deserialize(this, soapMessage);
+      validate(); // finally ensure that object is in correct state
    }
 
    /*
@@ -55,9 +52,8 @@ public abstract class AbstractSerializable implements Serializable
     */
    public final void serializeTo(SOAPMessage soapMessage)
    {
-      validate();
-      // TODO implement serialization using object instance fields
-      throw new NotImplementedException();
+      validate(); // ensure object is in correct state first
+      SerializationRepository.serialize(this, soapMessage);
    }
    
    public abstract Provider getProvider();

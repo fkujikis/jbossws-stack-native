@@ -21,7 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.spec200702;
 
-import org.jboss.ws.extensions.wsrm.common.AbstractSerializable;
+import org.jboss.ws.extensions.wsrm.common.serialization.AbstractSerializable;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequence;
 

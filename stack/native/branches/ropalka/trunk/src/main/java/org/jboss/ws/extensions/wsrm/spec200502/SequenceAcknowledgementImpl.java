@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Collections;
 
-import org.jboss.ws.extensions.wsrm.common.AbstractSerializable;
+import org.jboss.ws.extensions.wsrm.common.serialization.AbstractSerializable;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement;
 

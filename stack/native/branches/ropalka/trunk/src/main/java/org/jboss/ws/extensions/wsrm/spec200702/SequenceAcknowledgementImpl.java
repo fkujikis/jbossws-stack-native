@@ -27,7 +27,7 @@ import java.util.Collections;
 
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement;
-import org.jboss.ws.extensions.wsrm.common.AbstractSerializable;
+import org.jboss.ws.extensions.wsrm.common.serialization.AbstractSerializable;
 
 /*
  * @author richard.opalka@jboss.com
