@@ -21,18 +21,21 @@
  */
 package org.jboss.ws.extensions.wsrm.spec200702;
 
-import org.jboss.util.NotImplementedException;
+import org.jboss.ws.extensions.wsrm.common.AbstractSerializable;
+import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFault;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFaultCode;
-import javax.xml.soap.SOAPMessage;
 
 /*
  * @author richard.opalka@jboss.com
  * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFault
  */
-final class SequenceFaultImpl implements SequenceFault
+final class SequenceFaultImpl extends AbstractSerializable implements SequenceFault
 {
    
+   // provider used by de/serialization framework
+   private static final Provider PROVIDER = ProviderImpl.getInstance();
+   // internal fields
    private SequenceFaultCode faultCode;
    private Exception detail;
 
@@ -126,27 +129,12 @@ final class SequenceFaultImpl implements SequenceFault
       return true;
    }
 
-   /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#deserializeFrom(javax.xml.soap.SOAPMessage)
-    */
-   public void deserializeFrom(SOAPMessage soapMessage)
+   public Provider getProvider()
    {
-      // TODO: implement deserialization using object set methods
-      if (true) throw new NotImplementedException();
-      ensureLegalState();
+      return PROVIDER;
    }
 
-   /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#serializeTo(javax.xml.soap.SOAPMessage)
-    */
-   public void serializeTo(SOAPMessage soapMessage)
-   {
-      ensureLegalState();
-      // TODO implement serialization using object instance fields
-      throw new NotImplementedException();
-   }
-
-   private void ensureLegalState()
+   public void validate()
    {
       if (this.faultCode == null)
          throw new IllegalStateException();

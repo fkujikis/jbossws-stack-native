@@ -30,6 +30,7 @@ import javax.xml.soap.SOAPMessage;
  */
 public interface Serializable
 {
+   
    /**
     * Serialize object instance to SOAP message
     * @param soapMessage 
@@ -41,4 +42,10 @@ public interface Serializable
     * @param soapMessage
     */
    void deserializeFrom(SOAPMessage soapMessage);
+   
+   /**
+    * Validate object state if everything is all right
+    */
+   void validate();
+   
 }

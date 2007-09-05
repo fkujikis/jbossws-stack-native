@@ -25,18 +25,20 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Collections;
 
-import org.jboss.util.NotImplementedException;
+import org.jboss.ws.extensions.wsrm.common.AbstractSerializable;
+import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement;
-
-import javax.xml.soap.SOAPMessage;
 
 /*
  * @author richard.opalka@jboss.com
  * @see org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement
  */
-final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
+final class SequenceAcknowledgementImpl extends AbstractSerializable implements SequenceAcknowledgement
 {
    
+   // provider used by de/serialization framework
+   private static final Provider PROVIDER = ProviderImpl.getInstance();
+   // internal fields
    private final List<Long> nacks = new LinkedList<Long>();
    private final List<AcknowledgementRange> acknowledgementRanges = new LinkedList<AcknowledgementRange>(); 
    private String identifier;
@@ -203,28 +205,13 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
          return false;
       return true;
    }
-
-   /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#deserializeFrom(javax.xml.soap.SOAPMessage)
-    */
-   public void deserializeFrom(SOAPMessage soapMessage)
-   {
-      // TODO: implement deserialization using object set methods
-      if (true) throw new NotImplementedException();
-      ensureLegalState();
-   }
-
-   /*
-    * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#serializeTo(javax.xml.soap.SOAPMessage)
-    */
-   public void serializeTo(SOAPMessage soapMessage)
-   {
-      ensureLegalState();
-      // TODO implement serialization using object instance fields
-      throw new NotImplementedException();
-   }
    
-   private void ensureLegalState()
+   public Provider getProvider()
+   {
+      return PROVIDER;
+   }
+
+   public void validate()
    {
       if ((this.acknowledgementRanges.size() == 0) && (this.nacks.size() == 0))
          throw new IllegalStateException();
@@ -240,7 +227,7 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
             "Overlap detected: " + currentRange + " vs. " + newRange);
    }
    
-   private static final class AcknowledgementRangeImpl implements SequenceAcknowledgement.AcknowledgementRange
+   private static class AcknowledgementRangeImpl implements SequenceAcknowledgement.AcknowledgementRange
    {
       
       private long lower;
@@ -325,37 +312,9 @@ final class SequenceAcknowledgementImpl implements SequenceAcknowledgement
          return true;
       }
 
-      /*
-       * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#deserializeFrom(javax.xml.soap.SOAPMessage)
-       */
-      public void deserializeFrom(SOAPMessage soapMessage)
-      {
-         // TODO: implement deserialization using object set methods
-         if (true) throw new NotImplementedException();
-         ensureLegalState();
-      }
-
-      /*
-       * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#serializeTo(javax.xml.soap.SOAPMessage)
-       */
-      public void serializeTo(SOAPMessage soapMessage)
-      {
-         ensureLegalState();
-         // TODO implement serialization using object instance fields
-         throw new NotImplementedException();
-      }
-
       public String toString()
       {
          return "<" + lower + "; " + upper + ">";
-      }
-
-      private void ensureLegalState()
-      {
-         if (this.lower == 0)
-            throw new IllegalStateException();
-         if (this.upper == 0)
-            throw new IllegalStateException();
       }
 
    }

@@ -139,7 +139,7 @@ public interface SequenceAcknowledgement extends Serializable
     * Destination MUST NOT include this element if a sibling <b>Nack</b> or <b>None</b> element is also present as
     * a child of <b>SequenceAcknowledgement</b>.
     */
-   interface AcknowledgementRange extends Serializable
+   interface AcknowledgementRange
    {
       /**
        * The RM Destination MUST set the value of this attribute equal to the message number of the

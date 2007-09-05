@@ -106,7 +106,7 @@ public interface CreateSequence extends Serializable
     * This element, if present, enables an RM Source to offer a corresponding Sequence for the reliable
     * exchange of messages Transmitted from RM Destination to RM Source.
     */
-   interface Offer extends Serializable
+   interface Offer
    {
       /**
        * The RM Source MUST set the value of this element to an absolute URI (conformant with

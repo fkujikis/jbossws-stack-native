@@ -119,7 +119,7 @@ public interface CreateSequenceResponse extends Serializable
     * <b>CreateSequence</b> that did contain a child Offer, then the RM Source MAY immediately reclaim
     * any resources associated with the unused offered Sequence.</p>
     */
-   interface Accept extends Serializable
+   interface Accept
    {
       /**
        * <p>The RM Destination MUST include this element, of type <b>wsa:EndpointReferenceType</b> (as

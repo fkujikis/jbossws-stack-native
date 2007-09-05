@@ -38,10 +38,12 @@ public abstract class Provider
    {
       REGISTERED_PROVIDERS.put(
          org.jboss.ws.extensions.wsrm.spec200702.ProviderImpl.getInstance().getNamespaceURI(),
-         org.jboss.ws.extensions.wsrm.spec200702.ProviderImpl.getInstance());
+         org.jboss.ws.extensions.wsrm.spec200702.ProviderImpl.getInstance()
+      );
       REGISTERED_PROVIDERS.put(
          org.jboss.ws.extensions.wsrm.spec200502.ProviderImpl.getInstance().getNamespaceURI(),
-         org.jboss.ws.extensions.wsrm.spec200502.ProviderImpl.getInstance());
+         org.jboss.ws.extensions.wsrm.spec200502.ProviderImpl.getInstance()
+      );
    }
    
    /**
@@ -65,12 +67,18 @@ public abstract class Provider
    public abstract MessageFactory getMessageFactory();
    
    /**
+    * Returns WS-RM provider specific constants
+    * @return constants
+    */
+   public abstract Constants getConstants();
+   
+   /**
     * Gets WS-RM provider by <b>wsrmNamespace</b>
     * @param namespace associated with the WS-RM provider
     * @return WS-RM provider instance
     * @throws IllegalArgumentException if specified <b>wsrmNamespace</b> has no associated WS-RM provider 
     */
-   public static Provider getInstance(String wsrmNamespace)
+   public static final Provider getInstance(String wsrmNamespace)
    {
       if (!REGISTERED_PROVIDERS.keySet().contains(wsrmNamespace))
          throw new IllegalArgumentException("No WS-RM provider registered for namespace " + wsrmNamespace);

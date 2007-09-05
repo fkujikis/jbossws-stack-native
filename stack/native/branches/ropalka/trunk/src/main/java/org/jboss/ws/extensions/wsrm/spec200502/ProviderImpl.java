@@ -21,8 +21,10 @@
  */
 package org.jboss.ws.extensions.wsrm.spec200502;
 
+import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.MessageFactory;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
+import org.jboss.ws.extensions.wsrm.common.ConstantsImpl;
 
 /*
  * @author richard.opalka@jboss.com
@@ -31,7 +33,8 @@ import org.jboss.ws.extensions.wsrm.spi.Provider;
 public final class ProviderImpl extends Provider
 {
    
-   static final String IMPLEMENTATION_VERSION = "http://schemas.xmlsoap.org/ws/2005/02/rm";
+   private static final String IMPLEMENTATION_VERSION = "http://schemas.xmlsoap.org/ws/2005/02/rm";
+   private static final Constants CONSTANTS = new ConstantsImpl(IMPLEMENTATION_VERSION);
    private static final Provider INSTANCE = new ProviderImpl();
    
    private ProviderImpl()
@@ -41,7 +44,7 @@ public final class ProviderImpl extends Provider
    
    public static Provider getInstance()
    {
-      return INSTANCE;
+      return INSTANCE; 
    }
    
    /*
@@ -51,6 +54,15 @@ public final class ProviderImpl extends Provider
    public MessageFactory getMessageFactory()
    {
       return MessageFactoryImpl.getInstance();
+   }
+
+   /*
+    * @see org.jboss.ws.extensions.wsrm.spi.Provider#getConstants()
+    */
+   @Override
+   public Constants getConstants()
+   {
+      return CONSTANTS;
    }
 
    /*
