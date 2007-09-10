@@ -1,13 +1,44 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005, JBoss Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.test.ws.jaxws.wsrm.deserialization;
 
 import java.io.ByteArrayInputStream;
 import javax.xml.soap.SOAPMessage;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.MessageFactory;
+import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequence;
+import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequenceResponse;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence;
+import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
 import org.jboss.ws.extensions.wsrm.spi.protocol.IncompleteSequenceBehavior;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
+import org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence;
+import org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequenceResponse;
 import org.jboss.wsf.test.JBossWSTest;
 
+/**
+ * WS-RM messages de/serialization test case
+ * @author richard.opalka@jboss.com
+ */
 public final class WSRMDeSerializationTestCase extends JBossWSTest
 {
    private static final String WSRM_200702_NS = "http://docs.oasis-open.org/ws-rx/wsrm/200702";
@@ -44,7 +75,7 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
       + "   </soap:Body>"
       + "</soap:Envelope>";
    
-   private static final String createSequenceResponseMessage
+   private static final String CREATE_SEQUENCE_RESPONSE_MESSAGE
       = "<soap:Envelope"
       + "   xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\""
       + "   xmlns:wsrm=\"http://docs.oasis-open.org/ws-rx/wsrm/200702\""
@@ -57,11 +88,18 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
       + "   <soap:Body>"
       + "      <wsrm:CreateSequenceResponse>"
       + "         <wsrm:Identifier>http://Business456.com/RM/ABC</wsrm:Identifier>"
+      + "         <wsrm:Expires>PT0S</wsrm:Expires>"
+      + "         <wsrm:IncompleteSequenceBehavior>DiscardFollowingFirstGap</wsrm:IncompleteSequenceBehavior>"
+      + "         <wsrm:Accept>"
+      + "            <wsrm:AcksTo>"
+      + "               <wsa:Address>http://Business456.com/serviceA/ASDF</wsa:Address>"
+      + "            </wsrm:AcksTo>"
+      + "         </wsrm:Accept>"
       + "      </wsrm:CreateSequenceResponse>"
       + "   </soap:Body>"
       + "</soap:Envelope>";
    
-   private static final String sequencePlusAckRequestedMessage
+   private static final String SEQUENCE_PLUS_ACKREQUESTED_MESSAGE
       = "<soap:Envelope"
       + "   xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\""
       + "   xmlns:wsrm=\"http://docs.oasis-open.org/ws-rx/wsrm/200702\""
@@ -84,7 +122,7 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
       + "   <soap:Body><!-- Some Application Data --></soap:Body>"
       + "</soap:Envelope>";
 
-   private static final String sequenceAcknowledgementMessage
+   private static final String SEQUENCE_ACKNOWLEDGEMENT_MESSAGE
       = "<soap:Envelope"
       + "   xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\""
       + "   xmlns:wsrm=\"http://docs.oasis-open.org/ws-rx/wsrm/200702\""
@@ -105,7 +143,7 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
       + "   <soap:Body/>"
       + "</soap:Envelope>";
    
-   private static final String closeSequenceMessage
+   private static final String CLOSE_SEQUENCE_MESSAGE
    = "<soap:Envelope"
    + "   xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\""
    + "   xmlns:wsrm=\"http://docs.oasis-open.org/ws-rx/wsrm/200702\""
@@ -126,7 +164,7 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
    + "   </soap:Body>"
    + "</soap:Envelope>";
 
-   private static final String terminateSequenceMessage
+   private static final String TERMINATE_SEQUENCE_MESSAGE
       = "<soap:Envelope"
       + "   xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\""
       + "   xmlns:wsrm=\"http://docs.oasis-open.org/ws-rx/wsrm/200702\""
@@ -147,7 +185,7 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
       + "   </soap:Body>"
       + "</soap:Envelope>";
    
-   private static final String closeSequenceResponseMessage
+   private static final String CLOSE_SEQUENCE_RESPONSE_MESSAGE
       = "<soap:Envelope"
       + "   xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\""
       + "   xmlns:wsrm=\"http://docs.oasis-open.org/ws-rx/wsrm/200702\""
@@ -168,7 +206,7 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
       + "   </soap:Body>"
       + "</soap:Envelope>";
    
-   private static final String terminateSequenceResponseMessage
+   private static final String TERMINATE_SEQUENCE_RESPONSE_MESSAGE
    = "<soap:Envelope"
    + "   xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\""
    + "   xmlns:wsrm=\"http://docs.oasis-open.org/ws-rx/wsrm/200702\""
@@ -215,17 +253,139 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
       offer.setExpires("PT1S");
       offer.setIncompleteSequenceBehavior(IncompleteSequenceBehavior.DISCARD_ENTIRE_SEQUENCE);
       createSequenceMessage.setOffer(offer);
-      // serialize message
-      SOAPMessage createdSOAPMessage = newEmptySOAPMessage();
-      createSequenceMessage.serializeTo(createdSOAPMessage);
-      // deserialize from constructed message
-      CreateSequence createSequenceMessage1 = WSRM_200702_FACTORY.newCreateSequence();
-      createSequenceMessage1.deserializeFrom(createdSOAPMessage);
-      // deserialize from reference message
-      CreateSequence createSequenceMessage2 = WSRM_200702_FACTORY.newCreateSequence();
-      createSequenceMessage2.deserializeFrom(toSOAPMessage(CREATE_SEQUENCE_MESSAGE));
       // perform assertion
-      assertEquals(createSequenceMessage1, createSequenceMessage2);
+      assertEquals(createSequenceMessage, CREATE_SEQUENCE_MESSAGE, WSRM_200702_FACTORY);
+   }
+   
+   public void testCreateSequenceResponseMessageDeserialization() throws Exception
+   {
+      CreateSequenceResponse createSequenceResponseMessage = WSRM_200702_FACTORY.newCreateSequenceResponse();
+      createSequenceResponseMessage.deserializeFrom(toSOAPMessage(CREATE_SEQUENCE_RESPONSE_MESSAGE));
+      // perform assertion
+      assertEquals(createSequenceResponseMessage.getIdentifier(), "http://Business456.com/RM/ABC");
+      assertEquals(createSequenceResponseMessage.getExpires(), "PT0S");
+      assertEquals(createSequenceResponseMessage.getIncompleteSequenceBehavior(), IncompleteSequenceBehavior.DISCARD_FOLLOWING_FIRST_GAP);
+      CreateSequenceResponse.Accept accept = createSequenceResponseMessage.getAccept();
+      assertEquals(accept.getAcksTo(), "http://Business456.com/serviceA/ASDF");
+   }
+   
+   public void testCreateSequenceResponseMessageSerialization() throws Exception
+   {
+      CreateSequenceResponse createSequenceResponse = WSRM_200702_FACTORY.newCreateSequenceResponse();
+      // construct message
+      createSequenceResponse.setIdentifier("http://Business456.com/RM/ABC");
+      createSequenceResponse.setExpires("PT0S");
+      createSequenceResponse.setIncompleteSequenceBehavior(IncompleteSequenceBehavior.DISCARD_FOLLOWING_FIRST_GAP);
+      CreateSequenceResponse.Accept accept = createSequenceResponse.newAccept();
+      accept.setAcksTo("http://Business456.com/serviceA/ASDF");
+      createSequenceResponse.setAccept(accept);
+      // perform assertion
+      assertEquals(createSequenceResponse, CREATE_SEQUENCE_RESPONSE_MESSAGE, WSRM_200702_FACTORY);
+   }
+   
+   public void testCloseSequenceMessageDeserialization() throws Exception
+   {
+      CloseSequence closeSequence = WSRM_200702_FACTORY.newCloseSequence();
+      closeSequence.deserializeFrom(toSOAPMessage(CLOSE_SEQUENCE_MESSAGE));
+      // perform assertion
+      assertEquals(closeSequence.getIdentifier(), "http://Business456.com/RM/ABC");
+      assertEquals(closeSequence.getLastMsgNumber(), 3);
+   }
+   
+   public void testCloseSequenceMessageSerialization() throws Exception
+   {
+      CloseSequence closeSequence = WSRM_200702_FACTORY.newCloseSequence();
+      // construct message
+      closeSequence.setIdentifier("http://Business456.com/RM/ABC");
+      closeSequence.setLastMsgNumber(3);
+      // perform assertion
+      assertEquals(closeSequence, CLOSE_SEQUENCE_MESSAGE, WSRM_200702_FACTORY);
+   }
+
+   public void testCloseSequenceResponseMessageDeserialization() throws Exception
+   {
+      CloseSequenceResponse closeSequenceResponse = WSRM_200702_FACTORY.newCloseSequenceResponse();
+      closeSequenceResponse.deserializeFrom(toSOAPMessage(CLOSE_SEQUENCE_RESPONSE_MESSAGE));
+      // perform assertion
+      assertEquals(closeSequenceResponse.getIdentifier(), "http://Business456.com/RM/ABC");
+   }
+   
+   public void testCloseSequenceResponseMessageSerialization() throws Exception
+   {
+      CloseSequenceResponse closeSequenceResponse = WSRM_200702_FACTORY.newCloseSequenceResponse();
+      // construct message
+      closeSequenceResponse.setIdentifier("http://Business456.com/RM/ABC");
+      // perform assertion
+      assertEquals(closeSequenceResponse, CLOSE_SEQUENCE_RESPONSE_MESSAGE, WSRM_200702_FACTORY);
+   }
+   
+   public void testTerminateSequenceMessageDeserialization() throws Exception
+   {
+      TerminateSequence terminateSequence = WSRM_200702_FACTORY.newTerminateSequence();
+      terminateSequence.deserializeFrom(toSOAPMessage(TERMINATE_SEQUENCE_MESSAGE));
+      // perform assertion
+      assertEquals(terminateSequence.getIdentifier(), "http://Business456.com/RM/ABC");
+      assertEquals(terminateSequence.getLastMsgNumber(), 3);
+   }
+   
+   public void testTerminateSequenceMessageSerialization() throws Exception
+   {
+      TerminateSequence terminateSequence = WSRM_200702_FACTORY.newTerminateSequence();
+      // construct message
+      terminateSequence.setIdentifier("http://Business456.com/RM/ABC");
+      terminateSequence.setLastMsgNumber(3);
+      // perform assertion
+      assertEquals(terminateSequence, TERMINATE_SEQUENCE_MESSAGE, WSRM_200702_FACTORY);
+   }
+   
+   public void testTerminateSequenceResponseMessageDeserialization() throws Exception
+   {
+      TerminateSequenceResponse terminateSequenceResponse = WSRM_200702_FACTORY.newTerminateSequenceResponse();
+      terminateSequenceResponse.deserializeFrom(toSOAPMessage(TERMINATE_SEQUENCE_RESPONSE_MESSAGE));
+      // perform assertion
+      assertEquals(terminateSequenceResponse.getIdentifier(), "http://Business456.com/RM/ABC");
+   }
+   
+   public void testTerminateSequenceResponseMessageSerialization() throws Exception
+   {
+      TerminateSequenceResponse terminateSequenceResponse = WSRM_200702_FACTORY.newTerminateSequenceResponse();
+      // construct message
+      terminateSequenceResponse.setIdentifier("http://Business456.com/RM/ABC");
+      // perform assertion
+      assertEquals(terminateSequenceResponse, TERMINATE_SEQUENCE_RESPONSE_MESSAGE, WSRM_200702_FACTORY);
+   }
+   
+   private static void assertEquals(Serializable serializable, String exemplar, MessageFactory factory) throws Exception
+   {
+      // serialize constructed message
+      SOAPMessage createdSOAPMessage = newEmptySOAPMessage();
+      serializable.serializeTo(createdSOAPMessage);
+      // deserialize from constructed message
+      Serializable serializable1 = newEmptySerializable(factory, serializable);
+      serializable1.deserializeFrom(createdSOAPMessage);
+      // deserialize from reference message
+      Serializable serializable2 = newEmptySerializable(factory, serializable);
+      serializable2.deserializeFrom(toSOAPMessage(exemplar));
+      // perform assertion
+      assertEquals(serializable1, serializable2);
+   }
+   
+   private static Serializable newEmptySerializable(MessageFactory factory, Serializable helper)
+   {
+      if (helper instanceof CreateSequence)
+         return factory.newCreateSequence();
+      if (helper instanceof CreateSequenceResponse)
+         return factory.newCreateSequenceResponse();
+      if (helper instanceof CloseSequence)
+         return factory.newCloseSequence();
+      if (helper instanceof CloseSequenceResponse)
+         return factory.newCloseSequenceResponse();
+      if (helper instanceof TerminateSequence)
+         return factory.newTerminateSequence();
+      if (helper instanceof TerminateSequenceResponse)
+         return factory.newTerminateSequenceResponse();
+      
+      throw new IllegalArgumentException();
    }
    
    // TODO: implement other de/serializations
