@@ -21,6 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
+import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequence;
@@ -46,7 +47,7 @@ final class SerializationRepository
       // forbidden inheritance
    }
    
-   public static void serialize(AbstractSerializable object, SOAPMessage soapMessage)
+   public static void serialize(AbstractSerializable object, SOAPMessage soapMessage) throws ReliableMessagingException
    {
       Provider provider = object.getProvider();
       
@@ -80,11 +81,9 @@ final class SerializationRepository
       if (object instanceof TerminateSequenceResponse)
          TerminateSequenceResponseSerializer
             .serialize((TerminateSequenceResponse)object, provider, soapMessage);
-      
-      throw new IllegalArgumentException();
    }
 
-   public static void deserialize(AbstractSerializable object, SOAPMessage soapMessage)
+   public static void deserialize(AbstractSerializable object, SOAPMessage soapMessage) throws ReliableMessagingException
    {
       Provider provider = object.getProvider();
       
@@ -118,8 +117,6 @@ final class SerializationRepository
       if (object instanceof TerminateSequenceResponse)
          TerminateSequenceResponseSerializer
             .deserialize((TerminateSequenceResponse)object, provider, soapMessage);
-      
-      throw new IllegalArgumentException();
    }
    
 }

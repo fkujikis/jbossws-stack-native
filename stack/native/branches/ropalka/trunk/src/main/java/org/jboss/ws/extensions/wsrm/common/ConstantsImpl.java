@@ -32,9 +32,9 @@ import org.jboss.ws.extensions.wsrm.spi.Constants;
  */
 public final class ConstantsImpl implements Constants
 {
-   // default namespace prefix
-   private static final String WSRM_PREFIX = "wsrm";
-   // heavily used constants
+   
+   private final String prefix;
+   private final String namespaceURI;
    private final QName acceptQName;
    private final QName ackRequestedQName;
    private final QName acknowledgementRangeQName;
@@ -65,40 +65,55 @@ public final class ConstantsImpl implements Constants
    private final QName terminateSequenceResponseQName;
    private final QName upperQName;
    
-   public ConstantsImpl(String namespace)
+   public ConstantsImpl(String prefix, String namespaceURI)
    {
-      if ((namespace == null) || (namespace.trim().equals("")))
-         throw new IllegalArgumentException();
-         
-      acceptQName = new QName(WSRM_PREFIX, namespace, "Accept");
-      ackRequestedQName = new QName(WSRM_PREFIX, namespace, "AckRequested");
-      acknowledgementRangeQName = new QName(WSRM_PREFIX, namespace, "AcknowledgementRange");
-      acksToQName = new QName(WSRM_PREFIX, namespace, "AcksTo");
-      closeSequenceQName = new QName(WSRM_PREFIX, namespace, "CloseSequence");
-      closeSequenceResponseQName = new QName(WSRM_PREFIX, namespace, "CloseSequenceResponse");
-      createSequenceQName = new QName(WSRM_PREFIX, namespace, "CreateSequence");
-      createSequenceResponseQName = new QName(WSRM_PREFIX, namespace, "CreateSequenceResponse");
-      detailQName = new QName(WSRM_PREFIX, namespace, "Detail");
-      endpointQName = new QName(WSRM_PREFIX, namespace, "Endpoint");
-      expiresQName = new QName(WSRM_PREFIX, namespace, "Expires");
-      faultCodeQName = new QName(WSRM_PREFIX, namespace, "FaultCode");
-      finalQName = new QName(WSRM_PREFIX, namespace, "Final");
-      identifierQName = new QName(WSRM_PREFIX, namespace, "Identifier");
-      incompleteSequenceBehaviorQName = new QName(WSRM_PREFIX, namespace, "IncompleteSequenceBehavior");
-      lastMessageNumberQName = new QName(WSRM_PREFIX, namespace, "LastMessageNumber");
-      lastMessageQName = new QName(WSRM_PREFIX, namespace, "LastMessage");
-      lastMsgNumberQName = new QName(WSRM_PREFIX, namespace, "LastMsgNumber");
-      lowerQName = new QName(WSRM_PREFIX, namespace, "Lower");
-      messageNumberQName = new QName(WSRM_PREFIX, namespace, "MessageNumber");
-      nackQName = new QName(WSRM_PREFIX, namespace, "Nack");
-      noneQName = new QName(WSRM_PREFIX, namespace, "None");
-      offerQName = new QName(WSRM_PREFIX, namespace, "Offer");
-      sequenceAcknowledgementQName = new QName(WSRM_PREFIX, namespace, "SequenceAcknowledgement");
-      sequenceFaultQName = new QName(WSRM_PREFIX, namespace, "SequenceFault");
-      equenceQName = new QName(WSRM_PREFIX, namespace, "Sequence");
-      terminateSequenceQName = new QName(WSRM_PREFIX, namespace, "TerminateSequence");
-      terminateSequenceResponseQName = new QName(WSRM_PREFIX, namespace, "TerminateSequenceResponse");
-      upperQName = new QName(WSRM_PREFIX, namespace, "Upper");
+      this.prefix = prefix;
+      this.namespaceURI = namespaceURI;
+      this.acceptQName = new QName(namespaceURI, "Accept", prefix);
+      this.ackRequestedQName = new QName(namespaceURI, "AckRequested", prefix);
+      this.acknowledgementRangeQName = new QName(namespaceURI, "AcknowledgementRange", prefix);
+      this.acksToQName = new QName(namespaceURI, "AcksTo", prefix);
+      this.closeSequenceQName = new QName(namespaceURI, "CloseSequence", prefix);
+      this.closeSequenceResponseQName = new QName(namespaceURI, "CloseSequenceResponse", prefix);
+      this.createSequenceQName = new QName(namespaceURI, "CreateSequence", prefix);
+      this.createSequenceResponseQName = new QName(namespaceURI, "CreateSequenceResponse", prefix);
+      this.detailQName = new QName(namespaceURI, "Detail", prefix);
+      this.endpointQName = new QName(namespaceURI, "Endpoint", prefix);
+      this.expiresQName = new QName(namespaceURI, "Expires", prefix);
+      this.faultCodeQName = new QName(namespaceURI, "FaultCode", prefix);
+      this.finalQName = new QName(namespaceURI, "Final", prefix);
+      this.identifierQName = new QName(namespaceURI, "Identifier", prefix);
+      this.incompleteSequenceBehaviorQName = new QName(namespaceURI, "IncompleteSequenceBehavior", prefix);
+      this.lastMessageNumberQName = new QName(namespaceURI, "LastMessageNumber", prefix);
+      this.lastMessageQName = new QName(namespaceURI, "LastMessage", prefix);
+      this.lastMsgNumberQName = new QName(namespaceURI, "LastMsgNumber", prefix);
+      this.lowerQName = new QName(namespaceURI, "Lower", prefix);
+      this.messageNumberQName = new QName(namespaceURI, "MessageNumber", prefix);
+      this.nackQName = new QName(namespaceURI, "Nack", prefix);
+      this.noneQName = new QName(namespaceURI, "None", prefix);
+      this.offerQName = new QName(namespaceURI, "Offer", prefix);
+      this.sequenceAcknowledgementQName = new QName(namespaceURI, "SequenceAcknowledgement", prefix);
+      this.sequenceFaultQName = new QName(namespaceURI, "SequenceFault", prefix);
+      this.equenceQName = new QName(namespaceURI, "Sequence", prefix);
+      this.terminateSequenceQName = new QName(namespaceURI, "TerminateSequence", prefix);
+      this.terminateSequenceResponseQName = new QName(namespaceURI, "TerminateSequenceResponse", prefix);
+      this.upperQName = new QName(namespaceURI, "Upper", prefix);
+   }
+   
+   /**
+    * @see org.jboss.ws.extensions.wsrm.spi.Constants#getPrefix()
+    */
+   public final String getPrefix()
+   {
+      return this.prefix;
+   }
+   
+   /**
+    * @see org.jboss.ws.extensions.wsrm.spi.Constants#getNamespaceURI()
+    */
+   public final String getNamespaceURI()
+   {
+      return this.namespaceURI;
    }
    
    /**
@@ -106,7 +121,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getAcceptQName()
    {
-      return acceptQName;
+      return this.acceptQName;
    }
 
    /**
@@ -114,7 +129,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getAckRequestedQName()
    {
-      return ackRequestedQName;
+      return this.ackRequestedQName;
    }
 
    /**
@@ -122,7 +137,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getAcknowledgementRangeQName()
    {
-      return acknowledgementRangeQName;
+      return this.acknowledgementRangeQName;
    }
 
    /**
@@ -130,7 +145,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getAcksToQName()
    {
-      return acksToQName;
+      return this.acksToQName;
    }
 
    /**
@@ -138,7 +153,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getCloseSequenceQName()
    {
-      return closeSequenceQName;
+      return this.closeSequenceQName;
    }
 
    /**
@@ -146,7 +161,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getCloseSequenceResponseQName()
    {
-      return closeSequenceResponseQName;
+      return this.closeSequenceResponseQName;
    }
 
    /**
@@ -154,7 +169,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getCreateSequenceQName()
    {
-      return createSequenceQName;
+      return this.createSequenceQName;
    }
 
    /**
@@ -162,7 +177,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getCreateSequenceResponseQName()
    {
-      return createSequenceResponseQName;
+      return this.createSequenceResponseQName;
    }
 
    /**
@@ -170,7 +185,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getDetailQName()
    {
-      return detailQName;
+      return this.detailQName;
    }
 
    /**
@@ -178,7 +193,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getEndpointQName()
    {
-      return endpointQName;
+      return this.endpointQName;
    }
 
    /**
@@ -186,7 +201,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getExpiresQName()
    {
-      return expiresQName;
+      return this.expiresQName;
    }
 
    /**
@@ -194,7 +209,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getFaultCodeQName()
    {
-      return faultCodeQName;
+      return this.faultCodeQName;
    }
 
    /**
@@ -202,7 +217,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getFinalQName()
    {
-      return finalQName;
+      return this.finalQName;
    }
 
    /**
@@ -210,7 +225,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getIdentifierQName()
    {
-      return identifierQName;
+      return this.identifierQName;
    }
 
    /**
@@ -218,7 +233,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getIncompleteSequenceBehaviorQName()
    {
-      return incompleteSequenceBehaviorQName;
+      return this.incompleteSequenceBehaviorQName;
    }
 
    /**
@@ -226,7 +241,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getLastMessageNumberQName()
    {
-      return lastMessageNumberQName;
+      return this.lastMessageNumberQName;
    }
 
    /**
@@ -234,7 +249,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getLastMessageQName()
    {
-      return lastMessageQName;
+      return this.lastMessageQName;
    }
 
    /**
@@ -242,7 +257,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getLastMsgNumberQName()
    {
-      return lastMsgNumberQName;
+      return this.lastMsgNumberQName;
    }
 
    /**
@@ -250,7 +265,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getLowerQName()
    {
-      return lowerQName;
+      return this.lowerQName;
    }
 
    /**
@@ -258,7 +273,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getMessageNumberQName()
    {
-      return messageNumberQName;
+      return this.messageNumberQName;
    }
 
    /**
@@ -266,7 +281,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getNackQName()
    {
-      return nackQName;
+      return this.nackQName;
    }
 
    /**
@@ -274,7 +289,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getNoneQName()
    {
-      return noneQName;
+      return this.noneQName;
    }
 
    /**
@@ -282,7 +297,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getOfferQName()
    {
-      return offerQName;
+      return this.offerQName;
    }
 
    /**
@@ -290,7 +305,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getSequenceAcknowledgementQName()
    {
-      return sequenceAcknowledgementQName;
+      return this.sequenceAcknowledgementQName;
    }
 
    /**
@@ -298,7 +313,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getSequenceFaultQName()
    {
-      return sequenceFaultQName;
+      return this.sequenceFaultQName;
    }
 
    /**
@@ -306,7 +321,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getSequenceQName()
    {
-      return equenceQName;
+      return this.equenceQName;
    }
 
    /**
@@ -314,7 +329,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getTerminateSequenceQName()
    {
-      return terminateSequenceQName;
+      return this.terminateSequenceQName;
    }
 
    /**
@@ -322,7 +337,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getTerminateSequenceResponseQName()
    {
-      return terminateSequenceResponseQName;
+      return this.terminateSequenceResponseQName;
    }
 
    /**
@@ -330,7 +345,7 @@ public final class ConstantsImpl implements Constants
     */
    public final QName getUpperQName()
    {
-      return upperQName;
+      return this.upperQName;
    }
 
 }

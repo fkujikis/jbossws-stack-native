@@ -22,6 +22,8 @@
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
 import javax.xml.soap.SOAPMessage;
+
+import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
@@ -41,7 +43,7 @@ public abstract class AbstractSerializable implements Serializable
    /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#deserializeFrom(javax.xml.soap.SOAPMessage)
     */
-   public final void deserializeFrom(SOAPMessage soapMessage)
+   public final void deserializeFrom(SOAPMessage soapMessage) throws ReliableMessagingException
    {
       SerializationRepository.deserialize(this, soapMessage);
       validate(); // finally ensure that object is in correct state
@@ -50,7 +52,7 @@ public abstract class AbstractSerializable implements Serializable
    /*
     * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable#serializeTo(javax.xml.soap.SOAPMessage)
     */
-   public final void serializeTo(SOAPMessage soapMessage)
+   public final void serializeTo(SOAPMessage soapMessage) throws ReliableMessagingException
    {
       validate(); // ensure object is in correct state first
       SerializationRepository.serialize(this, soapMessage);

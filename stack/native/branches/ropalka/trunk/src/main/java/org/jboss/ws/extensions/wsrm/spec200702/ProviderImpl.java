@@ -34,7 +34,7 @@ public final class ProviderImpl extends Provider
 {
    
    private static final String IMPLEMENTATION_VERSION = "http://docs.oasis-open.org/ws-rx/wsrm/200702";
-   private static final Constants CONSTANTS = new ConstantsImpl(IMPLEMENTATION_VERSION);
+   private static final Constants CONSTANTS = new ConstantsImpl("wsrm11",IMPLEMENTATION_VERSION);
    private static final Provider INSTANCE = new ProviderImpl();
    
    private ProviderImpl()

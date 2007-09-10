@@ -34,7 +34,7 @@ public final class ProviderImpl extends Provider
 {
    
    private static final String IMPLEMENTATION_VERSION = "http://schemas.xmlsoap.org/ws/2005/02/rm";
-   private static final Constants CONSTANTS = new ConstantsImpl(IMPLEMENTATION_VERSION);
+   private static final Constants CONSTANTS = new ConstantsImpl("wsrm10", IMPLEMENTATION_VERSION);
    private static final Provider INSTANCE = new ProviderImpl();
    
    private ProviderImpl()

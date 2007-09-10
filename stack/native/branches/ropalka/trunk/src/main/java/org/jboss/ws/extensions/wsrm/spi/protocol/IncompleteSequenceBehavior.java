@@ -45,17 +45,43 @@ public enum IncompleteSequenceBehavior
     * A value of <b>&quot;DiscardEntireSequence&quot;</b> indicates that the entire Sequence MUST be discarded if the
     * Sequence is closed, or terminated, when there are one or more gaps in the final <b>SequenceAcknowledgement</b>.
     */
-   DISCARD_ENTIRE_SEQUENCE,
+   DISCARD_ENTIRE_SEQUENCE("DiscardEntireSequence"),
    
    /**
     * A value of <b>&quot;DiscardFollowingFirstGap&quot;</b> indicates that messages in the Sequence beyond the first
     * gap MUST be discarded when there are one or more gaps in the final <b>SequenceAcknowledgement</b>.
     */
-   DISCARD_FOLLOWING_FIRST_GAP,
+   DISCARD_FOLLOWING_FIRST_GAP("DiscardFollowingFirstGap"),
    
    /**
     * The default value of <b>&quot;NoDiscard&quot;</b> indicates that no acknowledged messages in the Sequence will
     * be discarded.
     */
-   NO_DISCARD
+   NO_DISCARD("NoDiscard");
+   
+   private final String value;
+   
+   IncompleteSequenceBehavior(String value)
+   {
+      this.value = value;
+   }
+   
+   public String toString()
+   {
+      return value;
+   }
+   
+   /**
+    * Returns this enum instance if value string matches, <b>null</b> otherwise
+    * @param stringValue value in the form of string
+    * @return enum or null if string not recognized
+    */
+   public static IncompleteSequenceBehavior getValue(String stringValue)
+   {
+      if (DISCARD_ENTIRE_SEQUENCE.toString().equals(stringValue)) return DISCARD_ENTIRE_SEQUENCE;
+      if (DISCARD_FOLLOWING_FIRST_GAP.toString().equals(stringValue)) return DISCARD_FOLLOWING_FIRST_GAP;
+      if (NO_DISCARD.toString().equals(stringValue)) return NO_DISCARD;
+      return null;
+   }
+   
 }

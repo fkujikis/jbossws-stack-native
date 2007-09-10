@@ -19,35 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm.spi.protocol;
+package org.jboss.ws.extensions.wsrm;
 
-import javax.xml.soap.SOAPMessage;
-
-import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import javax.xml.ws.WebServiceException;
 
 /**
- * This interface identifies classes that are de/serializable from/to SOAP messages
- *
+ * RM exception heavily used by RM framework
  * @author richard.opalka@jboss.com
  */
-public interface Serializable
+public class ReliableMessagingException extends WebServiceException
 {
-   
-   /**
-    * Serialize object instance to SOAP message
-    * @param soapMessage 
-    */
-   void serializeTo(SOAPMessage soapMessage) throws ReliableMessagingException;
-   
-   /**
-    * Deserialize object instance from SOAP message
-    * @param soapMessage
-    */
-   void deserializeFrom(SOAPMessage soapMessage) throws ReliableMessagingException;
-   
-   /**
-    * Validate object state if everything is all right
-    */
-   void validate();
-   
+
+   public ReliableMessagingException()
+   {
+      super();
+   }
+
+   public ReliableMessagingException(String message, Throwable cause)
+   {
+      super(message, cause);
+   }
+
+   public ReliableMessagingException(String message)
+   {
+      super(message);
+   }
+
+   public ReliableMessagingException(Throwable cause)
+   {
+      super(cause);
+   }
+
 }

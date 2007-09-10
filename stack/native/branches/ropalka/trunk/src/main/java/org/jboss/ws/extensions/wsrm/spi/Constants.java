@@ -33,6 +33,18 @@ public interface Constants
 
    /**
     * getter
+    * @return wsrm <b>prefix</b>
+    */
+   String getPrefix();
+   
+   /**
+    * getter
+    * @return wsrm <b>namespace</b>
+    */
+   String getNamespaceURI();
+   
+   /**
+    * getter
     * @return <b>LastMessage</b> QName
     */
    QName getLastMessageQName();

@@ -21,11 +21,23 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
-import javax.xml.soap.SOAPMessage;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.*;
 
-import org.jboss.util.NotImplementedException;
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPBody;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.addressing.AddressingBuilder;
+import javax.xml.ws.addressing.AddressingConstants;
+
+import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence;
+import org.jboss.ws.extensions.wsrm.spi.protocol.IncompleteSequenceBehavior;
+import org.w3c.dom.Element;
 
 /**
  * <b>CreateSequence</b> object de/serializer
@@ -34,6 +46,9 @@ import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence;
 final class CreateSequenceSerializer
 {
 
+   private static final AddressingConstants ADDRESSING_CONSTANTS = 
+      AddressingBuilder.getAddressingBuilder().newAddressingConstants();
+   
    private CreateSequenceSerializer()
    {
       // no instances
@@ -46,10 +61,84 @@ final class CreateSequenceSerializer
     * @param soapMessage soap message from which object will be deserialized
     */
    public static void deserialize(CreateSequence object, Provider provider, SOAPMessage soapMessage)
+   throws ReliableMessagingException
    {
-      throw new NotImplementedException();
-   }
+      try
+      {
+         SOAPBody soapBody = soapMessage.getSOAPPart().getEnvelope().getBody();
+         Constants wsrmConstants = provider.getConstants();
+         
+         // read wsrm:CreateSequence
+         QName createSequenceQName = wsrmConstants.getCreateSequenceQName();
+         Element createSequenceElement = getRequiredElement(soapBody, createSequenceQName, "soap body");
 
+         // read wsrm:AcksTo
+         QName acksToQName = wsrmConstants.getAcksToQName();
+         Element acksToElement = getRequiredElement(createSequenceElement, acksToQName, createSequenceQName);
+         QName addressQName = ADDRESSING_CONSTANTS.getAddressQName();
+         Element acksToAddressElement = getRequiredElement(acksToElement, addressQName, acksToQName);
+         String acksToAddress = getRequiredTextContent(acksToAddressElement, addressQName);
+         object.setAcksTo(acksToAddress);
+
+         // read wsrm:Expires
+         QName expiresQName = wsrmConstants.getExpiresQName();
+         Element expiresElement = getOptionalElement(createSequenceElement, expiresQName, createSequenceQName);
+         if (expiresElement != null)
+         {
+            String duration = getRequiredTextContent(expiresElement, expiresQName);
+            object.setExpires(duration);
+         }
+
+         // read wsrm:Offer
+         QName offerQName = wsrmConstants.getOfferQName();
+         Element offerElement = getOptionalElement(createSequenceElement, offerQName, createSequenceQName);
+         if (offerElement != null)
+         {
+            CreateSequence.Offer offer = object.newOffer();
+
+            // read wsrm:identifier
+            QName identifierQName = wsrmConstants.getIdentifierQName();
+            Element identifierElement = getRequiredElement(offerElement, identifierQName, offerQName);
+            String identifier = getRequiredTextContent(identifierElement, identifierQName);
+            offer.setIdentifier(identifier);
+            
+            // read wsrm:Endpoint
+            QName endpointQName = wsrmConstants.getEndpointQName();
+            Element endpointElement = getOptionalElement(offerElement, endpointQName, offerQName);
+            if (endpointElement != null)
+            {
+               Element endpointAddressElement = getRequiredElement(endpointElement, addressQName, endpointQName);
+               String endpointAddress = getRequiredTextContent(endpointAddressElement, addressQName);
+               offer.setEndpoint(endpointAddress);
+            }
+            
+            // read wsrm:Expires
+            Element offerExpiresElement = getOptionalElement(offerElement, expiresQName, offerQName);
+            if (offerExpiresElement != null)
+            {
+               String duration = getRequiredTextContent(offerExpiresElement, expiresQName);
+               offer.setExpires(duration);
+            }
+            
+            // read wsrm:IncompleteSequenceBehavior
+            QName behaviorQName = wsrmConstants.getIncompleteSequenceBehaviorQName();
+            Element behaviorElement = getOptionalElement(offerElement, behaviorQName, offerQName);
+            if (behaviorElement != null)
+            {
+               String behaviorString = getRequiredTextContent(behaviorElement, behaviorQName);
+               offer.setIncompleteSequenceBehavior(IncompleteSequenceBehavior.getValue(behaviorString));
+            }
+            
+            // set created offer
+            object.setOffer(offer);
+         }
+      }
+      catch (SOAPException se)
+      {
+         throw new ReliableMessagingException("Unable to deserialize RM message", se);
+      }
+   }
+   
    /**
     * Serialize <b>CreateSequence</b> using <b>provider</b> to the <b>soapMessage</b>
     * @param object to be serialized
@@ -57,8 +146,76 @@ final class CreateSequenceSerializer
     * @param soapMessage soap message to which object will be serialized
     */
    public static void serialize(CreateSequence object, Provider provider, SOAPMessage soapMessage)
+   throws ReliableMessagingException
    {
-      throw new NotImplementedException();
+      try
+      {
+         SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
+         Constants wsrmConstants = provider.getConstants();
+         
+         // Add xmlns:wsrm declaration
+         soapEnvelope.addNamespaceDeclaration(wsrmConstants.getPrefix(), wsrmConstants.getNamespaceURI());
+
+         // write wsrm:CreateSequence
+         QName createSequenceQName = wsrmConstants.getCreateSequenceQName(); 
+         SOAPElement createSequenceElement = soapEnvelope.getBody().addChildElement(createSequenceQName);
+         
+         // write wsrm:AcksTo
+         QName acksToQName = wsrmConstants.getAcksToQName();
+         QName addressQName = ADDRESSING_CONSTANTS.getAddressQName();
+         createSequenceElement.addChildElement(acksToQName)
+            .addChildElement(addressQName)
+               .setValue(object.getAcksTo());
+         
+         if (object.getExpires() != null)
+         {
+            // write wsrm:Expires
+            QName expiresQName = wsrmConstants.getExpiresQName();
+            createSequenceElement.addChildElement(expiresQName).setValue(object.getExpires());
+         }
+         
+         if (object.getOffer() != null)
+         {
+            CreateSequence.Offer offer = object.getOffer();
+            
+            // write wsrm:Offer
+            QName offerQName = wsrmConstants.getOfferQName();
+            SOAPElement offerElement = createSequenceElement.addChildElement(offerQName);
+
+            // write wsrm:Identifier
+            QName identifierQName = wsrmConstants.getIdentifierQName();
+            offerElement.addChildElement(identifierQName).setValue(offer.getIdentifier());
+            
+            if (offer.getEndpoint() != null)
+            {
+               // write wsrm:Endpoint
+               QName endpointQName = wsrmConstants.getEndpointQName();
+               offerElement.addChildElement(endpointQName)
+                  .addChildElement(addressQName)
+                     .setValue(offer.getEndpoint());
+            }
+            
+            if (offer.getExpires() != null)
+            {
+               // write wsrm:Expires
+               QName expiresQName = wsrmConstants.getExpiresQName();
+               offerElement.addChildElement(expiresQName).setValue(offer.getExpires());
+            }
+            
+            if (offer.getIncompleteSequenceBehavior() != null)
+            {
+               // write wsrm:IncompleteSequenceBehavior
+               IncompleteSequenceBehavior behavior = offer.getIncompleteSequenceBehavior();
+               QName behaviorQName = wsrmConstants.getIncompleteSequenceBehaviorQName();
+               SOAPElement behaviorElement = offerElement.addChildElement(behaviorQName);
+               behaviorElement.setValue(behavior.toString());
+            }
+         }
+      }
+      catch (SOAPException se)
+      {
+         throw new ReliableMessagingException("Unable to serialize RM message", se);
+      }
    }
 
 }
