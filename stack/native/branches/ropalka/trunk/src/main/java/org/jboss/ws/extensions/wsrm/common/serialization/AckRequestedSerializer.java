@@ -21,10 +21,19 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getOptionalElement;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredElement;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredTextContent;
+
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPHeader;
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
 
@@ -49,7 +58,40 @@ final class AckRequestedSerializer
    public static void deserialize(AckRequested object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
-      throw new NotImplementedException();
+      try
+      {
+         SOAPHeader soapHeader = soapMessage.getSOAPPart().getEnvelope().getHeader();
+         Constants wsrmConstants = provider.getConstants();
+         
+         // read wsrm:AckRequested
+         QName ackRequestedQName = wsrmConstants.getAckRequestedQName();
+         SOAPElement ackRequestedElement = getRequiredElement(soapHeader, ackRequestedQName, "soap header");
+
+         // read wsrm:Identifier
+         QName identifierQName = wsrmConstants.getIdentifierQName();
+         SOAPElement identifierElement = getRequiredElement(ackRequestedElement, identifierQName, ackRequestedQName);
+         String identifier = getRequiredTextContent(identifierElement, identifierQName);
+         object.setIdentifier(identifier);
+         
+         // read wsrm:MessageNumber
+         QName messageNumberQName = wsrmConstants.getMessageNumberQName();
+         SOAPElement messageNumberElement = getOptionalElement(ackRequestedElement, messageNumberQName, ackRequestedQName);
+         if (messageNumberElement != null)
+         {
+            try
+            {
+               long messageNumber = Long.valueOf(getRequiredTextContent(messageNumberElement, messageNumberQName));
+               object.setMessageNumber(messageNumber);
+            } catch (NumberFormatException nfe)
+            {
+               throw new ReliableMessagingException("Unable to parse MessageNumber element text content", nfe);
+            }
+         }
+      }
+      catch (SOAPException se)
+      {
+         throw new ReliableMessagingException("Unable to deserialize RM message", se);
+      }
    }
 
    /**
@@ -61,7 +103,34 @@ final class AckRequestedSerializer
    public static void serialize(AckRequested object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
-      throw new NotImplementedException();
+      try
+      {
+         SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
+         Constants wsrmConstants = provider.getConstants();
+         
+         // Add xmlns:wsrm declaration
+         soapEnvelope.addNamespaceDeclaration(wsrmConstants.getPrefix(), wsrmConstants.getNamespaceURI());
+
+         // write wsrm:AckRequested
+         QName ackRequestedQName = wsrmConstants.getAckRequestedQName(); 
+         SOAPElement ackRequestedElement = soapEnvelope.getHeader().addChildElement(ackRequestedQName);
+
+         // write wsrm:Identifier
+         QName identifierQName = wsrmConstants.getIdentifierQName();
+         ackRequestedElement.addChildElement(identifierQName).setValue(object.getIdentifier());
+         
+         if (object.getMessageNumber() != 0)
+         {
+            // write wsrm:MessageNumber
+            QName messageNumberQName = wsrmConstants.getMessageNumberQName();
+            SOAPElement messageNumberElement = ackRequestedElement.addChildElement(messageNumberQName);
+            messageNumberElement.setValue(String.valueOf(object.getMessageNumber()));
+         }
+      }
+      catch (SOAPException se)
+      {
+         throw new ReliableMessagingException("Unable to serialize RM message", se);
+      }
    }
 
 }

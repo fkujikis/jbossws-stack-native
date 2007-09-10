@@ -21,10 +21,19 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getOptionalElement;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredElement;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredTextContent;
+
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPHeader;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
 
@@ -49,7 +58,45 @@ final class SequenceSerializer
    public static void deserialize(Sequence object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
-      throw new NotImplementedException();
+      try
+      {
+         SOAPHeader soapHeader = soapMessage.getSOAPPart().getEnvelope().getHeader();
+         Constants wsrmConstants = provider.getConstants();
+         
+         // read wsrm:Sequence
+         QName sequenceQName = wsrmConstants.getSequenceQName();
+         SOAPElement sequenceElement = getRequiredElement(soapHeader, sequenceQName, "soap header");
+
+         // read wsrm:Identifier
+         QName identifierQName = wsrmConstants.getIdentifierQName();
+         SOAPElement identifierElement = getRequiredElement(sequenceElement, identifierQName, sequenceQName);
+         String identifier = getRequiredTextContent(identifierElement, identifierQName);
+         object.setIdentifier(identifier);
+         
+         // read wsrm:MessageNumber
+         QName messageNumberQName = wsrmConstants.getMessageNumberQName();
+         SOAPElement messageNumberElement = getRequiredElement(sequenceElement, messageNumberQName, sequenceQName);
+         try
+         {
+            long messageNumber = Long.valueOf(getRequiredTextContent(messageNumberElement, messageNumberQName));
+            object.setMessageNumber(messageNumber);
+         } catch (NumberFormatException nfe)
+         {
+            throw new ReliableMessagingException("Unable to parse MessageNumber element text content", nfe);
+         }
+         
+         // read wsrm:LastMessage
+         QName lastMessageQName = wsrmConstants.getLastMessageQName();
+         SOAPElement lastMessageElement = getOptionalElement(sequenceElement, lastMessageQName, sequenceQName);
+         if (lastMessageElement != null)
+         {
+            object.setLastMessage();
+         }
+      }
+      catch (SOAPException se)
+      {
+         throw new ReliableMessagingException("Unable to deserialize RM message", se);
+      }
    }
 
    /**
@@ -61,7 +108,38 @@ final class SequenceSerializer
    public static void serialize(Sequence object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
-      throw new NotImplementedException();
+      try
+      {
+         SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
+         Constants wsrmConstants = provider.getConstants();
+         
+         // Add xmlns:wsrm declaration
+         soapEnvelope.addNamespaceDeclaration(wsrmConstants.getPrefix(), wsrmConstants.getNamespaceURI());
+
+         // write wsrm:Sequence
+         QName sequenceQName = wsrmConstants.getSequenceQName(); 
+         SOAPElement sequenceElement = soapEnvelope.getHeader().addChildElement(sequenceQName);
+
+         // write wsrm:Identifier
+         QName identifierQName = wsrmConstants.getIdentifierQName();
+         sequenceElement.addChildElement(identifierQName).setValue(object.getIdentifier());
+         
+         // write wsrm:MessageNumber
+         QName messageNumberQName = wsrmConstants.getMessageNumberQName();
+         SOAPElement messageNumberElement = sequenceElement.addChildElement(messageNumberQName);
+         messageNumberElement.setValue(String.valueOf(object.getMessageNumber()));
+         
+         if (object.isLastMessage())
+         {
+            // write wsrm:LastMessage
+            QName lastMessageQName = wsrmConstants.getLastMessageQName();
+            sequenceElement.addChildElement(lastMessageQName);
+         }
+      }
+      catch (SOAPException se)
+      {
+         throw new ReliableMessagingException("Unable to serialize RM message", se);
+      }
    }
 
 }
