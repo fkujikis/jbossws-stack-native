@@ -83,9 +83,9 @@ public interface CreateSequenceResponse extends Serializable
    /**
     * This element, if present, specifies the behavior that the destination will exhibit upon the closure or
     * termination of an incomplete Sequence.
-    * @param incompletSequenceBehaviour
+    * @param incompleteSequenceBehavior
     */
-   void setIncompleteSequenceBehavior(IncompleteSequenceBehavior incompletSequenceBehaviour);
+   void setIncompleteSequenceBehavior(IncompleteSequenceBehavior incompleteSequenceBehavior);
    
    /**
     * Getter

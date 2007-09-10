@@ -21,10 +21,18 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredElement;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredTextContent;
+
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPBody;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequenceResponse;
 
@@ -49,7 +57,25 @@ final class CloseSequenceResponseSerializer
    public static void deserialize(CloseSequenceResponse object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
-      throw new NotImplementedException();
+      try
+      {
+         SOAPBody soapBody = soapMessage.getSOAPPart().getEnvelope().getBody();
+         Constants wsrmConstants = provider.getConstants();
+         
+         // read wsrm:CloseSequenceResponse
+         QName closeSequenceResponseQName = wsrmConstants.getCloseSequenceResponseQName();
+         SOAPElement closeSequenceResponseElement = getRequiredElement(soapBody, closeSequenceResponseQName, "soap body");
+
+         // read wsrm:Identifier
+         QName identifierQName = wsrmConstants.getIdentifierQName();
+         SOAPElement identifierElement = getRequiredElement(closeSequenceResponseElement, identifierQName, closeSequenceResponseQName);
+         String identifier = getRequiredTextContent(identifierElement, identifierQName);
+         object.setIdentifier(identifier);
+      }
+      catch (SOAPException se)
+      {
+         throw new ReliableMessagingException("Unable to deserialize RM message", se);
+      }
    }
 
    /**
@@ -61,7 +87,26 @@ final class CloseSequenceResponseSerializer
    public static void serialize(CloseSequenceResponse object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
-      throw new NotImplementedException();
+      try
+      {
+         SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
+         Constants wsrmConstants = provider.getConstants();
+         
+         // Add xmlns:wsrm declaration
+         soapEnvelope.addNamespaceDeclaration(wsrmConstants.getPrefix(), wsrmConstants.getNamespaceURI());
+
+         // write wsrm:CloseSequenceResponse
+         QName closeSequenceResponseQName = wsrmConstants.getCloseSequenceResponseQName(); 
+         SOAPElement closeSequenceResponseElement = soapEnvelope.getBody().addChildElement(closeSequenceResponseQName);
+
+         // write wsrm:Identifier
+         QName identifierQName = wsrmConstants.getIdentifierQName();
+         closeSequenceResponseElement.addChildElement(identifierQName).setValue(object.getIdentifier());
+      }
+      catch (SOAPException se)
+      {
+         throw new ReliableMessagingException("Unable to serialize RM message", se);
+      }
    }
 
 }

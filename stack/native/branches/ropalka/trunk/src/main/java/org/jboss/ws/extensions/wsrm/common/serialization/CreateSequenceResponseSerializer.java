@@ -21,12 +21,24 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
-import javax.xml.soap.SOAPMessage;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getOptionalElement;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredElement;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredTextContent;
 
-import org.jboss.util.NotImplementedException;
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPBody;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.addressing.AddressingBuilder;
+import javax.xml.ws.addressing.AddressingConstants;
+
 import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
+import org.jboss.ws.extensions.wsrm.spi.protocol.IncompleteSequenceBehavior;
 
 /**
  * <b>CreateSequenceResponse</b> object de/serializer
@@ -35,6 +47,9 @@ import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
 final class CreateSequenceResponseSerializer
 {
 
+   private static final AddressingConstants ADDRESSING_CONSTANTS = 
+      AddressingBuilder.getAddressingBuilder().newAddressingConstants();
+   
    private CreateSequenceResponseSerializer()
    {
       // no instances
@@ -49,7 +64,61 @@ final class CreateSequenceResponseSerializer
    public static void deserialize(CreateSequenceResponse object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
-      throw new NotImplementedException();
+      try
+      {
+         SOAPBody soapBody = soapMessage.getSOAPPart().getEnvelope().getBody();
+         Constants wsrmConstants = provider.getConstants();
+         
+         // read wsrm:CreateSequenceResponse
+         QName createSequenceResponseQName = wsrmConstants.getCreateSequenceResponseQName();
+         SOAPElement createSequenceResponseElement = getRequiredElement(soapBody, createSequenceResponseQName, "soap body");
+
+         // read wsrm:identifier
+         QName identifierQName = wsrmConstants.getIdentifierQName();
+         SOAPElement identifierElement = getRequiredElement(createSequenceResponseElement, identifierQName, createSequenceResponseQName);
+         String identifier = getRequiredTextContent(identifierElement, identifierQName);
+         object.setIdentifier(identifier);
+         
+         // read wsrm:Expires
+         QName expiresQName = wsrmConstants.getExpiresQName();
+         SOAPElement expiresElement = getOptionalElement(createSequenceResponseElement, expiresQName, createSequenceResponseQName);
+         if (expiresElement != null)
+         {
+            String duration = getRequiredTextContent(expiresElement, expiresQName);
+            object.setExpires(duration);
+         }
+
+         // read wsrm:IncompleteSequenceBehavior
+         QName behaviorQName = wsrmConstants.getIncompleteSequenceBehaviorQName();
+         SOAPElement behaviorElement = getOptionalElement(createSequenceResponseElement, behaviorQName, createSequenceResponseQName);
+         if (behaviorElement != null)
+         {
+            String behaviorString = getRequiredTextContent(behaviorElement, behaviorQName);
+            object.setIncompleteSequenceBehavior(IncompleteSequenceBehavior.getValue(behaviorString));
+         }
+         
+         // read wsrm:Accept
+         QName acceptQName = wsrmConstants.getAcceptQName();
+         SOAPElement acceptElement = getOptionalElement(createSequenceResponseElement, acceptQName, createSequenceResponseQName);
+         if (acceptElement != null)
+         {
+            CreateSequenceResponse.Accept accept = object.newAccept();
+            
+            // read wsrm:AcksTo
+            QName acksToQName = wsrmConstants.getAcksToQName();
+            SOAPElement acksToElement = getRequiredElement(acceptElement, acksToQName, acceptQName);
+            QName addressQName = ADDRESSING_CONSTANTS.getAddressQName();
+            SOAPElement acksToAddressElement = getRequiredElement(acksToElement, addressQName, acksToQName);
+            String acksToAddress = getRequiredTextContent(acksToAddressElement, addressQName);
+            accept.setAcksTo(acksToAddress);
+
+            object.setAccept(accept);
+         }
+      }
+      catch (SOAPException se)
+      {
+         throw new ReliableMessagingException("Unable to deserialize RM message", se);
+      }
    }
 
    /**
@@ -61,7 +130,56 @@ final class CreateSequenceResponseSerializer
    public static void serialize(CreateSequenceResponse object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
-      throw new NotImplementedException();
+      try 
+      {
+         SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
+         Constants wsrmConstants = provider.getConstants();
+         
+         // Add xmlns:wsrm declaration
+         soapEnvelope.addNamespaceDeclaration(wsrmConstants.getPrefix(), wsrmConstants.getNamespaceURI());
+
+         // write wsrm:CreateSequenceResponse
+         QName createSequenceResponseQName = wsrmConstants.getCreateSequenceResponseQName(); 
+         SOAPElement createSequenceResponseElement = soapEnvelope.getBody().addChildElement(createSequenceResponseQName);
+
+         // write wsrm:Identifier
+         QName identifierQName = wsrmConstants.getIdentifierQName();
+         createSequenceResponseElement.addChildElement(identifierQName).setValue(object.getIdentifier());
+         
+         if (object.getExpires() != null)
+         {
+            // write wsrm:Expires
+            QName expiresQName = wsrmConstants.getExpiresQName();
+            createSequenceResponseElement.addChildElement(expiresQName).setValue(object.getExpires());
+         }
+         
+         if (object.getIncompleteSequenceBehavior() != null)
+         {
+            // write wsrm:IncompleteSequenceBehavior
+            IncompleteSequenceBehavior behavior = object.getIncompleteSequenceBehavior();
+            QName behaviorQName = wsrmConstants.getIncompleteSequenceBehaviorQName();
+            SOAPElement behaviorElement = createSequenceResponseElement.addChildElement(behaviorQName);
+            behaviorElement.setValue(behavior.toString());
+         }
+         
+         if (object.getAccept() != null)
+         {
+            // write wsrm:Accept
+            QName acceptQName = wsrmConstants.getAcceptQName();
+            SOAPElement acceptElement = createSequenceResponseElement.addChildElement(acceptQName);
+
+            // write wsrm:AcksTo
+            QName acksToQName = wsrmConstants.getAcksToQName();
+            QName addressQName = ADDRESSING_CONSTANTS.getAddressQName();
+            acceptElement.addChildElement(acksToQName)
+               .addChildElement(addressQName)
+                  .setValue(object.getAccept().getAcksTo());
+         }
+      }
+      catch (SOAPException se)
+      {
+         throw new ReliableMessagingException("Unable to serialize RM message", se);
+      }
    }
 
 }
