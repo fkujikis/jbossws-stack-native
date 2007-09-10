@@ -34,7 +34,9 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
       + "         <wsrm:Expires>PT0S</wsrm:Expires>" 
       + "         <wsrm:Offer>"
       + "            <wsrm:Identifier>http://Business456.com/RM/ABC</wsrm:Identifier>"
-      + "            <wsrm:Endpoint>http://Business456.com/serviceA/ASDF</wsrm:Endpoint>"
+      + "            <wsrm:Endpoint>"
+      + "               <wsa:Address>http://Business456.com/serviceA/ASDF</wsa:Address>"
+      + "            </wsrm:Endpoint>"
       + "            <wsrm:Expires>PT1S</wsrm:Expires>"
       + "            <wsrm:IncompleteSequenceBehavior>DiscardEntireSequence</wsrm:IncompleteSequenceBehavior>"
       + "         </wsrm:Offer>"
@@ -189,8 +191,6 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
    
    public void testCreateSequenceMessageDeserialization() throws Exception
    {
-      System.out.println("FIXME [JBWS-515] Provide an initial implementation for WS-ReliableMessaging");
-      if (true) return;
       CreateSequence createSequenceMessage = WSRM_200702_FACTORY.newCreateSequence();
       createSequenceMessage.deserializeFrom(toSOAPMessage(CREATE_SEQUENCE_MESSAGE));
       // perform assertion
@@ -205,8 +205,6 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
    
    public void testCreateSequenceMessageSerialization() throws Exception
    {
-      System.out.println("FIXME [JBWS-515] Provide an initial implementation for WS-ReliableMessaging");
-      if (true) return;
       CreateSequence createSequenceMessage = WSRM_200702_FACTORY.newCreateSequence();
       // construct message
       createSequenceMessage.setAcksTo("http://Business456.com/serviceA/789");
