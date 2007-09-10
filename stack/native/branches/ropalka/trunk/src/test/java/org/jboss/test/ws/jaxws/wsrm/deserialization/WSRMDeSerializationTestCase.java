@@ -25,11 +25,13 @@ import java.io.ByteArrayInputStream;
 import javax.xml.soap.SOAPMessage;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.MessageFactory;
+import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequenceResponse;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
 import org.jboss.ws.extensions.wsrm.spi.protocol.IncompleteSequenceBehavior;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 import org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequenceResponse;
@@ -355,6 +357,44 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
       assertEquals(terminateSequenceResponse, TERMINATE_SEQUENCE_RESPONSE_MESSAGE, WSRM_200702_FACTORY);
    }
    
+   public void testSequenceMessageSerialization() throws Exception
+   {
+      Sequence sequence = WSRM_200702_FACTORY.newSequence();
+      sequence.deserializeFrom(toSOAPMessage(SEQUENCE_PLUS_ACKREQUESTED_MESSAGE));
+      // perform assertion
+      assertEquals(sequence.getIdentifier(), "http://Business456.com/RM/ABC");
+      assertEquals(sequence.getMessageNumber(), 1);
+   }
+   
+   public void testSequenceMessageDeserialization() throws Exception
+   {
+      Sequence sequence = WSRM_200702_FACTORY.newSequence();
+      // construct message
+      sequence.setIdentifier("http://Business456.com/RM/ABC");
+      sequence.setMessageNumber(1);
+      // perform assertion
+      assertEquals(sequence, SEQUENCE_PLUS_ACKREQUESTED_MESSAGE, WSRM_200702_FACTORY);
+   }
+   
+   public void testAckRequestedMessageSerialization() throws Exception
+   {
+      AckRequested ackRequested = WSRM_200702_FACTORY.newAckRequested();
+      ackRequested.deserializeFrom(toSOAPMessage(SEQUENCE_PLUS_ACKREQUESTED_MESSAGE));
+      // perform assertion
+      assertEquals(ackRequested.getIdentifier(), "http://Business456.com/RM/ABC");
+   }
+   
+   public void testAckRequestedMessageDeserialization() throws Exception
+   {
+      AckRequested ackRequested = WSRM_200702_FACTORY.newAckRequested();
+      // construct message
+      ackRequested.setIdentifier("http://Business456.com/RM/ABC");
+      // perform assertion
+      assertEquals(ackRequested, SEQUENCE_PLUS_ACKREQUESTED_MESSAGE, WSRM_200702_FACTORY);
+   }
+   
+   // TODO: implement other de/serializations
+   
    private static void assertEquals(Serializable serializable, String exemplar, MessageFactory factory) throws Exception
    {
       // serialize constructed message
@@ -384,11 +424,13 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
          return factory.newTerminateSequence();
       if (helper instanceof TerminateSequenceResponse)
          return factory.newTerminateSequenceResponse();
+      if (helper instanceof Sequence)
+         return factory.newSequence();
+      if (helper instanceof AckRequested)
+         return factory.newAckRequested();
       
       throw new IllegalArgumentException();
    }
-   
-   // TODO: implement other de/serializations
    
    private static SOAPMessage toSOAPMessage(String data) throws Exception
    {
