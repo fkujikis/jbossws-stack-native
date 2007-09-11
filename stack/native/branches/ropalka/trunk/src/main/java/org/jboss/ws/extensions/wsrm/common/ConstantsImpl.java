@@ -87,7 +87,7 @@ public final class ConstantsImpl implements Constants
       this.lastMessageNumberQName = new QName(namespaceURI, "LastMessageNumber", prefix);
       this.lastMessageQName = new QName(namespaceURI, "LastMessage", prefix);
       this.lastMsgNumberQName = new QName(namespaceURI, "LastMsgNumber", prefix);
-      this.lowerQName = new QName(namespaceURI, "Lower", prefix);
+      this.lowerQName = new QName(null, "Lower", "");
       this.messageNumberQName = new QName(namespaceURI, "MessageNumber", prefix);
       this.nackQName = new QName(namespaceURI, "Nack", prefix);
       this.noneQName = new QName(namespaceURI, "None", prefix);
@@ -97,7 +97,7 @@ public final class ConstantsImpl implements Constants
       this.equenceQName = new QName(namespaceURI, "Sequence", prefix);
       this.terminateSequenceQName = new QName(namespaceURI, "TerminateSequence", prefix);
       this.terminateSequenceResponseQName = new QName(namespaceURI, "TerminateSequenceResponse", prefix);
-      this.upperQName = new QName(namespaceURI, "Upper", prefix);
+      this.upperQName = new QName(null, "Upper", "");
    }
    
    /**
