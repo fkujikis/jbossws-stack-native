@@ -69,11 +69,11 @@ final class CreateSequenceSerializer
          SOAPBody soapBody = soapMessage.getSOAPPart().getEnvelope().getBody();
          Constants wsrmConstants = provider.getConstants();
          
-         // read wsrm:CreateSequence
+         // read required wsrm:CreateSequence element
          QName createSequenceQName = wsrmConstants.getCreateSequenceQName();
          SOAPElement createSequenceElement = getRequiredElement(soapBody, createSequenceQName, "soap body");
 
-         // read wsrm:AcksTo
+         // read required wsrm:AcksTo element
          QName acksToQName = wsrmConstants.getAcksToQName();
          SOAPElement acksToElement = getRequiredElement(createSequenceElement, acksToQName, createSequenceQName);
          QName addressQName = ADDRESSING_CONSTANTS.getAddressQName();
@@ -81,7 +81,7 @@ final class CreateSequenceSerializer
          String acksToAddress = getRequiredTextContent(acksToAddressElement, addressQName);
          object.setAcksTo(acksToAddress);
 
-         // read wsrm:Expires
+         // read optional wsrm:Expires element
          QName expiresQName = wsrmConstants.getExpiresQName();
          SOAPElement expiresElement = getOptionalElement(createSequenceElement, expiresQName, createSequenceQName);
          if (expiresElement != null)
@@ -90,20 +90,20 @@ final class CreateSequenceSerializer
             object.setExpires(duration);
          }
 
-         // read wsrm:Offer
+         // read optional wsrm:Offer element
          QName offerQName = wsrmConstants.getOfferQName();
          SOAPElement offerElement = getOptionalElement(createSequenceElement, offerQName, createSequenceQName);
          if (offerElement != null)
          {
             CreateSequence.Offer offer = object.newOffer();
 
-            // read wsrm:Identifier
+            // read required wsrm:Identifier element
             QName identifierQName = wsrmConstants.getIdentifierQName();
             SOAPElement identifierElement = getRequiredElement(offerElement, identifierQName, offerQName);
             String identifier = getRequiredTextContent(identifierElement, identifierQName);
             offer.setIdentifier(identifier);
             
-            // read wsrm:Endpoint
+            // read optional wsrm:Endpoint element
             QName endpointQName = wsrmConstants.getEndpointQName();
             SOAPElement endpointElement = getOptionalElement(offerElement, endpointQName, offerQName);
             if (endpointElement != null)
@@ -113,7 +113,7 @@ final class CreateSequenceSerializer
                offer.setEndpoint(endpointAddress);
             }
             
-            // read wsrm:Expires
+            // read optional wsrm:Expires element
             SOAPElement offerExpiresElement = getOptionalElement(offerElement, expiresQName, offerQName);
             if (offerExpiresElement != null)
             {
@@ -121,7 +121,7 @@ final class CreateSequenceSerializer
                offer.setExpires(duration);
             }
             
-            // read wsrm:IncompleteSequenceBehavior
+            // read optional wsrm:IncompleteSequenceBehavior element
             QName behaviorQName = wsrmConstants.getIncompleteSequenceBehaviorQName();
             SOAPElement behaviorElement = getOptionalElement(offerElement, behaviorQName, offerQName);
             if (behaviorElement != null)
@@ -157,11 +157,11 @@ final class CreateSequenceSerializer
          // Add xmlns:wsrm declaration
          soapEnvelope.addNamespaceDeclaration(wsrmConstants.getPrefix(), wsrmConstants.getNamespaceURI());
 
-         // write wsrm:CreateSequence
+         // write required wsrm:CreateSequence element
          QName createSequenceQName = wsrmConstants.getCreateSequenceQName(); 
          SOAPElement createSequenceElement = soapEnvelope.getBody().addChildElement(createSequenceQName);
          
-         // write wsrm:AcksTo
+         // write required wsrm:AcksTo element
          QName acksToQName = wsrmConstants.getAcksToQName();
          QName addressQName = ADDRESSING_CONSTANTS.getAddressQName();
          createSequenceElement.addChildElement(acksToQName)
@@ -170,7 +170,7 @@ final class CreateSequenceSerializer
          
          if (object.getExpires() != null)
          {
-            // write wsrm:Expires
+            // write optional wsrm:Expires element
             QName expiresQName = wsrmConstants.getExpiresQName();
             createSequenceElement.addChildElement(expiresQName).setValue(object.getExpires());
          }
@@ -179,17 +179,17 @@ final class CreateSequenceSerializer
          {
             CreateSequence.Offer offer = object.getOffer();
             
-            // write wsrm:Offer
+            // write optional wsrm:Offer element
             QName offerQName = wsrmConstants.getOfferQName();
             SOAPElement offerElement = createSequenceElement.addChildElement(offerQName);
 
-            // write wsrm:Identifier
+            // write required wsrm:Identifier element
             QName identifierQName = wsrmConstants.getIdentifierQName();
             offerElement.addChildElement(identifierQName).setValue(offer.getIdentifier());
             
             if (offer.getEndpoint() != null)
             {
-               // write wsrm:Endpoint
+               // write optional wsrm:Endpoint element
                QName endpointQName = wsrmConstants.getEndpointQName();
                offerElement.addChildElement(endpointQName)
                   .addChildElement(addressQName)
@@ -198,14 +198,14 @@ final class CreateSequenceSerializer
             
             if (offer.getExpires() != null)
             {
-               // write wsrm:Expires
+               // write optional wsrm:Expires element
                QName expiresQName = wsrmConstants.getExpiresQName();
                offerElement.addChildElement(expiresQName).setValue(offer.getExpires());
             }
             
             if (offer.getIncompleteSequenceBehavior() != null)
             {
-               // write wsrm:IncompleteSequenceBehavior
+               // write optional wsrm:IncompleteSequenceBehavior element
                IncompleteSequenceBehavior behavior = offer.getIncompleteSequenceBehavior();
                QName behaviorQName = wsrmConstants.getIncompleteSequenceBehaviorQName();
                SOAPElement behaviorElement = offerElement.addChildElement(behaviorQName);

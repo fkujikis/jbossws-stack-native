@@ -62,11 +62,11 @@ final class CloseSequenceResponseSerializer
          SOAPBody soapBody = soapMessage.getSOAPPart().getEnvelope().getBody();
          Constants wsrmConstants = provider.getConstants();
          
-         // read wsrm:CloseSequenceResponse
+         // read required wsrm:CloseSequenceResponse element
          QName closeSequenceResponseQName = wsrmConstants.getCloseSequenceResponseQName();
          SOAPElement closeSequenceResponseElement = getRequiredElement(soapBody, closeSequenceResponseQName, "soap body");
 
-         // read wsrm:Identifier
+         // read required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
          SOAPElement identifierElement = getRequiredElement(closeSequenceResponseElement, identifierQName, closeSequenceResponseQName);
          String identifier = getRequiredTextContent(identifierElement, identifierQName);
@@ -95,11 +95,11 @@ final class CloseSequenceResponseSerializer
          // Add xmlns:wsrm declaration
          soapEnvelope.addNamespaceDeclaration(wsrmConstants.getPrefix(), wsrmConstants.getNamespaceURI());
 
-         // write wsrm:CloseSequenceResponse
+         // write required wsrm:CloseSequenceResponse element
          QName closeSequenceResponseQName = wsrmConstants.getCloseSequenceResponseQName(); 
          SOAPElement closeSequenceResponseElement = soapEnvelope.getBody().addChildElement(closeSequenceResponseQName);
 
-         // write wsrm:Identifier
+         // write required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
          closeSequenceResponseElement.addChildElement(identifierQName).setValue(object.getIdentifier());
       }

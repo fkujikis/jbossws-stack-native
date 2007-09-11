@@ -69,17 +69,17 @@ final class CreateSequenceResponseSerializer
          SOAPBody soapBody = soapMessage.getSOAPPart().getEnvelope().getBody();
          Constants wsrmConstants = provider.getConstants();
          
-         // read wsrm:CreateSequenceResponse
+         // read required wsrm:CreateSequenceResponse element
          QName createSequenceResponseQName = wsrmConstants.getCreateSequenceResponseQName();
          SOAPElement createSequenceResponseElement = getRequiredElement(soapBody, createSequenceResponseQName, "soap body");
 
-         // read wsrm:identifier
+         // read required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
          SOAPElement identifierElement = getRequiredElement(createSequenceResponseElement, identifierQName, createSequenceResponseQName);
          String identifier = getRequiredTextContent(identifierElement, identifierQName);
          object.setIdentifier(identifier);
          
-         // read wsrm:Expires
+         // read optional wsrm:Expires element
          QName expiresQName = wsrmConstants.getExpiresQName();
          SOAPElement expiresElement = getOptionalElement(createSequenceResponseElement, expiresQName, createSequenceResponseQName);
          if (expiresElement != null)
@@ -88,7 +88,7 @@ final class CreateSequenceResponseSerializer
             object.setExpires(duration);
          }
 
-         // read wsrm:IncompleteSequenceBehavior
+         // read optional wsrm:IncompleteSequenceBehavior element
          QName behaviorQName = wsrmConstants.getIncompleteSequenceBehaviorQName();
          SOAPElement behaviorElement = getOptionalElement(createSequenceResponseElement, behaviorQName, createSequenceResponseQName);
          if (behaviorElement != null)
@@ -97,14 +97,14 @@ final class CreateSequenceResponseSerializer
             object.setIncompleteSequenceBehavior(IncompleteSequenceBehavior.getValue(behaviorString));
          }
          
-         // read wsrm:Accept
+         // read optional wsrm:Accept element
          QName acceptQName = wsrmConstants.getAcceptQName();
          SOAPElement acceptElement = getOptionalElement(createSequenceResponseElement, acceptQName, createSequenceResponseQName);
          if (acceptElement != null)
          {
             CreateSequenceResponse.Accept accept = object.newAccept();
             
-            // read wsrm:AcksTo
+            // read required wsrm:AcksTo element
             QName acksToQName = wsrmConstants.getAcksToQName();
             SOAPElement acksToElement = getRequiredElement(acceptElement, acksToQName, acceptQName);
             QName addressQName = ADDRESSING_CONSTANTS.getAddressQName();
@@ -112,6 +112,7 @@ final class CreateSequenceResponseSerializer
             String acksToAddress = getRequiredTextContent(acksToAddressElement, addressQName);
             accept.setAcksTo(acksToAddress);
 
+            // set created accept
             object.setAccept(accept);
          }
       }
@@ -138,24 +139,24 @@ final class CreateSequenceResponseSerializer
          // Add xmlns:wsrm declaration
          soapEnvelope.addNamespaceDeclaration(wsrmConstants.getPrefix(), wsrmConstants.getNamespaceURI());
 
-         // write wsrm:CreateSequenceResponse
+         // write required wsrm:CreateSequenceResponse element
          QName createSequenceResponseQName = wsrmConstants.getCreateSequenceResponseQName(); 
          SOAPElement createSequenceResponseElement = soapEnvelope.getBody().addChildElement(createSequenceResponseQName);
 
-         // write wsrm:Identifier
+         // write required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
          createSequenceResponseElement.addChildElement(identifierQName).setValue(object.getIdentifier());
          
          if (object.getExpires() != null)
          {
-            // write wsrm:Expires
+            // write optional wsrm:Expires element
             QName expiresQName = wsrmConstants.getExpiresQName();
             createSequenceResponseElement.addChildElement(expiresQName).setValue(object.getExpires());
          }
          
          if (object.getIncompleteSequenceBehavior() != null)
          {
-            // write wsrm:IncompleteSequenceBehavior
+            // write optional wsrm:IncompleteSequenceBehavior element
             IncompleteSequenceBehavior behavior = object.getIncompleteSequenceBehavior();
             QName behaviorQName = wsrmConstants.getIncompleteSequenceBehaviorQName();
             SOAPElement behaviorElement = createSequenceResponseElement.addChildElement(behaviorQName);
@@ -164,11 +165,11 @@ final class CreateSequenceResponseSerializer
          
          if (object.getAccept() != null)
          {
-            // write wsrm:Accept
+            // write optional wsrm:Accept element
             QName acceptQName = wsrmConstants.getAcceptQName();
             SOAPElement acceptElement = createSequenceResponseElement.addChildElement(acceptQName);
 
-            // write wsrm:AcksTo
+            // write required wsrm:AcksTo element
             QName acksToQName = wsrmConstants.getAcksToQName();
             QName addressQName = ADDRESSING_CONSTANTS.getAddressQName();
             acceptElement.addChildElement(acksToQName)

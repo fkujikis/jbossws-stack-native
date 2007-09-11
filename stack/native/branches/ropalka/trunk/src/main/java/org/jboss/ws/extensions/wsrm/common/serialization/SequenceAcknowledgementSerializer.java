@@ -21,12 +21,25 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.stringToLong;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getOptionalElement;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredElement;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getOptionalElements;
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredTextContent;
+
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPHeader;
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement;
+
+import java.util.List;
 
 /**
  * <b>SequenceAcknowledgement</b> object de/serializer
@@ -49,7 +62,75 @@ final class SequenceAcknowledgementSerializer
    public static void deserialize(SequenceAcknowledgement object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
-      throw new NotImplementedException();
+      try
+      {
+         SOAPHeader soapHeader = soapMessage.getSOAPPart().getEnvelope().getHeader();
+         Constants wsrmConstants = provider.getConstants();
+         
+         // read required wsrm:SequenceAcknowledgement element
+         QName sequenceAckQName = wsrmConstants.getSequenceAcknowledgementQName();
+         SOAPElement sequenceAckElement = getRequiredElement(soapHeader, sequenceAckQName, "soap header");
+
+         // read required wsrm:Identifier element
+         QName identifierQName = wsrmConstants.getIdentifierQName();
+         SOAPElement identifierElement = getRequiredElement(sequenceAckElement, identifierQName, sequenceAckQName);
+         String identifier = getRequiredTextContent(identifierElement, identifierQName);
+         object.setIdentifier(identifier);
+         
+         // read optional wsrm:Final element
+         QName finalQName = wsrmConstants.getFinalQName();
+         SOAPElement finalElement = getOptionalElement(sequenceAckElement, finalQName, sequenceAckQName);
+         if (finalElement != null)
+         {
+            object.setFinal();
+         }
+         
+         // read optional wsrm:None element
+         QName noneQName = wsrmConstants.getNoneQName();
+         SOAPElement noneElement = getOptionalElement(sequenceAckElement, noneQName, sequenceAckQName);
+         if (noneElement != null)
+         {
+            object.setNone();
+         }
+         
+         // read optional wsrm:Nack elements
+         QName nackQName = wsrmConstants.getNackQName();
+         List<SOAPElement> nackElements = getOptionalElements(sequenceAckElement, nackQName, sequenceAckQName);
+         for (SOAPElement nackElement : nackElements)
+         {
+            String messageId = getRequiredTextContent(nackElement, nackQName);
+            object.addNack(stringToLong(messageId, "Unable to parse Nack element text content"));
+         }
+         
+         // read optional wsrm:AcknowledgementRange elements
+         QName ackRangeQName = wsrmConstants.getAcknowledgementRangeQName();
+         List<SOAPElement> ackRangeElements = getOptionalElements(sequenceAckElement, ackRangeQName, sequenceAckQName);
+         if (ackRangeElements.size() != 0)
+         {
+            QName upperQName = wsrmConstants.getUpperQName();
+            QName lowerQName = wsrmConstants.getLowerQName();
+
+            for (SOAPElement ackRangeElement : ackRangeElements)
+            {
+               SequenceAcknowledgement.AcknowledgementRange ackRange = object.newAcknowledgementRange();
+            
+               // read required wsrm:Upper attribute
+               String upper = getRequiredTextContent(ackRangeElement, upperQName, ackRangeQName);
+               ackRange.setUpper(stringToLong(upper, "Unable to parse Upper attribute text content"));
+            
+               // read required wsrm:Lower attribute
+               String lower = getRequiredTextContent(ackRangeElement, lowerQName, ackRangeQName);
+               ackRange.setLower(stringToLong(lower, "Unable to parse Lower attribute text content"));
+            
+               // set created acknowledgement range
+               object.addAcknowledgementRange(ackRange);
+            }
+         }
+      }
+      catch (SOAPException se)
+      {
+         throw new ReliableMessagingException("Unable to deserialize RM message", se);
+      }
    }
 
    /**
@@ -61,7 +142,70 @@ final class SequenceAcknowledgementSerializer
    public static void serialize(SequenceAcknowledgement object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
-      throw new NotImplementedException();
+      try
+      {
+         SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
+         Constants wsrmConstants = provider.getConstants();
+         
+         // Add xmlns:wsrm declaration
+         soapEnvelope.addNamespaceDeclaration(wsrmConstants.getPrefix(), wsrmConstants.getNamespaceURI());
+
+         // write required wsrm:SequenceAcknowledgement element
+         QName sequenceAckQName = wsrmConstants.getSequenceAcknowledgementQName(); 
+         SOAPElement sequenceAckElement = soapEnvelope.getHeader().addChildElement(sequenceAckQName);
+
+         // write required wsrm:Identifier element
+         QName identifierQName = wsrmConstants.getIdentifierQName();
+         sequenceAckElement.addChildElement(identifierQName).setValue(object.getIdentifier());
+         
+         if (object.isFinal())
+         {
+            // write optional wsrm:Final element
+            QName finalQName = wsrmConstants.getFinalQName();
+            sequenceAckElement.addChildElement(finalQName);
+         }
+         
+         if (object.isNone())
+         {
+            // write optional wsrm:None element
+            QName noneQName = wsrmConstants.getNoneQName();
+            sequenceAckElement.addChildElement(noneQName);
+         }
+         
+         List<Long> nacks = object.getNacks();
+         if (nacks.size() != 0)
+         {
+            QName nackQName = wsrmConstants.getNackQName();
+
+            // write optional wsrm:Nack elements
+            for (Long messageId : nacks)
+            {
+               sequenceAckElement.addChildElement(nackQName).setValue(String.valueOf(messageId));
+            }
+         }
+         
+         List<SequenceAcknowledgement.AcknowledgementRange> ackRanges = object.getAcknowledgementRanges();
+         if (ackRanges.size() != 0)
+         {
+            QName acknowledgementRangeQName = wsrmConstants.getAcknowledgementRangeQName();
+            QName upperQName = wsrmConstants.getUpperQName();
+            QName lowerQName = wsrmConstants.getLowerQName();
+
+            // write optional wsrm:AcknowledgementRange elements
+            for (SequenceAcknowledgement.AcknowledgementRange ackRange : ackRanges)
+            {
+               SOAPElement acknowledgementRangeElement = sequenceAckElement.addChildElement(acknowledgementRangeQName);
+               // write required wsrm:Lower attribute
+               acknowledgementRangeElement.addAttribute(lowerQName, String.valueOf(ackRange.getLower()));
+               // write required wsrm:Upper attribute
+               acknowledgementRangeElement.addAttribute(upperQName, String.valueOf(ackRange.getUpper()));
+            }
+         }
+      }
+      catch (SOAPException se)
+      {
+         throw new ReliableMessagingException("Unable to serialize RM message", se);
+      }
    }
 
 }

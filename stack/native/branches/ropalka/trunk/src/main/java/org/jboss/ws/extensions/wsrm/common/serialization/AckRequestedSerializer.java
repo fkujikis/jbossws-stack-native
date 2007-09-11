@@ -21,6 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.stringToLong;
 import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getOptionalElement;
 import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredElement;
 import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredTextContent;
@@ -63,29 +64,24 @@ final class AckRequestedSerializer
          SOAPHeader soapHeader = soapMessage.getSOAPPart().getEnvelope().getHeader();
          Constants wsrmConstants = provider.getConstants();
          
-         // read wsrm:AckRequested
+         // read required wsrm:AckRequested element
          QName ackRequestedQName = wsrmConstants.getAckRequestedQName();
          SOAPElement ackRequestedElement = getRequiredElement(soapHeader, ackRequestedQName, "soap header");
 
-         // read wsrm:Identifier
+         // read required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
          SOAPElement identifierElement = getRequiredElement(ackRequestedElement, identifierQName, ackRequestedQName);
          String identifier = getRequiredTextContent(identifierElement, identifierQName);
          object.setIdentifier(identifier);
          
-         // read wsrm:MessageNumber
+         // read optional wsrm:MessageNumber element
          QName messageNumberQName = wsrmConstants.getMessageNumberQName();
          SOAPElement messageNumberElement = getOptionalElement(ackRequestedElement, messageNumberQName, ackRequestedQName);
          if (messageNumberElement != null)
          {
-            try
-            {
-               long messageNumber = Long.valueOf(getRequiredTextContent(messageNumberElement, messageNumberQName));
-               object.setMessageNumber(messageNumber);
-            } catch (NumberFormatException nfe)
-            {
-               throw new ReliableMessagingException("Unable to parse MessageNumber element text content", nfe);
-            }
+            String messageNumberString = getRequiredTextContent(messageNumberElement, messageNumberQName);
+            long messageNumberValue = stringToLong(messageNumberString, "Unable to parse MessageNumber element text content");
+            object.setMessageNumber(messageNumberValue);
          }
       }
       catch (SOAPException se)
@@ -111,17 +107,17 @@ final class AckRequestedSerializer
          // Add xmlns:wsrm declaration
          soapEnvelope.addNamespaceDeclaration(wsrmConstants.getPrefix(), wsrmConstants.getNamespaceURI());
 
-         // write wsrm:AckRequested
+         // write required wsrm:AckRequested element
          QName ackRequestedQName = wsrmConstants.getAckRequestedQName(); 
          SOAPElement ackRequestedElement = soapEnvelope.getHeader().addChildElement(ackRequestedQName);
 
-         // write wsrm:Identifier
+         // write required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
          ackRequestedElement.addChildElement(identifierQName).setValue(object.getIdentifier());
          
          if (object.getMessageNumber() != 0)
          {
-            // write wsrm:MessageNumber
+            // write optional wsrm:MessageNumber element
             QName messageNumberQName = wsrmConstants.getMessageNumberQName();
             SOAPElement messageNumberElement = ackRequestedElement.addChildElement(messageNumberQName);
             messageNumberElement.setValue(String.valueOf(object.getMessageNumber()));

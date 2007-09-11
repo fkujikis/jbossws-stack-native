@@ -21,6 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.stringToLong;
 import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getOptionalElement;
 import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredElement;
 import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredTextContent;
@@ -63,29 +64,24 @@ final class SequenceSerializer
          SOAPHeader soapHeader = soapMessage.getSOAPPart().getEnvelope().getHeader();
          Constants wsrmConstants = provider.getConstants();
          
-         // read wsrm:Sequence
+         // read required wsrm:Sequence element
          QName sequenceQName = wsrmConstants.getSequenceQName();
          SOAPElement sequenceElement = getRequiredElement(soapHeader, sequenceQName, "soap header");
 
-         // read wsrm:Identifier
+         // read required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
          SOAPElement identifierElement = getRequiredElement(sequenceElement, identifierQName, sequenceQName);
          String identifier = getRequiredTextContent(identifierElement, identifierQName);
          object.setIdentifier(identifier);
          
-         // read wsrm:MessageNumber
+         // read required wsrm:MessageNumber element
          QName messageNumberQName = wsrmConstants.getMessageNumberQName();
          SOAPElement messageNumberElement = getRequiredElement(sequenceElement, messageNumberQName, sequenceQName);
-         try
-         {
-            long messageNumber = Long.valueOf(getRequiredTextContent(messageNumberElement, messageNumberQName));
-            object.setMessageNumber(messageNumber);
-         } catch (NumberFormatException nfe)
-         {
-            throw new ReliableMessagingException("Unable to parse MessageNumber element text content", nfe);
-         }
+         String messageNumberString = getRequiredTextContent(messageNumberElement, messageNumberQName);
+         long messageNumberValue = stringToLong(messageNumberString, "Unable to parse MessageNumber element text content");
+         object.setMessageNumber(messageNumberValue);
          
-         // read wsrm:LastMessage
+         // read optional wsrm:LastMessage element
          QName lastMessageQName = wsrmConstants.getLastMessageQName();
          SOAPElement lastMessageElement = getOptionalElement(sequenceElement, lastMessageQName, sequenceQName);
          if (lastMessageElement != null)
@@ -116,22 +112,22 @@ final class SequenceSerializer
          // Add xmlns:wsrm declaration
          soapEnvelope.addNamespaceDeclaration(wsrmConstants.getPrefix(), wsrmConstants.getNamespaceURI());
 
-         // write wsrm:Sequence
+         // write required wsrm:Sequence element
          QName sequenceQName = wsrmConstants.getSequenceQName(); 
          SOAPElement sequenceElement = soapEnvelope.getHeader().addChildElement(sequenceQName);
 
-         // write wsrm:Identifier
+         // write required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
          sequenceElement.addChildElement(identifierQName).setValue(object.getIdentifier());
          
-         // write wsrm:MessageNumber
+         // write required wsrm:MessageNumber element
          QName messageNumberQName = wsrmConstants.getMessageNumberQName();
          SOAPElement messageNumberElement = sequenceElement.addChildElement(messageNumberQName);
          messageNumberElement.setValue(String.valueOf(object.getMessageNumber()));
          
          if (object.isLastMessage())
          {
-            // write wsrm:LastMessage
+            // write optional wsrm:LastMessage element
             QName lastMessageQName = wsrmConstants.getLastMessageQName();
             sequenceElement.addChildElement(lastMessageQName);
          }

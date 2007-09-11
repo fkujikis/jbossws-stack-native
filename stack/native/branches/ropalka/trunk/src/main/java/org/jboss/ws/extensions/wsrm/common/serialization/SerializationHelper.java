@@ -21,6 +21,10 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
+import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredTextContent;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.QName;
 import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
@@ -40,11 +44,11 @@ final class SerializationHelper
       // no instances
    }
    
-   public static String getRequiredTextContent(SOAPElement element, QName nodeName)
+   public static String getRequiredTextContent(SOAPElement element, QName elementQName)
    {
       if (!DOMUtils.hasTextChildNodesOnly(element))
          throw new ReliableMessagingException(
-            "Only text content is allowed for element " + nodeName.getLocalPart());
+            "Only text content is allowed for element " + elementQName.getLocalPart());
 
       return DOMUtils.getTextContent(element).trim();
    }
@@ -87,9 +91,53 @@ final class SerializationHelper
       return getOptionalElementFromList(list, optionalQName, contextQName);
    }
    
-   public static SOAPElement getOptionalElement(SOAPElement element, QName optionalQName, QName contextQName)
+   public static String getRequiredTextContent(SOAPElement element, QName attributeQName, QName elementQName)
    {
-      return (SOAPElement)getOptionalElement((Element)element, optionalQName, contextQName);
+      String attributeValue = element.getAttributeValue(attributeQName);
+      
+      if (attributeValue == null)
+         throw new ReliableMessagingException(
+            "Required attribute " + attributeQName.getLocalPart() + " is missing in element " + elementQName.getLocalPart());
+
+      return attributeValue;
+   }
+   
+   public static SOAPElement getOptionalElement(SOAPElement contextElement, QName optionalQName, QName contextQName)
+   {
+      return (SOAPElement)getOptionalElement((Element)contextElement, optionalQName, contextQName);
+   }
+   
+   public static List<SOAPElement> getOptionalElements(SOAPElement contextElement, QName optionalQName, QName contextQName)
+   {
+      // TODO: optimize this method - do not create new list
+      List<Element> temp = DOMUtils.getChildElementsAsList(contextElement, optionalQName);
+      if (temp.size() == 0)
+      {
+         return Collections.emptyList();
+      }
+      else
+      {
+         List<SOAPElement> retVal = new ArrayList<SOAPElement>();
+         
+         for (Element e : temp)
+         {
+            retVal.add((SOAPElement)e);
+         }
+         
+         return retVal;
+      }
+   }
+   
+   public static long stringToLong(String toEvaluate, String errorMessage) throws ReliableMessagingException
+   {
+      try
+      {
+         return Long.valueOf(toEvaluate);
+      }
+      catch (NumberFormatException nfe)
+      {
+         throw new ReliableMessagingException(errorMessage, nfe);
+      }
    }
    
    private static Element getOptionalElementFromList(List<Element> list, QName requiredQName, QName contextQName)

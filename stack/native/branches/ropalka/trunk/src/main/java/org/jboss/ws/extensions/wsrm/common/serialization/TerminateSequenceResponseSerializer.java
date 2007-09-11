@@ -62,11 +62,11 @@ final class TerminateSequenceResponseSerializer
          SOAPBody soapBody = soapMessage.getSOAPPart().getEnvelope().getBody();
          Constants wsrmConstants = provider.getConstants();
          
-         // read wsrm:TerminateSequenceResponse
+         // read required wsrm:TerminateSequenceResponse element
          QName terminateSequenceResponseQName = wsrmConstants.getTerminateSequenceResponseQName();
          SOAPElement terminateSequenceResponseElement = getRequiredElement(soapBody, terminateSequenceResponseQName, "soap body");
 
-         // read wsrm:Identifier
+         // read required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
          SOAPElement identifierElement = getRequiredElement(terminateSequenceResponseElement, identifierQName, terminateSequenceResponseQName);
          String identifier = getRequiredTextContent(identifierElement, identifierQName);
@@ -95,11 +95,11 @@ final class TerminateSequenceResponseSerializer
          // Add xmlns:wsrm declaration
          soapEnvelope.addNamespaceDeclaration(wsrmConstants.getPrefix(), wsrmConstants.getNamespaceURI());
 
-         // write wsrm:TerminateSequenceResponse
+         // write required wsrm:TerminateSequenceResponse element
          QName terminateSequenceResponseQName = wsrmConstants.getTerminateSequenceResponseQName(); 
          SOAPElement terminateSequenceResponseElement = soapEnvelope.getBody().addChildElement(terminateSequenceResponseQName);
 
-         // write wsrm:Identifier
+         // write required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
          terminateSequenceResponseElement.addChildElement(identifierQName).setValue(object.getIdentifier());
       }
