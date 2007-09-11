@@ -22,7 +22,10 @@
 package org.jboss.test.ws.jaxws.wsrm.deserialization;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
+
 import javax.xml.soap.SOAPMessage;
+
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.MessageFactory;
 import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
@@ -32,6 +35,7 @@ import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
 import org.jboss.ws.extensions.wsrm.spi.protocol.IncompleteSequenceBehavior;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
+import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 import org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequenceResponse;
@@ -124,7 +128,7 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
       + "   <soap:Body><!-- Some Application Data --></soap:Body>"
       + "</soap:Envelope>";
 
-   private static final String SEQUENCE_ACKNOWLEDGEMENT_MESSAGE
+   private static final String SEQUENCE_ACKNOWLEDGEMENT_MESSAGE_1
       = "<soap:Envelope"
       + "   xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\""
       + "   xmlns:wsrm=\"http://docs.oasis-open.org/ws-rx/wsrm/200702\""
@@ -140,11 +144,52 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
       + "         <wsrm:Identifier>http://Business456.com/RM/ABC</wsrm:Identifier>"
       + "         <wsrm:AcknowledgementRange Upper='1' Lower='1'/>"
       + "         <wsrm:AcknowledgementRange Upper='3' Lower='3'/>"
+      + "         <wsrm:Final/>"
       + "      </wsrm:SequenceAcknowledgement>"
       + "   </soap:Header>"
       + "   <soap:Body/>"
       + "</soap:Envelope>";
    
+   private static final String SEQUENCE_ACKNOWLEDGEMENT_MESSAGE_2
+   = "<soap:Envelope"
+   + "   xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\""
+   + "   xmlns:wsrm=\"http://docs.oasis-open.org/ws-rx/wsrm/200702\""
+   + "   xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">"
+   + "   <soap:Header>"
+   + "      <wsa:MessageID>http://example.com/guid/0baaf88d-483b-4ecf-a6d8</wsa:MessageID>"
+   + "      <wsa:To>http://Business456.com/serviceA/789</wsa:To>"
+   + "      <wsa:From>"
+   + "         <wsa:Address>http://example.com/serviceB/123</wsa:Address>"
+   + "      </wsa:From>"
+   + "      <wsa:Action>http://docs.oasis-open.org/ws-rx/wsrm/200702/SequenceAcknowledgement</wsa:Action>"
+   + "      <wsrm:SequenceAcknowledgement>"
+   + "         <wsrm:Identifier>http://Business456.com/RM/ABC</wsrm:Identifier>"
+   + "         <wsrm:Nack>2</wsrm:Nack>"
+   + "      </wsrm:SequenceAcknowledgement>"
+   + "   </soap:Header>"
+   + "   <soap:Body/>"
+   + "</soap:Envelope>";
+
+   private static final String SEQUENCE_ACKNOWLEDGEMENT_MESSAGE_3
+   = "<soap:Envelope"
+   + "   xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\""
+   + "   xmlns:wsrm=\"http://docs.oasis-open.org/ws-rx/wsrm/200702\""
+   + "   xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">"
+   + "   <soap:Header>"
+   + "      <wsa:MessageID>http://example.com/guid/0baaf88d-483b-4ecf-a6d8</wsa:MessageID>"
+   + "      <wsa:To>http://Business456.com/serviceA/789</wsa:To>"
+   + "      <wsa:From>"
+   + "         <wsa:Address>http://example.com/serviceB/123</wsa:Address>"
+   + "      </wsa:From>"
+   + "      <wsa:Action>http://docs.oasis-open.org/ws-rx/wsrm/200702/SequenceAcknowledgement</wsa:Action>"
+   + "      <wsrm:SequenceAcknowledgement>"
+   + "         <wsrm:Identifier>http://Business456.com/RM/ABC</wsrm:Identifier>"
+   + "         <wsrm:None/>"
+   + "      </wsrm:SequenceAcknowledgement>"
+   + "   </soap:Header>"
+   + "   <soap:Body/>"
+   + "</soap:Envelope>";
+
    private static final String CLOSE_SEQUENCE_MESSAGE
    = "<soap:Envelope"
    + "   xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\""
@@ -228,6 +273,89 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
    + "      </wsrm:TerminateSequenceResponse>"
    + "   </soap:Body>"
    + "</soap:Envelope>";
+   
+   public void testSequenceAcknowledgementDeserialization1() throws Exception
+   {
+      SequenceAcknowledgement sequenceAcknowledgement = WSRM_200702_FACTORY.newSequenceAcknowledgement();
+      sequenceAcknowledgement.deserializeFrom(toSOAPMessage(SEQUENCE_ACKNOWLEDGEMENT_MESSAGE_1));
+      // perform assertion
+      assertEquals(sequenceAcknowledgement.getIdentifier(), "http://Business456.com/RM/ABC");
+      assertTrue(sequenceAcknowledgement.isFinal());
+      assertFalse(sequenceAcknowledgement.isNone());
+      assertEquals(sequenceAcknowledgement.getNacks().size(), 0);
+      List<SequenceAcknowledgement.AcknowledgementRange> ranges = sequenceAcknowledgement.getAcknowledgementRanges();
+      assertEquals(ranges.size(), 2);
+      SequenceAcknowledgement.AcknowledgementRange firstRange = ranges.get(0);
+      assertEquals(firstRange.getLower(), 1);
+      assertEquals(firstRange.getLower(), 1);
+      SequenceAcknowledgement.AcknowledgementRange secondRange = ranges.get(1);
+      assertEquals(secondRange.getLower(), 3);
+      assertEquals(secondRange.getLower(), 3);
+   }
+   
+   public void testSequenceAcknowledgementSerialization1() throws Exception
+   {
+      SequenceAcknowledgement sequenceAcknowledgementMessage = WSRM_200702_FACTORY.newSequenceAcknowledgement();
+      // construct message
+      sequenceAcknowledgementMessage.setIdentifier("http://Business456.com/RM/ABC");
+      sequenceAcknowledgementMessage.setFinal();
+      SequenceAcknowledgement.AcknowledgementRange firstRange = sequenceAcknowledgementMessage.newAcknowledgementRange();
+      firstRange.setLower(1);
+      firstRange.setUpper(1);
+      sequenceAcknowledgementMessage.addAcknowledgementRange(firstRange);
+      SequenceAcknowledgement.AcknowledgementRange secondRange = sequenceAcknowledgementMessage.newAcknowledgementRange();
+      secondRange.setLower(3);
+      secondRange.setUpper(3);
+      sequenceAcknowledgementMessage.addAcknowledgementRange(secondRange);
+      // perform assertion
+      assertEquals(sequenceAcknowledgementMessage, SEQUENCE_ACKNOWLEDGEMENT_MESSAGE_1, WSRM_200702_FACTORY);
+   }
+   
+   public void testSequenceAcknowledgementDeserialization2() throws Exception
+   {
+      SequenceAcknowledgement sequenceAcknowledgement = WSRM_200702_FACTORY.newSequenceAcknowledgement();
+      sequenceAcknowledgement.deserializeFrom(toSOAPMessage(SEQUENCE_ACKNOWLEDGEMENT_MESSAGE_2));
+      // perform assertion
+      assertEquals(sequenceAcknowledgement.getIdentifier(), "http://Business456.com/RM/ABC");
+      assertFalse(sequenceAcknowledgement.isFinal());
+      assertFalse(sequenceAcknowledgement.isNone());
+      assertEquals(sequenceAcknowledgement.getAcknowledgementRanges().size(), 0);
+      List<Long> nacks = sequenceAcknowledgement.getNacks();
+      assertEquals(nacks.size(), 1);
+      assertEquals(nacks.get(0).longValue(), 2);
+   }
+
+   public void testSequenceAcknowledgementSerialization2() throws Exception
+   {
+      SequenceAcknowledgement sequenceAcknowledgementMessage = WSRM_200702_FACTORY.newSequenceAcknowledgement();
+      // construct message
+      sequenceAcknowledgementMessage.setIdentifier("http://Business456.com/RM/ABC");
+      sequenceAcknowledgementMessage.addNack(2);
+      // perform assertion
+      assertEquals(sequenceAcknowledgementMessage, SEQUENCE_ACKNOWLEDGEMENT_MESSAGE_2, WSRM_200702_FACTORY);
+   }
+   
+   public void testSequenceAcknowledgementDeserialization3() throws Exception
+   {
+      SequenceAcknowledgement sequenceAcknowledgement = WSRM_200702_FACTORY.newSequenceAcknowledgement();
+      sequenceAcknowledgement.deserializeFrom(toSOAPMessage(SEQUENCE_ACKNOWLEDGEMENT_MESSAGE_3));
+      // perform assertion
+      assertEquals(sequenceAcknowledgement.getIdentifier(), "http://Business456.com/RM/ABC");
+      assertFalse(sequenceAcknowledgement.isFinal());
+      assertTrue(sequenceAcknowledgement.isNone());
+      assertEquals(sequenceAcknowledgement.getAcknowledgementRanges().size(), 0);
+      assertEquals(sequenceAcknowledgement.getNacks().size(), 0);
+   }
+   
+   public void testSequenceAcknowledgementSerialization3() throws Exception
+   {
+      SequenceAcknowledgement sequenceAcknowledgementMessage = WSRM_200702_FACTORY.newSequenceAcknowledgement();
+      // construct message
+      sequenceAcknowledgementMessage.setIdentifier("http://Business456.com/RM/ABC");
+      sequenceAcknowledgementMessage.setNone();
+      // perform assertion
+      assertEquals(sequenceAcknowledgementMessage, SEQUENCE_ACKNOWLEDGEMENT_MESSAGE_3, WSRM_200702_FACTORY);
+   }
    
    public void testCreateSequenceMessageDeserialization() throws Exception
    {
@@ -428,6 +556,8 @@ public final class WSRMDeSerializationTestCase extends JBossWSTest
          return factory.newSequence();
       if (helper instanceof AckRequested)
          return factory.newAckRequested();
+      if (helper instanceof SequenceAcknowledgement)
+         return factory.newSequenceAcknowledgement();
       
       throw new IllegalArgumentException();
    }
