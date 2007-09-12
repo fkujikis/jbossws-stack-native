@@ -21,19 +21,19 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.LinkedList;
+import java.util.Collections;
 
-import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
-import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Element;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPElement;
 
 /**
- * Serialization helper - TODO: optimize it to minimize usage of org.w3c.dom.Element class
+ * Serialization helper
  * @author richard.opalka@jboss.com
  */
 final class SerializationHelper
@@ -48,47 +48,29 @@ final class SerializationHelper
    {
       if (!DOMUtils.hasTextChildNodesOnly(element))
          throw new ReliableMessagingException(
-            "Only text content is allowed for element " + elementQName.getLocalPart());
+            "Only text content is allowed for element " + elementQName);
 
       return DOMUtils.getTextContent(element).trim();
    }
    
-   private static Element getRequiredElementFromList(List<Element> list, QName requiredQName, QName contextQName)
-   {
-      return getRequiredElementFromList(list, requiredQName.getLocalPart(), contextQName.getLocalPart());
-   }
-   
-   private static Element getRequiredElementFromList(List<Element> list, QName requiredQName, String context)
-   {
-      return getRequiredElementFromList(list, requiredQName.getLocalPart(), context);
-   }
-   
-   private static Element getRequiredElement(Element element, QName requiredQName, QName contextQName)
-   {
-      List<Element> list = DOMUtils.getChildElementsAsList(element, requiredQName);
-      return getRequiredElementFromList(list, requiredQName, contextQName);
-   }
-   
    public static SOAPElement getRequiredElement(SOAPElement element, QName requiredQName, QName contextQName)
    {
-      return (SOAPElement)getRequiredElement((Element)element, requiredQName, contextQName);
-   }
-   
-   private static Element getRequiredElement(Element element, QName requiredQName, String context)
-   {
-      List<Element> list = DOMUtils.getChildElementsAsList(element, requiredQName);
-      return getRequiredElementFromList(list, requiredQName, context);
+      return (SOAPElement)getRequiredElement(element, requiredQName, contextQName.toString());
    }
    
    public static SOAPElement getRequiredElement(SOAPElement element, QName requiredQName, String context)
    {
-      return (SOAPElement)getRequiredElement((Element)element, requiredQName, context);
-   }
-   
-   private static Element getOptionalElement(Element element, QName optionalQName, QName contextQName)
-   {
-      List<Element> list = DOMUtils.getChildElementsAsList(element, optionalQName);
-      return getOptionalElementFromList(list, optionalQName, contextQName);
+      List<Element> childElements = DOMUtils.getChildElementsAsList(element, requiredQName);
+
+      if (childElements.size() < 1)
+         throw new ReliableMessagingException(
+            "Required " + requiredQName + " element not found in " + context + " element");
+      
+      if (childElements.size() > 1)
+         throw new ReliableMessagingException(
+            "Only one " + requiredQName + " element can be present in " + context + " element");
+      
+      return (SOAPElement)childElements.get(0);
    }
    
    public static String getRequiredTextContent(SOAPElement element, QName attributeQName, QName elementQName)
@@ -97,27 +79,33 @@ final class SerializationHelper
       
       if (attributeValue == null)
          throw new ReliableMessagingException(
-            "Required attribute " + attributeQName.getLocalPart() + " is missing in element " + elementQName.getLocalPart());
+            "Required attribute " + attributeQName + " is missing in element " + elementQName);
 
       return attributeValue;
    }
    
    public static SOAPElement getOptionalElement(SOAPElement contextElement, QName optionalQName, QName contextQName)
    {
-      return (SOAPElement)getOptionalElement((Element)contextElement, optionalQName, contextQName);
+      List<Element> list = DOMUtils.getChildElementsAsList(contextElement, optionalQName);
+
+      if (list.size() > 1)
+         throw new ReliableMessagingException(
+            "At most one " + optionalQName + " element can be present in " + contextQName + " element");
+      
+      return (SOAPElement)((list.size() == 1) ? list.get(0) : null);
    }
    
    public static List<SOAPElement> getOptionalElements(SOAPElement contextElement, QName optionalQName, QName contextQName)
    {
-      // TODO: optimize this method - do not create new list
       List<Element> temp = DOMUtils.getChildElementsAsList(contextElement, optionalQName);
+      
       if (temp.size() == 0)
       {
          return Collections.emptyList();
       }
       else
       {
-         List<SOAPElement> retVal = new ArrayList<SOAPElement>();
+         List<SOAPElement> retVal = new LinkedList<SOAPElement>();
          
          for (Element e : temp)
          {
@@ -128,7 +116,7 @@ final class SerializationHelper
       }
    }
    
-   public static long stringToLong(String toEvaluate, String errorMessage) throws ReliableMessagingException
+   public static long stringToLong(String toEvaluate, String errorMessage)
    {
       try
       {
@@ -138,33 +126,6 @@ final class SerializationHelper
       {
          throw new ReliableMessagingException(errorMessage, nfe);
       }
-   }
-   
-   private static Element getOptionalElementFromList(List<Element> list, QName requiredQName, QName contextQName)
-   {
-      return getOptionalElementFromList(list, requiredQName.getLocalPart(), contextQName.getLocalPart());
-   }
-
-   private static Element getOptionalElementFromList(List<Element> list, String required, String context)
-   {
-      if (list.size() > 1)
-         throw new ReliableMessagingException(
-            "At most one " + required + " element can be present in " + context + " element");
-      
-      return (list.size() == 1) ? list.get(0) : null;
-   }
-   
-   private static Element getRequiredElementFromList(List<Element> list, String required, String context)
-   {
-      if (list.size() < 1)
-         throw new ReliableMessagingException(
-            "Required " + required + " element not found in " + context + " element");
-      
-      if (list.size() > 1)
-         throw new ReliableMessagingException(
-            "Only one " + required + " element can be present in " + context + " element");
-      
-      return list.get(0);
    }
    
 }
