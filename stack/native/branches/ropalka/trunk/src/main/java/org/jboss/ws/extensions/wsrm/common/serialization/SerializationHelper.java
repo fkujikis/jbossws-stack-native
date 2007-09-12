@@ -21,16 +21,16 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
-import static org.jboss.ws.extensions.wsrm.common.serialization.SerializationHelper.getRequiredTextContent;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.xml.namespace.QName;
+
 import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 import org.jboss.wsf.common.DOMUtils;
-import javax.xml.soap.SOAPElement;
 import org.w3c.dom.Element;
+
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPElement;
 
 /**
  * Serialization helper - TODO: optimize it to minimize usage of org.w3c.dom.Element class

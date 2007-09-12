@@ -76,6 +76,10 @@ final class TerminateSequenceResponseSerializer
       {
          throw new ReliableMessagingException("Unable to deserialize RM message", se);
       }
+      catch (RuntimeException re)
+      {
+         throw new ReliableMessagingException("Unable to deserialize RM message", re);
+      }
    }
 
    /**
