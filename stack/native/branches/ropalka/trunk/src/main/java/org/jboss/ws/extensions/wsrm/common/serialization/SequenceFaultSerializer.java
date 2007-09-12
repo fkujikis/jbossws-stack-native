@@ -26,18 +26,25 @@ import javax.xml.soap.SOAPMessage;
 import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
-import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFault;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
 /**
  * <b>SequenceFault</b> object de/serializer
  * @author richard.opalka@jboss.com
  */
-final class SequenceFaultSerializer
+final class SequenceFaultSerializer implements Serializer
 {
 
+   private static final Serializer INSTANCE = new SequenceFaultSerializer();
+   
    private SequenceFaultSerializer()
    {
-      // no instances
+      // hide constructor
+   }
+   
+   static Serializer getInstance()
+   {
+      return INSTANCE;
    }
    
    /**
@@ -46,7 +53,7 @@ final class SequenceFaultSerializer
     * @param provider wsrm provider to be used for deserialization process
     * @param soapMessage soap message from which object will be deserialized
     */
-   public static void deserialize(SequenceFault object, Provider provider, SOAPMessage soapMessage)
+   public final void deserialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
       throw new NotImplementedException();
@@ -58,7 +65,7 @@ final class SequenceFaultSerializer
     * @param provider wsrm provider to be used for serialization process
     * @param soapMessage soap message to which object will be serialized
     */
-   public static void serialize(SequenceFault object, Provider provider, SOAPMessage soapMessage)
+   public final void serialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
       throw new NotImplementedException();

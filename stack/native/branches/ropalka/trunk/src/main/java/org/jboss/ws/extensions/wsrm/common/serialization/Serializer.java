@@ -19,37 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm.spi.protocol;
+package org.jboss.ws.extensions.wsrm.common.serialization;
 
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.spi.Provider;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
 /**
- * This interface identifies classes that are de/serializable from/to SOAP messages
- *
+ * Each WS-RM message de/serializer must implement this interface
  * @author richard.opalka@jboss.com
  */
-public interface Serializable
+interface Serializer
 {
    
    /**
-    * Serialize object instance to SOAP message
-    * @param soapMessage 
-    * @throws ReliableMessagingException is something went wrong
+    * Serialize the specified <b>object</b> using passed RM <b>provider</b> to the <b>soapMessage</b>
+    * @param object to be serialized
+    * @param provider RM provider to be used
+    * @param soapMessage where to write the data
     */
-   void serializeTo(SOAPMessage soapMessage) throws ReliableMessagingException;
+   void serialize(Serializable object, Provider provider, SOAPMessage soapMessage);
    
    /**
-    * Deserialize object instance from SOAP message
-    * @param soapMessage ReliableMessagingException is something went wrong
+    * Deserialize the specified <b>object</b> using passed RM <b>provider</b> from the <b>soapMessage</b>
+    * @param object to be deserialized
+    * @param provider RM provider to be used
+    * @param soapMessage from which to read the data
     */
-   void deserializeFrom(SOAPMessage soapMessage) throws ReliableMessagingException;
-   
-   /**
-    * Validate object state if everything is all right
-    * @throws  ReliableMessagingException if object is in incorrect state
-    */
-   void validate() throws ReliableMessagingException;
+   void deserialize(Serializable object, Provider provider, SOAPMessage soapMessage);
    
 }

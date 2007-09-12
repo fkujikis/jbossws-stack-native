@@ -37,17 +37,25 @@ import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
 /**
  * <b>AckRequested</b> object de/serializer
  * @author richard.opalka@jboss.com
  */
-final class AckRequestedSerializer
+final class AckRequestedSerializer implements Serializer
 {
 
+   private static final Serializer INSTANCE = new AckRequestedSerializer();
+   
    private AckRequestedSerializer()
    {
-      // no instances
+      // hide constructor
+   }
+   
+   static Serializer getInstance()
+   {
+      return INSTANCE;
    }
    
    /**
@@ -56,9 +64,10 @@ final class AckRequestedSerializer
     * @param provider wsrm provider to be used for deserialization process
     * @param soapMessage soap message from which object will be deserialized
     */
-   public static void deserialize(AckRequested object, Provider provider, SOAPMessage soapMessage)
+   public final void deserialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
+      AckRequested o = (AckRequested)object;
       try
       {
          SOAPHeader soapHeader = soapMessage.getSOAPPart().getEnvelope().getHeader();
@@ -72,7 +81,7 @@ final class AckRequestedSerializer
          QName identifierQName = wsrmConstants.getIdentifierQName();
          SOAPElement identifierElement = getRequiredElement(ackRequestedElement, identifierQName, ackRequestedQName);
          String identifier = getRequiredTextContent(identifierElement, identifierQName);
-         object.setIdentifier(identifier);
+         o.setIdentifier(identifier);
          
          // read optional wsrm:MessageNumber element
          QName messageNumberQName = wsrmConstants.getMessageNumberQName();
@@ -81,7 +90,7 @@ final class AckRequestedSerializer
          {
             String messageNumberString = getRequiredTextContent(messageNumberElement, messageNumberQName);
             long messageNumberValue = stringToLong(messageNumberString, "Unable to parse MessageNumber element text content");
-            object.setMessageNumber(messageNumberValue);
+            o.setMessageNumber(messageNumberValue);
          }
       }
       catch (SOAPException se)
@@ -100,9 +109,10 @@ final class AckRequestedSerializer
     * @param provider wsrm provider to be used for serialization process
     * @param soapMessage soap message to which object will be serialized
     */
-   public static void serialize(AckRequested object, Provider provider, SOAPMessage soapMessage)
+   public final void serialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
+      AckRequested o = (AckRequested)object;
       try
       {
          SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
@@ -117,14 +127,14 @@ final class AckRequestedSerializer
 
          // write required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
-         ackRequestedElement.addChildElement(identifierQName).setValue(object.getIdentifier());
+         ackRequestedElement.addChildElement(identifierQName).setValue(o.getIdentifier());
          
-         if (object.getMessageNumber() != 0)
+         if (o.getMessageNumber() != 0)
          {
             // write optional wsrm:MessageNumber element
             QName messageNumberQName = wsrmConstants.getMessageNumberQName();
             SOAPElement messageNumberElement = ackRequestedElement.addChildElement(messageNumberQName);
-            messageNumberElement.setValue(String.valueOf(object.getMessageNumber()));
+            messageNumberElement.setValue(String.valueOf(o.getMessageNumber()));
          }
       }
       catch (SOAPException se)

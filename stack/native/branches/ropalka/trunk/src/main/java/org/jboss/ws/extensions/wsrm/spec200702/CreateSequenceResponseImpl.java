@@ -21,6 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.spec200702;
 
+import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 import org.jboss.ws.extensions.wsrm.common.serialization.AbstractSerializable;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
@@ -209,7 +210,7 @@ final class CreateSequenceResponseImpl extends AbstractSerializable implements C
    public void validate()
    {
       if (this.identifier == null)
-         throw new IllegalStateException();
+         throw new ReliableMessagingException("Identifier must be set");
    }
    
    /*

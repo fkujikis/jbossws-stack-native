@@ -21,6 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.spec200702;
 
+import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 import org.jboss.ws.extensions.wsrm.common.serialization.AbstractSerializable;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
@@ -122,7 +123,7 @@ final class AckRequestedImpl extends AbstractSerializable implements AckRequeste
    public void validate()
    {
       if (this.identifier == null)
-         throw new IllegalStateException();
+         throw new ReliableMessagingException("Identifier not set");
    }
 
 }

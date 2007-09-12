@@ -37,17 +37,25 @@ import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequence;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
 /**
  * <b>CloseSequence</b> object de/serializer
  * @author richard.opalka@jboss.com
  */
-final class CloseSequenceSerializer
+final class CloseSequenceSerializer implements Serializer
 {
 
+   private static final Serializer INSTANCE = new CloseSequenceSerializer();
+   
    private CloseSequenceSerializer()
    {
-      // no instances
+      // hide constructor
+   }
+   
+   static Serializer getInstance()
+   {
+      return INSTANCE;
    }
    
    /**
@@ -56,9 +64,10 @@ final class CloseSequenceSerializer
     * @param provider wsrm provider to be used for deserialization process
     * @param soapMessage soap message from which object will be deserialized
     */
-   public static void deserialize(CloseSequence object, Provider provider, SOAPMessage soapMessage)
+   public final void deserialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
+      CloseSequence o = (CloseSequence)object;
       try
       {
          SOAPBody soapBody = soapMessage.getSOAPPart().getEnvelope().getBody();
@@ -72,7 +81,7 @@ final class CloseSequenceSerializer
          QName identifierQName = wsrmConstants.getIdentifierQName();
          SOAPElement identifierElement = getRequiredElement(closeSequenceElement, identifierQName, closeSequenceQName);
          String identifier = getRequiredTextContent(identifierElement, identifierQName);
-         object.setIdentifier(identifier);
+         o.setIdentifier(identifier);
          
          // read optional wsrm:LastMsgNumber element
          QName lastMsgNumberQName = wsrmConstants.getLastMsgNumberQName();
@@ -81,7 +90,7 @@ final class CloseSequenceSerializer
          {
             String lastMsgNumberString = getRequiredTextContent(lastMsgNumberElement, lastMsgNumberQName);
             long lastMsgNumberValue = stringToLong(lastMsgNumberString, "Unable to parse LastMsgNumber element text content");
-            object.setLastMsgNumber(lastMsgNumberValue);
+            o.setLastMsgNumber(lastMsgNumberValue);
          }
       }
       catch (SOAPException se)
@@ -100,9 +109,10 @@ final class CloseSequenceSerializer
     * @param provider wsrm provider to be used for serialization process
     * @param soapMessage soap message to which object will be serialized
     */
-   public static void serialize(CloseSequence object, Provider provider, SOAPMessage soapMessage)
+   public final void serialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
+      CloseSequence o = (CloseSequence)object;
       try
       {
          SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
@@ -117,14 +127,14 @@ final class CloseSequenceSerializer
 
          // write required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
-         closeSequenceElement.addChildElement(identifierQName).setValue(object.getIdentifier());
+         closeSequenceElement.addChildElement(identifierQName).setValue(o.getIdentifier());
          
-         if (object.getLastMsgNumber() != 0)
+         if (o.getLastMsgNumber() != 0)
          {
             // write optional wsrm:LastMsgNumber element
             QName lastMsgNumberQName = wsrmConstants.getLastMsgNumberQName();
             SOAPElement lastMsgNumberElement = closeSequenceElement.addChildElement(lastMsgNumberQName);
-            lastMsgNumberElement.setValue(String.valueOf(object.getLastMsgNumber()));
+            lastMsgNumberElement.setValue(String.valueOf(o.getLastMsgNumber()));
          }
       }
       catch (SOAPException se)

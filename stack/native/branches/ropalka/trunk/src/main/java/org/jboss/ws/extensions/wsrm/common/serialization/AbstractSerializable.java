@@ -28,7 +28,7 @@ import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
 /**
- * Utility class which should be used by all WS-RM protocol providers.
+ * Utility class which should be subclassed by all WS-RM protocol providers.
  * @author richard.opalka@jboss.com
  * @see org.jboss.ws.extensions.wsrm.spi.protocol.Serializable
  */
@@ -37,7 +37,7 @@ public abstract class AbstractSerializable implements Serializable
    
    protected AbstractSerializable()
    {
-      // intended to be overriden
+      // intended to be subclassed
    }
  
    /*
@@ -58,6 +58,10 @@ public abstract class AbstractSerializable implements Serializable
       SerializationRepository.serialize(this, soapMessage);
    }
    
+   /**
+    * Each subclass must implement this method
+    * @return RM provider to be used for de/serialization purposes
+    */
    public abstract Provider getProvider();
 
 }

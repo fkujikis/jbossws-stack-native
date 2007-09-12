@@ -38,6 +38,7 @@ import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
 import java.util.List;
 
@@ -45,12 +46,19 @@ import java.util.List;
  * <b>SequenceAcknowledgement</b> object de/serializer
  * @author richard.opalka@jboss.com
  */
-final class SequenceAcknowledgementSerializer
+final class SequenceAcknowledgementSerializer implements Serializer
 {
 
+   private static final Serializer INSTANCE = new SequenceAcknowledgementSerializer();
+   
    private SequenceAcknowledgementSerializer()
    {
-      // no instances
+      // hide constructor
+   }
+   
+   static Serializer getInstance()
+   {
+      return INSTANCE;
    }
    
    /**
@@ -59,9 +67,10 @@ final class SequenceAcknowledgementSerializer
     * @param provider wsrm provider to be used for deserialization process
     * @param soapMessage soap message from which object will be deserialized
     */
-   public static void deserialize(SequenceAcknowledgement object, Provider provider, SOAPMessage soapMessage)
+   public final void deserialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
+      SequenceAcknowledgement o = (SequenceAcknowledgement)object;
       try
       {
          SOAPHeader soapHeader = soapMessage.getSOAPPart().getEnvelope().getHeader();
@@ -75,14 +84,14 @@ final class SequenceAcknowledgementSerializer
          QName identifierQName = wsrmConstants.getIdentifierQName();
          SOAPElement identifierElement = getRequiredElement(sequenceAckElement, identifierQName, sequenceAckQName);
          String identifier = getRequiredTextContent(identifierElement, identifierQName);
-         object.setIdentifier(identifier);
+         o.setIdentifier(identifier);
          
          // read optional wsrm:Final element
          QName finalQName = wsrmConstants.getFinalQName();
          SOAPElement finalElement = getOptionalElement(sequenceAckElement, finalQName, sequenceAckQName);
          if (finalElement != null)
          {
-            object.setFinal();
+            o.setFinal();
          }
          
          // read optional wsrm:None element
@@ -90,7 +99,7 @@ final class SequenceAcknowledgementSerializer
          SOAPElement noneElement = getOptionalElement(sequenceAckElement, noneQName, sequenceAckQName);
          if (noneElement != null)
          {
-            object.setNone();
+            o.setNone();
          }
          
          // read optional wsrm:Nack elements
@@ -99,7 +108,7 @@ final class SequenceAcknowledgementSerializer
          for (SOAPElement nackElement : nackElements)
          {
             String messageId = getRequiredTextContent(nackElement, nackQName);
-            object.addNack(stringToLong(messageId, "Unable to parse Nack element text content"));
+            o.addNack(stringToLong(messageId, "Unable to parse Nack element text content"));
          }
          
          // read optional wsrm:AcknowledgementRange elements
@@ -112,7 +121,7 @@ final class SequenceAcknowledgementSerializer
 
             for (SOAPElement ackRangeElement : ackRangeElements)
             {
-               SequenceAcknowledgement.AcknowledgementRange ackRange = object.newAcknowledgementRange();
+               SequenceAcknowledgement.AcknowledgementRange ackRange = o.newAcknowledgementRange();
             
                // read required wsrm:Upper attribute
                String upper = getRequiredTextContent(ackRangeElement, upperQName, ackRangeQName);
@@ -123,7 +132,7 @@ final class SequenceAcknowledgementSerializer
                ackRange.setLower(stringToLong(lower, "Unable to parse Lower attribute text content"));
             
                // set created acknowledgement range
-               object.addAcknowledgementRange(ackRange);
+               o.addAcknowledgementRange(ackRange);
             }
          }
       }
@@ -143,9 +152,10 @@ final class SequenceAcknowledgementSerializer
     * @param provider wsrm provider to be used for serialization process
     * @param soapMessage soap message to which object will be serialized
     */
-   public static void serialize(SequenceAcknowledgement object, Provider provider, SOAPMessage soapMessage)
+   public final void serialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
+      SequenceAcknowledgement o = (SequenceAcknowledgement)object;
       try
       {
          SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
@@ -160,23 +170,23 @@ final class SequenceAcknowledgementSerializer
 
          // write required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
-         sequenceAckElement.addChildElement(identifierQName).setValue(object.getIdentifier());
+         sequenceAckElement.addChildElement(identifierQName).setValue(o.getIdentifier());
          
-         if (object.isFinal())
+         if (o.isFinal())
          {
             // write optional wsrm:Final element
             QName finalQName = wsrmConstants.getFinalQName();
             sequenceAckElement.addChildElement(finalQName);
          }
          
-         if (object.isNone())
+         if (o.isNone())
          {
             // write optional wsrm:None element
             QName noneQName = wsrmConstants.getNoneQName();
             sequenceAckElement.addChildElement(noneQName);
          }
          
-         List<Long> nacks = object.getNacks();
+         List<Long> nacks = o.getNacks();
          if (nacks.size() != 0)
          {
             QName nackQName = wsrmConstants.getNackQName();
@@ -188,7 +198,7 @@ final class SequenceAcknowledgementSerializer
             }
          }
          
-         List<SequenceAcknowledgement.AcknowledgementRange> ackRanges = object.getAcknowledgementRanges();
+         List<SequenceAcknowledgement.AcknowledgementRange> ackRanges = o.getAcknowledgementRanges();
          if (ackRanges.size() != 0)
          {
             QName acknowledgementRangeQName = wsrmConstants.getAcknowledgementRangeQName();

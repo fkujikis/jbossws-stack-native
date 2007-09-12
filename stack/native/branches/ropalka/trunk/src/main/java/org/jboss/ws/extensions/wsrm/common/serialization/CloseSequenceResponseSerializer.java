@@ -35,17 +35,25 @@ import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequenceResponse;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
 /**
  * <b>CloseSequenceResponse</b> object de/serializer
  * @author richard.opalka@jboss.com
  */
-final class CloseSequenceResponseSerializer
+final class CloseSequenceResponseSerializer implements Serializer
 {
 
+   private static final Serializer INSTANCE = new CloseSequenceResponseSerializer();
+   
    private CloseSequenceResponseSerializer()
    {
-      // no instances
+      // hide constructor
+   }
+   
+   static Serializer getInstance()
+   {
+      return INSTANCE;
    }
    
    /**
@@ -54,9 +62,10 @@ final class CloseSequenceResponseSerializer
     * @param provider wsrm provider to be used for deserialization process
     * @param soapMessage soap message from which object will be deserialized
     */
-   public static void deserialize(CloseSequenceResponse object, Provider provider, SOAPMessage soapMessage)
+   public final void deserialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
+      CloseSequenceResponse o = (CloseSequenceResponse)object;
       try
       {
          SOAPBody soapBody = soapMessage.getSOAPPart().getEnvelope().getBody();
@@ -70,7 +79,7 @@ final class CloseSequenceResponseSerializer
          QName identifierQName = wsrmConstants.getIdentifierQName();
          SOAPElement identifierElement = getRequiredElement(closeSequenceResponseElement, identifierQName, closeSequenceResponseQName);
          String identifier = getRequiredTextContent(identifierElement, identifierQName);
-         object.setIdentifier(identifier);
+         o.setIdentifier(identifier);
       }
       catch (SOAPException se)
       {
@@ -88,9 +97,10 @@ final class CloseSequenceResponseSerializer
     * @param provider wsrm provider to be used for serialization process
     * @param soapMessage soap message to which object will be serialized
     */
-   public static void serialize(CloseSequenceResponse object, Provider provider, SOAPMessage soapMessage)
+   public final void serialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
+      CloseSequenceResponse o = (CloseSequenceResponse)object;
       try
       {
          SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
@@ -105,7 +115,7 @@ final class CloseSequenceResponseSerializer
 
          // write required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
-         closeSequenceResponseElement.addChildElement(identifierQName).setValue(object.getIdentifier());
+         closeSequenceResponseElement.addChildElement(identifierQName).setValue(o.getIdentifier());
       }
       catch (SOAPException se)
       {

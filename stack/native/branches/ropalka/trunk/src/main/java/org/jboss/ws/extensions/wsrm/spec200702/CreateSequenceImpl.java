@@ -21,6 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.spec200702;
 
+import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 import org.jboss.ws.extensions.wsrm.common.serialization.AbstractSerializable;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence;
@@ -181,7 +182,7 @@ final class CreateSequenceImpl extends AbstractSerializable implements CreateSeq
    public void validate()
    {
       if (this.acksTo == null)
-         throw new IllegalStateException();
+         throw new ReliableMessagingException("AcksTo must be set");
    }
    
    /*

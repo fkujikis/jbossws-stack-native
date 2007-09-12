@@ -37,17 +37,25 @@ import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
 import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
 /**
  * <b>Sequence</b> object de/serializer
  * @author richard.opalka@jboss.com
  */
-final class SequenceSerializer
+final class SequenceSerializer implements Serializer
 {
 
+   private static final Serializer INSTANCE = new SequenceSerializer();
+   
    private SequenceSerializer()
    {
-      // no instances
+      // hide constructor
+   }
+   
+   static Serializer getInstance()
+   {
+      return INSTANCE;
    }
    
    /**
@@ -56,9 +64,10 @@ final class SequenceSerializer
     * @param provider wsrm provider to be used for deserialization process
     * @param soapMessage soap message from which object will be deserialized
     */
-   public static void deserialize(Sequence object, Provider provider, SOAPMessage soapMessage)
+   public final void deserialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
+      Sequence o = (Sequence)object;
       try
       {
          SOAPHeader soapHeader = soapMessage.getSOAPPart().getEnvelope().getHeader();
@@ -72,21 +81,21 @@ final class SequenceSerializer
          QName identifierQName = wsrmConstants.getIdentifierQName();
          SOAPElement identifierElement = getRequiredElement(sequenceElement, identifierQName, sequenceQName);
          String identifier = getRequiredTextContent(identifierElement, identifierQName);
-         object.setIdentifier(identifier);
+         o.setIdentifier(identifier);
          
          // read required wsrm:MessageNumber element
          QName messageNumberQName = wsrmConstants.getMessageNumberQName();
          SOAPElement messageNumberElement = getRequiredElement(sequenceElement, messageNumberQName, sequenceQName);
          String messageNumberString = getRequiredTextContent(messageNumberElement, messageNumberQName);
          long messageNumberValue = stringToLong(messageNumberString, "Unable to parse MessageNumber element text content");
-         object.setMessageNumber(messageNumberValue);
+         o.setMessageNumber(messageNumberValue);
          
          // read optional wsrm:LastMessage element
          QName lastMessageQName = wsrmConstants.getLastMessageQName();
          SOAPElement lastMessageElement = getOptionalElement(sequenceElement, lastMessageQName, sequenceQName);
          if (lastMessageElement != null)
          {
-            object.setLastMessage();
+            o.setLastMessage();
          }
       }
       catch (SOAPException se)
@@ -105,9 +114,10 @@ final class SequenceSerializer
     * @param provider wsrm provider to be used for serialization process
     * @param soapMessage soap message to which object will be serialized
     */
-   public static void serialize(Sequence object, Provider provider, SOAPMessage soapMessage)
+   public final void serialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
+      Sequence o = (Sequence)object;
       try
       {
          SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
@@ -122,14 +132,14 @@ final class SequenceSerializer
 
          // write required wsrm:Identifier element
          QName identifierQName = wsrmConstants.getIdentifierQName();
-         sequenceElement.addChildElement(identifierQName).setValue(object.getIdentifier());
+         sequenceElement.addChildElement(identifierQName).setValue(o.getIdentifier());
          
          // write required wsrm:MessageNumber element
          QName messageNumberQName = wsrmConstants.getMessageNumberQName();
          SOAPElement messageNumberElement = sequenceElement.addChildElement(messageNumberQName);
-         messageNumberElement.setValue(String.valueOf(object.getMessageNumber()));
+         messageNumberElement.setValue(String.valueOf(o.getMessageNumber()));
          
-         if (object.isLastMessage())
+         if (o.isLastMessage())
          {
             // write optional wsrm:LastMessage element
             QName lastMessageQName = wsrmConstants.getLastMessageQName();

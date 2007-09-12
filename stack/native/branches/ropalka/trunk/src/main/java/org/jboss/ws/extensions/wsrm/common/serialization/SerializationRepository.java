@@ -22,7 +22,6 @@
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
 import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
-import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequenceResponse;
@@ -31,9 +30,14 @@ import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceFault;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 import org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequenceResponse;
+
 import javax.xml.soap.SOAPMessage;
+
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Utility class used for de/serialization
@@ -42,81 +46,67 @@ import javax.xml.soap.SOAPMessage;
 final class SerializationRepository
 {
 
-   private SerializationRepository()
+   private static final Map<Class<? extends Serializable>, Serializer> SERIALIZER_REGISTRY;
+   
+   static
    {
-      // forbidden inheritance
+      SERIALIZER_REGISTRY = new HashMap<Class<? extends Serializable>, Serializer>();
+      SERIALIZER_REGISTRY.put(AckRequested.class, AckRequestedSerializer.getInstance());
+      SERIALIZER_REGISTRY.put(CloseSequence.class, CloseSequenceSerializer.getInstance());
+      SERIALIZER_REGISTRY.put(CloseSequenceResponse.class, CloseSequenceResponseSerializer.getInstance());
+      SERIALIZER_REGISTRY.put(CreateSequence.class, CreateSequenceSerializer.getInstance());
+      SERIALIZER_REGISTRY.put(CreateSequenceResponse.class, CreateSequenceResponseSerializer.getInstance());
+      SERIALIZER_REGISTRY.put(SequenceAcknowledgement.class, SequenceAcknowledgementSerializer.getInstance());
+      SERIALIZER_REGISTRY.put(SequenceFault.class, SequenceFaultSerializer.getInstance());
+      SERIALIZER_REGISTRY.put(Sequence.class, SequenceSerializer.getInstance());
+      SERIALIZER_REGISTRY.put(TerminateSequence.class, TerminateSequenceSerializer.getInstance());
+      SERIALIZER_REGISTRY.put(TerminateSequenceResponse.class, TerminateSequenceResponseSerializer.getInstance());
    }
    
-   public static void serialize(AbstractSerializable object, SOAPMessage soapMessage) throws ReliableMessagingException
+   private SerializationRepository()
    {
-      Provider provider = object.getProvider();
-      
-      if (object instanceof AckRequested)
-         AckRequestedSerializer
-            .serialize((AckRequested)object, provider, soapMessage);
-      if (object instanceof CloseSequence)
-         CloseSequenceSerializer
-            .serialize((CloseSequence)object, provider, soapMessage);
-      if (object instanceof CloseSequenceResponse)
-         CloseSequenceResponseSerializer
-            .serialize((CloseSequenceResponse)object, provider, soapMessage);
-      if (object instanceof CreateSequence)
-         CreateSequenceSerializer
-            .serialize((CreateSequence)object, provider, soapMessage);
-      if (object instanceof CreateSequenceResponse)
-         CreateSequenceResponseSerializer
-            .serialize((CreateSequenceResponse)object, provider, soapMessage);
-      if (object instanceof SequenceAcknowledgement)
-         SequenceAcknowledgementSerializer
-            .serialize((SequenceAcknowledgement)object, provider, soapMessage);
-      if (object instanceof SequenceFault)
-         SequenceFaultSerializer
-            .serialize((SequenceFault)object, provider, soapMessage);
-      if (object instanceof Sequence)
-         SequenceSerializer
-            .serialize((Sequence)object, provider, soapMessage);
-      if (object instanceof TerminateSequence)
-         TerminateSequenceSerializer
-            .serialize((TerminateSequence)object, provider, soapMessage);
-      if (object instanceof TerminateSequenceResponse)
-         TerminateSequenceResponseSerializer
-            .serialize((TerminateSequenceResponse)object, provider, soapMessage);
+      // no instances
+   }
+   
+   /**
+    * Serialize passed <b>object</b> data to the <b>soapMessage</b>
+    * @param object to be serialized
+    * @param soapMessage where to write data
+    * @throws ReliableMessagingException if something went wrong
+    */
+   public static void serialize(AbstractSerializable object, SOAPMessage soapMessage)
+   throws ReliableMessagingException
+   {
+      getSerializer(object).serialize(object, object.getProvider(), soapMessage);
    }
 
-   public static void deserialize(AbstractSerializable object, SOAPMessage soapMessage) throws ReliableMessagingException
+   /**
+    * Initialize passed <b>object</b> using data in <b>soapMessage</b>
+    * @param object to be initialized
+    * @param soapMessage from which to read the data
+    * @throws ReliableMessagingException if something went wrong
+    */
+   public static void deserialize(AbstractSerializable object, SOAPMessage soapMessage)
+   throws ReliableMessagingException
    {
-      Provider provider = object.getProvider();
+      getSerializer(object).deserialize(object, object.getProvider(), soapMessage);
+   }
+   
+   /**
+    * Lookups the serializer associated with the passed <b>object</b>
+    * @param object to lookup serializer for
+    * @return serializer to be used
+    * @throws IllegalArgumentException if passed object has no defined serializer
+    */
+   private static Serializer getSerializer(Serializable object)
+   {
+      for (Class<? extends Serializable> serializable : SERIALIZER_REGISTRY.keySet())
+      {
+         if (serializable.isAssignableFrom(object.getClass()))
+            return SERIALIZER_REGISTRY.get(serializable);
+      }
       
-      if (object instanceof AckRequested)
-         AckRequestedSerializer
-            .deserialize((AckRequested)object, provider, soapMessage);
-      if (object instanceof CloseSequence)
-         CloseSequenceSerializer
-            .deserialize((CloseSequence)object, provider, soapMessage);
-      if (object instanceof CloseSequenceResponse)
-         CloseSequenceResponseSerializer
-            .deserialize((CloseSequenceResponse)object, provider, soapMessage);
-      if (object instanceof CreateSequence)
-         CreateSequenceSerializer
-            .deserialize((CreateSequence)object, provider, soapMessage);
-      if (object instanceof CreateSequenceResponse)
-         CreateSequenceResponseSerializer
-            .deserialize((CreateSequenceResponse)object, provider, soapMessage);
-      if (object instanceof SequenceAcknowledgement)
-         SequenceAcknowledgementSerializer
-            .deserialize((SequenceAcknowledgement)object, provider, soapMessage);
-      if (object instanceof SequenceFault)
-         SequenceFaultSerializer
-            .deserialize((SequenceFault)object, provider, soapMessage);
-      if (object instanceof Sequence)
-         SequenceSerializer
-            .deserialize((Sequence)object, provider, soapMessage);
-      if (object instanceof TerminateSequence)
-         TerminateSequenceSerializer
-            .deserialize((TerminateSequence)object, provider, soapMessage);
-      if (object instanceof TerminateSequenceResponse)
-         TerminateSequenceResponseSerializer
-            .deserialize((TerminateSequenceResponse)object, provider, soapMessage);
+      throw new IllegalArgumentException();
    }
    
 }

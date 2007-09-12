@@ -39,20 +39,28 @@ import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.IncompleteSequenceBehavior;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
 /**
  * <b>CreateSequence</b> object de/serializer
  * @author richard.opalka@jboss.com
  */
-final class CreateSequenceSerializer
+final class CreateSequenceSerializer implements Serializer
 {
 
    private static final AddressingConstants ADDRESSING_CONSTANTS = 
       AddressingBuilder.getAddressingBuilder().newAddressingConstants();
    
+   private static final Serializer INSTANCE = new CreateSequenceSerializer();
+   
    private CreateSequenceSerializer()
    {
-      // no instances
+      // hide constructor
+   }
+   
+   static Serializer getInstance()
+   {
+      return INSTANCE;
    }
    
    /**
@@ -61,9 +69,10 @@ final class CreateSequenceSerializer
     * @param provider wsrm provider to be used for deserialization process
     * @param soapMessage soap message from which object will be deserialized
     */
-   public static void deserialize(CreateSequence object, Provider provider, SOAPMessage soapMessage)
+   public final void deserialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
+      CreateSequence o = (CreateSequence)object;
       try
       {
          SOAPBody soapBody = soapMessage.getSOAPPart().getEnvelope().getBody();
@@ -79,7 +88,7 @@ final class CreateSequenceSerializer
          QName addressQName = ADDRESSING_CONSTANTS.getAddressQName();
          SOAPElement acksToAddressElement = getRequiredElement(acksToElement, addressQName, acksToQName);
          String acksToAddress = getRequiredTextContent(acksToAddressElement, addressQName);
-         object.setAcksTo(acksToAddress);
+         o.setAcksTo(acksToAddress);
 
          // read optional wsrm:Expires element
          QName expiresQName = wsrmConstants.getExpiresQName();
@@ -87,7 +96,7 @@ final class CreateSequenceSerializer
          if (expiresElement != null)
          {
             String duration = getRequiredTextContent(expiresElement, expiresQName);
-            object.setExpires(duration);
+            o.setExpires(duration);
          }
 
          // read optional wsrm:Offer element
@@ -95,7 +104,7 @@ final class CreateSequenceSerializer
          SOAPElement offerElement = getOptionalElement(createSequenceElement, offerQName, createSequenceQName);
          if (offerElement != null)
          {
-            CreateSequence.Offer offer = object.newOffer();
+            CreateSequence.Offer offer = o.newOffer();
 
             // read required wsrm:Identifier element
             QName identifierQName = wsrmConstants.getIdentifierQName();
@@ -131,7 +140,7 @@ final class CreateSequenceSerializer
             }
             
             // set created offer
-            object.setOffer(offer);
+            o.setOffer(offer);
          }
       }
       catch (SOAPException se)
@@ -150,9 +159,10 @@ final class CreateSequenceSerializer
     * @param provider wsrm provider to be used for serialization process
     * @param soapMessage soap message to which object will be serialized
     */
-   public static void serialize(CreateSequence object, Provider provider, SOAPMessage soapMessage)
+   public final void serialize(Serializable object, Provider provider, SOAPMessage soapMessage)
    throws ReliableMessagingException
    {
+      CreateSequence o = (CreateSequence)object;
       try
       {
          SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
@@ -170,18 +180,18 @@ final class CreateSequenceSerializer
          QName addressQName = ADDRESSING_CONSTANTS.getAddressQName();
          createSequenceElement.addChildElement(acksToQName)
             .addChildElement(addressQName)
-               .setValue(object.getAcksTo());
+               .setValue(o.getAcksTo());
          
-         if (object.getExpires() != null)
+         if (o.getExpires() != null)
          {
             // write optional wsrm:Expires element
             QName expiresQName = wsrmConstants.getExpiresQName();
-            createSequenceElement.addChildElement(expiresQName).setValue(object.getExpires());
+            createSequenceElement.addChildElement(expiresQName).setValue(o.getExpires());
          }
          
-         if (object.getOffer() != null)
+         if (o.getOffer() != null)
          {
-            CreateSequence.Offer offer = object.getOffer();
+            CreateSequence.Offer offer = o.getOffer();
             
             // write optional wsrm:Offer element
             QName offerQName = wsrmConstants.getOfferQName();
