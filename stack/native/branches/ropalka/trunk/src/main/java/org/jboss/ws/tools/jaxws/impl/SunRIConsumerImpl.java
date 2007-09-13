@@ -160,7 +160,7 @@ public class SunRIConsumerImpl extends WSContractConsumer
       }
       else
       {
-         stream = new NullPrintStream();
+         stream = NullPrintStream.getInstance();
       }
 
       if (!outputDir.exists() && !outputDir.mkdirs())

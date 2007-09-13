@@ -26,11 +26,22 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Locale;
 
-class NullPrintStream extends PrintStream
+/**
+ * Print stream Singleton behaving like /dev/null device
+ * @author richard.opalka@jboss.com
+ */
+final class NullPrintStream extends PrintStream
 {
-   NullPrintStream()
+   
+   private static final PrintStream INSTANCE = new NullPrintStream();
+   
+   public static PrintStream getInstance()
    {
-      // Doesn't actually do anything
+      return INSTANCE;
+   }
+   
+   private NullPrintStream()
+   {
       super(new ByteArrayOutputStream());
    }
 
@@ -206,4 +217,5 @@ class NullPrintStream extends PrintStream
    public void write(byte[] b) throws IOException
    {
    }
+   
 }

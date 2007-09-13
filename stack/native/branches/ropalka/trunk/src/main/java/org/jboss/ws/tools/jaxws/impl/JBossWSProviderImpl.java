@@ -50,7 +50,7 @@ final class JBossWSProviderImpl extends WSContractProvider
    private File outputDir = new File("output");
    private File resourceDir = null;
    private File sourceDir = null;
-   private PrintStream messageStream = new NullPrintStream();
+   private PrintStream messageStream = NullPrintStream.getInstance();
 
    private void createDirectories(File resourceDir, File sourceDir)
    {
