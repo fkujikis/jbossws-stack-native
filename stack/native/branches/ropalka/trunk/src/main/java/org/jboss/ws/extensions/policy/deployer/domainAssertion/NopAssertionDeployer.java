@@ -22,7 +22,7 @@
 package org.jboss.ws.extensions.policy.deployer.domainAssertion;
 
 import org.apache.ws.policy.PrimitiveAssertion;
-import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAssertion;
+import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAssertionException;
 import org.jboss.ws.metadata.umdm.ExtensibleMetaData;
 
 /**
@@ -41,12 +41,12 @@ import org.jboss.ws.metadata.umdm.ExtensibleMetaData;
 public class NopAssertionDeployer implements AssertionDeployer
 {
 
-   public void deployClientSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertion
+   public void deployClientSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertionException
    {
       //nop
    }
 
-   public void deployServerSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertion
+   public void deployServerSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertionException
    {
       //nop
    }

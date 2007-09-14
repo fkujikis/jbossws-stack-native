@@ -36,9 +36,9 @@ import org.jboss.ws.WSException;
 import org.jboss.ws.extensions.policy.deployer.domainAssertion.AssertionDeployer;
 import org.jboss.ws.extensions.policy.deployer.domainAssertion.NopAssertionDeployer;
 import org.jboss.ws.extensions.policy.deployer.domainAssertion.WSSecurityAssertionDeployer;
-import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAlternative;
-import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAssertion;
-import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedPolicy;
+import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAlternativeException;
+import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAssertionException;
+import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedPolicyException;
 import org.jboss.ws.metadata.umdm.ExtensibleMetaData;
 
 /**
@@ -50,12 +50,14 @@ public class PolicyDeployer
 {
    private final static Logger log = Logger.getLogger(PolicyDeployer.class);
    private static PolicyDeployer me;
-   private Map<String, Class> domainDeployerMap = new HashMap<String, Class>();
+   private Map<String, Class<? extends AssertionDeployer>> domainDeployerMap = new HashMap<String, Class<? extends AssertionDeployer>>();
 
    static
    {
       me = new PolicyDeployer();
       me.domainDeployerMap.put("http://www.jboss.com/ws-security/schema/jboss-ws-security_1_0.xsd", WSSecurityAssertionDeployer.class);
+      me.domainDeployerMap.put("http://schemas.xmlsoap.org/ws/2005/02/rm/policy", NopAssertionDeployer.class);
+      me.domainDeployerMap.put("http://docs.oasis-open.org/ws-rx/wsrmp/200702", NopAssertionDeployer.class);
    }
 
    //hide constructor
@@ -69,7 +71,7 @@ public class PolicyDeployer
    }
 
    //for test
-   public static PolicyDeployer newInstance(Map<String, Class> customDomainMap)
+   public static PolicyDeployer newInstance(Map<String, Class<? extends AssertionDeployer>> customDomainMap)
    {
       PolicyDeployer instance = new PolicyDeployer();
       instance.domainDeployerMap = customDomainMap;
@@ -82,12 +84,14 @@ public class PolicyDeployer
    {
       PolicyDeployer instance = new PolicyDeployer();
       instance.domainDeployerMap.put("http://www.jboss.com/ws-security/schema/jboss-ws-security_1_0.xsd", NopAssertionDeployer.class);
+      instance.domainDeployerMap.put("http://schemas.xmlsoap.org/ws/2005/02/rm/policy", NopAssertionDeployer.class);
+      instance.domainDeployerMap.put("http://docs.oasis-open.org/ws-rx/wsrmp/200702", NopAssertionDeployer.class);
       return instance;
 
    }
 
    @SuppressWarnings("unchecked")
-   public Policy deployServerside(Policy policy, ExtensibleMetaData extMetaData) throws UnsupportedPolicy
+   public Policy deployServerside(Policy policy, ExtensibleMetaData extMetaData) throws UnsupportedPolicyException
    {
       if (policy == null)
          throw new WSException("Cannot deploy null policy!");
@@ -111,7 +115,7 @@ public class PolicyDeployer
             deployAlternativeServerSide(alternative, extMetaData);
             returnedPolicyTerms.add(alternative);
          }
-         catch (UnsupportedAlternative e)
+         catch (UnsupportedAlternativeException e)
          {
             log.debug("Unsupported Alternative");
             //policy is unsupported only if it have all alternative unsupported
@@ -124,7 +128,7 @@ public class PolicyDeployer
          {
             log.debug("XorComposite zero element...Policy not supported");
          }
-         throw new UnsupportedPolicy();
+         throw new UnsupportedPolicyException();
       }
       policy.getTerms().clear();
       policy.addTerms(returnedPolicyTerms);
@@ -137,10 +141,10 @@ public class PolicyDeployer
     * 
     * @param policy
     * @param extMetaData
-    * @throws UnsupportedPolicy
+    * @throws UnsupportedPolicyException
     */
    @SuppressWarnings("unchecked")
-   public void deployClientSide(Policy policy, ExtensibleMetaData extMetaData) throws UnsupportedPolicy
+   public void deployClientSide(Policy policy, ExtensibleMetaData extMetaData) throws UnsupportedPolicyException
    {
       if (policy == null)
          throw new WSException("Cannot deploy null policy!");
@@ -161,10 +165,10 @@ public class PolicyDeployer
                {
                   deployAssertionClientSide((PrimitiveAssertion)assertion, extMetaData);
                }
-               catch (UnsupportedAssertion e)
+               catch (UnsupportedAssertionException e)
                {
                   log.error("Unsupported assertion!");
-                  throw new UnsupportedPolicy();
+                  throw new UnsupportedPolicyException();
                }
             }
             else if (assertion instanceof Policy) //inner policy to be verified
@@ -176,7 +180,7 @@ public class PolicyDeployer
    }
 
    @SuppressWarnings("unchecked")
-   private void deployAlternativeServerSide(AndCompositeAssertion alternative, ExtensibleMetaData extMetaData) throws UnsupportedAlternative
+   private void deployAlternativeServerSide(AndCompositeAssertion alternative, ExtensibleMetaData extMetaData) throws UnsupportedAlternativeException
    {
       for (Assertion assertion : (List<Assertion>)alternative.getTerms())
       {
@@ -197,41 +201,41 @@ public class PolicyDeployer
                {
                   log.debug("Unknown Alternative type....Alternative not supported");
                }
-               throw new UnsupportedAlternative();
+               throw new UnsupportedAlternativeException();
             }
 
          }
-         catch (UnsupportedAssertion e)
+         catch (UnsupportedAssertionException e)
          {
             //If there is al least one unsupported assertion the alternative isn't supported
-            throw new UnsupportedAlternative();
+            throw new UnsupportedAlternativeException();
          }
-         catch (UnsupportedPolicy ep)
+         catch (UnsupportedPolicyException ep)
          {
             //If there is al least one unsupported assertion the alternative isn't supported
-            throw new UnsupportedAlternative();
+            throw new UnsupportedAlternativeException();
          }
       }
    }
 
-   private void deployAssertionServerSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertion
+   private void deployAssertionServerSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertionException
    {
       AssertionDeployer deployer = getDomainDeployerInstance(assertion.getName().getNamespaceURI());
       deployer.deployServerSide(assertion, extMetaData);
    }
 
-   private void deployAssertionClientSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertion
+   private void deployAssertionClientSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertionException
    {
       AssertionDeployer deployer = getDomainDeployerInstance(assertion.getName().getNamespaceURI());
       deployer.deployClientSide(assertion, extMetaData);
    }
 
    /**
-    * 
-    * @param namespace
-    * @return the correct AssertionDeployer instance, or null if namespace not supported
+    * @param namespace to be used to get the associated assertion deployer
+    * @return AssertionDeployer instance
+    * @throws UnsupportedAssertionException
     */
-   private AssertionDeployer getDomainDeployerInstance(String namespace) throws UnsupportedAssertion
+   private AssertionDeployer getDomainDeployerInstance(String namespace) throws UnsupportedAssertionException
    {
       try
       {
@@ -239,16 +243,15 @@ public class PolicyDeployer
          {
             if (log.isDebugEnabled())
             {
-               log.debug("Unknown namespace:" + namespace + "...Assertion not supported");
+               log.debug("Unknown namespace: '" + namespace + "' - Assertion not supported");
             }
-            throw new UnsupportedAssertion();
+            throw new UnsupportedAssertionException();
          }
-         return (AssertionDeployer)(domainDeployerMap.get(namespace)).newInstance();
+         return domainDeployerMap.get(namespace).newInstance();
       }
       catch (Exception e)
       {
-
-         throw new UnsupportedAssertion();
+         throw new UnsupportedAssertionException();
       }
    }
 }

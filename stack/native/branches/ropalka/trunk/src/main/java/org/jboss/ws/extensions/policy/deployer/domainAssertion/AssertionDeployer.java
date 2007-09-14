@@ -22,7 +22,7 @@
 package org.jboss.ws.extensions.policy.deployer.domainAssertion;
 
 import org.apache.ws.policy.PrimitiveAssertion;
-import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAssertion;
+import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAssertionException;
 import org.jboss.ws.metadata.umdm.ExtensibleMetaData;
 
 /**
@@ -40,9 +40,9 @@ public interface AssertionDeployer
     * 
     * @param assertion
     * @param extMetaData
-    * @throws UnsupportedAssertion
+    * @throws UnsupportedAssertionException
     */
-   public void deployServerSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertion;
+   public void deployServerSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertionException;
    
    /**
     * Client side deployment method; ExtensibleMetaData provided so
@@ -50,7 +50,7 @@ public interface AssertionDeployer
     * 
     * @param assertion
     * @param extMetaData
-    * @throws UnsupportedAssertion
+    * @throws UnsupportedAssertionException
     */
-   public void deployClientSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertion;
+   public void deployClientSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertionException;
 }

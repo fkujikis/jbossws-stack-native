@@ -27,7 +27,7 @@ import java.io.StringReader;
 import org.apache.ws.policy.PrimitiveAssertion;
 import org.jboss.logging.Logger;
 import org.jboss.ws.extensions.policy.deployer.PolicyDeployer;
-import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAssertion;
+import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAssertionException;
 import org.jboss.ws.extensions.policy.deployer.util.PrimitiveAssertionWriter;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.ExtensibleMetaData;
@@ -46,7 +46,7 @@ public class WSSecurityAssertionDeployer implements AssertionDeployer
 {
    private final static Logger log = Logger.getLogger(PolicyDeployer.class);
    
-   public void deployServerSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertion
+   public void deployServerSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertionException
    {
       ByteArrayOutputStream stream = new ByteArrayOutputStream();
       if (extMetaData instanceof EndpointMetaData)
@@ -73,12 +73,12 @@ public class WSSecurityAssertionDeployer implements AssertionDeployer
          catch (Exception e)
          {
             e.printStackTrace();
-            throw new UnsupportedAssertion();
+            throw new UnsupportedAssertionException();
          }
       }
    }
    
-   public void deployClientSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertion
+   public void deployClientSide(PrimitiveAssertion assertion, ExtensibleMetaData extMetaData) throws UnsupportedAssertionException
    {
       if (extMetaData instanceof EndpointMetaData)
       {
@@ -101,7 +101,7 @@ public class WSSecurityAssertionDeployer implements AssertionDeployer
             catch (Exception e)
             {
                e.printStackTrace();
-               throw new UnsupportedAssertion();
+               throw new UnsupportedAssertionException();
             }
          }
       }
