@@ -2,12 +2,25 @@ package org.jboss.test.ws.jaxws.wsrm;
 
 import javax.jws.WebService;
 import org.jboss.logging.Logger;
+import org.jboss.ws.extensions.policy.PolicyScopeLevel;
+import org.jboss.ws.extensions.policy.annotation.Policy;
+import org.jboss.ws.extensions.policy.annotation.PolicyAttachment;
+
 import java.util.Arrays;
 
-@WebService(
+@WebService
+(
    name = "OneWay",
    serviceName = "OneWayService",
    endpointInterface = "org.jboss.test.ws.jaxws.wsrm.OneWayServiceIface"
+)
+@PolicyAttachment
+(
+   @Policy
+   (
+      policyFileLocation = "META-INF/wsrm11_exactly_one_in_order.xml",
+      scope = PolicyScopeLevel.WSDL_BINDING
+   )
 )
 public class OneWayServiceImpl implements OneWayServiceIface
 {

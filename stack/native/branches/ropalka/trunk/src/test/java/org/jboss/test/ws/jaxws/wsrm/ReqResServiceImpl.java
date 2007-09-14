@@ -8,13 +8,28 @@ import javax.jws.soap.SOAPBinding;
 import javax.jws.soap.SOAPBinding.Style;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.extensions.policy.PolicyScopeLevel;
+import org.jboss.ws.extensions.policy.annotation.Policy;
+import org.jboss.ws.extensions.policy.annotation.PolicyAttachment;
 
-@WebService(
+@WebService
+(
    name = "ReqRes",
    serviceName = "ReqResService",
    targetNamespace = "http://org.jboss.ws/jaxws/wsrm"
 )
-@SOAPBinding(style = Style.RPC)
+@SOAPBinding
+(
+   style = Style.RPC
+)
+@PolicyAttachment
+(
+   @Policy
+   (
+      policyFileLocation = "META-INF/wsrm11_exactly_one_in_order.xml",
+      scope = PolicyScopeLevel.WSDL_BINDING
+   )
+)
 public class ReqResServiceImpl
 {
    private static Logger log = Logger.getLogger(ReqResServiceImpl.class);
