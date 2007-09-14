@@ -36,7 +36,7 @@ import org.jboss.ws.WSException;
 import org.jboss.ws.extensions.policy.PolicyScopeLevel;
 import org.jboss.ws.extensions.policy.annotation.PolicyAttachment;
 import org.jboss.ws.extensions.policy.deployer.PolicyDeployer;
-import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedPolicy;
+import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedPolicyException;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.ExtensibleMetaData;
 import org.jboss.ws.metadata.wsdl.WSDLBinding;
@@ -291,7 +291,7 @@ public class PolicyMetaDataBuilder
          Policy deployedPolicy = deployer.deployServerside(policy, extMetaData);
          ext.addPolicy(scope, deployedPolicy);
       }
-      catch (UnsupportedPolicy e)
+      catch (UnsupportedPolicyException e)
       {
          log.warn("Policy Not supported:" + policy.getPolicyURI());
       }
@@ -310,7 +310,7 @@ public class PolicyMetaDataBuilder
          deployer.deployClientSide(policy, extMetaData);
          ext.addPolicy(scope, policy);
       }
-      catch (UnsupportedPolicy e)
+      catch (UnsupportedPolicyException e)
       {
          if (log.isDebugEnabled())
          {
