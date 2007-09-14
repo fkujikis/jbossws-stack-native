@@ -26,7 +26,7 @@ package org.jboss.ws.extensions.policy.deployer.exceptions;
  *
  * since 27/04/2007
  */
-public class UnsupportedPolicy extends Exception
+public class UnsupportedAssertionException extends Exception
 {
 
 }
