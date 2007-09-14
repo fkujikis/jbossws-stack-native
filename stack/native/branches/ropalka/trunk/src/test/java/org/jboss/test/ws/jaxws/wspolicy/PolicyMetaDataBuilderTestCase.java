@@ -33,6 +33,7 @@ import org.apache.ws.policy.Policy;
 import org.jboss.ws.Constants;
 import org.jboss.ws.extensions.policy.PolicyScopeLevel;
 import org.jboss.ws.extensions.policy.deployer.PolicyDeployer;
+import org.jboss.ws.extensions.policy.deployer.domainAssertion.AssertionDeployer;
 import org.jboss.ws.extensions.policy.deployer.domainAssertion.NopAssertionDeployer;
 import org.jboss.ws.extensions.policy.metadata.PolicyMetaDataBuilder;
 import org.jboss.ws.extensions.policy.metadata.PolicyMetaExtension;
@@ -65,7 +66,7 @@ public class PolicyMetaDataBuilderTestCase extends JBossWSTest
       QName portTypeName = new QName("http://org.jboss.ws/jaxws/endpoint", "EndpointInterface");
       EndpointMetaData epMetaData = new ServerEndpointMetaData(serviceMetaData, null, portName, portTypeName, Type.JAXWS);
 
-      Map<String, Class> map = new HashMap<String, Class>();
+      Map<String, Class<? extends AssertionDeployer>> map = new HashMap<String, Class<? extends AssertionDeployer>>();
       map.put("http://schemas.xmlsoap.org/ws/2005/02/rm/policy", NopAssertionDeployer.class);
       map.put("http://www.fabrikam123.example.com/stock", NopAssertionDeployer.class);
       map.put("http://schemas.xmlsoap.org/ws/2005/07/securitypolicy", NopAssertionDeployer.class);
@@ -102,7 +103,7 @@ public class PolicyMetaDataBuilderTestCase extends JBossWSTest
 
    public void testAnnotationEndpointScopePolicies() throws Exception
    {
-      Map<String, Class> map = new HashMap<String, Class>();
+      Map<String, Class<? extends AssertionDeployer>> map = new HashMap<String, Class<? extends AssertionDeployer>>();
       map.put("http://www.fabrikam123.example.com/stock", NopAssertionDeployer.class);
       PolicyDeployer deployer = PolicyDeployer.newInstance(map);
       PolicyMetaDataBuilder builder = new PolicyMetaDataBuilder(deployer);

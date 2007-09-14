@@ -32,8 +32,9 @@ import org.apache.ws.policy.PrimitiveAssertion;
 import org.apache.ws.policy.XorCompositeAssertion;
 import org.jboss.ws.WSException;
 import org.jboss.ws.extensions.policy.deployer.PolicyDeployer;
+import org.jboss.ws.extensions.policy.deployer.domainAssertion.AssertionDeployer;
 import org.jboss.ws.extensions.policy.deployer.domainAssertion.NopAssertionDeployer;
-import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedPolicy;
+import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedPolicyException;
 import org.jboss.wsf.test.JBossWSTest;
 
 /**
@@ -46,7 +47,7 @@ public class PolicyDeployerTestCase extends JBossWSTest
    
    public void testDeployEmptyPolicy() throws Exception
    {
-      Map<String,Class> map = new HashMap<String,Class>();
+      Map<String,Class<? extends AssertionDeployer>> map = new HashMap<String,Class<? extends AssertionDeployer>>();
       map.put("http://www.jboss.com/test/policy", NopAssertionDeployer.class);
       PolicyDeployer deployer = PolicyDeployer.newInstance(map);
       try
@@ -64,7 +65,7 @@ public class PolicyDeployerTestCase extends JBossWSTest
    
    public void testDeploySingleAssertion() throws Exception
    {
-      Map<String,Class> map = new HashMap<String,Class>();
+      Map<String,Class<? extends AssertionDeployer>> map = new HashMap<String,Class<? extends AssertionDeployer>>();
       map.put("http://www.jboss.com/test/policy", NopAssertionDeployer.class);
       PolicyDeployer deployer = PolicyDeployer.newInstance(map);
       Policy policy = new Policy("myID");
@@ -79,7 +80,7 @@ public class PolicyDeployerTestCase extends JBossWSTest
          deployer.deployServerside(policy, null);
          fail("deployServerSide shouldn't be able to deploy this policy!");
       }
-      catch (UnsupportedPolicy up)
+      catch (UnsupportedPolicyException up)
       {
          //OK
       }
@@ -87,7 +88,7 @@ public class PolicyDeployerTestCase extends JBossWSTest
    
    public void testDeployMultipleAssertion() throws Exception
    {
-      Map<String,Class> map = new HashMap<String,Class>();
+      Map<String,Class<? extends AssertionDeployer>> map = new HashMap<String,Class<? extends AssertionDeployer>>();
       map.put("http://www.jboss.com/test/policy", NopAssertionDeployer.class);
       map.put("http://www.jboss.com/test/policy2", NopAssertionDeployer.class);
       map.put("http://www.jboss.com/test/policy3", NopAssertionDeployer.class);
@@ -103,7 +104,7 @@ public class PolicyDeployerTestCase extends JBossWSTest
          deployer.deployServerside(policy, null);
          fail("deployServerSide shouldn't be able to deploy this policy!");
       }
-      catch (UnsupportedPolicy up)
+      catch (UnsupportedPolicyException up)
       {
          //OK
       }
@@ -111,7 +112,7 @@ public class PolicyDeployerTestCase extends JBossWSTest
    
    public void testDeployMultipleAlternative() throws Exception
    {
-      Map<String,Class> map = new HashMap<String,Class>();
+      Map<String,Class<? extends AssertionDeployer>> map = new HashMap<String,Class<? extends AssertionDeployer>>();
       map.put("http://www.jboss.com/test/policy", NopAssertionDeployer.class);
       map.put("http://www.jboss.com/test/policy2", NopAssertionDeployer.class);
       PolicyDeployer deployer = PolicyDeployer.newInstance(map);
@@ -135,7 +136,7 @@ public class PolicyDeployerTestCase extends JBossWSTest
          deployer.deployServerside(policy, null);
          fail("deployServerSide shouldn't be able to deploy this policy (no alternative supported)!");
       }
-      catch (UnsupportedPolicy up)
+      catch (UnsupportedPolicyException up)
       {
          //OK
       }
@@ -143,7 +144,7 @@ public class PolicyDeployerTestCase extends JBossWSTest
    
    public void testDeployMultipleComplexAlternative() throws Exception
    {
-      Map<String,Class> map = new HashMap<String,Class>();
+      Map<String,Class<? extends AssertionDeployer>> map = new HashMap<String,Class<? extends AssertionDeployer>>();
       map.put("http://www.jboss.com/test/policy", NopAssertionDeployer.class);
       map.put("http://www.jboss.com/test/policy2", NopAssertionDeployer.class);
       map.put("http://www.jboss.com/test/policy3", NopAssertionDeployer.class);
@@ -171,7 +172,7 @@ public class PolicyDeployerTestCase extends JBossWSTest
          deployer.deployServerside(policy, null);
          fail("deployServerSide shouldn't be able to deploy this policy (no alternative supported)!");
       }
-      catch (UnsupportedPolicy up)
+      catch (UnsupportedPolicyException up)
       {
          //OK
       }
