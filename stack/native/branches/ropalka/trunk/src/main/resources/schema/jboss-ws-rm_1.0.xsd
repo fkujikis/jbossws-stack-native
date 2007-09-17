@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://www.jboss.com/ws-rm/config"
+  targetNamespace="http://www.jboss.com/ws-rm/config"
+  elementFormDefault="qualified">
+  <xs:element name="jboss-ws-rm">
+    <xs:annotation>
+      <xs:documentation>
+        This WS-RM configuration file will be used on both client and server sides.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="delivery-assurance" type="deliveryAssuranceType">
+          <xs:annotation>
+            <xs:documentation>
+              Global WS-RM delivery assurance configuration that applies to all WSDL ports.
+              If there is the WS-Policy with attached WS-RM assertion in WSDL
+              associated with some port or its associated binding it
+              will always override this global configuration.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="provider" type="providerType">
+          <xs:annotation>
+            <xs:documentation>
+              WS-RM specification version to be used for reliable messaging.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="message-store" type="msgStoreType">
+          <xs:annotation>
+            <xs:documentation>
+              WS-RM message store to be used for reliable messaging.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="port" type="portType" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              WSDL port specific WS-RM delivery assurance configuration.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="msgStoreType">
+    <xs:sequence>
+      <xs:element name="config-file" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            Message store specific configuration file.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Message store name.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="class" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+           Message store class name providing public default constructor.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="storeId" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Message store identifier.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="deliveryAssuranceType">
+    <xs:attribute name="quality" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Quality of service to be ensured.
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="at-least-once"/>
+          <xs:enumeration value="at-most-once"/>
+          <xs:enumeration value="exactly-once"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="inOrder" type="xs:boolean" use="required" default="false">
+      <xs:annotation>
+        <xs:documentation>
+          In order quality of service to be ensured. Set this attribute to 'true' to ensure in order message delivery.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="providerType">
+    <xs:attribute name="specVersion" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          WS-RM spec. version to be used for reliable messaging.
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="http://docs.oasis-open.org/ws-rx/wsrm/200702"/>
+          <xs:enumeration value="http://schemas.xmlsoap.org/ws/2005/02/rm"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="portType">
+    <xs:sequence>
+      <xs:element name="delivery-assurance" type="deliveryAssuranceType">
+        <xs:annotation>
+          <xs:documentation>
+            This WSDL port specific WS-RM delivery assurance configuration
+            applies to all operations on this port.
+            This configuration always overrides the global configuration.
+            If there is the WS-Policy with attached WS-RM assertion in WSDL
+            associated with this port or its associated binding it
+            will always override this port specific configuration.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          WSDL port name specified in the form {namespace}localPart.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+</xs:schema>
