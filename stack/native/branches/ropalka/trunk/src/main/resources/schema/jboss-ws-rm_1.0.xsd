@@ -12,7 +12,7 @@
     </xs:annotation>
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="delivery-assurance" type="deliveryAssuranceType">
+        <xs:element name="delivery-assurance" type="deliveryAssuranceType" minOccurs="0">
           <xs:annotation>
             <xs:documentation>
               Global WS-RM delivery assurance configuration that applies to all WSDL ports.
