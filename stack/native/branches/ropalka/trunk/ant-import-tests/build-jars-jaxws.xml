@@ -487,6 +487,10 @@
                   <metainf dir="${tests.output.dir}/resources/jaxws/wsrm">
                     <include name="wsrm11_exactly_one_in_order.xml"/>
                   </metainf>
+                  <webinf dir="${tests.output.dir}/resources/jaxws/wsrm/WEB-INF">
+                    <include name="jboss-wsrm-server.xml"/>
+                    <include name="wsrm11_exactly_one_in_order.xml"/>
+                  </webinf>
                 </war>
 
 		<!-- Please add alphabetically -->

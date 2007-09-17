@@ -26,7 +26,7 @@ import org.jboss.ws.extensions.policy.annotation.PolicyAttachment;
 (
    @Policy
    (
-      policyFileLocation = "META-INF/wsrm11_exactly_one_in_order.xml",
+      policyFileLocation = "WEB-INF/wsrm11_exactly_one_in_order.xml",
       scope = PolicyScopeLevel.WSDL_BINDING
    )
 )
