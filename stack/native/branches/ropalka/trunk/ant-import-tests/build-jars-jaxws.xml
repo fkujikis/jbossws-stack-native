@@ -484,9 +484,6 @@
                     <include name="org/jboss/test/ws/jaxws/wsrm/ReqResServiceIface.class"/>
                     <include name="org/jboss/test/ws/jaxws/wsrm/ReqResServiceImpl.class"/>
                   </classes>
-                  <metainf dir="${tests.output.dir}/resources/jaxws/wsrm">
-                    <include name="wsrm11_exactly_one_in_order.xml"/>
-                  </metainf>
                   <webinf dir="${tests.output.dir}/resources/jaxws/wsrm/WEB-INF">
                     <include name="jboss-wsrm-server.xml"/>
                     <include name="wsrm11_exactly_one_in_order.xml"/>
