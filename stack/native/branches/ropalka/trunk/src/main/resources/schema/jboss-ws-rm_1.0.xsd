@@ -1,51 +1,44 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns="http://www.jboss.com/ws-rm/config"
   targetNamespace="http://www.jboss.com/ws-rm/config"
   elementFormDefault="qualified">
-  <xs:element name="jboss-ws-rm">
-    <xs:annotation>
-      <xs:documentation>
-        This WS-RM configuration file will be used on both client and server sides.
-      </xs:documentation>
-    </xs:annotation>
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element name="delivery-assurance" type="deliveryAssuranceType" minOccurs="0">
-          <xs:annotation>
-            <xs:documentation>
-              Global WS-RM delivery assurance configuration that applies to all WSDL ports.
-              If there is the WS-Policy with attached WS-RM assertion in WSDL
-              associated with some port or its associated binding it
-              will always override this global configuration.
-            </xs:documentation>
-          </xs:annotation>
-        </xs:element>
-        <xs:element name="provider" type="providerType">
-          <xs:annotation>
-            <xs:documentation>
-              WS-RM specification version to be used for reliable messaging.
-            </xs:documentation>
-          </xs:annotation>
-        </xs:element>
-        <xs:element name="message-store" type="msgStoreType">
-          <xs:annotation>
-            <xs:documentation>
-              WS-RM message store to be used for reliable messaging.
-            </xs:documentation>
-          </xs:annotation>
-        </xs:element>
-        <xs:element name="port" type="portType" minOccurs="0" maxOccurs="unbounded">
-          <xs:annotation>
-            <xs:documentation>
-              WSDL port specific WS-RM delivery assurance configuration.
-            </xs:documentation>
-          </xs:annotation>
-        </xs:element>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
+  <xs:complexType name="rmConfigType">
+    <xs:sequence>
+      <xs:element name="delivery-assurance" type="deliveryAssuranceType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Global WS-RM delivery assurance configuration that applies to all WSDL ports.
+            If there is the WS-Policy with attached WS-RM assertion in WSDL
+            associated with some port or its associated binding it
+            will always override this global configuration.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="provider" type="providerType">
+        <xs:annotation>
+          <xs:documentation>
+            WS-RM specification version to be used for reliable messaging.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="message-store" type="msgStoreType">
+        <xs:annotation>
+          <xs:documentation>
+            WS-RM message store to be used for reliable messaging.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="port" type="portType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            WSDL port specific WS-RM delivery assurance configuration.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
   <xs:complexType name="msgStoreType">
     <xs:sequence>
       <xs:element name="config-file" type="xs:string">

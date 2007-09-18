@@ -3,10 +3,12 @@
 <xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
             targetNamespace="urn:jboss:jaxws-config:2.0"
             xmlns:tns="urn:jboss:jaxws-config:2.0"
-            xmlns:jbxb="http://www.jboss.org/xml/ns/jbxb"
             xmlns:javaee="http://java.sun.com/xml/ns/javaee"
+            xmlns:wsrm="http://www.jboss.com/ws-rm/config"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.1">
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="1.1">
 
    <xsd:annotation>
       <xsd:documentation>
@@ -18,6 +20,8 @@
    </xsd:annotation>
 
    <xsd:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="javaee_web_services_1_2.xsd"/>
+
+   <xsd:import namespace="http://www.jboss.com/ws-rm/config" schemaLocation="jboss-ws-rm_1.0.xsd"/>
 
    <xsd:element name="jaxws-config" type="tns:jaxwsConfigType"/>
    <xsd:complexType name="jaxwsConfigType">
@@ -33,7 +37,6 @@
       </xsd:complexContent>
    </xsd:complexType>
 
-   <!-- client config -->
    <xsd:complexType name="clientConfigType">
       <xsd:complexContent>
          <xsd:extension base="tns:commonConfigType"/>
@@ -43,6 +46,7 @@
    <xsd:complexType name="commonConfigType">
       <xsd:sequence>
          <xsd:element name="config-name" type="xsd:string"/>
+         <xsd:element name="reliable-messaging" type="wsrm:rmConfigType" minOccurs="0"/>
          <xsd:element name="pre-handler-chains" type="javaee:handler-chainsType" minOccurs="0"/>
          <xsd:element name="post-handler-chains" type="javaee:handler-chainsType" minOccurs="0"/>
          <xsd:element name="feature" type="xsd:anyURI" minOccurs="0" maxOccurs="unbounded"/>
@@ -51,13 +55,6 @@
    </xsd:complexType>
 
    <xsd:complexType name="propertyType">
-      <xsd:annotation>
-         <xsd:documentation>
-
-            A property models name value pairs.
-
-         </xsd:documentation>
-      </xsd:annotation>
       <xsd:sequence>
          <xsd:element name="property-name" type="xsd:anyURI"/>
          <xsd:element name="property-value" type="xsd:string"/>
