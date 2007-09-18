@@ -47,11 +47,11 @@ import org.xml.sax.Attributes;
 public class WSSecurityOMFactory implements ObjectModelFactory
 {
 
-   public static String SERVER_RESOURCE_NAME = "jboss-wsse-server.xml";
+   public static final String SERVER_RESOURCE_NAME = "jboss-wsse-server.xml";
 
-   public static String CLIENT_RESOURCE_NAME = "jboss-wsse-client.xml";
+   public static final String CLIENT_RESOURCE_NAME = "jboss-wsse-client.xml";
 
-   private static HashMap options = new HashMap(6);
+   private static HashMap<String, String> options = new HashMap<String, String>(6);
 
    static
    {
@@ -143,7 +143,7 @@ public class WSSecurityOMFactory implements ObjectModelFactory
    public void setValue(WSSecurityConfiguration configuration, UnmarshallingContext navigator, String namespaceURI, String localName, String value)
    {
       log.trace("setValue: [obj=" + configuration + ",value=" + value + "]");
-      String method = (String)options.get(localName);
+      String method = options.get(localName);
       if (method == null)
          return;
 
@@ -170,7 +170,7 @@ public class WSSecurityOMFactory implements ObjectModelFactory
       }
       if ("key-passwords".equals(localName))
       {
-         HashMap pwds = new HashMap();
+         HashMap<String, String> pwds = new HashMap<String, String>();
          configuration.setKeyPasswords(pwds);
          return pwds;
       }
@@ -184,7 +184,7 @@ public class WSSecurityOMFactory implements ObjectModelFactory
    /**
     * Called when parsing the contents of the <key-password> tag.
     */
-   public Object newChild(HashMap passwords, UnmarshallingContext navigator, String namespaceURI, String localName, Attributes attrs)
+   public Object newChild(HashMap<String, String> passwords, UnmarshallingContext navigator, String namespaceURI, String localName, Attributes attrs)
    {
       log.trace("newChild: " + localName);
       if ("key-password".equals(localName))
