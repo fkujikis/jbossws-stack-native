@@ -59,6 +59,9 @@
     <get src="${jboss.repository}/jboss/jbossws-jboss42/${jbossws-jboss42}/lib/jbossws-jboss42.jar" dest="${thirdparty.dir}/jbossws-jboss42.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/jbossws-jboss42/${jbossws-jboss42}/lib/jbossws-jboss42-resources.zip" dest="${thirdparty.dir}/jbossws-jboss42-resources.zip" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/jbossws-jboss42/${jbossws-jboss42}/lib/jbossws-jboss42-src.zip" dest="${thirdparty.dir}/jbossws-jboss42-src.zip" usetimestamp="true" verbose="true"/>
+    <get src="${jboss.repository}/jboss/jbossws-jboss50/${jbossws-jboss50}/lib/jbossws-jboss50.jar" dest="${thirdparty.dir}/jbossws-jboss50.jar" usetimestamp="true" verbose="true"/>
+    <get src="${jboss.repository}/jboss/jbossws-jboss50/${jbossws-jboss50}/lib/jbossws-jboss50-deployer.zip" dest="${thirdparty.dir}/jbossws-jboss50-deployer.zip" usetimestamp="true" verbose="true"/>
+    <get src="${jboss.repository}/jboss/jbossws-jboss50/${jbossws-jboss50}/lib/jbossws-jboss50-src.zip" dest="${thirdparty.dir}/jbossws-jboss50-src.zip" usetimestamp="true" verbose="true"/>
 	      
     <get src="${jboss.repository}/apache-ant/${apache-ant}/lib/ant.jar" dest="${thirdparty.dir}/ant.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/apache-collections/${apache-collections}/lib/commons-collections.jar" dest="${thirdparty.dir}/commons-collections.jar" usetimestamp="true" verbose="true"/>
@@ -87,7 +90,6 @@
     <get src="${jboss.repository}/jboss/jboss-vfs/${jboss-vfs}/lib/jboss-vfs-sources.jar" dest="${thirdparty.dir}/jboss-vfs-sources.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/jbossxb/${jboss-jbossxb-jboss42}/lib/jboss-xml-binding.jar" dest="${thirdparty.dir}/jboss-xml-binding.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/jbossxb/${jboss-jbossxb-jboss42}/lib/jboss-xml-binding-sources.jar" dest="${thirdparty.dir}/jboss-xml-binding-sources.jar" usetimestamp="true" verbose="true"/>
-    <get src="${jboss.repository}/jboss/jaxbintros/${jaxbintros}/lib/jboss-jaxb-intros.jar" dest="${thirdparty.dir}/jboss-jaxb-intros.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/microcontainer/${jboss-microcontainer}/lib/jboss-container.jar" dest="${thirdparty.dir}/jboss-container.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/microcontainer/${jboss-microcontainer}/lib/jboss-dependency.jar" dest="${thirdparty.dir}/jboss-dependency.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/microcontainer/${jboss-microcontainer}/lib/jboss-deployers.jar" dest="${thirdparty.dir}/jboss-deployers.jar" usetimestamp="true" verbose="true"/>
@@ -165,7 +167,6 @@
         <pathelement location="${thirdparty.dir}/xalan.jar"/>
         <pathelement location="${thirdparty.dir}/xmlsec.jar"/>
         <pathelement location="${thirdparty.dir}/xercesImpl.jar"/>
-       <pathelement location="${thirdparty.dir}/jboss-jaxb-intros.jar"/>
      </path>
 
   </target>
