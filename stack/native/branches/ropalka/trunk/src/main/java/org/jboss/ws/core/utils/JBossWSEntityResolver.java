@@ -48,7 +48,6 @@ public class JBossWSEntityResolver extends JBossEntityResolver
    {
       registerEntity("urn:jboss:jaxrpc-config:2.0", "schema/jaxrpc-config_2_0.xsd");
       registerEntity("urn:jboss:jaxws-config:2.0", "schema/jaxws-config_2_0.xsd");
-      registerEntity("http://www.jboss.com/ws-rm/config", "schema/jboss-ws-rm_1.0.xsd");
       registerEntity("http://java.sun.com/xml/ns/javaee", "schema/javaee_web_services_1_2.xsd");
       registerEntity("http://www.w3.org/2005/08/addressing", "schema/ws-addr.xsd");
       registerEntity("http://schemas.xmlsoap.org/ws/2004/08/eventing", "eventing.xsd");
