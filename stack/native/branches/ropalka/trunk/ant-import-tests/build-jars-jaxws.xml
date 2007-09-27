@@ -485,10 +485,16 @@
                     <include name="org/jboss/test/ws/jaxws/wsrm/ReqResServiceImpl.class"/>
                   </classes>
                   <webinf dir="${tests.output.dir}/resources/jaxws/wsrm/WEB-INF">
-                    <include name="jboss-wsrm-server.xml"/>
-                    <include name="wsrm11_exactly_one_in_order.xml"/>
+                    <include name="wsrm-exactly-once-in-order-policy.xml"/>
+                    <include name="wsrm-jaxws-endpoint-config.xml"/>
                   </webinf>
                 </war>
+
+		<jar jarfile="${tests.output.dir}/libs/jaxws-wsrm-client.jar">
+			<metainf dir="${tests.output.dir}/resources/jaxws/wsrm/META-INF">
+				<include name="wsrm-jaxws-client-config.xml"/>
+			</metainf>
+		</jar>
 
 		<!-- Please add alphabetically -->
 
