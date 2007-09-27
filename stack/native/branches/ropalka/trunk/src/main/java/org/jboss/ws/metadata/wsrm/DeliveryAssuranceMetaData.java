@@ -58,4 +58,9 @@ public final class DeliveryAssuranceMetaData
       return this.inOrder;
    }
    
+   public final String toString()
+   {
+      return "inOrder=\"" + this.inOrder + "\", quality=\"" + this.quality + "\"";
+   }
+   
 }

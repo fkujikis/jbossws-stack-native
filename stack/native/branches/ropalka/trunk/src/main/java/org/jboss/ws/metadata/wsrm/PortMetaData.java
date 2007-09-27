@@ -60,4 +60,9 @@ public final class PortMetaData
       return this.deliveryAssurance;
    }
    
+   public final String toString()
+   {
+      return "portName=\"" + this.portName + "\", deliveryAssurance={" + this.deliveryAssurance + "}";
+   }
+   
 }
