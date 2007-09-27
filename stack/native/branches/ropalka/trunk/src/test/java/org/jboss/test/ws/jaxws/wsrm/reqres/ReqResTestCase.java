@@ -72,7 +72,7 @@ public class ReqResTestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(ReqResTestCase.class, "jaxws-wsrm.war");
+      return new JBossWSTestSetup(ReqResTestCase.class, "jaxws-wsrm.war, jaxws-wsrm-client.jar");
    }
 
    @Override

@@ -48,7 +48,7 @@ public class OneWayTestCase extends JBossWSTest
    
    public static Test suite()
    {
-      return new JBossWSTestSetup(OneWayTestCase.class, "jaxws-wsrm.war");
+      return new JBossWSTestSetup(OneWayTestCase.class, "jaxws-wsrm.war, jaxws-wsrm-client.jar");
    }
 
    @Override
