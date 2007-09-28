@@ -1,0 +1,1 @@
+svn merge -r4641:4642 https://svn.jboss.org/repos/jbossws/stack/native/branches/ropalka/trunk
