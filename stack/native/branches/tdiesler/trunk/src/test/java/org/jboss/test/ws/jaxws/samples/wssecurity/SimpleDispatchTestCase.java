@@ -37,8 +37,11 @@ import javax.xml.ws.Service.Mode;
 import junit.framework.Test;
 
 import org.jboss.ws.core.ConfigProvider;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
+import org.w3c.dom.Element;
 
 /**
  * WS-Security with JAX-WS Dispatch
@@ -96,6 +99,11 @@ public class SimpleDispatchTestCase extends JBossWSTest
       reqContext.put(BindingProvider.PASSWORD_PROPERTY, "thefrog");
 
       String payload = "<ns1:getUsernameToken xmlns:ns1='http://org.jboss.ws/samples/wssecurity'/>";
-      dispatch.invoke(new StreamSource(new StringReader(payload)));
+      Source retObj = (Source)dispatch.invoke(new StreamSource(new StringReader(payload)));
+      
+      Element docElement = DOMUtils.sourceToElement(retObj);
+      Element retElement = DOMUtils.getFirstChildElement(docElement);
+      String retPayload = DOMWriter.printNode(retElement, false);
+      assertEquals("<return>kermit</return>", retPayload);
    }
 }

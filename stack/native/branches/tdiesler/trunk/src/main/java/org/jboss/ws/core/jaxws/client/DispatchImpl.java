@@ -59,6 +59,7 @@ import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.ConfigProvider;
 import org.jboss.ws.core.MessageAbstraction;
+import org.jboss.ws.core.client.EndpointInfo;
 import org.jboss.ws.core.client.HTTPRemotingConnection;
 import org.jboss.ws.core.client.RemotingConnection;
 import org.jboss.ws.core.client.SOAPRemotingConnection;
@@ -209,12 +210,12 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
       MessageContextAssociation.pushMessageContext(msgContext);
       msgContext.setEndpointMetaData(epMetaData);
       msgContext.setSOAPMessage(reqMsg);
+      msgContext.putAll(reqContext);
 
       // The contents of the request context are used to initialize the message context (see section 9.4.1)
       // prior to invoking any handlers (see chapter 9) for the outbound message. Each property within the
       // request context is copied to the message context with a scope of HANDLER.
       msgContext.put(MessageContextJAXWS.MESSAGE_OUTBOUND_PROPERTY, Boolean.TRUE);
-      msgContext.putAll(reqContext);
       
       QName portName = epMetaData.getPortName();
       try
@@ -230,7 +231,9 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
          MessageAbstraction resMsg = null;
          if (handlerPass)
          {
-            resMsg = getRemotingConnection().invoke(reqMsg, targetAddress, false);
+            Map<String, Object> callProps = new HashMap<String, Object>(getRequestContext());
+            EndpointInfo epInfo = new EndpointInfo(epMetaData, targetAddress, callProps);
+            resMsg = getRemotingConnection().invoke(reqMsg, epInfo, false);
 
             // Call the  response handler chain, removing the fault type entry will not call handleFault for that chain 
             handlerPass = callResponseHandlerChain(portName, handlerType[2]);
