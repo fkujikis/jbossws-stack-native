@@ -48,7 +48,6 @@ import javax.xml.ws.Response;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.Service.Mode;
 import javax.xml.ws.handler.Handler;
-import javax.xml.ws.handler.HandlerResolver;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.PortInfo;
 import javax.xml.ws.http.HTTPBinding;
@@ -70,6 +69,7 @@ import org.jboss.ws.core.jaxws.handler.HandlerResolverImpl;
 import org.jboss.ws.core.jaxws.handler.MessageContextJAXWS;
 import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
 import org.jboss.ws.core.soap.MessageContextAssociation;
+import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.metadata.config.ConfigurationProvider;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
@@ -177,7 +177,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
    {
       Object retObj = null;
 
-      MessageAbstraction reqMsg = getRequestMessage(obj);
+      SOAPMessageImpl reqMsg = (SOAPMessageImpl)getRequestMessage(obj);
       String targetAddress = epMetaData.getEndpointAddress();
 
       // R2744 A HTTP request MESSAGE MUST contain a SOAPAction HTTP header field
@@ -207,6 +207,8 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
       // Associate a message context with the current thread
       CommonMessageContext msgContext = new SOAPMessageContextJAXWS();
       MessageContextAssociation.pushMessageContext(msgContext);
+      msgContext.setEndpointMetaData(epMetaData);
+      msgContext.setSOAPMessage(reqMsg);
 
       // The contents of the request context are used to initialize the message context (see section 9.4.1)
       // prior to invoking any handlers (see chapter 9) for the outbound message. Each property within the
@@ -223,7 +225,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
          handlerPass = handlerPass && callRequestHandlerChain(portName, handlerType[2]);
 
          // Handlers might have replaced the message
-         reqMsg = msgContext.getMessageAbstraction();
+         reqMsg = (SOAPMessageImpl)msgContext.getSOAPMessage();
 
          MessageAbstraction resMsg = null;
          if (handlerPass)
@@ -257,11 +259,11 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
       }
       finally
       {
-         MessageContextAssociation.popMessageContext();
-
          closeHandlerChain(portName, handlerType[2]);
          closeHandlerChain(portName, handlerType[1]);
          closeHandlerChain(portName, handlerType[0]);
+         
+         MessageContextAssociation.popMessageContext();
       }
       return retObj;
    }
