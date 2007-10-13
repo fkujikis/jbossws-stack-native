@@ -22,8 +22,6 @@
 package org.jboss.ws.tools.jaxws.impl;
 
 import com.sun.tools.ws.wscompile.WsimportTool;
-
-import org.jboss.ws.tools.io.NullPrintStream;
 import org.jboss.wsf.spi.tools.WSContractConsumer;
 
 import java.io.File;
@@ -49,7 +47,7 @@ public class SunRIConsumerImpl extends WSContractConsumer
    private String targetPackage;
    private PrintStream messageStream;
    private String wsdlLocation;
-   private List<String> additionalCompilerClassPath = new ArrayList<String>();
+   private List<String> additionalCompilerClassPath;
    private String target = "2.0";
 
    @Override
@@ -106,7 +104,7 @@ public class SunRIConsumerImpl extends WSContractConsumer
    }
 
    public void setTarget(String target)
-   {     
+   {      
       this.target = target;
    }
 
@@ -162,7 +160,7 @@ public class SunRIConsumerImpl extends WSContractConsumer
       }
       else
       {
-         stream = NullPrintStream.getInstance();
+         stream = new NullPrintStream();
       }
 
       if (!outputDir.exists() && !outputDir.mkdirs())
@@ -173,33 +171,17 @@ public class SunRIConsumerImpl extends WSContractConsumer
       args.add(outputDir.getAbsolutePath());
 
       // Always set the target
-       if(!target.equals("2.0"))
-         throw new IllegalArgumentException("WSConsume (native) only supports JAX-WS 2.0");
-      
       args.add("-target");
       args.add(target);
 
       // finally the WSDL file
       args.add(wsdl.toString());
-
-      // See WsimportTool#compileGeneratedClasses()
-      if(!additionalCompilerClassPath.isEmpty())
-      {
-         StringBuffer javaCP = new StringBuffer();
-         for(String s : additionalCompilerClassPath)
-         {
-            javaCP.append(s).append(File.pathSeparator);
-         }
-         System.setProperty("java.class.path", javaCP.toString());
-      }
-
+      
       try
       {
          // enforce woodstox
          if (null == System.getProperty("javax.xml.stream.XMLInputFactory"))
             System.setProperty("javax.xml.stream.XMLInputFactory", "com.ctc.wstx.stax.WstxInputFactory");
-
-
 
          WsimportTool compileTool = new WsimportTool(stream);
          boolean success = compileTool.run(args.toArray(new String[args.size()]));

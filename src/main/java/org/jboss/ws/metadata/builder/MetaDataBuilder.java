@@ -36,7 +36,6 @@ import javax.management.ObjectName;
 import javax.wsdl.Definition;
 import javax.wsdl.Import;
 import javax.wsdl.Port;
-import javax.wsdl.extensions.http.HTTPAddress;
 import javax.wsdl.extensions.soap.SOAPAddress;
 import javax.wsdl.extensions.soap12.SOAP12Address;
 import javax.xml.namespace.QName;
@@ -317,7 +316,7 @@ public abstract class MetaDataBuilder
 
                   // modify the wsdl-1.1 definition
                   if (wsdlDefinitions.getWsdlOneOneDefinition() != null)
-                     replaceWSDL11PortAddress(wsdlDefinitions, portName, serviceEndpointURL);
+                     replaceWSDL11SOAPAddress(wsdlDefinitions, portName, serviceEndpointURL);
                }
                else
                {
@@ -339,13 +338,13 @@ public abstract class MetaDataBuilder
          throw new WSException("Cannot find port in wsdl: " + portName);
    }
 
-   private static void replaceWSDL11PortAddress(WSDLDefinitions wsdlDefinitions, QName portQName, String serviceEndpointURL)
+   private static void replaceWSDL11SOAPAddress(WSDLDefinitions wsdlDefinitions, QName portQName, String serviceEndpointURL)
    {
       Definition wsdlOneOneDefinition = wsdlDefinitions.getWsdlOneOneDefinition();
       String tnsURI = wsdlOneOneDefinition.getTargetNamespace();
 
       // search for matching portElement and replace the address URI
-      Port wsdlOneOnePort = modifyPortAddress(tnsURI, portQName, serviceEndpointURL, wsdlOneOneDefinition.getServices());
+      Port wsdlOneOnePort = modifySOAPAddress(tnsURI, portQName, serviceEndpointURL, wsdlOneOneDefinition.getServices());
 
       // recursivly process imports if none can be found
       if (wsdlOneOnePort == null && !wsdlOneOneDefinition.getImports().isEmpty())
@@ -359,7 +358,7 @@ public abstract class MetaDataBuilder
             while (importsByNS.hasNext())
             {
                Import anImport = (Import)importsByNS.next();
-               wsdlOneOnePort = modifyPortAddress(anImport.getNamespaceURI(), portQName, serviceEndpointURL, anImport.getDefinition().getServices());
+               wsdlOneOnePort = modifySOAPAddress(anImport.getNamespaceURI(), portQName, serviceEndpointURL, anImport.getDefinition().getServices());
             }
          }
       }
@@ -369,7 +368,7 @@ public abstract class MetaDataBuilder
          throw new IllegalArgumentException("Cannot find port with name '" + portQName + "' in wsdl document");
    }
 
-   private static Port modifyPortAddress(String tnsURI, QName portQName, String serviceEndpointURL, Map services)
+   private static Port modifySOAPAddress(String tnsURI, QName portQName, String serviceEndpointURL, Map services)
    {
       Port wsdlOneOnePort = null;
       Iterator itServices = services.values().iterator();
@@ -392,14 +391,9 @@ public abstract class MetaDataBuilder
                      SOAPAddress address = (SOAPAddress)extElement;
                      address.setLocationURI(serviceEndpointURL);
                   }
-                  else if (extElement instanceof SOAP12Address)
+                  if (extElement instanceof SOAP12Address)
                   {
                      SOAP12Address address = (SOAP12Address)extElement;
-                     address.setLocationURI(serviceEndpointURL);
-                  }
-                  else if (extElement instanceof HTTPAddress)
-                  {
-                     HTTPAddress address = (HTTPAddress)extElement;
                      address.setLocationURI(serviceEndpointURL);
                   }
                }

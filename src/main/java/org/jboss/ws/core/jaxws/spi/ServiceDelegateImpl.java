@@ -47,7 +47,6 @@ import javax.xml.ws.WebServiceFeature;
 import javax.xml.ws.Service.Mode;
 import javax.xml.ws.handler.HandlerResolver;
 import javax.xml.ws.spi.ServiceDelegate;
-import javax.xml.ws.spi.ServiceDelegate21;
 
 import org.jboss.logging.Logger;
 import org.jboss.util.NotImplementedException;
@@ -85,7 +84,7 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  * @author Thomas.Diesler@jboss.com
  * @since 03-May-2006
  */
-public class ServiceDelegateImpl extends ServiceDelegate21
+public class ServiceDelegateImpl extends ServiceDelegate
 {
    // provide logging
    private final Logger log = Logger.getLogger(ServiceDelegateImpl.class);

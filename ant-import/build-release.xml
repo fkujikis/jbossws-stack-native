@@ -48,7 +48,6 @@
         <include name="jbossws-core.jar"/>
         <include name="jboss-jaxrpc.jar"/>
         <include name="jboss-jaxws.jar"/>
-        <include name="jboss-jaxws-ext.jar"/>
         <include name="jboss-saaj.jar"/>
         <include name="jbossws-core-src.zip"/>
         <include name="jbossws-core-scripts.zip"/>
@@ -137,7 +136,7 @@
     <!-- Copy downloads -->
     <copy todir="${portal.downloads}" overwrite="true">
       <fileset dir="${core.dir}/output">
-        <include name="jbossws-native-src-${version.id}.zip"/>
+        <include name="jbossws-src-${version.id}.zip"/>
         <include name="jbossws-native-${version.id}.zip"/>
       </fileset>
     </copy>
@@ -160,9 +159,9 @@
   <!-- Build the src dist -->
   <target name="build-src-dist" description="Build the source distribution">
     <property name="build.src.dist" value="${core.dir}/output/src-dist"/>
-    <delete dir="${build.src.dist}/jbossws-native-src-${version.id}"/>
-    <mkdir dir="${build.src.dist}/jbossws-native-src-${version.id}"/>
-    <copy todir="${build.src.dist}/jbossws-native-src-${version.id}">
+    <delete dir="${build.src.dist}/jbossws-src-${version.id}"/>
+    <mkdir dir="${build.src.dist}/jbossws-src-${version.id}"/>
+    <copy todir="${build.src.dist}/jbossws-src-${version.id}">
       <fileset dir="${basedir}">
         <exclude name="**/*.md5"/>
         <exclude name="**/output*/**"/>
@@ -170,8 +169,8 @@
         <exclude name="mergeinfo.txt"/>
       </fileset>
     </copy>
-    <zip destfile="${core.dir}/output/jbossws-native-src-${version.id}.zip" basedir="${build.src.dist}"
-      includes="jbossws-native-src-${version.id}/**"/>
+    <zip destfile="${core.dir}/output/jbossws-src-${version.id}.zip" basedir="${build.src.dist}"
+      includes="jbossws-src-${version.id}/**"/>
   </target>
   
 </project>

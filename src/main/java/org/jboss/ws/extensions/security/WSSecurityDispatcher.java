@@ -83,13 +83,13 @@ public class WSSecurityDispatcher
       return newList;
    }
 
-   private static Config getConfig(WSSecurityConfiguration config, String portName, String opName)
+   private static Config getConfig(WSSecurityConfiguration config, String portName, String operationName)
    {
       Port port = config.getPorts().get(portName);
       if (port == null)
          return config.getDefaultConfig();
 
-      Operation operation = port.getOperations().get(opName);
+      Operation operation = port.getOperations().get(operationName);
       if (operation == null)
       {
          Config portConfig = port.getDefaultConfig();
@@ -230,29 +230,26 @@ public class WSSecurityDispatcher
       WSSecurityConfiguration config = getSecurityConfig(ctx);
       SOAPMessageImpl soapMessage = (SOAPMessageImpl)ctx.getSOAPMessage();
 
-      EndpointMetaData epMetaData = ctx.getEndpointMetaData();
-      String port = epMetaData.getPortName().getLocalPart();
-      
-      String opName = null;
       OperationMetaData opMetaData = ctx.getOperationMetaData();
-      if (opMetaData != null)
-         opName = opMetaData.getQName().toString();
+      String operation = opMetaData.getQName().toString();
+      String port = opMetaData.getEndpointMetaData().getPortName().getLocalPart();
 
-      Config opConfig = getConfig(config, port, opName);
-      log.debug("WS-Security config: " + opConfig);
+      Config operationConfig = getConfig(config, port, operation);
+
+      log.debug("WS-Security config: " + operationConfig);
       
       // Nothing to process
-      if (opConfig == null)
+      if (operationConfig == null)
          return;
 
       ArrayList<OperationDescription<EncodingOperation>> operations = new ArrayList<OperationDescription<EncodingOperation>>();
-      Timestamp timestamp = opConfig.getTimestamp();
+      Timestamp timestamp = operationConfig.getTimestamp();
       if (timestamp != null)
       {
          operations.add(new OperationDescription<EncodingOperation>(TimestampOperation.class, null, null, timestamp.getTtl(), null));
       }
 
-      if (opConfig.getUsername() != null)
+      if (operationConfig.getUsername() != null)
       {
          Object user = ctx.get(Stub.USERNAME_PROPERTY);
          Object pass = ctx.get(Stub.PASSWORD_PROPERTY);
@@ -270,7 +267,7 @@ public class WSSecurityDispatcher
          }
       }
 
-      Sign sign = opConfig.getSign();
+      Sign sign = operationConfig.getSign();
       if (sign != null)
       {
          List<Target> targets = convertTargets(sign.getTargets());
@@ -286,7 +283,7 @@ public class WSSecurityDispatcher
          operations.add(new OperationDescription<EncodingOperation>(SignatureOperation.class, targets, sign.getAlias(), null, null));
       }
 
-      Encrypt encrypt = opConfig.getEncrypt();
+      Encrypt encrypt = operationConfig.getEncrypt();
       if (encrypt != null)
       {
          List<Target> targets = convertTargets(encrypt.getTargets());

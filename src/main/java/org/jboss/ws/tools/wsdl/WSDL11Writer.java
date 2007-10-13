@@ -468,12 +468,7 @@ public class WSDL11Writer extends WSDLWriter
          if (wsdlStyle.equals(Constants.DOCUMENT_LITERAL))
             style = "document";
          appendUnknownExtensibilityElements(buffer, binding);
-         
-         // The value of the REQUIRED transport attribute (of type xs:anyURI) indicates which transport of SOAP this binding corresponds to. 
-         // The URI value "http://schemas.xmlsoap.org/soap/http" corresponds to the HTTP binding. 
-         // Other URIs may be used here to indicate other transports (such as SMTP, FTP, etc.).
-         
-         buffer.append("<" + soapPrefix + ":binding transport='" + Constants.URI_SOAP_HTTP + "' style='" + style + "'/>");
+         buffer.append("<" + soapPrefix + ":binding transport='http://schemas.xmlsoap.org/soap/http' style='" + style + "'/>");
          appendBindingOperations(buffer, binding);
          buffer.append("</binding>");
       }

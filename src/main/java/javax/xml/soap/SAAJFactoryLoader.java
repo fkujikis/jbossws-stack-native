@@ -47,7 +47,7 @@ import java.util.Properties;
  * @author Thomas.Diesler@jboss.com
  * @since 14-Dec-2006
  */
-class SAAJFactoryLoader
+public class SAAJFactoryLoader
 {
    private SAAJFactoryLoader()
    {

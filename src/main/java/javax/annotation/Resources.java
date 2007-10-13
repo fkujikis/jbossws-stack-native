@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2007, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,18 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.ws.jaxrpc.jbws1792;
+package javax.annotation;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * @author darran.lofthouse@jboss.com
- * @since Aug 22, 2007
+ * Specify a collection of Resources on a bean class.
+ *
+ * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
+ * @version $Revision$
  */
-public interface TestEndpoint extends Remote
+@Target({ElementType.TYPE}) @Retention(RetentionPolicy.RUNTIME)
+public @interface Resources
 {
-
-   public String echoMessage(final String message) throws RemoteException;
-
+   Resource[] value();
 }

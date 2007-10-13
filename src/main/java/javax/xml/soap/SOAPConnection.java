@@ -21,6 +21,8 @@
  */
 package javax.xml.soap;
 
+import org.jboss.util.NotImplementedException;
+
 /** A point-to-point connection that a client can use for sending messages directly to a remote
  * party (represented by a URL, for instance).
  *
@@ -41,7 +43,7 @@ package javax.xml.soap;
 public abstract class SOAPConnection
 {
    public SOAPConnection()
-   {  
+   {
    }
 
    /** Sends the given message to the specified endpoint and blocks until it has returned the response.
@@ -61,10 +63,7 @@ public abstract class SOAPConnection
     * @throws SOAPException if there is a SOAP error
     * @since SAAJ 1.3
     */
-   public SOAPMessage get(Object to) throws SOAPException
-   {
-      throw new IllegalStateException("Should be implemented by concrete implementation of this class");
-   }
+   public abstract SOAPMessage get(Object to) throws SOAPException;
    
    /** Closes this SOAPConnection object.
     *

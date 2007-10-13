@@ -74,16 +74,9 @@ public class WSAddressingClientHandler extends GenericSOAPHandler
 
 	protected boolean handleOutbound(MessageContext msgContext)
 	{
-		log.debug("handleOutbound");
+		if(log.isDebugEnabled()) log.debug("handleOutbound");
 
-      SOAPAddressingProperties addrProps = (SOAPAddressingProperties)msgContext.get(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES);
-      if (addrProps != null)
-      {
-         msgContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND, addrProps);
-         msgContext.setScope(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND, Scope.APPLICATION);
-      }
-      
-      addrProps = (SOAPAddressingProperties)msgContext.get(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND);
+		SOAPAddressingProperties addrProps = (SOAPAddressingProperties)msgContext.get(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND);
 		if (addrProps != null)
 		{
 			SOAPMessage soapMessage = ((SOAPMessageContext)msgContext).getMessage();
@@ -102,7 +95,7 @@ public class WSAddressingClientHandler extends GenericSOAPHandler
 
 	protected boolean handleInbound(MessageContext msgContext)
 	{
-		log.debug("handleInbound");
+		if(log.isDebugEnabled()) log.debug("handleInbound");
 
 		try
 		{
@@ -112,10 +105,8 @@ public class WSAddressingClientHandler extends GenericSOAPHandler
 				SOAPAddressingBuilder builder = (SOAPAddressingBuilder)SOAPAddressingBuilder.getAddressingBuilder();
 				SOAPAddressingProperties addrProps = (SOAPAddressingProperties)builder.newAddressingProperties();
 				addrProps.readHeaders(soapMessage);
-            msgContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES, addrProps);
-            msgContext.setScope(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES, Scope.APPLICATION);
-            msgContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_INBOUND, addrProps);
-            msgContext.setScope(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_INBOUND, Scope.APPLICATION);
+				msgContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_INBOUND, addrProps);
+				msgContext.setScope(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_INBOUND, Scope.APPLICATION);
 			}
 		}
 		catch (SOAPException ex)
@@ -125,4 +116,5 @@ public class WSAddressingClientHandler extends GenericSOAPHandler
 
 		return true;
 	}
+
 }
