@@ -163,11 +163,11 @@
         <xsd:annotation>
           <xsd:documentation>
             This WSDL port specific WS-RM delivery assurance configuration
-            applies to all operations on this port.
+            applies to all its operations.
             This configuration always overrides the global configuration.
-            If there is the WS-Policy with attached WS-RM assertion in WSDL
+            If there is a WS-Policy with attached WS-RM assertion in WSDL
             associated with this port or its associated binding it
-            will always override this port specific configuration.
+            will be always overriden this port specific configuration.
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>

@@ -135,7 +135,7 @@ public class OMFactoryJAXWS extends HandlerChainsObjectFactory
       if ("reliable-messaging".equals(localName))
       {
          ReliableMessagingMetaData wsrmCfg = new ReliableMessagingMetaData();
-         commonConfig.setReliableMessaging(wsrmCfg);
+         commonConfig.setRMMetaData(wsrmCfg);
          return wsrmCfg;
       }
 

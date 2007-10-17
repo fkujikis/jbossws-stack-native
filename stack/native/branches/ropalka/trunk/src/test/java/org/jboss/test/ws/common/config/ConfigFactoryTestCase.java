@@ -137,7 +137,7 @@ public class ConfigFactoryTestCase extends JBossWSTest
       JBossWSConfigFactory factory = JBossWSConfigFactory.newInstance();
       ConfigRootJAXWS config = (ConfigRootJAXWS)factory.parse(confFile.toURL());
       EndpointConfigJAXWS epConfig = (EndpointConfigJAXWS)config.getConfigByName("Standard WSRM Endpoint");
-      ReliableMessagingMetaData wsrmConfig = epConfig.getReliableMessaging();
+      ReliableMessagingMetaData wsrmConfig = epConfig.getRMMetaData();
       assertNotNull(wsrmConfig);
       DeliveryAssuranceMetaData deliveryAssurance = wsrmConfig.getDeliveryAssurance();
       assertEquals(deliveryAssurance.getInOrder(), "true");

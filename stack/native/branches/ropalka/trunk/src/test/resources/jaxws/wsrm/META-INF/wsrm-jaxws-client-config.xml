@@ -11,14 +11,9 @@
     <reliable-messaging>
       <delivery-assurance inOrder="true" quality="AtLeastOnce"/>
       <provider specVersion="http://docs.oasis-open.org/ws-rx/wsrm/200702"/>
-      <message-store
-        id="wsrmStoreId"
-        class="custom.MessageStoreImpl">
+      <message-store id="wsrmStoreId" class="custom.MessageStoreImpl">
         <config-file>META-INF/config.xml</config-file>
       </message-store>
-      <port name="{http://org.jboss.ws/jaxws/wsrm}ReqResPort">
-        <delivery-assurance inOrder="false" quality="AtMostOnce"/>
-      </port>
     </reliable-messaging>	
   </client-config>
 

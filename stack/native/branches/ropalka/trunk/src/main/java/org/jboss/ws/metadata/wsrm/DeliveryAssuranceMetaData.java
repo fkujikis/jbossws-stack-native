@@ -62,5 +62,5 @@ public final class DeliveryAssuranceMetaData
    {
       return "inOrder=\"" + this.inOrder + "\", quality=\"" + this.quality + "\"";
    }
-   
+
 }

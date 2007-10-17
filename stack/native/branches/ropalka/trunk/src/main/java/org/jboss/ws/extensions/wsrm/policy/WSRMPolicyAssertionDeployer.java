@@ -79,10 +79,11 @@ public final class WSRMPolicyAssertionDeployer implements AssertionDeployer
          EndpointMetaData endpointMD = (EndpointMetaData) extMetaData;
          
          // prepare wsrm metadata
-         ReliableMessagingMetaData wsrmMD = endpointMD.getConfig().getReliableMessaging(); 
-         if (wsrmMD == null)
+         ReliableMessagingMetaData rmMD = endpointMD.getConfig().getRMMetaData(); 
+         if (rmMD == null)
          {
-            wsrmMD = new ReliableMessagingMetaData();
+            rmMD = new ReliableMessagingMetaData();
+            endpointMD.getConfig().setRMMetaData(rmMD);
          }
          
          // construct new port metadata
@@ -92,13 +93,13 @@ public final class WSRMPolicyAssertionDeployer implements AssertionDeployer
          portMD.setDeliveryAssurance(constructDeliveryAssurance(wsrmpAssertions));
          
          // ensure port does not exists yet
-         for (PortMetaData pMD : wsrmMD.getPorts())
+         for (PortMetaData pMD : rmMD.getPorts())
          {
             assert ! pMD.getPortName().equals(portMD.getPortName());
          }
          
          // set up port WSRMP metadata
-         wsrmMD.getPorts().add(portMD);
+         rmMD.getPorts().add(portMD);
       }
    }
 

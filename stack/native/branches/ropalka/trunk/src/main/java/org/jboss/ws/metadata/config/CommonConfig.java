@@ -76,12 +76,12 @@ public abstract class CommonConfig
          features.remove(nameToURI(type));
    }
 
-   public void setReliableMessaging(ReliableMessagingMetaData wsrmCfg)
+   public void setRMMetaData(ReliableMessagingMetaData wsrmCfg)
    {
       this.wsrmCfg = wsrmCfg;
    }
    
-   public ReliableMessagingMetaData getReliableMessaging()
+   public ReliableMessagingMetaData getRMMetaData()
    {
       return this.wsrmCfg;
    }

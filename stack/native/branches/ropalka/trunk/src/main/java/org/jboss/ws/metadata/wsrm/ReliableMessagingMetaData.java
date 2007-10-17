@@ -21,8 +21,10 @@
  */
 package org.jboss.ws.metadata.wsrm;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.LinkedList;
+
+import javax.xml.namespace.QName;
 
 /**
  * Reliable messaging configuration metadata

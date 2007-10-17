@@ -64,5 +64,5 @@ public final class PortMetaData
    {
       return "portName=\"" + this.portName + "\", deliveryAssurance={" + this.deliveryAssurance + "}";
    }
-   
+
 }
