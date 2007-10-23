@@ -2654,7 +2654,20 @@
         <include name="jboss-service.xml"/>
       </metainf>
     </jar>
-
+	  
+	<!-- jaxrpc-jbws1862 -->
+    <war warfile="${tests.output.dir}/libs/jaxrpc-jbws1862.war" webxml="${tests.output.dir}/resources/jaxrpc/jbws1862/WEB-INF/web.xml">
+      <classes dir="${tests.output.dir}/classes">
+        <include name="org/jboss/test/ws/jaxrpc/jbws1862/TestEndpoint.class"/>
+        <include name="org/jboss/test/ws/jaxrpc/jbws1862/TestEndpointImpl.class"/>
+      </classes>
+      <webinf dir="${tests.output.dir}/resources/jaxrpc/jbws1862/WEB-INF">
+        <include name="webservices.xml"/>
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </webinf>
+    </war>
+	  
   	<mkdir dir="${tests.output.dir}/libs/jaxrpc-jbws1762-exploded.sar"/>
   	<mkdir dir="${tests.output.dir}/libs/jaxrpc-jbws1762-exploded.sar/META-INF"/>
   	<copy
