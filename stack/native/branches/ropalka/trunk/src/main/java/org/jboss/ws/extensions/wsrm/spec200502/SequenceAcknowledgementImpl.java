@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Collections;
 
-import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.RMException;
 import org.jboss.ws.extensions.wsrm.common.serialization.AbstractSerializable;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.SequenceAcknowledgement;
@@ -215,9 +215,9 @@ final class SequenceAcknowledgementImpl extends AbstractSerializable implements 
    public void validate()
    {
       if (this.identifier == null)
-         throw new ReliableMessagingException("Identifier not set");
+         throw new RMException("Identifier not set");
       if ((this.acknowledgementRanges.size() == 0) && (this.nacks.size() == 0))
-         throw new ReliableMessagingException("AcknowledgementRange or Nack must be set");
+         throw new RMException("AcknowledgementRange or Nack must be set");
    }
 
    private static void checkOverlap(AcknowledgementRange currentRange, AcknowledgementRange newRange)

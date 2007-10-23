@@ -24,7 +24,7 @@ package org.jboss.ws.extensions.wsrm.common.serialization;
 import javax.xml.soap.SOAPMessage;
 
 import org.jboss.util.NotImplementedException;
-import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.RMException;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
@@ -54,7 +54,7 @@ final class SequenceFaultSerializer implements Serializer
     * @param soapMessage soap message from which object will be deserialized
     */
    public final void deserialize(Serializable object, Provider provider, SOAPMessage soapMessage)
-   throws ReliableMessagingException
+   throws RMException
    {
       throw new NotImplementedException();
    }
@@ -66,7 +66,7 @@ final class SequenceFaultSerializer implements Serializer
     * @param soapMessage soap message to which object will be serialized
     */
    public final void serialize(Serializable object, Provider provider, SOAPMessage soapMessage)
-   throws ReliableMessagingException
+   throws RMException
    {
       throw new NotImplementedException();
    }

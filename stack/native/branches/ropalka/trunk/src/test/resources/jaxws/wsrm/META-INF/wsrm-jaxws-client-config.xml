@@ -15,6 +15,19 @@
         <config-file>META-INF/config.xml</config-file>
       </message-store>
     </reliable-messaging>	
+    <post-handler-chains>
+      <javaee:handler-chain>
+        <javaee:protocol-bindings>##SOAP11_HTTP</javaee:protocol-bindings>
+        <javaee:handler>
+          <javaee:handler-name>WSAddressing Handler</javaee:handler-name>
+          <javaee:handler-class>org.jboss.ws.extensions.addressing.jaxws.WSAddressingClientHandler</javaee:handler-class>
+        </javaee:handler>
+        <javaee:handler>
+          <javaee:handler-name>WSRM Handler</javaee:handler-name>
+          <javaee:handler-class>org.jboss.ws.extensions.wsrm.RMClientHandler</javaee:handler-class>
+        </javaee:handler>
+      </javaee:handler-chain>
+    </post-handler-chains>
   </client-config>
 
 </jaxws-config>

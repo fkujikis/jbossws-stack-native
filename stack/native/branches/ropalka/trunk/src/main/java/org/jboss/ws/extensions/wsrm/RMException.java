@@ -27,25 +27,25 @@ import javax.xml.ws.WebServiceException;
  * RM exception heavily used by RM framework
  * @author richard.opalka@jboss.com
  */
-public class ReliableMessagingException extends WebServiceException
+public class RMException extends WebServiceException
 {
 
-   public ReliableMessagingException()
+   public RMException()
    {
       super();
    }
 
-   public ReliableMessagingException(String message, Throwable cause)
+   public RMException(String message, Throwable cause)
    {
       super(message, cause);
    }
 
-   public ReliableMessagingException(String message)
+   public RMException(String message)
    {
       super(message);
    }
 
-   public ReliableMessagingException(Throwable cause)
+   public RMException(Throwable cause)
    {
       super(cause);
    }

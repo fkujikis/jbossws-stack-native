@@ -11,15 +11,23 @@
     <reliable-messaging>
       <delivery-assurance inOrder="true" quality="AtLeastOnce"/>
       <provider specVersion="http://docs.oasis-open.org/ws-rx/wsrm/200702"/>
-      <message-store
-        id="wsrmStoreId"
-        class="custom.MessageStoreImpl">
+      <message-store id="wsrmStoreId" class="custom.MessageStoreImpl">
         <config-file>META-INF/config.xml</config-file>
       </message-store>
-      <port name="{http://org.jboss.ws/jaxws/wsrm}ReqResPort">
-        <delivery-assurance inOrder="false" quality="AtMostOnce"/>
-      </port>
     </reliable-messaging>	
+    <post-handler-chains>
+      <javaee:handler-chain>
+        <javaee:protocol-bindings>##SOAP11_HTTP</javaee:protocol-bindings>
+        <javaee:handler>
+          <javaee:handler-name>WSAddressing Handler</javaee:handler-name>
+          <javaee:handler-class>org.jboss.ws.extensions.addressing.jaxws.WSAddressingServerHandler</javaee:handler-class>
+        </javaee:handler>
+        <!--javaee:handler>
+          <javaee:handler-name>WSRM Handler</javaee:handler-name>
+          <javaee:handler-class>org.jboss.ws.extensions.wsrm.RMServerHandler</javaee:handler-class>
+        </javaee:handler-->
+      </javaee:handler-chain>
+    </post-handler-chains>
   </endpoint-config>
 
 </jaxws-config>

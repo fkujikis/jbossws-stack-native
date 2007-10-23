@@ -21,16 +21,20 @@
  */
 package org.jboss.ws.extensions.wsrm;
 
-import java.util.concurrent.TimeUnit;
-
-public interface RMSequence
+/**
+ * TODO: add comment
+ *
+ * @author richard.opalka@jboss.com
+ *
+ * @since Oct 23, 2007
+ */
+public class RMHandlerConstant
 {
-   void close() throws RMException;
-   void terminate() throws RMException;
-   String getId() throws RMException;
-   void setLastMessage() throws RMException;
-   boolean isCompleted() throws RMException;
-   boolean isCompleted(int timeAmount, TimeUnit timeUnit) throws RMException;
-   boolean isClosed() throws RMException;
-   boolean isTerminated() throws RMException;
+   private static final String PREFIX = RMHandlerConstant.class.getName();
+   public static final String HANDLER_COMMAND = PREFIX + ".handlerCommand";
+   
+   public enum Operation
+   {
+      CREATE_SEQUENCE, CLOSE_SEQUENCE, TERMINATE_SEQUENCE
+   }
 }

@@ -21,7 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
-import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.RMException;
 import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequenceResponse;
@@ -72,10 +72,10 @@ final class SerializationRepository
     * Serialize passed <b>object</b> data to the <b>soapMessage</b>
     * @param object to be serialized
     * @param soapMessage where to write data
-    * @throws ReliableMessagingException if something went wrong
+    * @throws RMException if something went wrong
     */
    public static void serialize(AbstractSerializable object, SOAPMessage soapMessage)
-   throws ReliableMessagingException
+   throws RMException
    {
       getSerializer(object).serialize(object, object.getProvider(), soapMessage);
    }
@@ -84,10 +84,10 @@ final class SerializationRepository
     * Initialize passed <b>object</b> using data in <b>soapMessage</b>
     * @param object to be initialized
     * @param soapMessage from which to read the data
-    * @throws ReliableMessagingException if something went wrong
+    * @throws RMException if something went wrong
     */
    public static void deserialize(AbstractSerializable object, SOAPMessage soapMessage)
-   throws ReliableMessagingException
+   throws RMException
    {
       getSerializer(object).deserialize(object, object.getProvider(), soapMessage);
    }

@@ -34,7 +34,7 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.addressing.AddressingBuilder;
 import javax.xml.ws.addressing.AddressingConstants;
 
-import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.RMException;
 import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence;
@@ -70,7 +70,7 @@ final class CreateSequenceSerializer implements Serializer
     * @param soapMessage soap message from which object will be deserialized
     */
    public final void deserialize(Serializable object, Provider provider, SOAPMessage soapMessage)
-   throws ReliableMessagingException
+   throws RMException
    {
       CreateSequence o = (CreateSequence)object;
       try
@@ -145,11 +145,11 @@ final class CreateSequenceSerializer implements Serializer
       }
       catch (SOAPException se)
       {
-         throw new ReliableMessagingException("Unable to deserialize RM message", se);
+         throw new RMException("Unable to deserialize RM message", se);
       }
       catch (RuntimeException re)
       {
-         throw new ReliableMessagingException("Unable to deserialize RM message", re);
+         throw new RMException("Unable to deserialize RM message", re);
       }
    }
    
@@ -160,7 +160,7 @@ final class CreateSequenceSerializer implements Serializer
     * @param soapMessage soap message to which object will be serialized
     */
    public final void serialize(Serializable object, Provider provider, SOAPMessage soapMessage)
-   throws ReliableMessagingException
+   throws RMException
    {
       CreateSequence o = (CreateSequence)object;
       try
@@ -229,7 +229,7 @@ final class CreateSequenceSerializer implements Serializer
       }
       catch (SOAPException se)
       {
-         throw new ReliableMessagingException("Unable to serialize RM message", se);
+         throw new RMException("Unable to serialize RM message", se);
       }
    }
 

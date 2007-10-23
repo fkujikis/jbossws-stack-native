@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
@@ -61,6 +64,11 @@ import org.jboss.ws.core.jaxws.handler.MessageContextJAXWS;
 import org.jboss.ws.core.jaxws.handler.PortInfoImpl;
 import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
 import org.jboss.ws.core.soap.MessageContextAssociation;
+import org.jboss.ws.extensions.wsrm.RMException;
+import org.jboss.ws.extensions.wsrm.RMHandlerConstant;
+import org.jboss.ws.extensions.wsrm.RMProvider;
+import org.jboss.ws.extensions.wsrm.RMSequence;
+import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.metadata.config.Configurable;
 import org.jboss.ws.metadata.config.ConfigurationProvider;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
@@ -73,7 +81,7 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  * @author Thomas.Diesler@jboss.org
  * @since 04-Jul-2006
  */
-public class ClientImpl extends CommonClient implements BindingProvider, Configurable
+public class ClientImpl extends CommonClient implements RMProvider, BindingProvider, Configurable
 {
    // provide logging
    private static Logger log = Logger.getLogger(ClientImpl.class);
@@ -88,7 +96,12 @@ public class ClientImpl extends CommonClient implements BindingProvider, Configu
 
 	private static HandlerType[] HANDLER_TYPES = new HandlerType[] {HandlerType.PRE, HandlerType.ENDPOINT, HandlerType.POST};
 	
-	public ClientImpl(EndpointMetaData epMetaData, HandlerResolver handlerResolver)
+   // WS-RM locking utility
+   private final Lock wsrmLock = new ReentrantLock();
+   // WS-RM sequence associated with the proxy
+   private RMSequence wsrmSequence;
+
+   public ClientImpl(EndpointMetaData epMetaData, HandlerResolver handlerResolver)
    {
       super(epMetaData);
       setTargetEndpointAddress(epMetaData.getEndpointAddress());
@@ -424,5 +437,82 @@ public class ClientImpl extends CommonClient implements BindingProvider, Configu
       String bindingID = epMetaData.getBindingId();
       PortInfo portInfo = new PortInfoImpl(serviceName, portName, bindingID);
       return portInfo;
+   }
+
+   ///////////////////
+   // WS-RM support //
+   ///////////////////
+   public RMSequence createSequence()
+   {
+      this.wsrmLock.lock();
+      try 
+      {
+         if ((this.wsrmSequence != null) && (!this.wsrmSequence.isTerminated()))
+            throw new IllegalStateException("Sequence already registered with proxy instance");
+
+         Provider rmProvider = Provider.getInstance("http://docs.oasis-open.org/ws-rx/wsrm/200702");
+         try
+         {
+            Map<String,Object> responseContext = getBindingProvider().getResponseContext();
+            QName createSequenceQN = rmProvider.getConstants().getCreateSequenceQName();
+            Map<String, Object> requestContext = getBindingProvider().getRequestContext();
+            requestContext.put(RMHandlerConstant.HANDLER_COMMAND, RMHandlerConstant.Operation.CREATE_SEQUENCE);
+            Object retVal = invoke(createSequenceQN, new Object[] {}, responseContext);
+         }
+         catch (Exception ignore) {
+            ignore.printStackTrace(); // TODO: use emulator on server side
+         }
+         
+         // TODO: do not return dummy sequence
+         return this.wsrmSequence = new RMSequence()
+         {
+            private int count = 0;
+            private boolean closed = false;
+            private boolean terminated = false;
+
+            public void close() throws RMException
+            {
+               this.closed = true;
+            }
+
+            public void terminate() throws RMException
+            {
+               this.terminated = true;
+            }
+
+            public boolean isCompleted()
+            {
+               return true;
+            }
+
+            public boolean isCompleted(int timeAmount, TimeUnit timeUnit)
+            {
+               return true;
+            }
+
+            public String getId()
+            {
+               return "DummySequenceId" + count++;
+            }
+
+            public void setLastMessage()
+            {
+            }
+
+            public boolean isTerminated()
+            {
+               return this.terminated;
+            }
+
+            public boolean isClosed()
+            {
+               return this.closed;
+            }
+         };
+      }
+      finally
+      {
+         this.wsrmLock.unlock();
+      }
    }
 }

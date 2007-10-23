@@ -39,7 +39,7 @@ import org.jboss.ws.extensions.policy.deployer.domainAssertion.WSSecurityAsserti
 import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAlternativeException;
 import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAssertionException;
 import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedPolicyException;
-import org.jboss.ws.extensions.wsrm.policy.WSRMPolicyAssertionDeployer;
+import org.jboss.ws.extensions.wsrm.policy.RMPolicyAssertionDeployer;
 import org.jboss.ws.metadata.umdm.ExtensibleMetaData;
 
 /**
@@ -57,7 +57,7 @@ public class PolicyDeployer
    {
       me = new PolicyDeployer();
       me.domainDeployerMap.put("http://www.jboss.com/ws-security/schema/jboss-ws-security_1_0.xsd", WSSecurityAssertionDeployer.class);
-      me.domainDeployerMap.put("http://docs.oasis-open.org/ws-rx/wsrmp/200702", WSRMPolicyAssertionDeployer.class);
+      me.domainDeployerMap.put("http://docs.oasis-open.org/ws-rx/wsrmp/200702", RMPolicyAssertionDeployer.class);
    }
 
    //hide constructor

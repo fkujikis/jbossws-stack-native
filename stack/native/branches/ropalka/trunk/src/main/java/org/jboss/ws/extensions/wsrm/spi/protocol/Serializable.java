@@ -23,7 +23,7 @@ package org.jboss.ws.extensions.wsrm.spi.protocol;
 
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.RMException;
 
 /**
  * This interface identifies classes that are de/serializable from/to SOAP messages
@@ -36,20 +36,20 @@ public interface Serializable
    /**
     * Serialize object instance to SOAP message
     * @param soapMessage 
-    * @throws ReliableMessagingException is something went wrong
+    * @throws RMException is something went wrong
     */
-   void serializeTo(SOAPMessage soapMessage) throws ReliableMessagingException;
+   void serializeTo(SOAPMessage soapMessage) throws RMException;
    
    /**
     * Deserialize object instance from SOAP message
     * @param soapMessage ReliableMessagingException is something went wrong
     */
-   void deserializeFrom(SOAPMessage soapMessage) throws ReliableMessagingException;
+   void deserializeFrom(SOAPMessage soapMessage) throws RMException;
    
    /**
     * Validate object state if everything is all right
-    * @throws  ReliableMessagingException if object is in incorrect state
+    * @throws  RMException if object is in incorrect state
     */
-   void validate() throws ReliableMessagingException;
+   void validate() throws RMException;
    
 }

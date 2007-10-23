@@ -1,0 +1,8 @@
+<env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+ <env:Header/>
+ <env:Body>
+  <ns1:echoResponse xmlns:ns1='http://org.jboss.ws/jaxws/wsrm'>
+   <result>Hello World</result>
+  </ns1:echoResponse>
+ </env:Body>
+</env:Envelope>

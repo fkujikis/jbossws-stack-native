@@ -36,6 +36,7 @@ import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.ExtensibleMetaData;
 import org.jboss.ws.metadata.wsrm.DeliveryAssuranceMetaData;
 import org.jboss.ws.metadata.wsrm.PortMetaData;
+import org.jboss.ws.metadata.wsrm.ProviderMetaData;
 import org.jboss.ws.metadata.wsrm.ReliableMessagingMetaData;
 
 /**
@@ -43,10 +44,11 @@ import org.jboss.ws.metadata.wsrm.ReliableMessagingMetaData;
  * 
  * @author richard.opalka@jboss.com
  */
-public final class WSRMPolicyAssertionDeployer implements AssertionDeployer
+public final class RMPolicyAssertionDeployer implements AssertionDeployer
 {
 
    private static final String WSRMP_NS = "http://docs.oasis-open.org/ws-rx/wsrmp/200702";
+   private static final String WSRM_NS = "http://docs.oasis-open.org/ws-rx/wsrm/200702";
    private static final QName EXACTLY_ONCE = new QName(WSRMP_NS, "ExactlyOnce");
    private static final QName AT_LEAST_ONCE = new QName(WSRMP_NS, "AtLeastOnce");
    private static final QName AT_MOST_ONCE = new QName(WSRMP_NS, "AtMostOnce");
@@ -100,6 +102,9 @@ public final class WSRMPolicyAssertionDeployer implements AssertionDeployer
          
          // set up port WSRMP metadata
          rmMD.getPorts().add(portMD);
+         ProviderMetaData providerMD = new ProviderMetaData();
+         providerMD.setSpecVersion(WSRM_NS);
+         rmMD.setProvider(providerMD);
       }
    }
 

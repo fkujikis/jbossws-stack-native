@@ -27,7 +27,7 @@ import java.util.Collections;
 
 import org.w3c.dom.Element;
 import org.jboss.wsf.common.DOMUtils;
-import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.RMException;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPElement;
@@ -47,7 +47,7 @@ final class SerializationHelper
    public static String getRequiredTextContent(SOAPElement element, QName elementQName)
    {
       if (!DOMUtils.hasTextChildNodesOnly(element))
-         throw new ReliableMessagingException(
+         throw new RMException(
             "Only text content is allowed for element " + elementQName);
 
       return DOMUtils.getTextContent(element).trim();
@@ -63,11 +63,11 @@ final class SerializationHelper
       List<Element> childElements = DOMUtils.getChildElementsAsList(element, requiredQName);
 
       if (childElements.size() < 1)
-         throw new ReliableMessagingException(
+         throw new RMException(
             "Required " + requiredQName + " element not found in " + context + " element");
       
       if (childElements.size() > 1)
-         throw new ReliableMessagingException(
+         throw new RMException(
             "Only one " + requiredQName + " element can be present in " + context + " element");
       
       return (SOAPElement)childElements.get(0);
@@ -78,7 +78,7 @@ final class SerializationHelper
       String attributeValue = element.getAttributeValue(attributeQName);
       
       if (attributeValue == null)
-         throw new ReliableMessagingException(
+         throw new RMException(
             "Required attribute " + attributeQName + " is missing in element " + elementQName);
 
       return attributeValue;
@@ -89,7 +89,7 @@ final class SerializationHelper
       List<Element> list = DOMUtils.getChildElementsAsList(contextElement, optionalQName);
 
       if (list.size() > 1)
-         throw new ReliableMessagingException(
+         throw new RMException(
             "At most one " + optionalQName + " element can be present in " + contextQName + " element");
       
       return (SOAPElement)((list.size() == 1) ? list.get(0) : null);
@@ -124,7 +124,7 @@ final class SerializationHelper
       }
       catch (NumberFormatException nfe)
       {
-         throw new ReliableMessagingException(errorMessage, nfe);
+         throw new RMException(errorMessage, nfe);
       }
    }
    

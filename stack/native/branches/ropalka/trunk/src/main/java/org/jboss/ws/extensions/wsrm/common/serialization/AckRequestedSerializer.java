@@ -33,7 +33,7 @@ import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPHeader;
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.extensions.wsrm.ReliableMessagingException;
+import org.jboss.ws.extensions.wsrm.RMException;
 import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
@@ -65,7 +65,7 @@ final class AckRequestedSerializer implements Serializer
     * @param soapMessage soap message from which object will be deserialized
     */
    public final void deserialize(Serializable object, Provider provider, SOAPMessage soapMessage)
-   throws ReliableMessagingException
+   throws RMException
    {
       AckRequested o = (AckRequested)object;
       try
@@ -95,11 +95,11 @@ final class AckRequestedSerializer implements Serializer
       }
       catch (SOAPException se)
       {
-         throw new ReliableMessagingException("Unable to deserialize RM message", se);
+         throw new RMException("Unable to deserialize RM message", se);
       }
       catch (RuntimeException re)
       {
-         throw new ReliableMessagingException("Unable to deserialize RM message", re);
+         throw new RMException("Unable to deserialize RM message", re);
       }
    }
 
@@ -110,7 +110,7 @@ final class AckRequestedSerializer implements Serializer
     * @param soapMessage soap message to which object will be serialized
     */
    public final void serialize(Serializable object, Provider provider, SOAPMessage soapMessage)
-   throws ReliableMessagingException
+   throws RMException
    {
       AckRequested o = (AckRequested)object;
       try
@@ -139,7 +139,7 @@ final class AckRequestedSerializer implements Serializer
       }
       catch (SOAPException se)
       {
-         throw new ReliableMessagingException("Unable to serialize RM message", se);
+         throw new RMException("Unable to serialize RM message", se);
       }
    }
 

@@ -21,51 +21,14 @@
  */
 package org.jboss.ws.extensions.wsrm;
 
-import java.util.concurrent.TimeUnit;
-import javax.xml.ws.BindingProvider;
-
-public class RMSequenceFactory
+/**
+ * TODO: add comment
+ *
+ * @author richard.opalka@jboss.com
+ *
+ * @since Oct 22, 2007
+ */
+public interface RMProvider
 {
-   private RMSequenceFactory()
-   {
-      // forbidden constructor
-   }
-   
-   private static final RMSequence DUMMY_SEQUENCE = new RMSequence()
-   {
-      private int count = 0;
-      
-      public boolean completed()
-      {
-         return true;
-      }
-
-      public boolean completed(int timeAmount, TimeUnit timeUnit)
-      {
-         return true;
-      }
-
-      public String getId()
-      {
-         return "DummySequenceId" + count++;
-      }
-
-      public void setLastMessage()
-      {
-      }
-
-      public void terminate()
-      {
-      }
-   };
- 
-   public static RMSequence newInstance(Object object)
-   {
-      if (object instanceof BindingProvider) {
-         // allowing creation of sequences only for JBossWS client proxies
-         return DUMMY_SEQUENCE; // TODO: RIO implement RM SPI provider
-      } else {
-         throw new IllegalArgumentException(); // TODO: RIO provide clear message to the client
-      }
-   }
+   RMSequence createSequence();
 }
