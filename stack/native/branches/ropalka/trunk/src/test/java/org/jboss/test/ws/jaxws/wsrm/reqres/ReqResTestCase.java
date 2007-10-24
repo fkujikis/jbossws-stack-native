@@ -21,7 +21,11 @@
  */
 package org.jboss.test.ws.jaxws.wsrm.reqres;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -51,12 +55,27 @@ import org.jboss.ws.extensions.wsrm.RMProvider;
  */
 public class ReqResTestCase extends JBossWSTest
 {
-   private final String serviceURL = "http://" + getServerHost() + ":8080/jaxws-wsrm/ReqResService";
+   private static final Properties props = new Properties();
    private static final String HELLO_WORLD_MSG = "Hello World";
    private static final String TARGET_NS = "http://org.jboss.ws/jaxws/wsrm";
+   private final String serviceURL = "http://" + getServerHost() + ":" + props.getProperty("port") + props.getProperty("path");
    private Exception handlerException;
    private boolean asyncHandlerCalled;
    private ReqResServiceIface proxy;
+   
+   static
+   {
+      // load test properties
+      File propertiesFile = new File("resources/jaxws/wsrm/properties/ReqResTestCase.properties");
+      try 
+      {
+         props.load(new FileInputStream(propertiesFile));
+      }
+      catch (IOException ignore)
+      {
+         ignore.printStackTrace();
+      }
+   }
    
    private enum InvocationType
    {
@@ -65,7 +84,7 @@ public class ReqResTestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(ReqResTestCase.class, "jaxws-wsrm.war, jaxws-wsrm-client.jar");
+      return new JBossWSTestSetup(ReqResTestCase.class, props.getProperty("archives"));
    }
 
    @Override

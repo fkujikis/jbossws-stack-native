@@ -28,7 +28,9 @@ import java.util.Set;
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.addressing.AddressingException;
 import javax.xml.ws.addressing.JAXWSAConstants;
+import javax.xml.ws.addressing.soap.SOAPAddressingBuilder;
 import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.MessageContext.Scope;
@@ -39,6 +41,7 @@ import org.jboss.ws.core.jaxws.handler.GenericSOAPHandler;
 import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence;
+import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
 
 /**
  * TODO: add comment
@@ -99,7 +102,16 @@ public class RMClientHandler extends GenericSOAPHandler
    protected boolean handleInbound(MessageContext msgContext)
    {
       if(log.isDebugEnabled()) log.debug("handleInbound");
-      // TODO: implement
+
+      SOAPMessage soapMessage = ((SOAPMessageContext)msgContext).getMessage();
+      RMHandlerConstant.Operation operation = (RMHandlerConstant.Operation)msgContext.get(RMHandlerConstant.HANDLER_COMMAND);
+      if (operation == RMHandlerConstant.Operation.CREATE_SEQUENCE)
+      {
+         CreateSequenceResponse createSequenceResponse = rmProvider.getMessageFactory().newCreateSequenceResponse();
+         createSequenceResponse.deserializeFrom(soapMessage);
+         System.out.println("have wsrm identifier: " + createSequenceResponse.getIdentifier());
+      }
+
       return true;
    }
 

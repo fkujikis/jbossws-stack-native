@@ -495,9 +495,8 @@
           <classes dir="${tests.output.dir}/classes">
             <include name="org/jboss/test/ws/jaxws/wsrm/emulator/**/*.class"/>
           </classes>
-          <webinf dir="${tests.output.dir}/resources/jaxws/wsrm/emulator/resources">
-            <include name="*.xml"/>
-            <include name="*.wsdl"/>
+          <webinf dir="${tests.output.dir}/resources/jaxws/wsrm/emulator">
+            <include name="resources/"/>
           </webinf>
         </war>
 

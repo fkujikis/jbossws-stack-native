@@ -5,12 +5,12 @@
   version="2.4">
 
   <servlet>
-    <servlet-name>RMEndpointEmulator</servlet-name>
-    <servlet-class>org.jboss.test.ws.jaxws.wsrm.emulator.RMEndpointEmulator</servlet-class>
+    <servlet-name>EndpointEmulator</servlet-name>
+    <servlet-class>org.jboss.test.ws.jaxws.wsrm.emulator.EndpointEmulator</servlet-class>
   </servlet>
 
   <servlet-mapping>
-    <servlet-name>RMEndpointEmulator</servlet-name>
+    <servlet-name>EndpointEmulator</servlet-name>
     <url-pattern>/ReqResService</url-pattern>
   </servlet-mapping>
 
