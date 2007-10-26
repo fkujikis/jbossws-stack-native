@@ -21,7 +21,7 @@
  */
 package org.jboss.ws.extensions.wsrm.common.serialization;
 
-import org.jboss.ws.extensions.wsrm.RMException;
+import org.jboss.ws.extensions.wsrm.client_api.RMException;
 import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CloseSequenceResponse;

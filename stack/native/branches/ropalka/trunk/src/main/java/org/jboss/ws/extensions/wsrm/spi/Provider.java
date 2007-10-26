@@ -86,4 +86,9 @@ public abstract class Provider
       return REGISTERED_PROVIDERS.get(wsrmNamespace);
    }
    
+   public static final Provider get()
+   {
+      return org.jboss.ws.extensions.wsrm.spec200702.ProviderImpl.getInstance();
+   }
+   
 }

@@ -27,7 +27,7 @@ import java.util.Collections;
 
 import org.w3c.dom.Element;
 import org.jboss.wsf.common.DOMUtils;
-import org.jboss.ws.extensions.wsrm.RMException;
+import org.jboss.ws.extensions.wsrm.client_api.RMException;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPElement;

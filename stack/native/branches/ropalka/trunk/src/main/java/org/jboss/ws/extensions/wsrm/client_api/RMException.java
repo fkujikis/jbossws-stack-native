@@ -19,18 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm;
+package org.jboss.ws.extensions.wsrm.client_api;
 
-import java.util.concurrent.TimeUnit;
+import javax.xml.ws.WebServiceException;
 
-public interface RMSequence
+/**
+ * Reliable messaging exception
+ * @author richard.opalka@jboss.com
+ */
+public class RMException extends WebServiceException
 {
-   void close() throws RMException;
-   void terminate() throws RMException;
-   String getId() throws RMException;
-   void setLastMessage() throws RMException;
-   boolean isCompleted() throws RMException;
-   boolean isCompleted(int timeAmount, TimeUnit timeUnit) throws RMException;
-   boolean isClosed() throws RMException;
-   boolean isTerminated() throws RMException;
+
+   public RMException()
+   {
+      super();
+   }
+
+   public RMException(String message, Throwable cause)
+   {
+      super(message, cause);
+   }
+
+   public RMException(String message)
+   {
+      super(message);
+   }
+
+   public RMException(Throwable cause)
+   {
+      super(cause);
+   }
+
 }

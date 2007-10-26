@@ -22,26 +22,31 @@
 package org.jboss.ws.extensions.wsrm;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
-import javax.xml.ws.addressing.AddressingException;
 import javax.xml.ws.addressing.JAXWSAConstants;
-import javax.xml.ws.addressing.soap.SOAPAddressingBuilder;
 import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.MessageContext.Scope;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.jaxws.handler.GenericSOAPHandler;
 import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
+import org.jboss.ws.extensions.wsrm.spi.protocol.AckRequested;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
 /**
  * TODO: add comment
@@ -56,7 +61,7 @@ public class RMClientHandler extends GenericSOAPHandler
    private static Logger log = Logger.getLogger(RMClientHandler.class);
 
    private static Set<QName> HEADERS = new HashSet<QName>();
-   private static Provider rmProvider = Provider.getInstance("http://docs.oasis-open.org/ws-rx/wsrm/200702");
+   private static Provider rmProvider = Provider.get();
 
    static
    {
@@ -78,17 +83,54 @@ public class RMClientHandler extends GenericSOAPHandler
    {
       if(log.isDebugEnabled()) log.debug("handleOutbound");
 
-      SOAPAddressingProperties addrProps = (SOAPAddressingProperties)msgContext.get(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND);
-      RMHandlerConstant.Operation operation = (RMHandlerConstant.Operation)msgContext.get(RMHandlerConstant.HANDLER_COMMAND);
+      CommonMessageContext commonMsgContext = (CommonMessageContext)msgContext;
+      SOAPAddressingProperties addrProps = (SOAPAddressingProperties)commonMsgContext.get(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND);
+      Map<String, Object> rmRequestContext = (Map<String, Object>)commonMsgContext.get(RMConstant.REQUEST_CONTEXT);
+      String operation = (String)rmRequestContext.get(RMConstant.OPERATION_TYPE);
       if (addrProps != null)
       {
-         SOAPMessage soapMessage = ((SOAPMessageContext)msgContext).getMessage();
-         if (operation == RMHandlerConstant.Operation.CREATE_SEQUENCE)
+         SOAPMessage soapMessage = ((SOAPMessageContext)commonMsgContext).getMessage();
+         if (RMConstant.CREATE_SEQUENCE.equals(operation))
          {
             String replyTo = addrProps.getReplyTo().getAddress().getURI().toString();
             CreateSequence createSequence = rmProvider.getMessageFactory().newCreateSequence();
             createSequence.setAcksTo(replyTo);
             createSequence.serializeTo(soapMessage);
+            List<Serializable> data = new LinkedList<Serializable>();
+            data.add(createSequence);
+            rmRequestContext.put(RMConstant.DATA, data);
+            
+            return true;
+         }
+         
+         if (RMConstant.SEQUENCE.equals(operation))
+         {
+            RMSequenceImpl sequenceImpl = (RMSequenceImpl)rmRequestContext.get(RMConstant.SEQUENCE_REFERENCE);
+            Sequence sequence = rmProvider.getMessageFactory().newSequence();
+            sequence.setIdentifier(sequenceImpl.getId());
+            if (sequenceImpl.isLastMessage())
+            {
+               sequence.setLastMessage();
+            }
+            sequence.setMessageNumber(sequenceImpl.newMessageNumber());
+            sequence.serializeTo(soapMessage);
+            
+            List<Serializable> data = new LinkedList<Serializable>();
+            data.add(sequence);
+            
+            if (commonMsgContext.getOperationMetaData().isOneWay() == false)
+            {
+               // TODO: ask msgStore if there are other sequences related to the same
+               // endpoint that requires ack and serialize it here
+               AckRequested ackRequested = rmProvider.getMessageFactory().newAckRequested();
+               ackRequested.setIdentifier(sequenceImpl.getId());
+               ackRequested.setMessageNumber(sequenceImpl.getLastMessageNumber());
+               ackRequested.serializeTo(soapMessage);
+               data.add(ackRequested);
+            }
+            rmRequestContext.put(RMConstant.DATA, data);
+            
+            return true;
          }
       }
       else
@@ -104,12 +146,20 @@ public class RMClientHandler extends GenericSOAPHandler
       if(log.isDebugEnabled()) log.debug("handleInbound");
 
       SOAPMessage soapMessage = ((SOAPMessageContext)msgContext).getMessage();
-      RMHandlerConstant.Operation operation = (RMHandlerConstant.Operation)msgContext.get(RMHandlerConstant.HANDLER_COMMAND);
-      if (operation == RMHandlerConstant.Operation.CREATE_SEQUENCE)
+      // TODO: inspect operation type different way - don't forget on piggy-backing
+      Map<String, Object> rmRequestContext = (Map<String, Object>)msgContext.get(RMConstant.REQUEST_CONTEXT);
+      String operation = (String)rmRequestContext.get(RMConstant.OPERATION_TYPE);
+      if (RMConstant.CREATE_SEQUENCE.equals(operation))
       {
          CreateSequenceResponse createSequenceResponse = rmProvider.getMessageFactory().newCreateSequenceResponse();
          createSequenceResponse.deserializeFrom(soapMessage);
-         System.out.println("have wsrm identifier: " + createSequenceResponse.getIdentifier());
+         List<Serializable> data = new LinkedList<Serializable>();
+         data.add(createSequenceResponse);
+         Map<String, Object> rmResponseContext = new HashMap<String, Object>();
+         rmResponseContext.put(RMConstant.OPERATION_TYPE, RMConstant.CREATE_SEQUENCE_RESPONSE);
+         rmResponseContext.put(RMConstant.DATA, data);
+         msgContext.put(RMConstant.RESPONSE_CONTEXT, rmResponseContext);
+         msgContext.setScope(RMConstant.RESPONSE_CONTEXT, Scope.APPLICATION);
       }
 
       return true;

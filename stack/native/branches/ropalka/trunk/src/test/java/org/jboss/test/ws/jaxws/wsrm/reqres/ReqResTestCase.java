@@ -44,8 +44,8 @@ import org.jboss.wsf.test.JBossWSTestSetup;
 import org.jboss.test.ws.jaxws.wsrm.ReqResServiceIface;
 
 import org.jboss.ws.extensions.addressing.AddressingClientUtil;
-import org.jboss.ws.extensions.wsrm.RMSequence;
-import org.jboss.ws.extensions.wsrm.RMProvider;
+import org.jboss.ws.extensions.wsrm.client_api.RMProvider;
+import org.jboss.ws.extensions.wsrm.client_api.RMSequence;
 
 /**
  * Reliable JBoss WebService client invoking req/res methods
@@ -183,6 +183,7 @@ public class ReqResTestCase extends JBossWSTest
       setAddressingProperties("http://useless/action");
       invokeWebServiceMethod(invocationType);
       if (!sequence.isCompleted(1000, TimeUnit.MILLISECONDS)) {
+         sequence.discard();
          fail("Sequence not completed within specified time amount");
       } else {
          sequence.terminate();

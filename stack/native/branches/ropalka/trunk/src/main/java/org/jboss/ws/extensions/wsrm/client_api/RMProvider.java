@@ -19,35 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm;
-
-import javax.xml.ws.WebServiceException;
+package org.jboss.ws.extensions.wsrm.client_api;
 
 /**
- * RM exception heavily used by RM framework
+ * TODO: add comment
+ *
  * @author richard.opalka@jboss.com
+ *
+ * @since Oct 22, 2007
  */
-public class RMException extends WebServiceException
+public interface RMProvider
 {
-
-   public RMException()
-   {
-      super();
-   }
-
-   public RMException(String message, Throwable cause)
-   {
-      super(message, cause);
-   }
-
-   public RMException(String message)
-   {
-      super(message);
-   }
-
-   public RMException(Throwable cause)
-   {
-      super(cause);
-   }
-
+   RMSequence createSequence() throws RMException;
 }

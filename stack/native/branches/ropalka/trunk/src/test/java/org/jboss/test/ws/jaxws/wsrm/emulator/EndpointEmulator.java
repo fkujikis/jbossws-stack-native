@@ -42,6 +42,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * Endpoint emulator
@@ -53,13 +54,14 @@ import org.w3c.dom.Element;
 public class EndpointEmulator extends HttpServlet
 {
    private static final String ADDR_NS = "http://www.w3.org/2005/08/addressing";
+   private static final String WSRM_NS = "http://docs.oasis-open.org/ws-rx/wsrm/200702";
    private static final Map<String, String> wsrmActions = new HashMap<String, String>();
-   private static final String CREATE_SEQUENCE_ACTION = "http://docs.oasis-open.org/ws-rx/wsrm/200702/CreateSequence";
-   private static final String CREATE_SEQUENCE_RESPONSE_ACTION = "http://docs.oasis-open.org/ws-rx/wsrm/200702/CreateSequenceResponse";
-   private static final String CLOSE_SEQUENCE_ACTION = "http://docs.oasis-open.org/ws-rx/wsrm/200702/CloseSequence";
-   private static final String CLOSE_SEQUENCE_RESPONSE_ACTION = "http://docs.oasis-open.org/ws-rx/wsrm/200702/CloseSequenceResponse";
-   private static final String TERMINATE_SEQUENCE_ACTION = "http://docs.oasis-open.org/ws-rx/wsrm/200702/TerminateSequence";
-   private static final String TERMINATE_SEQUENCE_RESPONSE_ACTION = "http://docs.oasis-open.org/ws-rx/wsrm/200702/TerminateSequenceResponse";
+   private static final String CREATE_SEQUENCE_ACTION = WSRM_NS + "/CreateSequence";
+   private static final String CREATE_SEQUENCE_RESPONSE_ACTION = WSRM_NS + "/CreateSequenceResponse";
+   private static final String CLOSE_SEQUENCE_ACTION = WSRM_NS + "/CloseSequence";
+   private static final String CLOSE_SEQUENCE_RESPONSE_ACTION = WSRM_NS + "/CloseSequenceResponse";
+   private static final String TERMINATE_SEQUENCE_ACTION = WSRM_NS + "/TerminateSequence";
+   private static final String TERMINATE_SEQUENCE_RESPONSE_ACTION = WSRM_NS + "/TerminateSequenceResponse";
    private static final Random generator = new Random();
    
    static
@@ -87,7 +89,7 @@ public class EndpointEmulator extends HttpServlet
    {
       resp.setContentType("text/xml");
       PrintWriter writer = resp.getWriter();
-      Properties properties = getAddressingProperties(getRequestMessage(req));
+      Properties properties = getProperties(getRequestMessage(req));
       String response = getResource("WEB-INF/resources/echoResponse.xml");
       if (properties.get("addressing.action").equals(CREATE_SEQUENCE_ACTION))
          response = getResource("WEB-INF/resources/createSequenceResponse.xml");
@@ -111,6 +113,9 @@ public class EndpointEmulator extends HttpServlet
          }
          action = wsrmActions.get(action);
       }
+      response = replace("${messaging.identifier}", props.getProperty("messaging.identifier"), response);
+      response = replace("${messaging.upper}", props.getProperty("messaging.messagenumber"), response);
+      response = replace("${messaging.lower}", props.getProperty("messaging.messagenumber"), response);
       response = replace("${addressing.action}", action, response);
       return response;
    }
@@ -131,7 +136,7 @@ public class EndpointEmulator extends HttpServlet
       return result.toString();
    }
    
-   private Properties getAddressingProperties(String message) throws IOException
+   private Properties getProperties(String message) throws IOException
    {
       try
       {
@@ -149,6 +154,17 @@ public class EndpointEmulator extends HttpServlet
          String replyTo = ((Element)document.getElementsByTagNameNS(ADDR_NS, "ReplyTo").item(0))
             .getElementsByTagNameNS(ADDR_NS, "Address").item(0).getTextContent().trim();
          retVal.put("addressing.replyto", replyTo);
+         NodeList sequence = document.getElementsByTagNameNS(WSRM_NS, "Sequence");
+         if (sequence != null && sequence.getLength() != 0)
+         {
+            String sequenceId = ((Element)sequence.item(0))
+               .getElementsByTagNameNS(WSRM_NS, "Identifier").item(0).getTextContent().trim();
+            retVal.put("messaging.identifier", replyTo);
+            String messageNumber = ((Element)sequence.item(0))
+               .getElementsByTagNameNS(WSRM_NS, "MessageNumber").item(0).getTextContent().trim(); 
+            retVal.put("messaging.messagenumber", messageNumber);
+         }
+          
          System.out.println("Properties from message: " + retVal);
          return retVal;
       }

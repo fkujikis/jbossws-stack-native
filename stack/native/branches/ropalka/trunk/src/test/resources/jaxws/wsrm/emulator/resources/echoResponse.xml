@@ -6,6 +6,10 @@
   <wsa:To>${addressing.to}</wsa:To>
   <wsa:RelatesTo>${addressing.relatesto}</wsa:RelatesTo>
   <wsa:Action>${addressing.action}</wsa:Action>
+  <wsrm:SequenceAcknowledgement>
+   <wsrm:Identifier>${messaging.identifier}</wsrm:Identifier>
+   <wsrm:AcknowledgementRange Upper='${messaging.upper}' Lower='${messaging.lower}'/>
+  </wsrm:SequenceAcknowledgement>
  </env:Header>
  <env:Body xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
   <ns1:echoResponse xmlns:ns1='http://org.jboss.ws/jaxws/wsrm'>

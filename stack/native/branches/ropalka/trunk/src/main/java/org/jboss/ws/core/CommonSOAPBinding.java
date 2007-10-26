@@ -75,6 +75,7 @@ import org.jboss.ws.core.soap.Use;
 import org.jboss.ws.core.soap.attachment.AttachmentPartImpl;
 import org.jboss.ws.core.soap.attachment.CIDGenerator;
 import org.jboss.ws.core.utils.MimeUtils;
+import org.jboss.ws.extensions.wsrm.RMConstant;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -172,22 +173,18 @@ public abstract class CommonSOAPBinding implements CommonBinding
          SOAPElement soapBodyElement = soapBody;
          if (style == Style.RPC)
          {
-            ReliableMessagingMetaData rmMD = opMetaData.getEndpointMetaData().getConfig().getRMMetaData();
-            List<QName> rmQNs = Collections.emptyList();
-            if (rmMD != null)
-            {
-               String rmSpecVersion = rmMD.getProvider().getSpecVersion();
-               org.jboss.ws.extensions.wsrm.spi.Constants constants = Provider.getInstance(rmSpecVersion).getConstants();
-               rmQNs = new LinkedList<QName>();
-               rmQNs.add(constants.getCreateSequenceQName());
-               rmQNs.add(constants.getCloseSequenceQName());
-               rmQNs.add(constants.getTerminateSequenceQName());
-            }
             boolean serialize = true;
-            for (QName wsrmQN : rmQNs)
+            
+            if (opMetaData.getEndpointMetaData().getConfig().getRMMetaData() != null)
             {
-               if (wsrmQN.equals(opMetaData.getQName()))
-                  serialize = false;
+               for (QName wsrmQN : RMConstant.PROTOCOL_OPERATION_QNAMES)
+               {
+                  if (wsrmQN.equals(opMetaData.getQName()))
+                  {
+                     serialize = false;
+                     break;
+                  }
+               }
             }
             
             if (serialize)

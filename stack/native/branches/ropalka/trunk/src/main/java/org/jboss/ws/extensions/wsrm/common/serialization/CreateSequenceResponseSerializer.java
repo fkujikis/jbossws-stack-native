@@ -34,7 +34,7 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.addressing.AddressingBuilder;
 import javax.xml.ws.addressing.AddressingConstants;
 
-import org.jboss.ws.extensions.wsrm.RMException;
+import org.jboss.ws.extensions.wsrm.client_api.RMException;
 import org.jboss.ws.extensions.wsrm.spi.Constants;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;

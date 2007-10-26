@@ -29,8 +29,8 @@ import javax.xml.ws.Service;
 
 import junit.framework.Test;
 
-import org.jboss.ws.extensions.wsrm.RMProvider;
-import org.jboss.ws.extensions.wsrm.RMSequence;
+import org.jboss.ws.extensions.wsrm.client_api.RMProvider;
+import org.jboss.ws.extensions.wsrm.client_api.RMSequence;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 import org.jboss.test.ws.jaxws.wsrm.OneWayServiceIface;

@@ -23,7 +23,7 @@ package org.jboss.ws.extensions.wsrm.spi.protocol;
 
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.extensions.wsrm.RMException;
+import org.jboss.ws.extensions.wsrm.client_api.RMException;
 
 /**
  * This interface identifies classes that are de/serializable from/to SOAP messages

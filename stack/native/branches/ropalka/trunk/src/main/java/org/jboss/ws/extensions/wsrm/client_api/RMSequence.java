@@ -19,16 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm;
+package org.jboss.ws.extensions.wsrm.client_api;
 
-/**
- * TODO: add comment
- *
- * @author richard.opalka@jboss.com
- *
- * @since Oct 22, 2007
- */
-public interface RMProvider
+import java.util.concurrent.TimeUnit;
+
+public interface RMSequence
 {
-   RMSequence createSequence();
+   void close() throws RMException;
+   void discard() throws RMException;
+   void terminate() throws RMException;
+   String getId() throws RMException;
+   void setLastMessage() throws RMException;
+   boolean isCompleted() throws RMException;
+   boolean isCompleted(int timeAmount, TimeUnit timeUnit) throws RMException;
+   boolean isClosed() throws RMException;
+   boolean isLastMessage() throws RMException;
+   long getLastMessageNumber() throws RMException;
+   boolean isDiscarded() throws RMException;
+   boolean isTerminated() throws RMException;
 }

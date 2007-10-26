@@ -23,7 +23,7 @@ package org.jboss.ws.extensions.wsrm.common.serialization;
 
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.extensions.wsrm.RMException;
+import org.jboss.ws.extensions.wsrm.client_api.RMException;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 

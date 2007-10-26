@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -64,11 +63,14 @@ import org.jboss.ws.core.jaxws.handler.MessageContextJAXWS;
 import org.jboss.ws.core.jaxws.handler.PortInfoImpl;
 import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
 import org.jboss.ws.core.soap.MessageContextAssociation;
-import org.jboss.ws.extensions.wsrm.RMException;
-import org.jboss.ws.extensions.wsrm.RMHandlerConstant;
-import org.jboss.ws.extensions.wsrm.RMProvider;
-import org.jboss.ws.extensions.wsrm.RMSequence;
+import org.jboss.ws.extensions.wsrm.RMConstant;
+import org.jboss.ws.extensions.wsrm.RMSequenceImpl;
+import org.jboss.ws.extensions.wsrm.client_api.RMException;
+import org.jboss.ws.extensions.wsrm.client_api.RMProvider;
+import org.jboss.ws.extensions.wsrm.client_api.RMSequence;
 import org.jboss.ws.extensions.wsrm.spi.Provider;
+import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 import org.jboss.ws.metadata.config.Configurable;
 import org.jboss.ws.metadata.config.ConfigurationProvider;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
@@ -95,11 +97,21 @@ public class ClientImpl extends CommonClient implements RMProvider, BindingProvi
 	private Map<HandlerType, HandlerChainExecutor> executorMap = new HashMap<HandlerType, HandlerChainExecutor>();
 
 	private static HandlerType[] HANDLER_TYPES = new HandlerType[] {HandlerType.PRE, HandlerType.ENDPOINT, HandlerType.POST};
-	
+
    // WS-RM locking utility
    private final Lock wsrmLock = new ReentrantLock();
    // WS-RM sequence associated with the proxy
    private RMSequence wsrmSequence;
+   
+   public final Lock getWSRMLock()
+   {
+      return this.wsrmLock;
+   }
+   
+   public final void setWSRMSequence(RMSequence wsrmSequence)
+   {
+      this.wsrmSequence = wsrmSequence;
+   }
 
    public ClientImpl(EndpointMetaData epMetaData, HandlerResolver handlerResolver)
    {
@@ -241,15 +253,36 @@ public class ClientImpl extends CommonClient implements RMProvider, BindingProvi
    // Invoked by the proxy invokation handler
    public Object invoke(QName opName, Object[] args, Map<String, Object> resContext) throws RemoteException
    {
-      // Associate a message context with the current thread
-      CommonMessageContext msgContext = new SOAPMessageContextJAXWS();
-      MessageContextAssociation.pushMessageContext(msgContext);
+      this.wsrmLock.lock();
 
-      // The contents of the request context are used to initialize the message context (see section 9.4.1)
-      // prior to invoking any handlers (see chapter 9) for the outbound message. Each property within the
-      // request context is copied to the message context with a scope of HANDLER.
-      Map<String, Object> reqContext = getBindingProvider().getRequestContext();
-      msgContext.putAll(reqContext);
+      try
+      {
+         // Associate a message context with the current thread
+         CommonMessageContext msgContext = new SOAPMessageContextJAXWS();
+         MessageContextAssociation.pushMessageContext(msgContext);
+
+         // The contents of the request context are used to initialize the message context (see section 9.4.1)
+         // prior to invoking any handlers (see chapter 9) for the outbound message. Each property within the
+         // request context is copied to the message context with a scope of HANDLER.
+         Map<String, Object> reqContext = getBindingProvider().getRequestContext();
+
+         if (this.wsrmSequence != null)
+         {
+            if (RMConstant.PROTOCOL_OPERATION_QNAMES.contains(opName) == false)
+            {
+               Map<String, Object> rmRequestContext = new HashMap<String, Object>();
+               rmRequestContext.put(RMConstant.OPERATION_TYPE, RMConstant.SEQUENCE);
+               rmRequestContext.put(RMConstant.SEQUENCE_REFERENCE, this.wsrmSequence);
+               reqContext.put(RMConstant.REQUEST_CONTEXT, rmRequestContext);
+            }
+         }
+
+         msgContext.putAll(reqContext);
+      }
+      finally
+      {
+         this.wsrmLock.unlock();
+      }
 
       try
       {
@@ -272,7 +305,7 @@ public class ClientImpl extends CommonClient implements RMProvider, BindingProvi
       finally
       {
          // Copy the inbound msg properties to the binding's response context
-         msgContext = MessageContextAssociation.peekMessageContext();
+         CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
          for (String key : msgContext.keySet())
          {
             Object value = msgContext.get(key);
@@ -442,77 +475,33 @@ public class ClientImpl extends CommonClient implements RMProvider, BindingProvi
    ///////////////////
    // WS-RM support //
    ///////////////////
-   public RMSequence createSequence()
+   public RMSequence createSequence() throws RMException
    {
-      this.wsrmLock.lock();
+      this.getWSRMLock().lock();
       try 
       {
          if ((this.wsrmSequence != null) && (!this.wsrmSequence.isTerminated()))
             throw new IllegalStateException("Sequence already registered with proxy instance");
 
-         Provider rmProvider = Provider.getInstance("http://docs.oasis-open.org/ws-rx/wsrm/200702");
          try
          {
-            Map<String,Object> responseContext = getBindingProvider().getResponseContext();
-            QName createSequenceQN = rmProvider.getConstants().getCreateSequenceQName();
-            Map<String, Object> requestContext = getBindingProvider().getRequestContext();
-            requestContext.put(RMHandlerConstant.HANDLER_COMMAND, RMHandlerConstant.Operation.CREATE_SEQUENCE);
-            Object retVal = invoke(createSequenceQN, new Object[] {}, responseContext);
+            QName createSequenceQN = Provider.get().getConstants().getCreateSequenceQName();
+            Map<String, Object> rmRequestContext = new HashMap<String, Object>();
+            rmRequestContext.put(RMConstant.OPERATION_TYPE, RMConstant.CREATE_SEQUENCE);
+            getBindingProvider().getRequestContext().put(RMConstant.REQUEST_CONTEXT, rmRequestContext);
+            invoke(createSequenceQN, new Object[] {}, getBindingProvider().getResponseContext());
+            
+            Map<String, Object> rmResponseContext = (Map<String, Object>)getBindingProvider().getResponseContext().get(RMConstant.RESPONSE_CONTEXT);
+            String id = ((CreateSequenceResponse)((List<Serializable>)rmResponseContext.get(RMConstant.DATA)).get(0)).getIdentifier();
+            return this.wsrmSequence = new RMSequenceImpl(this, id);
          }
-         catch (Exception ignore) {
-            ignore.printStackTrace(); // TODO: use emulator on server side
+         catch (Exception e) {
+            throw new RMException("Unable to create WSRM sequence", e);
          }
-         
-         // TODO: do not return dummy sequence
-         return this.wsrmSequence = new RMSequence()
-         {
-            private int count = 0;
-            private boolean closed = false;
-            private boolean terminated = false;
-
-            public void close() throws RMException
-            {
-               this.closed = true;
-            }
-
-            public void terminate() throws RMException
-            {
-               this.terminated = true;
-            }
-
-            public boolean isCompleted()
-            {
-               return true;
-            }
-
-            public boolean isCompleted(int timeAmount, TimeUnit timeUnit)
-            {
-               return true;
-            }
-
-            public String getId()
-            {
-               return "DummySequenceId" + count++;
-            }
-
-            public void setLastMessage()
-            {
-            }
-
-            public boolean isTerminated()
-            {
-               return this.terminated;
-            }
-
-            public boolean isClosed()
-            {
-               return this.closed;
-            }
-         };
       }
       finally
       {
-         this.wsrmLock.unlock();
+         this.getWSRMLock().unlock();
       }
    }
 }
