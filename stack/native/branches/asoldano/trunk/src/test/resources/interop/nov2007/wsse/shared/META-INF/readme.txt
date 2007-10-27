@@ -1,5 +1,21 @@
-Certificates and keystores contents
------------------------------------
+ ------------------------------------
+       Certificates & keystores
+ -------------------------------------
+
+
+			Alice - Client				Bob - Server
+
+Signature
+-> Keystore		alice-sign.jks				bob-sign.jks
+-> Truststore		wsse10.truststore			wsse10.truststore
+
+
+Signature+Encrypt
+-> Keystore		alice-sign_enc.jks			bob-sign_enc.jks
+-> Truststore		wsse10.truststore			wsse10.truststore
+
+
+
 
 > keytool -printcert -file Alice.cer 
 
@@ -66,7 +82,21 @@ Impronta digitale certificato (MD5):
 
 
 --------------------------------------------------------------------------------------
-> keytool -list -keystore alice.jks 
+> keytool -list -keystore alice-sign.jks 
+Immettere la password del keystore:  password
+
+Tipo keystore: jks
+Provider keystore: SUN
+
+Il keystore contiene 1 entry
+
+1, 27-ott-2007, keyEntry,
+Impronta digitale certificato (MD5):
+57:CE:81:F1:03:C4:2C:F7:5B:1A:DE:AC:43:64:0A:84
+
+
+--------------------------------------------------------------------------------------
+> keytool -list -keystore alice-sign_enc.jks 
 Immettere la password del keystore:  password
 
 Tipo keystore: jks
@@ -83,7 +113,21 @@ Impronta digitale certificato (MD5):
 
 
 --------------------------------------------------------------------------------------
-> keytool -list -keystore bob.jks 
+> keytool -list -keystore bob-sign.jks 
+Immettere la password del keystore:  password
+
+Tipo keystore: jks
+Provider keystore: SUN
+
+Il keystore contiene 1 entry
+
+1, 27-ott-2007, keyEntry,
+Impronta digitale certificato (MD5):
+89:3E:86:D2:4F:9C:E7:39:B6:71:8A:EF:00:C5:89:DC
+
+
+--------------------------------------------------------------------------------------
+> keytool -list -keystore bob-sign_enc.jks 
 Immettere la password del keystore:  password
 
 Tipo keystore: jks
