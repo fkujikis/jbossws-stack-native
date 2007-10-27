@@ -32,7 +32,7 @@ import org.jboss.wsf.test.JBossWSTestSetup;
 /**
  * WCF Interoperability Plug-fest - November 2007
  * 
- * Scenario 1.1:
+ * Scenario 3.1:
  * Client authenticates by passing UsernameToken in Request. Request and Response are protected by HTTPS.
  * SOAP Version: 1.1
  * Addressing:	No
@@ -46,7 +46,7 @@ import org.jboss.wsf.test.JBossWSTestSetup;
  * 
  * @author Alessio Soldano <alessio.soldano@jboss.com>
  * 
- * @version $Id:$
+ * @version $Id$
  * @since 26-Oct-2007
  */
 public class UsernameTokenHTTPSTestCase extends AbstractWSSEBase
