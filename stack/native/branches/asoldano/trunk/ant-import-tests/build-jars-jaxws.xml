@@ -792,6 +792,36 @@
 		</jar>
 		
 		
+		<!-- jbossws-interop-nov2007-wsseSign.war -->
+		<war warfile="${tests.output.dir}/libs/jbossws-interop-nov2007-wsseSign.war"
+			  webxml="${tests.output.dir}/resources/interop/nov2007/wsse/sign/WEB-INF/web.xml">
+			<classes dir="${tests.output.dir}/classes">
+				<include name="org/jboss/test/ws/interop/nov2007/wsse/**/*.class"/>
+				<include name="org/jboss/test/ws/interop/*.class"/>
+			</classes>
+
+			<webinf dir="${tests.output.dir}/resources/interop/nov2007/wsse/sign/WEB-INF">
+				<include name="jboss-wsse-server.xml"/>
+				<include name="jboss-web.xml"/>
+			</webinf>
+			<webinf dir="${tests.output.dir}/resources/interop/nov2007/wsse/shared/WEB-INF">
+				<include name="wsdl/**.*"/>
+			</webinf>
+			<webinf dir="${tests.output.dir}/resources/interop/nov2007/wsse/shared/META-INF">
+				<include name="bob-sign.jks"/>
+				<include name="wsse10.truststore"/>
+			</webinf>
+
+			<fileset dir="${tests.output.dir}/resources/interop/nov2007/wsse/">
+				<include name="*.*"/>
+			</fileset>
+		</war>
+	    <!-- jbossws-interop-nov2007-wsseSign.jar -->
+		<jar destfile="${tests.output.dir}/libs/jbossws-interop-nov2007-wsseSign-client.jar">
+			<metainf dir="${tests.output.dir}/resources/interop/nov2007/wsse/sign/META-INF"/>
+		</jar>
+		
+		
 		<!-- jbossws-interop-nov2007-wsseUsernameTokenHTTPS.war -->
 		<war warfile="${tests.output.dir}/libs/jbossws-interop-nov2007-wsseUsernameTokenHTTPS.war"
 			  webxml="${tests.output.dir}/resources/interop/nov2007/wsse/usernameTokenHTTPS/WEB-INF/web.xml">
@@ -816,6 +846,7 @@
 		<jar destfile="${tests.output.dir}/libs/jbossws-interop-nov2007-wsseUsernameTokenHTTPS-client.jar">
 			<metainf dir="${tests.output.dir}/resources/interop/nov2007/wsse/usernameTokenHTTPS/META-INF"/>
 		</jar>
+		
 
 		<!-- wrap up in an *.ear for easier deployment -->
 		<ear destfile="${tests.output.dir}/libs/jbossws-interop.ear" appxml="${tests.output.dir}/resources/interop/root/META-INF/application.xml">
