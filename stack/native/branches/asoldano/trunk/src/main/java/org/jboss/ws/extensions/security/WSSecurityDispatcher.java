@@ -39,6 +39,8 @@ import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.CommonSOAPFaultException;
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
+import org.jboss.ws.extensions.security.exception.InvalidSecurityHeaderException;
+import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.wsse.Config;

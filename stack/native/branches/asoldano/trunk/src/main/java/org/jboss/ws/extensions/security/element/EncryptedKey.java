@@ -29,10 +29,10 @@ import org.apache.xml.security.encryption.XMLCipher;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.KeyInfo;
 import org.jboss.ws.extensions.security.Constants;
-import org.jboss.ws.extensions.security.InvalidSecurityHeaderException;
 import org.jboss.ws.extensions.security.KeyResolver;
 import org.jboss.ws.extensions.security.Util;
-import org.jboss.ws.extensions.security.WSSecurityException;
+import org.jboss.ws.extensions.security.exception.InvalidSecurityHeaderException;
+import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 

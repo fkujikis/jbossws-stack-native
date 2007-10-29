@@ -23,6 +23,7 @@ package org.jboss.ws.extensions.security;
 
 import java.util.List;
 
+import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.w3c.dom.Document;
 
 /**
