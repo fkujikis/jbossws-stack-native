@@ -11,7 +11,7 @@
 	<config>
 		<timestamp ttl="300"/>
 		<sign type="x509v3" alias="1" includeTimestamp="true"/>
-		<encrypt type="x509v3" alias="alice" algorithm="aes-256"/>
+		<encrypt type="x509v3" alias="alice" algorithm="aes-256" keyWrapAlgorithm="rsa_oaep"/>
       	<requires>
         	<signature/>
         	<encryption/>      
