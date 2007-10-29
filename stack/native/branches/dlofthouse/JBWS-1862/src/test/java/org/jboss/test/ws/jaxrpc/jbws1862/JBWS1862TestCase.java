@@ -106,7 +106,6 @@ public class JBWS1862TestCase extends JBossWSTest
 
       Call call = (Call)service.createCall();
       call.setOperationName(operationName);
-      //call.addParameter("String_1", Constants.TYPE_LITERAL_STRING, ParameterMode.IN);
       call.setTargetEndpointAddress(TARGET_ENDPOINT_ADDRESS);
       call.setReturnType(Constants.TYPE_LITERAL_STRING, String.class);
 
@@ -127,7 +126,6 @@ public class JBWS1862TestCase extends JBossWSTest
 
       Call call = (Call)service.createCall();
       call.setOperationName(operationName);
-      //call.addParameter("String_1", Constants.TYPE_LITERAL_STRING, ParameterMode.IN);
       call.setTargetEndpointAddress(TARGET_ENDPOINT_ADDRESS);
       call.setReturnType(Constants.TYPE_LITERAL_STRING, String.class);
 
