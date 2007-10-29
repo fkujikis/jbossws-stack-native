@@ -34,7 +34,7 @@ import java.security.Principal;
  *
  *  Typically a <code>WebServiceContext</code> is injected
  *  into an endpoint implementation class using the
- *  <code>ResourceModel</code> annotation.
+ *  <code>Resource</code> annotation.
  *
  *  @since JAX-WS 2.0
  *
