@@ -54,7 +54,7 @@ public class ResolverTestCase extends TestCase
       ResourceMethod method = resolver.resolve(rootModels, "widgets/Id/spec");
 
       assertNotNull(method);
-      assertEquals(method.getUriTemplate(), "spec");
+      assertEquals("spec", method.getUriTemplate());
    }
 
    public void testRegexResolver2() throws Exception
@@ -64,7 +64,7 @@ public class ResolverTestCase extends TestCase
       ResourceMethod method = resolver.resolve(rootModels, "widgets/special");
 
       assertNotNull(method);
-      assertEquals(method.getUriTemplate(), "special");
+      assertEquals("special", method.getUriTemplate());
    }
 
    public void testRegexResolver3() throws Exception
@@ -74,7 +74,7 @@ public class ResolverTestCase extends TestCase
       ResourceMethod method = resolver.resolve(rootModels, "widgets/offers");
 
       assertNotNull(method);
-      assertEquals(method.getUriTemplate(), "offers");
+      assertEquals("offers", method.getUriTemplate());
       assertTrue(method.getEntityModel().getImplementation().equals(WidgetList.class));
    }
 
@@ -85,7 +85,7 @@ public class ResolverTestCase extends TestCase
       ResourceMethod method = resolver.resolve(rootModels, "widgets/Id/spec/SpecName");
 
       assertNotNull(method);                 
-      assertEquals(method.getUriTemplate(), "spec/{name}");
+      assertEquals("spec/{name}", method.getUriTemplate());
       assertTrue(method.getEntityModel().getImplementation().equals(Specification.class));
    }
 

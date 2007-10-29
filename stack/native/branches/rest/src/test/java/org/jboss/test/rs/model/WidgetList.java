@@ -24,6 +24,7 @@ package org.jboss.test.rs.model;
 import javax.ws.rs.GET;
 import javax.ws.rs.UriParam;
 import javax.ws.rs.UriTemplate;
+import javax.ws.rs.POST;
 
 @UriTemplate("widgets")
 public class WidgetList
@@ -34,7 +35,7 @@ public class WidgetList
       return null;
    }
 
-   @GET
+   @POST
    @UriTemplate("special")
    void getDiscounted(Widget special) {
       

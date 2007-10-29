@@ -27,4 +27,14 @@ package org.jboss.test.rs.model;
  */
 public class Specification
 {
+   public String name = "Unknown";
+
+   public Specification()
+   {
+   }
+
+   public Specification(String name)
+   {
+      this.name = name;
+   }
 }

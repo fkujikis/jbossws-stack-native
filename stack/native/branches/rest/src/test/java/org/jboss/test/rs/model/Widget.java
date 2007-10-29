@@ -48,6 +48,6 @@ public class Widget
    @UriTemplate("spec/{name}")
    Specification getSpecByName(@UriParam("name")String name)
    {
-      return new Specification();
+      return new Specification(name);
    }
 }

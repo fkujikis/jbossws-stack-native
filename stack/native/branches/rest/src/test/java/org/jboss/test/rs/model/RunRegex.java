@@ -32,19 +32,24 @@ public class RunRegex
 {
    public static void main(String[] args)
    {
-      String s = "special";
+      String s = "spec";
       System.out.println("> " +s);
-      Pattern p = Pattern.compile("(\\bspec\\b)(/)?");//Pattern.compile("(.*?)(/.*)?");
+      Pattern p = Pattern.compile("(\\bspec\\b)(.*?)(/)?");
+      //Pattern p = Pattern.compile("(\\bspec\\b)(/)?");
       Matcher m = p.matcher(s);
 
-      System.out.println("? " + m.find());      
-      System.out.println("! "+m.groupCount());
-      System.out.println("# " + s.substring(m.end()));
-      for(int i=0; i<=m.groupCount(); i++)
+      System.out.println("? " + m.matches());            
+
+      int matchingGroups = 0;
+      for(int i=1; i<=m.groupCount(); i++)
       {
-         System.out.println("g '" + m.group(i) + "'");
+         String s1 = m.group(i);
+         System.out.println("g '" + s1 + "'");
+         if(s1!=null && "".equals(s1)==false)
+            matchingGroups++;
       }
 
+      System.out.println("! "+matchingGroups);
       System.out.println("< "+m.group(m.groupCount()));
       System.out.println("---");
 

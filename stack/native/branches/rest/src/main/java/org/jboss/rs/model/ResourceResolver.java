@@ -59,23 +59,35 @@ public class ResourceResolver
       while(it2.hasNext() && null==resourceMethod)
       {
          ResourceMatch rootResource = it2.next();
-
-         // a root resource may be a final resource match already         
-         resourceMethod = resolveResourceMethod(rootResource, rootResource.qualifier.nextUriToken);
-
-         // root didn't match, so recurse locators to find a resource
-         if(null == resourceMethod)
-         {
-            ResourceMatch subResource = resolveByLocator(rootResource);
-            if(subResource!=null)
-               resourceMethod = resolveResourceMethod(subResource, rootResource.qualifier.nextUriToken);
-         }
+         resourceMethod = dfsResourceMatch(rootResource);
       }
 
       if(null == resourceMethod)
          throw new NoMethodException("No method for URI '"+uri);
 
       // gotcha
+      return resourceMethod;
+   }
+
+   /**
+    * Recursive scan for resource methods.
+    * Inspect a resource match for methods and it fails try the locators.
+    * 
+    * @param dfsEntry
+    * @return
+    */
+   private ResourceMethod dfsResourceMatch(ResourceMatch dfsEntry)
+   {
+      ResourceMethod resourceMethod = null;
+      resourceMethod = resolveResourceMethod(dfsEntry, dfsEntry.qualifier.nextUriToken);
+
+      // root didn't match, so recurse locators to find a resource
+      if(null == resourceMethod)
+      {
+         ResourceMatch subResource = resolveByLocator(dfsEntry);
+         if(subResource!=null)
+            resourceMethod = dfsResourceMatch(subResource);
+      }
       return resourceMethod;
    }
 
@@ -93,15 +105,12 @@ public class ResourceResolver
             weightedResults.add( new ResourceMatch( bridge.field(), qualifier) );
       }
 
-      Collections.sort(weightedResults);
-      ResourceMatch next = weightedResults.get(0);
-      String nextUriToken = next.qualifier.nextUriToken;
-
-      if("".equals(nextUriToken) || "/".equals(nextUriToken))
-         match = next;
-      else
-         match = resolveByLocator(next);
-
+      if(!weightedResults.isEmpty())
+      {
+         Collections.sort(weightedResults);
+         match = weightedResults.get(0);         
+      }
+      
       return match;
    }
 

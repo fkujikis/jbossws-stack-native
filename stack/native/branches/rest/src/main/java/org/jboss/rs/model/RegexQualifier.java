@@ -53,9 +53,17 @@ public class RegexQualifier implements Comparable
       else if(to.numGroups >this.numGroups)
          return 1;
       else
-         return 0;
+      {
+         // bigger pattern but same number of matching groups
+         // means it's less accurate
+         if(to.patternLength<this.patternLength)
+            return 1;
+         else if(to.patternLength>this.patternLength)
+            return -1;
+         else
+            return 0;
+      }
 
-      // todo: compare by second key 
    }
 
    public String toString()

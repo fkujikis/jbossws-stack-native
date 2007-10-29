@@ -84,7 +84,7 @@ public abstract class AbstractRegexResolveable
       RegexQualifier qualifier = null;
 
       Matcher matcher = regexPattern.matcher(input);
-      if(! matcher.find() )
+      if(! matcher.matches() )
          return qualifier;
 
       String lastGroup = matcher.group( matcher.groupCount() );
@@ -98,12 +98,23 @@ public abstract class AbstractRegexResolveable
       }
       
       qualifier = new RegexQualifier(
-        matcher.groupCount(),
+        getMatchingGroups(matcher),
         regexPattern.pattern().length(),
         lastGroup
       );
 
       return qualifier;
+   }
+
+   private static int getMatchingGroups(Matcher m)
+   {
+      int matchingGroups = 0;
+      for(int i=1; i<=m.groupCount(); i++)
+      {
+         String s = m.group(i);
+         if(s!=null && !"".equals(s)) matchingGroups++;
+      }
+      return matchingGroups;
    }
 
    private String regexFromPathSegment(String tok)
