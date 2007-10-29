@@ -31,7 +31,7 @@ import org.jboss.wsf.test.JBossWSTestSetup;
 /**
  * WCF Interoperability Plug-fest - November 2007
  * 
- * Scenario 3.2:
+ * Scenario 3.2: X509 Mutual Authentication, Sign Only
  * 
  * Client and Server are authenticated and messages integrity are provided by using Asymmetric Binding
  * from Security Policy with server X509 certificate used as Recepient Token and client X509 certificate
@@ -50,7 +50,7 @@ import org.jboss.wsf.test.JBossWSTestSetup;
  * 
  * @author Alessio Soldano <alessio.soldano@jboss.com>
  * 
- * @version $Id:$
+ * @version $Id$
  * @since 27-Oct-2007
  */
 public class SignTestCase extends AbstractWSSEBase
