@@ -164,6 +164,7 @@
         <pathelement location="${thirdparty.dir}/xmlsec.jar"/>
         <pathelement location="${thirdparty.dir}/xercesImpl.jar"/>
        <pathelement location="${thirdparty.dir}/jboss-jaxb-intros.jar"/>
+       <pathelement location="${thirdparty.dir}/jsr311-api.jar"/>
      </path>
 
   </target>

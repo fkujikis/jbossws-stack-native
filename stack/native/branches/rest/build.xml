@@ -74,6 +74,7 @@
       <include name="org/jboss/annotation/**"/>
       <include name="org/jboss/ws/**"/>
       <include name="org/jboss/wsf/stack/jbws/**"/>
+      <include name="org/jboss/rs/**"/>
       <classpath path="${core.output.classes14.dir}"/>
       <classpath refid="thirdparty.classpath"/>
     </javac>
@@ -181,6 +182,7 @@
       <fileset dir="${core.output.classes.dir}">
         <include name="org/jboss/annotation/**"/>
         <include name="org/jboss/ws/**"/>
+        <include name="org/jboss/rs/**"/>
       </fileset>
       <fileset dir="${core.resources.dir}">
         <include name="schema/**"/>
