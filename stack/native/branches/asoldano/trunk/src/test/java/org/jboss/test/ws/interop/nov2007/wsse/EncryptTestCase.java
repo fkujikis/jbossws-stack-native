@@ -26,6 +26,7 @@ import javax.xml.namespace.QName;
 import junit.framework.Test;
 
 import org.jboss.ws.core.StubExt;
+import org.jboss.ws.extensions.security.EncryptionOperation;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
 /**
@@ -69,6 +70,12 @@ public class EncryptTestCase extends AbstractWSSEBase
 
    public void testScenario() throws Exception
    {
+      if (!EncryptionOperation.probeUnlimitedCrypto())
+      {
+         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
+         		"please note that your country might have limits on allowed crypto strength.\n Test skipped.");
+         return;
+      }
       String text = "Hello!";
       String result = port.ping(text);
       assertNotNull(result);

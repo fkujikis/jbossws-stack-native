@@ -21,11 +21,13 @@
 */
 package org.jboss.ws.extensions.security;
 
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.xml.namespace.QName;
@@ -169,5 +171,35 @@ public class EncryptionOperation implements EncodingOperation
 
       EncryptedKey eKey = new EncryptedKey(message, secretKey, token, list);
       header.addSecurityProcess(eKey);
+   }
+   
+   
+   public static boolean probeUnlimitedCrypto() throws WSSecurityException
+   {
+      try
+      {
+         //Check AES-256
+         KeyGenerator kgen = KeyGenerator.getInstance("AES");
+         kgen.init(256);
+         SecretKey key = kgen.generateKey();
+         Cipher c = Cipher.getInstance("AES");
+         c.init(Cipher.ENCRYPT_MODE, key);
+         
+         //Check Blowfish
+         kgen = KeyGenerator.getInstance("Blowfish");
+         key = kgen.generateKey();
+         c = Cipher.getInstance("Blowfish");
+         c.init(Cipher.ENCRYPT_MODE, key);
+         
+         return true;
+      }
+      catch (InvalidKeyException e)
+      {
+         return false;
+      }
+      catch (Exception e)
+      {
+         throw new WSSecurityException("Error probing cryptographic permissions", e);
+      }
    }
 }
