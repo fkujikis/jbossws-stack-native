@@ -40,7 +40,7 @@ public class SendUsernameOperation implements EncodingOperation
       this.store = store;
    }
 
-   public void process(Document message, List<Target> targets, String username, String credential, String algorithm) throws WSSecurityException
+   public void process(Document message, List<Target> targets, String username, String credential, String algorithm, String keyWrapAlgorithm) throws WSSecurityException
    {
       header.addToken(new UsernameToken(username, credential, message));
    }

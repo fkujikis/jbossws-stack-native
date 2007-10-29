@@ -39,14 +39,17 @@ public class OperationDescription<T extends Operation>
    private String credential;
 
    private String algorithm;
+   
+   private String keyWrapAlgorithm;
 
-   public OperationDescription(Class<? extends T> operation, List<Target> targets, String certicateAlias, String credential, String algorithm)
+   public OperationDescription(Class<? extends T> operation, List<Target> targets, String certicateAlias, String credential, String algorithm, String keyWrapAlgorithm)
    {
       this.operation = operation;
       this.targets = targets;
       this.certificateAlias = certicateAlias;
       this.credential = credential;
       this.algorithm = algorithm;
+      this.keyWrapAlgorithm = keyWrapAlgorithm;
    }
 
    public Class<? extends T> getOperation()
@@ -100,6 +103,16 @@ public class OperationDescription<T extends Operation>
    public void setAlgorithm(String algorithm)
    {
       this.algorithm = algorithm;
+   }
+
+   public String getKeyWrapAlgorithm()
+   {
+      return keyWrapAlgorithm;
+   }
+
+   public void setKeyWrapAlgorithm(String keyWrapAlgorithm)
+   {
+      this.keyWrapAlgorithm = keyWrapAlgorithm;
    }
 
 }

@@ -128,7 +128,7 @@ public class EncryptionOperation implements EncodingOperation
       }
    }
 
-   public void process(Document message, List<Target> targets, String alias, String credential, String algorithm) throws WSSecurityException
+   public void process(Document message, List<Target> targets, String alias, String credential, String algorithm, String wrap) throws WSSecurityException
    {
       if (! algorithms.containsKey(algorithm))
          algorithm = DEFAULT_ALGORITHM;
@@ -169,7 +169,7 @@ public class EncryptionOperation implements EncodingOperation
          header.addToken(token);
       }
 
-      EncryptedKey eKey = new EncryptedKey(message, secretKey, token, list);
+      EncryptedKey eKey = new EncryptedKey(message, secretKey, token, list, wrap);
       header.addSecurityProcess(eKey);
    }
    

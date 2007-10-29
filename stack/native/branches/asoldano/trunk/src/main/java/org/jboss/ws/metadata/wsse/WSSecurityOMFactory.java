@@ -232,7 +232,7 @@ public class WSSecurityOMFactory implements ObjectModelFactory
       }
       else if ("encrypt".equals(localName))
       {
-         return new Encrypt(attrs.getValue("", "type"), attrs.getValue("", "alias"), attrs.getValue("", "algorithm"));
+         return new Encrypt(attrs.getValue("", "type"), attrs.getValue("", "alias"), attrs.getValue("", "algorithm"), attrs.getValue("", "keyWrapAlgorithm"));
       }
       else if ("timestamp".equals(localName))
       {

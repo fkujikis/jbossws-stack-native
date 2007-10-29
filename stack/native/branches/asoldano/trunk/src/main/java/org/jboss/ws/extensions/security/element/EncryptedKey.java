@@ -22,6 +22,7 @@
 package org.jboss.ws.extensions.security.element;
 
 import java.security.PrivateKey;
+import java.util.HashMap;
 
 import javax.crypto.SecretKey;
 
@@ -51,20 +52,34 @@ public class EncryptedKey implements SecurityProcess
    private X509Token token;
 
    private ReferenceList list;
+   
+   private String wrapAlgorithm;
 
    private Element cachedElement;
-
-   public EncryptedKey(Document document, SecretKey secretKey, X509Token token)
+   
+   private static HashMap<String, String> keyWrapAlgorithms;
+   private static final String DEFAULT_ALGORITHM = "rsa_15";
+   static
    {
-      this(document, secretKey, token, new ReferenceList());
+      keyWrapAlgorithms = new HashMap<String, String>(2);
+      keyWrapAlgorithms.put("rsa_15", XMLCipher.RSA_v1dot5);
+      keyWrapAlgorithms.put("rsa_oaep", XMLCipher.RSA_OAEP);
    }
 
-   public EncryptedKey(Document document, SecretKey secretKey, X509Token token, ReferenceList list)
+   public EncryptedKey(Document document, SecretKey secretKey, X509Token token, String wrap)
+   {
+      this(document, secretKey, token, new ReferenceList(), wrap);
+   }
+
+   public EncryptedKey(Document document, SecretKey secretKey, X509Token token, ReferenceList list, String wrap)
    {
       this.document = document;
       this.secretKey = secretKey;
       this.token = token;
       this.list = list;
+      this.wrapAlgorithm = keyWrapAlgorithms.get(wrap);
+      if (wrapAlgorithm ==null)
+         wrapAlgorithm = keyWrapAlgorithms.get(DEFAULT_ALGORITHM);
    }
 
    public EncryptedKey(Element element, KeyResolver resolver) throws WSSecurityException
@@ -154,7 +169,7 @@ public class EncryptedKey implements SecurityProcess
 
       try
       {
-         cipher = XMLCipher.getInstance(XMLCipher.RSA_v1dot5);
+         cipher = XMLCipher.getInstance(wrapAlgorithm);
          cipher.init(XMLCipher.WRAP_MODE, token.getCert().getPublicKey());
          key = cipher.encryptKey(document, secretKey);
       }
