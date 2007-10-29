@@ -716,7 +716,7 @@ public class MappingFileGeneratorHelper
             // Anonymous
             if (localName == null)
             {
-               String tempName = ToolsUtils.firstLetterUpperCase(containingElement) + ToolsUtils.firstLetterUpperCase(name);
+               String tempName = containingElement + ToolsUtils.firstLetterUpperCase(name);
                javaType = getJavaTypeAsString(null, new QName(tempName), false, true);
                StringBuilder temp = new StringBuilder();
                if (containingType != null && containingType.length() > 0)
