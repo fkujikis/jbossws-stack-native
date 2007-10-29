@@ -21,7 +21,13 @@
  */
 package org.jboss.test.ws.jaxws.wsrm.oneway;
 
+import static org.jboss.test.ws.jaxws.wsrm.Helper.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.namespace.QName;
@@ -43,12 +49,29 @@ import org.jboss.test.ws.jaxws.wsrm.OneWayServiceIface;
  */
 public class OneWayTestCase extends JBossWSTest
 {
+   private static final Properties props = new Properties();
    private String targetNS = "http://wsrm.jaxws.ws.test.jboss.org/";
    private OneWayServiceIface proxy;
+   private final boolean emulatorOn = Boolean.parseBoolean((String)props.get("emulator"));
+   private final String serviceURL = "http://" + getServerHost() + ":" + props.getProperty("port") + props.getProperty("path");
+   
+   static
+   {
+      // load test properties
+      File propertiesFile = new File("resources/jaxws/wsrm/properties/OneWayTestCase.properties");
+      try 
+      {
+         props.load(new FileInputStream(propertiesFile));
+      }
+      catch (IOException ignore)
+      {
+         ignore.printStackTrace();
+      }
+   }
    
    public static Test suite()
    {
-      return new JBossWSTestSetup(OneWayTestCase.class, "jaxws-wsrm.war, jaxws-wsrm-client.jar");
+      return new JBossWSTestSetup(OneWayTestCase.class, props.getProperty("archives"));
    }
 
    @Override
@@ -56,7 +79,7 @@ public class OneWayTestCase extends JBossWSTest
    {
       super.setUp();
       QName serviceName = new QName(targetNS, "OneWayService");
-      URL wsdlURL = new URL("http://" + getServerHost() + ":8080/jaxws-wsrm/OneWayService?wsdl");
+      URL wsdlURL = new URL(serviceURL + "?wsdl");
       Service service = Service.create(wsdlURL, serviceName);
       proxy = (OneWayServiceIface)service.getPort(OneWayServiceIface.class);
    }
@@ -64,17 +87,28 @@ public class OneWayTestCase extends JBossWSTest
    public void testOneWayMethods() throws Exception
    {
       System.out.println("FIXME [JBWS-515] Provide an initial implementation for WS-ReliableMessaging");
-      RMProvider wsrmProvider = (RMProvider)proxy;
-      RMSequence sequence = wsrmProvider.createSequence();
-      System.out.println("Created sequence with id=" + sequence.getId());
+      setAddrProps(proxy, "http://docs.oasis-open.org/ws-rx/wsrm/200702/CreateSequence", serviceURL);
+      RMSequence sequence = null;
+      if (emulatorOn)
+      {
+         RMProvider wsrmProvider = (RMProvider)proxy;
+         sequence = wsrmProvider.createSequence();
+         System.out.println("Created sequence with id=" + sequence.getId());
+      }
+      setAddrProps(proxy, "http://useless/action1", serviceURL);
       proxy.method1();
+      setAddrProps(proxy, "http://useless/action2", serviceURL);
       proxy.method2("Hello World");
-      sequence.setLastMessage();
+      setAddrProps(proxy, "http://useless/action3", serviceURL);
       proxy.method3(new String[] {"Hello","World"});
-      if (!sequence.isCompleted(1000, TimeUnit.MILLISECONDS)) {
-         fail("Sequence not completed within specified time amount");
-      } else {
-         sequence.terminate();
+      if (emulatorOn)
+      {
+         if (!sequence.isCompleted(1000, TimeUnit.MILLISECONDS)) {
+            fail("Sequence not completed within specified time amount");
+         } else {
+            setAddrProps(proxy, "http://docs.oasis-open.org/ws-rx/wsrm/200702/TerminateSequence", serviceURL);
+            sequence.terminate();
+         }
       }
    }
 }

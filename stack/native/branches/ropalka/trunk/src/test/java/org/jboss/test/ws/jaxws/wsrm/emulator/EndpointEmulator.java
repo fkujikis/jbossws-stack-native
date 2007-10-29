@@ -75,10 +75,18 @@ public class EndpointEmulator extends HttpServlet
    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
    throws ServletException, IOException
    {
+      String pathInfo = req.getPathInfo();
+      System.out.println(pathInfo);
       resp.setContentType("text/xml");
       PrintWriter writer = resp.getWriter();
-      String wsdlFile = getResource("WEB-INF/resources/ReqResService.wsdl"); 
-      writer.print(wsdlFile);
+      if (pathInfo.equals("/OneWayService"))
+      {
+         writer.print(getResource("WEB-INF/resources/OneWayService.wsdl"));
+      }
+      else
+      {
+         writer.print(getResource("WEB-INF/resources/ReqResService.wsdl"));
+      }
       writer.flush();
       writer.close();
    }
@@ -93,6 +101,8 @@ public class EndpointEmulator extends HttpServlet
       String response = getResource("WEB-INF/resources/echoResponse.xml");
       if (properties.get("addressing.action").equals(CREATE_SEQUENCE_ACTION))
          response = getResource("WEB-INF/resources/createSequenceResponse.xml");
+      if (properties.get("addressing.action").equals(TERMINATE_SEQUENCE_ACTION))
+         response = getResource("WEB-INF/resources/terminateSequenceResponse.xml");
       response = modifyResponse(response, properties);
       writer.print(response);
       writer.flush();
@@ -163,6 +173,13 @@ public class EndpointEmulator extends HttpServlet
             String messageNumber = ((Element)sequence.item(0))
                .getElementsByTagNameNS(WSRM_NS, "MessageNumber").item(0).getTextContent().trim(); 
             retVal.put("messaging.messagenumber", messageNumber);
+         }
+         NodeList terminateSequence = document.getElementsByTagNameNS(WSRM_NS, "TerminateSequence");
+         if (terminateSequence != null && terminateSequence.getLength() != 0)
+         {
+            String sequenceId = ((Element)terminateSequence.item(0))
+               .getElementsByTagNameNS(WSRM_NS, "Identifier").item(0).getTextContent().trim();
+            retVal.put("messaging.identifier", sequenceId);
          }
           
          System.out.println("Properties from message: " + retVal);

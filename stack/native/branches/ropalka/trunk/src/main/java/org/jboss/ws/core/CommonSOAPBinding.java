@@ -23,11 +23,8 @@ package org.jboss.ws.core;
 
 // $Id$
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -76,12 +73,10 @@ import org.jboss.ws.core.soap.attachment.AttachmentPartImpl;
 import org.jboss.ws.core.soap.attachment.CIDGenerator;
 import org.jboss.ws.core.utils.MimeUtils;
 import org.jboss.ws.extensions.wsrm.RMConstant;
-import org.jboss.ws.extensions.wsrm.spi.Provider;
 import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.TypesMetaData;
-import org.jboss.ws.metadata.wsrm.ReliableMessagingMetaData;
 import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.common.JavaUtils;
 import org.jboss.xb.binding.NamespaceRegistry;

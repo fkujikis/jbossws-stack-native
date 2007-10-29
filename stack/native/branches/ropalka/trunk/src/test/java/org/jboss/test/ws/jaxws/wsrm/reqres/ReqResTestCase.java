@@ -21,6 +21,8 @@
  */
 package org.jboss.test.ws.jaxws.wsrm.reqres;
 
+import static org.jboss.test.ws.jaxws.wsrm.Helper.*;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,11 +33,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.AsyncHandler;
-import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Response;
 import javax.xml.ws.Service;
-import javax.xml.ws.addressing.AddressingProperties;
-import javax.xml.ws.addressing.JAXWSAConstants;
 
 import junit.framework.Test;
 
@@ -43,7 +42,6 @@ import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 import org.jboss.test.ws.jaxws.wsrm.ReqResServiceIface;
 
-import org.jboss.ws.extensions.addressing.AddressingClientUtil;
 import org.jboss.ws.extensions.wsrm.client_api.RMProvider;
 import org.jboss.ws.extensions.wsrm.client_api.RMSequence;
 
@@ -62,6 +60,7 @@ public class ReqResTestCase extends JBossWSTest
    private Exception handlerException;
    private boolean asyncHandlerCalled;
    private ReqResServiceIface proxy;
+   private final boolean emulatorOn = Boolean.parseBoolean((String)props.get("emulator"));
    
    static
    {
@@ -170,30 +169,33 @@ public class ReqResTestCase extends JBossWSTest
    
    private void doReliableMessageExchange(Object proxyObject, InvocationType invocationType) throws Exception
    {
-      setAddressingProperties("http://docs.oasis-open.org/ws-rx/wsrm/200702/CreateSequence");
+      // TODO: do not set this Action here, do it in the JAX-WS WS-RM core code instead
       System.out.println("FIXME [JBWS-515] Provide an initial implementation for WS-ReliableMessaging");
-      RMProvider wsrmProvider = (RMProvider)proxyObject;
-      RMSequence sequence = wsrmProvider.createSequence();
-      System.out.println("Created sequence with id=" + sequence.getId());
-      setAddressingProperties("http://useless/action");
+      setAddrProps(proxy, "http://docs.oasis-open.org/ws-rx/wsrm/200702/CreateSequence", serviceURL);
+      RMSequence sequence = null;
+      if (emulatorOn)
+      {
+         RMProvider wsrmProvider = (RMProvider)proxyObject;
+         sequence = wsrmProvider.createSequence();
+         System.out.println("Created sequence with id=" + sequence.getId());
+      }
+      setAddrProps(proxy, "http://useless/action", serviceURL);
       invokeWebServiceMethod(invocationType);
-      setAddressingProperties("http://useless/action");
+      setAddrProps(proxy, "http://useless/action", serviceURL);
       invokeWebServiceMethod(invocationType);
-      sequence.setLastMessage();
-      setAddressingProperties("http://useless/action");
+      setAddrProps(proxy, "http://useless/action", serviceURL);
       invokeWebServiceMethod(invocationType);
-      if (!sequence.isCompleted(1000, TimeUnit.MILLISECONDS)) {
-         sequence.discard();
-         fail("Sequence not completed within specified time amount");
-      } else {
-         sequence.terminate();
+      if (emulatorOn)
+      {
+         if (!sequence.isCompleted(1000, TimeUnit.MILLISECONDS)) {
+            sequence.discard();
+            fail("Sequence not completed within specified time amount");
+         } else {
+            // TODO: do not set this Action here, do it in the JAX-WS WS-RM core code instead
+            setAddrProps(proxy, "http://docs.oasis-open.org/ws-rx/wsrm/200702/TerminateSequence", serviceURL);
+            sequence.terminate();
+         }
       }
    }
    
-   private void setAddressingProperties(String wsaAction) {
-      BindingProvider bp = (BindingProvider)proxy;
-      AddressingProperties props = AddressingClientUtil.createAnonymousProps(wsaAction, serviceURL);
-      bp.getRequestContext().put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND, props);
-   }
-
 }

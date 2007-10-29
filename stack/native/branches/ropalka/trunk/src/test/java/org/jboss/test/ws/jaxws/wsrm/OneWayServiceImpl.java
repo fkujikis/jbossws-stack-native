@@ -1,6 +1,9 @@
 package org.jboss.test.ws.jaxws.wsrm;
 
+import javax.jws.Oneway;
 import javax.jws.WebService;
+import javax.xml.ws.addressing.Action;
+
 import org.jboss.logging.Logger;
 import org.jboss.ws.extensions.policy.PolicyScopeLevel;
 import org.jboss.ws.extensions.policy.annotation.Policy;
@@ -26,16 +29,22 @@ public class OneWayServiceImpl implements OneWayServiceIface
 {
    private Logger log = Logger.getLogger(OneWayServiceImpl.class);
 
+   @Action(input="http://wsrm.example/oneway/method1")
+   @Oneway
    public void method1()
    {
       log.info("method1()");
    }
 
+   @Action(input="http://wsrm.example/oneway/method2")
+   @Oneway
    public void method2(String s)
    {
       log.info("method2(" + s + ")");
    }
 
+   @Action(input="http://wsrm.example/oneway/method3")
+   @Oneway
    public void method3(String[] sa)
    {
       log.info("method3(" + Arrays.asList(sa) + ")");

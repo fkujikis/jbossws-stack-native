@@ -47,6 +47,7 @@ import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Sequence;
 import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
+import org.jboss.ws.extensions.wsrm.spi.protocol.TerminateSequence;
 
 /**
  * TODO: add comment
@@ -108,10 +109,6 @@ public class RMClientHandler extends GenericSOAPHandler
             RMSequenceImpl sequenceImpl = (RMSequenceImpl)rmRequestContext.get(RMConstant.SEQUENCE_REFERENCE);
             Sequence sequence = rmProvider.getMessageFactory().newSequence();
             sequence.setIdentifier(sequenceImpl.getId());
-            if (sequenceImpl.isLastMessage())
-            {
-               sequence.setLastMessage();
-            }
             sequence.setMessageNumber(sequenceImpl.newMessageNumber());
             sequence.serializeTo(soapMessage);
             
@@ -128,6 +125,21 @@ public class RMClientHandler extends GenericSOAPHandler
                ackRequested.serializeTo(soapMessage);
                data.add(ackRequested);
             }
+            rmRequestContext.put(RMConstant.DATA, data);
+            
+            return true;
+         }
+         
+         if (RMConstant.TERMINATE_SEQUENCE.equals(operation))
+         {
+            RMSequenceImpl sequenceImpl = (RMSequenceImpl)rmRequestContext.get(RMConstant.SEQUENCE_REFERENCE);
+            TerminateSequence terminateSequence = rmProvider.getMessageFactory().newTerminateSequence();
+            terminateSequence.setIdentifier(sequenceImpl.getId());
+            terminateSequence.setLastMsgNumber(sequenceImpl.getLastMessageNumber());
+            terminateSequence.serializeTo(soapMessage);
+            
+            List<Serializable> data = new LinkedList<Serializable>();
+            data.add(terminateSequence);
             rmRequestContext.put(RMConstant.DATA, data);
             
             return true;

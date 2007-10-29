@@ -6,6 +6,7 @@ import javax.jws.WebResult;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 import javax.jws.soap.SOAPBinding.Style;
+import javax.xml.ws.addressing.Action;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.extensions.policy.PolicyScopeLevel;
@@ -36,6 +37,7 @@ public class ReqResServiceImpl
 
    @WebMethod
    @WebResult(name = "result")
+   @Action(input="http://wsrm.example/reqres/echo/input", output="http://wsrm.example/reqres/echo/output")
    public String echo(@WebParam(name = "String_1") String msg)
    {
       log.info("echo: " + msg);

@@ -19,17 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm.client_api;
+package org.jboss.test.ws.jaxws.wsrm;
 
-import java.util.concurrent.TimeUnit;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.addressing.AddressingProperties;
+import javax.xml.ws.addressing.JAXWSAConstants;
 
-public interface RMSequence
+import org.jboss.ws.extensions.addressing.AddressingClientUtil;
+
+/**
+ * Test helper
+ *
+ * @author richard.opalka@jboss.com
+ *
+ * @since Oct 29, 2007
+ */
+public final class Helper
 {
-   void discard() throws RMException;
-   boolean isDiscarded() throws RMException;
-   void terminate() throws RMException;
-   boolean isTerminated() throws RMException;
-   String getId() throws RMException;
-   boolean isCompleted() throws RMException;
-   boolean isCompleted(int timeAmount, TimeUnit timeUnit) throws RMException;
+   
+   private Helper()
+   {
+      // no instances
+   }
+
+   public static void setAddrProps(Object proxy, String wsaAction, String serviceURL)
+   {
+      BindingProvider bp = (BindingProvider)proxy;
+      AddressingProperties props = AddressingClientUtil.createAnonymousProps(wsaAction, serviceURL);
+      bp.getRequestContext().put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND, props);
+   }
+
 }

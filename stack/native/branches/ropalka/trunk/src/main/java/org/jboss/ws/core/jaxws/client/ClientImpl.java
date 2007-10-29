@@ -112,6 +112,11 @@ public class ClientImpl extends CommonClient implements RMProvider, BindingProvi
    {
       this.wsrmSequence = wsrmSequence;
    }
+   
+   public final RMSequence getWSRMSequence()
+   {
+      return this.wsrmSequence;
+   }
 
    public ClientImpl(EndpointMetaData epMetaData, HandlerResolver handlerResolver)
    {

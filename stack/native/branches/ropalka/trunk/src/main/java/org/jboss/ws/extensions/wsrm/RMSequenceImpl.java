@@ -21,12 +21,22 @@
  */
 package org.jboss.ws.extensions.wsrm;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.xml.namespace.QName;
 
 import org.jboss.ws.core.jaxws.client.ClientImpl;
 import org.jboss.ws.extensions.wsrm.client_api.RMException;
 import org.jboss.ws.extensions.wsrm.client_api.RMSequence;
+import org.jboss.ws.extensions.wsrm.spi.Provider;
+import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
+import org.jboss.ws.extensions.wsrm.spi.protocol.Serializable;
 
 /**
  * Reliable messaging sequence implementation
@@ -40,11 +50,10 @@ public final class RMSequenceImpl implements RMSequence
    private final String id;
    private final ClientImpl client;
    // object states variables
-   private boolean closed = false;
    private boolean terminated = false;
    private boolean discarded = false;
-   private boolean lastMessage = false;
-   private AtomicLong messageNo = new AtomicLong();
+   private AtomicLong messageNumber = new AtomicLong();
+   private final Lock objectLock = new ReentrantLock();
    
    public RMSequenceImpl(ClientImpl client, String id)
    {
@@ -53,38 +62,89 @@ public final class RMSequenceImpl implements RMSequence
       this.id = id;
    }
 
-   public final void close() throws RMException
-   {
-      this.closed = true;
-   }
-   
    public final long newMessageNumber()
    {
-      return this.messageNo.incrementAndGet();
+      this.objectLock.lock();
+      try
+      {
+         return this.messageNumber.incrementAndGet();
+      }
+      finally 
+      {
+         this.objectLock.unlock();
+      }
    }
    
    public final long getLastMessageNumber()
    {
-      return this.messageNo.get();
+      this.objectLock.lock();
+      try
+      {
+         return this.messageNumber.get();
+      }
+      finally
+      {
+         this.objectLock.unlock();
+      }
    }
    
    public final void discard() throws RMException
    {
-      this.client.getWSRMLock().lock();
+      this.objectLock.lock();
       try
       {
-         this.client.setWSRMSequence(null);
-         this.discarded = true;
+         this.client.getWSRMLock().lock();
+         try
+         {
+            this.client.setWSRMSequence(null);
+            this.discarded = true;
+         }
+         finally
+         {
+            this.client.getWSRMLock().unlock();
+         }
       }
       finally
       {
-         this.client.getWSRMLock().unlock();
+         this.objectLock.unlock();
       }
    }
 
    public final void terminate() throws RMException
    {
-      this.terminated = true;
+      this.objectLock.lock();
+      try
+      {
+         if (this.terminated)
+            return; 
+         
+         this.terminated = true;
+         
+         client.getWSRMLock().lock();
+         try 
+         {
+            try
+            {
+               QName terminateSequenceQN = Provider.get().getConstants().getTerminateSequenceQName();
+               Map<String, Object> rmRequestContext = new HashMap<String, Object>();
+               rmRequestContext.put(RMConstant.OPERATION_TYPE, RMConstant.TERMINATE_SEQUENCE);
+               rmRequestContext.put(RMConstant.SEQUENCE_REFERENCE, client.getWSRMSequence());
+               this.client.getBindingProvider().getRequestContext().put(RMConstant.REQUEST_CONTEXT, rmRequestContext);
+               this.client.invoke(terminateSequenceQN, new Object[] {}, this.client.getBindingProvider().getResponseContext());
+            }
+            catch (Exception e) {
+               throw new RMException("Unable to create WSRM sequence", e);
+            }
+         }
+         finally
+         {
+            this.client.getWSRMLock().unlock();
+         }
+      }
+      finally
+      {
+         this.objectLock.unlock();
+      }
    }
 
    public final boolean isCompleted()
@@ -102,27 +162,12 @@ public final class RMSequenceImpl implements RMSequence
       return id;
    }
 
-   public final void setLastMessage()
-   {
-      this.lastMessage = true;
-   }
-   
-   public final boolean isLastMessage()
-   {
-      return this.lastMessage;
-   }
-
    public final boolean isTerminated()
    {
       return this.terminated;
    }
 
-   public final boolean isClosed()
-   {
-      return this.closed;
-   }
-   
-   public boolean isDiscarded()
+   public final boolean isDiscarded()
    {
       return this.discarded;
    }

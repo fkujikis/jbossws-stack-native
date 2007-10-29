@@ -24,10 +24,11 @@ public final class RMConstant
    public static final String REQUEST_CONTEXT = PREFIX + ".requestContext";
    public static final String RESPONSE_CONTEXT = PREFIX + ".responseContext";
    public static final String SEQUENCE_REFERENCE = PREFIX + ".sequenceReference";
-   // TODO: separate this to enum - START
+   // TODO: use RMProvider.getConstants().getXXX() instead - START
    public static final String CREATE_SEQUENCE = PREFIX + ".createSequence";
    public static final String CREATE_SEQUENCE_RESPONSE = PREFIX + ".createSequenceResponse";
    public static final String SEQUENCE = PREFIX + ".sequence";
+   public static final String TERMINATE_SEQUENCE = PREFIX + ".terminateSequence";
    // TODO: separate this to enum - END
    public static final String DATA = PREFIX + ".data";
    

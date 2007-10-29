@@ -9,6 +9,7 @@ import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 import javax.jws.soap.SOAPBinding.Style;
 
+import javax.xml.ws.addressing.Action;
 import javax.xml.ws.AsyncHandler;
 import javax.xml.ws.Response;
 
@@ -20,12 +21,15 @@ import org.jboss.ws.annotation.EndpointConfig;
 public interface ReqResServiceIface
 {
    @WebMethod(operationName = "echo")
+   @Action(input="http://wsrm.example/reqres/echo/input", output="http://wsrm.example/reqres/echo/output")
    public Response<String> echoAsync(@WebParam(name = "String_1") String string1);
 
    @WebMethod(operationName = "echo")
+   @Action(input="http://wsrm.example/reqres/echo/input", output="http://wsrm.example/reqres/echo/output")
    public Future<?> echoAsync(@WebParam(name = "String_1") String string1, @WebParam(name = "asyncHandler") AsyncHandler<String> asyncHandler);
 
    @WebMethod
    @WebResult(name = "result")
+   @Action(input="http://wsrm.example/reqres/echo/input", output="http://wsrm.example/reqres/echo/output")
    public String echo(@WebParam(name = "String_1") String string1);
 }
