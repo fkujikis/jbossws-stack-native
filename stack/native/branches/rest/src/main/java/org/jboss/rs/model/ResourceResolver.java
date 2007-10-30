@@ -21,6 +21,8 @@
  */
 package org.jboss.rs.model;
 
+import org.jboss.rs.runtime.RuntimeContext;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;

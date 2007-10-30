@@ -24,11 +24,11 @@ package org.jboss.test.rs.model;
 import junit.framework.TestCase;
 import org.jboss.rs.ResourceRegistry;
 import org.jboss.rs.MethodHTTP;
+import org.jboss.rs.runtime.RuntimeContext;
 import org.jboss.rs.model.ResourceModel;
 import org.jboss.rs.model.ResourceModelParser;
 import org.jboss.rs.model.ResourceResolver;
 import org.jboss.rs.model.ResourceMethod;
-import org.jboss.rs.model.RuntimeContext;
 
 import java.util.List;
 import java.lang.reflect.Method;
