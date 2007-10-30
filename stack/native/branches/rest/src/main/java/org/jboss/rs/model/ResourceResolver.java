@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * Resolves resource methods from runtime context.
+ * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
@@ -36,6 +38,7 @@ public class ResourceResolver
 
    public static ResourceResolver newInstance(RuntimeContext context)
    {
+      assert context!=null;      
       return new ResourceResolver(context);
    }
 
@@ -171,16 +174,23 @@ public class ResourceResolver
       return match;
    }
 
+   // TODO: error handling and media-type matching
    private ResourceMethod contentNegotiation(List<ResourceMatch<ResourceMethod>> matches)
    {
       ResourceMethod match = null;
       for(ResourceMatch<ResourceMethod> candiate : matches)
       {
+         // Match by request method -> HTTP 405
          if(context.getRequestMethod() == candiate.model.getMethodHTTP())
          {
             match = candiate.model;
             break;
          }
+
+         // Match by supported input data format -> HTTP 415
+         
+         // Match by supported output data format -> HTTP 406
+         
       }
       return match;
    }

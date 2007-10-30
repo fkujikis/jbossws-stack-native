@@ -35,6 +35,9 @@ public class RuntimeContext
    private List<ResourceModel> rootResources;
    private String uri;
 
+   private Object requestMediaType;
+   private Object responseMediaType;
+   
    public RuntimeContext(MethodHTTP requestMethod, String uri, List<ResourceModel> rootResources)
    {
       this.requestMethod = requestMethod;
