@@ -31,7 +31,7 @@ public class ResourceLocator extends AbstractRegexResolveable
 
    private String uriTemplate;
 
-   public ResourceLocator(ResourceModel target)
+   ResourceLocator(ResourceModel target)
    {
       this.uriTemplate = target.getUriTemplate();
       this.target = target;          

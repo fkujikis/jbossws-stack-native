@@ -29,7 +29,7 @@ import java.util.regex.Matcher;
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public abstract class AbstractRegexResolveable
+abstract class AbstractRegexResolveable
 {
    public final String URI_PARAM_PATTERN        = "(.*?)";
    public final String CHILD_SUFFIX_PATTERN     = "(/.*)?";

@@ -33,7 +33,7 @@ public class RegexQualifier implements Comparable
 
    public static RegexQualifier NONE = new RegexQualifier(0,0,"");
    
-   public RegexQualifier(int matchingGroups, int patternLenght, String uriToken)
+   RegexQualifier(int matchingGroups, int patternLenght, String uriToken)
    {
       this.numGroups = matchingGroups;
       this.patternLength = patternLenght;

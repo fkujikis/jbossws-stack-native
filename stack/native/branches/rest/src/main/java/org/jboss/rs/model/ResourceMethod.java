@@ -35,7 +35,7 @@ public class ResourceMethod extends AbstractRegexResolveable
    private String uriTemplate;
    private Method invocationTarget;
 
-   public ResourceMethod(MethodHTTP method, String uriTemplate, Method invocationTarget)
+   ResourceMethod(MethodHTTP method, String uriTemplate, Method invocationTarget)
    {
       this.uriTemplate = uriTemplate;
       this.methodHTTP = method;

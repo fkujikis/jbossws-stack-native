@@ -40,7 +40,7 @@ public class ResourceModel extends AbstractRegexResolveable
    private List<ResourceMethod> subResourceMethods = new ArrayList<ResourceMethod>();
    private List<ResourceLocator> resourceLocators = new ArrayList<ResourceLocator>();
 
-   public ResourceModel(String uriTemplate, Class implementation)
+   ResourceModel(String uriTemplate, Class implementation)
    {
       this(null, uriTemplate, implementation);
    }
