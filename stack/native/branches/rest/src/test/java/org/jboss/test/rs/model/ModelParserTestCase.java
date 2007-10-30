@@ -21,33 +21,33 @@
  */
 package org.jboss.test.rs.model;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.UriParam;
-import javax.ws.rs.UriTemplate;
-import javax.ws.rs.POST;
+import junit.framework.TestCase;
+import org.jboss.rs.model.ResourceModelParser;
+import org.jboss.rs.model.ResourceModel;
+import org.jboss.rs.model.ResourceMethod;
+import org.jboss.rs.MethodHTTP;
 
-@UriTemplate("widgets")
-public class WidgetList
+/**
+ * @author Heiko.Braun@jboss.com
+ * @version $Revision$
+ */
+public class ModelParserTestCase extends TestCase
 {
-   @GET
-   String getDescription() {
-      return "A widgetlist";
-   }
+   public void testParseMetaModel() throws Exception
+   {
+      ResourceModel root = ResourceModelParser.newInstance().parse(WidgetList.class);
 
-   @GET
-   @UriTemplate("offers")
-   WidgetList getDiscounted() {
-      return null;
-   }
+      ResourceMethod match = null;
+      for(ResourceMethod m : root.getSubResourceMethods())
+      {
+         if(m.getMethodHTTP() == MethodHTTP.POST
+           && m.getUriTemplate().equals("special"))
+         {
+            match = m;
+            break;
+         }
+      }
 
-   @POST
-   @UriTemplate("special")
-   void getDiscounted(Widget special) {
-      
-   }
-
-   @UriTemplate("{id}")
-   Widget findWidget(@UriParam("id") String id) {
-      return new Widget(id);
+      assertNotNull(match);
    }
 }

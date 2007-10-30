@@ -31,6 +31,8 @@ public class RegexQualifier implements Comparable
    public final int patternLength;
    public final String nextUriToken;
 
+   public static RegexQualifier NONE = new RegexQualifier(0,0,"");
+   
    public RegexQualifier(int matchingGroups, int patternLenght, String uriToken)
    {
       this.numGroups = matchingGroups;

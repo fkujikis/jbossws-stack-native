@@ -23,33 +23,28 @@ package org.jboss.rs.model;
 
 import org.jboss.rs.MethodHTTP;
 
+import java.lang.reflect.Method;
+
 /**
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
 public class ResourceMethod extends AbstractRegexResolveable
-{
-   private EntityModel entityModel;
+{   
    private MethodHTTP methodHTTP;
    private String uriTemplate;
+   private Method invocationTarget;
 
-   public ResourceMethod(MethodHTTP method, String uriTemplate, EntityModel entityModel)
+   public ResourceMethod(MethodHTTP method, String uriTemplate, Method invocationTarget)
    {
       this.uriTemplate = uriTemplate;
       this.methodHTTP = method;
-      this.entityModel = entityModel;
-
+      this.invocationTarget = invocationTarget;
    }
 
    public MethodHTTP getMethodHTTP()
    {
       return methodHTTP;
-   }
-
-
-   public EntityModel getEntityModel()
-   {
-      return entityModel;
    }
 
    public String getUriTemplate()
@@ -63,6 +58,11 @@ public class ResourceMethod extends AbstractRegexResolveable
       return false;  
    }
 
+   public Method getInvocationTarget()
+   {
+      return invocationTarget;
+   }
+
    void freeze()
    {
       initFromUriTemplate(this.uriTemplate);     
@@ -71,6 +71,6 @@ public class ResourceMethod extends AbstractRegexResolveable
 
    public String toString()
    {
-      return "ResourceMethod {"+methodHTTP+" uri="+uriTemplate+", regex="+regexPattern+", entity="+entityModel+"}";
+      return "ResourceMethod {"+methodHTTP+" uri="+uriTemplate+", regex="+regexPattern+"}";
    }
 }

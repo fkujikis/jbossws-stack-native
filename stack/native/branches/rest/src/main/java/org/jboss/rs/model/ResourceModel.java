@@ -33,9 +33,9 @@ public class ResourceModel extends AbstractRegexResolveable
    private ResourceModel parent = null;
 
    private String uriTemplate;
-   private Class implementation;
+   private Class invocationTarget;
 
-   /*TODO : parse resource methods = no UriTemplatem but HttpMethod annotation */
+   /*TODO : parse resource methods => no UriTemplate but HttpMethod annotation */
    private List<ResourceMethod> resourceMethods = new ArrayList<ResourceMethod>();
    private List<ResourceMethod> subResourceMethods = new ArrayList<ResourceMethod>();
    private List<ResourceLocator> resourceLocators = new ArrayList<ResourceLocator>();
@@ -45,11 +45,11 @@ public class ResourceModel extends AbstractRegexResolveable
       this(null, uriTemplate, implementation);
    }
 
-   public ResourceModel(ResourceModel parent, String uriTemplate, Class implementation)
+   public ResourceModel(ResourceModel parent, String uriTemplate, Class invocationTarget)
    {
       this.parent = parent;
       this.uriTemplate = uriTemplate;
-      this.implementation = implementation;      
+      this.invocationTarget = invocationTarget;
    }
 
    /**
@@ -58,6 +58,11 @@ public class ResourceModel extends AbstractRegexResolveable
    void freeze()
    {
       initFromUriTemplate(this.uriTemplate);     
+   }
+
+   public void addResourceMethod(ResourceMethod srm)
+   {
+      resourceMethods.add(srm);
    }
 
    public void addSubResourceMethod(ResourceMethod srm)
@@ -80,9 +85,9 @@ public class ResourceModel extends AbstractRegexResolveable
       return parent;
    }
 
-   public Class getImplementation()
+   public Class getInvocationTarget()
    {
-      return implementation;
+      return invocationTarget;
    }
 
    public String getUriTemplate()
@@ -90,13 +95,17 @@ public class ResourceModel extends AbstractRegexResolveable
       return uriTemplate;
    }
 
+   public List<ResourceMethod> getResourceMethods()
+   {
+      return resourceMethods;
+   }
 
-   List<ResourceMethod> getSubResourceMethods()
+   public List<ResourceMethod> getSubResourceMethods()
    {
       return subResourceMethods;
    }
 
-   List<ResourceLocator> getResourceLocator()
+   public List<ResourceLocator> getResourceLocator()
    {
       return resourceLocators;
    }
@@ -108,6 +117,6 @@ public class ResourceModel extends AbstractRegexResolveable
 
    public String toString()
    {
-      return "ResourceModel {uri=" + uriTemplate + ", regex=" + regexPattern + ", impl=" + implementation + "}";      
+      return "ResourceModel {uri=" + uriTemplate + ", regex=" + regexPattern + ", impl=" + invocationTarget + "}";
    }
 }

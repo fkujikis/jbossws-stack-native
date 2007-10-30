@@ -19,35 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.rs.model;
+package org.jboss.rs.util;
+
+import org.jboss.rs.MethodHTTP;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.UriParam;
-import javax.ws.rs.UriTemplate;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.DELETE;
+import java.lang.annotation.Annotation;
 
-@UriTemplate("widgets")
-public class WidgetList
+/**
+ * @author Heiko.Braun@jboss.com
+ * @version $Revision$
+ */
+public class Convert
 {
-   @GET
-   String getDescription() {
-      return "A widgetlist";
-   }
+   public static Class[] REQUEST_TYPES = new Class[] { GET.class, POST.class, PUT.class, DELETE.class };
 
-   @GET
-   @UriTemplate("offers")
-   WidgetList getDiscounted() {
-      return null;
-   }
+   public static MethodHTTP annotationToMethodHTTP(Annotation a)
+   {
+      MethodHTTP m = null;
 
-   @POST
-   @UriTemplate("special")
-   void getDiscounted(Widget special) {
-      
-   }
+      if(a instanceof GET)
+         m = MethodHTTP.GET;
+      else if(a instanceof POST)
+         m = MethodHTTP.POST;
+      else if(a instanceof PUT)
+         m = MethodHTTP.PUT;
+      else if(a instanceof DELETE)
+         m = MethodHTTP.DELETE;
 
-   @UriTemplate("{id}")
-   Widget findWidget(@UriParam("id") String id) {
-      return new Widget(id);
+      return m;
+
    }
 }

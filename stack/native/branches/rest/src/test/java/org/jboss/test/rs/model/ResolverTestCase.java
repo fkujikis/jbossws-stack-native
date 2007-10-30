@@ -23,12 +23,15 @@ package org.jboss.test.rs.model;
 
 import junit.framework.TestCase;
 import org.jboss.rs.ResourceRegistry;
+import org.jboss.rs.MethodHTTP;
 import org.jboss.rs.model.ResourceModel;
-import org.jboss.rs.model.ResourceModelFactory;
+import org.jboss.rs.model.ResourceModelParser;
 import org.jboss.rs.model.ResourceResolver;
 import org.jboss.rs.model.ResourceMethod;
+import org.jboss.rs.model.RuntimeContext;
 
 import java.util.List;
+import java.lang.reflect.Method;
 
 /**
  * @author Heiko.Braun@jboss.com
@@ -43,15 +46,16 @@ public class ResolverTestCase extends TestCase
    protected void setUp() throws Exception
    {
       this.registry = new ResourceRegistry();
-      ResourceModel root = ResourceModelFactory.createModel(WidgetList.class);
+      ResourceModel root = ResourceModelParser.newInstance().parse(WidgetList.class);
       registry.addResourceModelForContext("/rest", root);
       rootModels = registry.getResourceModelsForContext("/rest");
    }
 
    public void testRegexResolver1() throws Exception
    {
-      ResourceResolver resolver = new ResourceResolver();
-      ResourceMethod method = resolver.resolve(rootModels, "widgets/Id/spec");
+      RuntimeContext context = new RuntimeContext(MethodHTTP.GET, "widgets/Id/spec", rootModels );
+      ResourceResolver resolver = ResourceResolver.newInstance(context);
+      ResourceMethod method = resolver.resolve();
 
       assertNotNull(method);
       assertEquals("spec", method.getUriTemplate());
@@ -59,9 +63,10 @@ public class ResolverTestCase extends TestCase
 
    public void testRegexResolver2() throws Exception
    {
-      ResourceResolver resolver = new ResourceResolver();
+      RuntimeContext context = new RuntimeContext(MethodHTTP.POST, "widgets/special", rootModels );
+      ResourceResolver resolver = ResourceResolver.newInstance(context);
 
-      ResourceMethod method = resolver.resolve(rootModels, "widgets/special");
+      ResourceMethod method = resolver.resolve();
 
       assertNotNull(method);
       assertEquals("special", method.getUriTemplate());
@@ -69,24 +74,37 @@ public class ResolverTestCase extends TestCase
 
    public void testRegexResolver3() throws Exception
    {
-      ResourceResolver resolver = new ResourceResolver();
+      RuntimeContext context = new RuntimeContext(MethodHTTP.GET, "widgets/offers", rootModels );
+      ResourceResolver resolver = ResourceResolver.newInstance(context);
 
-      ResourceMethod method = resolver.resolve(rootModels, "widgets/offers");
+      ResourceMethod method = resolver.resolve();
 
       assertNotNull(method);
-      assertEquals("offers", method.getUriTemplate());
-      assertTrue(method.getEntityModel().getImplementation().equals(WidgetList.class));
+      assertEquals("offers", method.getUriTemplate());      
    }
 
    public void testRegexResolver4() throws Exception
    {
-      ResourceResolver resolver = new ResourceResolver();
+      RuntimeContext context = new RuntimeContext(MethodHTTP.GET, "widgets/Id/spec/SpecName", rootModels );
+      ResourceResolver resolver = ResourceResolver.newInstance(context);
 
-      ResourceMethod method = resolver.resolve(rootModels, "widgets/Id/spec/SpecName");
+      ResourceMethod method = resolver.resolve();
 
       assertNotNull(method);                 
-      assertEquals("spec/{name}", method.getUriTemplate());
-      assertTrue(method.getEntityModel().getImplementation().equals(Specification.class));
+      assertEquals("spec/{name}", method.getUriTemplate());      
+   }
+
+    public void testRegexResolver5() throws Exception
+   {
+      RuntimeContext context = new RuntimeContext(MethodHTTP.GET, "widgets", rootModels );
+      ResourceResolver resolver = ResourceResolver.newInstance(context);
+
+      ResourceMethod method = resolver.resolve();
+
+      assertNotNull(method);      
+      Method target = method.getInvocationTarget();
+      String result = (String)target.invoke( target.getDeclaringClass().newInstance());
+      assertEquals("A widgetlist", result);
    }
 
 }

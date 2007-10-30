@@ -19,25 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.rs.model;
+package org.jboss.rs.model;
 
-import junit.framework.TestCase;
-import org.jboss.rs.model.ResourceModelFactory;
-import org.jboss.rs.model.ResourceModel;
+import org.jboss.rs.MethodHTTP;
+
+import java.util.List;
 
 /**
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class ResourceFactoryTestCase extends TestCase
+public class RuntimeContext
 {
-   public void testParseMetaModel() throws Exception
+   private MethodHTTP requestMethod;
+   private List<ResourceModel> rootResources;
+   private String uri;
+
+   public RuntimeContext(MethodHTTP requestMethod, String uri, List<ResourceModel> rootResources)
    {
-      ResourceModel root = ResourceModelFactory.createModel(WidgetList.class);
+      this.requestMethod = requestMethod;
+      this.rootResources = rootResources;
+      this.uri = uri;
    }
 
-   private void dumpModel(ResourceModel model)
+   public MethodHTTP getRequestMethod()
    {
-            
+      return requestMethod;
+   }
+
+
+   public List<ResourceModel> getRootResources()
+   {
+      return rootResources;
+   }
+
+   public String getUri()
+   {
+      return uri;
    }
 }

@@ -32,7 +32,19 @@ import java.util.List;
  */
 public class ResourceResolver
 {
-   public ResourceMethod resolve(List<ResourceModel> rootResources, String uri)
+   private RuntimeContext context;
+
+   public static ResourceResolver newInstance(RuntimeContext context)
+   {
+      return new ResourceResolver(context);
+   }
+
+   private ResourceResolver(RuntimeContext context)
+   {
+      this.context = context;
+   }
+
+   public ResourceMethod resolve()
      throws NoResourceException, NoMethodException
    {
       ResourceMethod resourceMethod = null;
@@ -40,18 +52,18 @@ public class ResourceResolver
       // Filter the set of resource classes by rejecting those whose
       // regular expression does not match uri
       List<ResourceMatch> includedResources = new ArrayList<ResourceMatch>();
-      Iterator<ResourceModel> it1 = rootResources.iterator();
+      Iterator<ResourceModel> it1 = context.getRootResources().iterator();
       while(it1.hasNext())
       {
          ResourceModel model = it1.next();
-         RegexQualifier qualifier = model.resolve(uri);
+         RegexQualifier qualifier = model.resolve(context.getUri());
          if(qualifier!=null)
             includedResources.add( new ResourceMatch(model, qualifier) );
       }
 
       if(includedResources.isEmpty())
-         throw new NoResourceException("No resource matches URI '"+uri+"'");
-            
+         throw new NoResourceException("No resource matches URI '"+context.getUri()+"'");
+
       Collections.sort(includedResources);
 
       // DFS by locator, should result in a resource match
@@ -63,7 +75,7 @@ public class ResourceResolver
       }
 
       if(null == resourceMethod)
-         throw new NoMethodException("No method for URI '"+uri);
+         throw new NoMethodException("No method for URI '"+context.getUri());
 
       // gotcha
       return resourceMethod;
@@ -72,14 +84,17 @@ public class ResourceResolver
    /**
     * Recursive scan for resource methods.
     * Inspect a resource match for methods and it fails try the locators.
-    * 
+    *
     * @param dfsEntry
     * @return
     */
    private ResourceMethod dfsResourceMatch(ResourceMatch dfsEntry)
    {
       ResourceMethod resourceMethod = null;
-      resourceMethod = resolveResourceMethod(dfsEntry, dfsEntry.qualifier.nextUriToken);
+      String nextUriToken = dfsEntry.qualifier.nextUriToken;
+
+      // resource and subresource methods first
+      resourceMethod = resolveResourceMethod(dfsEntry, nextUriToken);
 
       // root didn't match, so recurse locators to find a resource
       if(null == resourceMethod)
@@ -88,6 +103,7 @@ public class ResourceResolver
          if(subResource!=null)
             resourceMethod = dfsResourceMatch(subResource);
       }
+
       return resourceMethod;
    }
 
@@ -108,37 +124,64 @@ public class ResourceResolver
       if(!weightedResults.isEmpty())
       {
          Collections.sort(weightedResults);
-         match = weightedResults.get(0);         
+         match = weightedResults.get(0);
       }
-      
+
       return match;
    }
 
    private ResourceMethod resolveResourceMethod(ResourceMatch<ResourceModel> methodTarget, String uriToken)
    {
       ResourceMethod match = null;
-
       List<ResourceMatch<ResourceMethod>> matches = new ArrayList<ResourceMatch<ResourceMethod>>();
-      List<ResourceMethod> methods = methodTarget.model.getSubResourceMethods();
-      Iterator<ResourceMethod> it = methods.iterator();
-      while(it.hasNext())
+
+      if("".equals(uriToken) || "/".equals(uriToken)) // resources methods
       {
-         ResourceMethod method = it.next();
-         RegexQualifier qualifier = method.resolve(uriToken);
-         if(qualifier!=null && ("".equals(qualifier.nextUriToken) || "/".equals(qualifier.nextUriToken)))
+         // use any available resource method for further mathing by mimetype, etc
+         for(ResourceMethod resourceMethod : methodTarget.model.getResourceMethods())
          {
             matches.add(
-              new ResourceMatch<ResourceMethod>(method, qualifier)
-            );            
+              new ResourceMatch<ResourceMethod>(resourceMethod, RegexQualifier.NONE)
+            );
          }
       }
-
+      else // subresource methods
+      {
+         List<ResourceMethod> methods = methodTarget.model.getSubResourceMethods();
+         Iterator<ResourceMethod> it = methods.iterator();
+         while(it.hasNext())
+         {
+            ResourceMethod method = it.next();
+            RegexQualifier qualifier = method.resolve(uriToken);
+            if(qualifier!=null && ("".equals(qualifier.nextUriToken) || "/".equals(qualifier.nextUriToken)))
+            {
+               matches.add(
+                 new ResourceMatch<ResourceMethod>(method, qualifier)
+               );
+            }
+         }
+      }
+      
       if(!matches.isEmpty())
       {
          Collections.sort(matches);
-         match = matches.get(0).model;
+         match = contentNegotiation(matches);
       }
-      
+
+      return match;
+   }
+
+   private ResourceMethod contentNegotiation(List<ResourceMatch<ResourceMethod>> matches)
+   {
+      ResourceMethod match = null;
+      for(ResourceMatch<ResourceMethod> candiate : matches)
+      {
+         if(context.getRequestMethod() == candiate.model.getMethodHTTP())
+         {
+            match = candiate.model;
+            break;
+         }
+      }
       return match;
    }
 
