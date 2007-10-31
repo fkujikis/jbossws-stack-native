@@ -50,7 +50,6 @@ public class ClientHandler2 extends GenericSOAPHandler
 
       MimeHeaders mimeHeaders = soapMessage.getMimeHeaders();
       String[] ct = mimeHeaders.getHeader("Content-Type");
-      System.out.println(mimeHeaders);
       if (ct != null)
       {
          for (int i = 0; i < ct.length; i++)
@@ -72,7 +71,6 @@ public class ClientHandler2 extends GenericSOAPHandler
          soapMessage.saveChanges();
 
          MimeHeaders mimeHeaders = soapMessage.getMimeHeaders();
-         System.out.println(mimeHeaders);
          String[] ct = mimeHeaders.getHeader("Content-Type");
          if (ct != null)
          {
