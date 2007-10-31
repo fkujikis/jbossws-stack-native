@@ -42,6 +42,7 @@ import javax.xml.soap.SOAPFault;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
 
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.SOAPMessageAbstraction;
@@ -225,10 +226,20 @@ public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstracti
    
    private String getSOAPContentType() throws SOAPException
    {
-      if (SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE.equals(soapPart.getEnvelope().getNamespaceURI()))
+      //Check binding type in the endpoint metadata
+      CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
+      if (msgContext != null && Constants.SOAP12HTTP_BINDING.equalsIgnoreCase(msgContext.getEndpointMetaData().getBindingId()))
+      {
          return SOAPConstants.SOAP_1_2_CONTENT_TYPE;
-      else
-         return SOAPConstants.SOAP_1_1_CONTENT_TYPE;
+      }
+      //Check the message envelope
+      SOAPEnvelope env = soapPart != null ? soapPart.getEnvelope() : null;
+      if (env != null && SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE.equals(env.getNamespaceURI()))
+      {
+         return SOAPConstants.SOAP_1_2_CONTENT_TYPE;
+      }
+      //Default to soap 1.1
+      return SOAPConstants.SOAP_1_1_CONTENT_TYPE;
    }
    
    public void saveChanges() throws SOAPException
