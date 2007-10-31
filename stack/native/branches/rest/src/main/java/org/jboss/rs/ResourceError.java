@@ -19,33 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.rs.model;
-
-import org.jboss.rs.ResourceError;
+package org.jboss.rs;
 
 /**
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class NoResourceException extends ResourceError
+public class ResourceError extends Exception
 {
-   public NoResourceException(int status, String message)
-   {
-      super(status, message);
-   }
+   public int status;
 
-   public NoResourceException(int status, String message, Throwable cause)
-   {
-      super(status, message, cause);
-   }
-
-   public NoResourceException(String message)
+   public ResourceError(String message)
    {
       super(message);
    }
 
-   public NoResourceException(String message, Throwable cause)
+   public ResourceError(String message, Throwable cause)
    {
-      super(message, cause);    
+      super(message, cause); 
+   }
+
+   public ResourceError(int status, String message)
+   {
+      super(message);
+      this.status = status;
+   }
+
+   public ResourceError(int status, String message, Throwable cause)
+   {
+      super(message, cause);
+      this.status = status;
    }
 }

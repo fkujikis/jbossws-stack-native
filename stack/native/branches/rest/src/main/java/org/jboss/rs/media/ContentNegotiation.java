@@ -19,33 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.rs.model;
+package org.jboss.rs.media;
 
-import org.jboss.rs.ResourceError;
+import org.jboss.rs.model.ResourceMethod;
+import org.jboss.rs.model.ResourceMatch;
+import org.jboss.rs.model.NoMethodException;
+import org.jboss.rs.runtime.RuntimeContext;
+
+import java.util.List;
 
 /**
+ * Matches available resource methods against the runtime context.<br>
+ * Since this is likely to change it can be plugged into the {@link org.jboss.rs.model.ResourceResolver}.
+ * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class NoResourceException extends ResourceError
+public interface ContentNegotiation
 {
-   public NoResourceException(int status, String message)
-   {
-      super(status, message);
-   }
-
-   public NoResourceException(int status, String message, Throwable cause)
-   {
-      super(status, message, cause);
-   }
-
-   public NoResourceException(String message)
-   {
-      super(message);
-   }
-
-   public NoResourceException(String message, Throwable cause)
-   {
-      super(message, cause);    
-   }
+   ResourceMethod match(RuntimeContext context, List<ResourceMatch<ResourceMethod>> candidates)
+     throws NoMethodException;
 }

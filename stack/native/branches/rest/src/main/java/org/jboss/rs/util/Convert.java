@@ -27,7 +27,14 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.ProduceMime;
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 /**
  * @author Heiko.Braun@jboss.com
@@ -36,6 +43,20 @@ import java.lang.annotation.Annotation;
 public class Convert
 {
    public static Class[] REQUEST_TYPES = new Class[] { GET.class, POST.class, PUT.class, DELETE.class };
+
+   public static MimeType ANY_MIME;
+
+   static
+   {
+      try
+      {
+         ANY_MIME = new MimeType("*/*");
+      }
+      catch (MimeTypeParseException e)
+      {
+         //
+      }
+   }
 
    public static MethodHTTP annotationToMethodHTTP(Annotation a)
    {
@@ -52,5 +73,55 @@ public class Convert
 
       return m;
 
+   }
+
+   public static List<MimeType> annotationToMimeType(ConsumeMime consumeMime)
+   {
+      return mimeStringsToMimeTypes(consumeMime.value());
+   }
+
+    public static List<MimeType> annotationToMimeType(ProduceMime produceMime)
+   {
+      return mimeStringsToMimeTypes(produceMime.value());
+   }
+
+   public static List<MimeType> mimeStringToMimeTypes(String mime)
+   {
+      List<MimeType> mimes = new ArrayList<MimeType>();
+
+      try
+      {
+         StringTokenizer tokenizer = new StringTokenizer(mime, ",");
+         while(tokenizer.hasMoreTokens())
+      {
+         String tok = tokenizer.nextToken().trim();
+            mimes.add( new MimeType(tok) );
+         }
+      }
+      catch (MimeTypeParseException e)
+      {
+         throw new IllegalArgumentException("Failed to parse mime string '"+mime+"'", e);
+      }
+
+      return mimes;
+   }
+
+   public static List<MimeType> mimeStringsToMimeTypes(String[] mimeStrings)
+   {
+      List<MimeType> mimes = new ArrayList<MimeType>();
+
+      try
+      {
+         for(String s : mimeStrings)
+         {         
+            mimes.add( new MimeType(s) );
+         }
+      }
+      catch (MimeTypeParseException e)
+      {
+         throw new IllegalArgumentException("Failed to parse mime string '"+mimeStrings+"'", e);
+      }
+
+      return mimes;
    }
 }

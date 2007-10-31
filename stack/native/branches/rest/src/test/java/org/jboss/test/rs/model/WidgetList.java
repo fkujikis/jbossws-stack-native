@@ -25,6 +25,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.UriParam;
 import javax.ws.rs.UriTemplate;
 import javax.ws.rs.POST;
+import javax.ws.rs.ConsumeMime;
 
 @UriTemplate("widgets")
 public class WidgetList
@@ -42,8 +43,9 @@ public class WidgetList
 
    @POST
    @UriTemplate("special")
-   void getDiscounted(Widget special) {
-      
+   @ConsumeMime({"text/xml", "application/xml"})
+   void setDiscounted(Widget special) {
+      // TODO: Should return a new location                
    }
 
    @UriTemplate("{id}")

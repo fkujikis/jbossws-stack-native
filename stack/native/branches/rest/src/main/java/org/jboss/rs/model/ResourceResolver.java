@@ -21,6 +21,8 @@
  */
 package org.jboss.rs.model;
 
+import org.jboss.rs.media.ContentNegotiation;
+import org.jboss.rs.media.DefaultContentNegotiation;
 import org.jboss.rs.runtime.RuntimeContext;
 
 import java.util.ArrayList;
@@ -29,19 +31,34 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Resolves resource methods from runtime context.
+ * Resolves resource methods from {@link org.jboss.rs.runtime.RuntimeContext#getPath()}.<br>
+ * Once a set a of resource methods is identified, the resolver
+ * delegates to a {@link org.jboss.rs.media.ContentNegotiation} plugin
+ * to do the fine grained media type matching.
  * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
 public class ResourceResolver
 {
+   // the runtime context
    private RuntimeContext context;
 
+   // pluggable content negotitation
+   private ContentNegotiation connegPlugin;
+
+   /**
+    * Provides a resolver with the default content negotitation.
+    * 
+    * @param context the runtime context
+    * @return a configured resource resolver instance
+    */
    public static ResourceResolver newInstance(RuntimeContext context)
    {
-      assert context!=null;      
-      return new ResourceResolver(context);
+      assert context!=null;
+      ResourceResolver resourceResolver = new ResourceResolver(context);
+      resourceResolver.connegPlugin = new DefaultContentNegotiation();
+      return resourceResolver;
    }
 
    private ResourceResolver(RuntimeContext context)
@@ -61,13 +78,13 @@ public class ResourceResolver
       while(it1.hasNext())
       {
          ResourceModel model = it1.next();
-         RegexQualifier qualifier = model.resolve(context.getUri());
+         RegexQualifier qualifier = model.resolve(context.getPath());
          if(qualifier!=null)
             includedResources.add( new ResourceMatch(model, qualifier) );
       }
 
       if(includedResources.isEmpty())
-         throw new NoResourceException("No resource matches URI '"+context.getUri()+"'");
+         throw new NoResourceException("No resource matches URI '"+context.getPath()+"'");
 
       Collections.sort(includedResources);
 
@@ -80,7 +97,7 @@ public class ResourceResolver
       }
 
       if(null == resourceMethod)
-         throw new NoMethodException("No method for URI '"+context.getUri());
+         throw new NoMethodException("No method for URI '"+context.getPath());
 
       // gotcha
       return resourceMethod;
@@ -94,6 +111,7 @@ public class ResourceResolver
     * @return
     */
    private ResourceMethod dfsResourceMatch(ResourceMatch dfsEntry)
+     throws NoMethodException, NoResourceException
    {
       ResourceMethod resourceMethod = null;
       String nextUriToken = dfsEntry.qualifier.nextUriToken;
@@ -113,6 +131,7 @@ public class ResourceResolver
    }
 
    private ResourceMatch resolveByLocator(ResourceMatch<ResourceModel> resourceMatch)
+     throws NoResourceException
    {
       ResourceMatch match = null;
 
@@ -136,6 +155,7 @@ public class ResourceResolver
    }
 
    private ResourceMethod resolveResourceMethod(ResourceMatch<ResourceModel> methodTarget, String uriToken)
+     throws NoMethodException
    {
       ResourceMethod match = null;
       List<ResourceMatch<ResourceMethod>> matches = new ArrayList<ResourceMatch<ResourceMethod>>();
@@ -175,48 +195,14 @@ public class ResourceResolver
 
       return match;
    }
-
-   // TODO: error handling and media-type matching
+   
    private ResourceMethod contentNegotiation(List<ResourceMatch<ResourceMethod>> matches)
+     throws NoMethodException
    {
-      ResourceMethod match = null;
-      for(ResourceMatch<ResourceMethod> candiate : matches)
-      {
-         // Match by request method -> HTTP 405
-         if(context.getRequestMethod() == candiate.model.getMethodHTTP())
-         {
-            match = candiate.model;
-            break;
-         }
-
-         // Match by supported input data format -> HTTP 415
-         
-         // Match by supported output data format -> HTTP 406
-         
-      }
-      return match;
-   }
-
-   class ResourceMatch<T> implements Comparable
-   {
-      final T model;
-      final RegexQualifier qualifier;
-
-      public ResourceMatch(T model, RegexQualifier weight)
-      {
-         this.model = model;
-         this.qualifier = weight;
-      }
-
-      public int compareTo(Object o)
-      {
-         return qualifier.compareTo(((ResourceMatch<T>)o).qualifier);
-      }
-
-      public String toString()
-      {
-         return "ResourceMatch {model="+model+", weight="+ qualifier +"}";
-      }
+      assert connegPlugin !=null;
+      
+      // delegate to conneg plugin
+      return connegPlugin.match(context, matches);
    }
 
 }

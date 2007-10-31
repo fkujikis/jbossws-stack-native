@@ -21,13 +21,14 @@
  */
 package org.jboss.rs.model;
 
+import org.jboss.rs.ResourceError;
+
 /**
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class NoMethodException extends Exception
+public class NoMethodException extends ResourceError
 {
-
    public NoMethodException(String message)
    {
       super(message);
@@ -35,6 +36,16 @@ public class NoMethodException extends Exception
 
    public NoMethodException(String message, Throwable cause)
    {
-      super(message, cause);    
+      super(message, cause);
+   }
+
+   public NoMethodException(int status, String message)
+   {
+      super(status, message);
+   }
+
+   public NoMethodException(int status, String message, Throwable cause)
+   {
+      super(status, message, cause);    
    }
 }

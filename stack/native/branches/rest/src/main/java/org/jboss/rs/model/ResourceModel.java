@@ -34,8 +34,7 @@ public class ResourceModel extends AbstractRegexResolveable
 
    private String uriTemplate;
    private Class invocationTarget;
-
-   /*TODO : parse resource methods => no UriTemplate but HttpMethod annotation */
+   
    private List<ResourceMethod> resourceMethods = new ArrayList<ResourceMethod>();
    private List<ResourceMethod> subResourceMethods = new ArrayList<ResourceMethod>();
    private List<ResourceLocator> resourceLocators = new ArrayList<ResourceLocator>();

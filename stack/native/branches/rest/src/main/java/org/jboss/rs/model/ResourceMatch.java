@@ -21,31 +21,28 @@
  */
 package org.jboss.rs.model;
 
-import org.jboss.rs.ResourceError;
-
 /**
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class NoResourceException extends ResourceError
+public class ResourceMatch<T> implements Comparable
 {
-   public NoResourceException(int status, String message)
+   public final T model;
+   public final RegexQualifier qualifier;
+
+   public ResourceMatch(T model, RegexQualifier weight)
    {
-      super(status, message);
+      this.model = model;
+      this.qualifier = weight;
    }
 
-   public NoResourceException(int status, String message, Throwable cause)
+   public int compareTo(Object o)
    {
-      super(status, message, cause);
+      return qualifier.compareTo(((ResourceMatch<T>)o).qualifier);
    }
 
-   public NoResourceException(String message)
+   public String toString()
    {
-      super(message);
-   }
-
-   public NoResourceException(String message, Throwable cause)
-   {
-      super(message, cause);    
+      return "ResourceMatch {model="+model+", weight="+ qualifier +"}";
    }
 }

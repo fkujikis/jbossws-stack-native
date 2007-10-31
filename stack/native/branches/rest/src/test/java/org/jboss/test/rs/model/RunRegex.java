@@ -23,6 +23,7 @@ package org.jboss.test.rs.model;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.net.URI;
 
 /**
  * @author Heiko.Braun@jboss.com
@@ -30,8 +31,12 @@ import java.util.regex.Matcher;
  */
 public class RunRegex
 {
-   public static void main(String[] args)
+   public static void main(String[] args) throws Exception
    {
+
+      URI uri = new URI("http://jboss.com/widgets/special");
+      System.out.println(uri.getPath());
+      
       String s = "spec";
       System.out.println("> " +s);
       Pattern p = Pattern.compile("(\\bspec\\b)(.*?)(/)?");

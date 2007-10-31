@@ -32,6 +32,7 @@ import org.jboss.rs.model.ResourceMethod;
 
 import java.util.List;
 import java.lang.reflect.Method;
+import java.net.URI;
 
 /**
  * @author Heiko.Braun@jboss.com
@@ -53,7 +54,8 @@ public class ResolverTestCase extends TestCase
 
    public void testRegexResolver1() throws Exception
    {
-      RuntimeContext context = new RuntimeContext(MethodHTTP.GET, "widgets/Id/spec", rootModels );
+      URI uri = new URI("http://jboss.com/widgets/Id/spec");
+      RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
       ResourceResolver resolver = ResourceResolver.newInstance(context);
       ResourceMethod method = resolver.resolve();
 
@@ -63,7 +65,10 @@ public class ResolverTestCase extends TestCase
 
    public void testRegexResolver2() throws Exception
    {
-      RuntimeContext context = new RuntimeContext(MethodHTTP.POST, "widgets/special", rootModels );
+      URI uri = new URI("http://jboss.com/widgets/special");
+      RuntimeContext context = defaultRuntimeContext(MethodHTTP.POST, uri);
+      context.parseContentTypeHeader("text/xml");
+      
       ResourceResolver resolver = ResourceResolver.newInstance(context);
 
       ResourceMethod method = resolver.resolve();
@@ -74,37 +79,47 @@ public class ResolverTestCase extends TestCase
 
    public void testRegexResolver3() throws Exception
    {
-      RuntimeContext context = new RuntimeContext(MethodHTTP.GET, "widgets/offers", rootModels );
+      URI uri = new URI("http://jboss.com/widgets/offers");
+      RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
       ResourceResolver resolver = ResourceResolver.newInstance(context);
 
       ResourceMethod method = resolver.resolve();
 
       assertNotNull(method);
-      assertEquals("offers", method.getUriTemplate());      
+      assertEquals("offers", method.getUriTemplate());
    }
 
    public void testRegexResolver4() throws Exception
    {
-      RuntimeContext context = new RuntimeContext(MethodHTTP.GET, "widgets/Id/spec/SpecName", rootModels );
+      URI uri = new URI("http://jboss.com/widgets/Id/spec/SpecName");
+      RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
       ResourceResolver resolver = ResourceResolver.newInstance(context);
 
       ResourceMethod method = resolver.resolve();
 
-      assertNotNull(method);                 
-      assertEquals("spec/{name}", method.getUriTemplate());      
+      assertNotNull(method);
+      assertEquals("spec/{name}", method.getUriTemplate());
    }
 
-    public void testRegexResolver5() throws Exception
+   public void testRegexResolver5() throws Exception
    {
-      RuntimeContext context = new RuntimeContext(MethodHTTP.GET, "widgets", rootModels );
+      URI uri = new URI("http://jboss.com/widgets");
+      RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
       ResourceResolver resolver = ResourceResolver.newInstance(context);
 
       ResourceMethod method = resolver.resolve();
 
-      assertNotNull(method);      
+      assertNotNull(method);
       Method target = method.getInvocationTarget();
       String result = (String)target.invoke( target.getDeclaringClass().newInstance());
       assertEquals("A widgetlist", result);
+   }
+
+   private RuntimeContext defaultRuntimeContext(MethodHTTP method, URI uri)
+   {
+      RuntimeContext context = new RuntimeContext(method, uri, rootModels );
+      context.parseAcceptHeader("*/*");
+      return context;
    }
 
 }
