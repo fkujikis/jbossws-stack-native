@@ -26,11 +26,13 @@ import javax.ws.rs.UriParam;
 import javax.ws.rs.UriTemplate;
 import javax.ws.rs.POST;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.ProduceMime;
 
 @UriTemplate("widgets")
 public class WidgetList
 {
    @GET
+   @ProduceMime({"text/plain"})
    String getDescription() {
       return "A widgetlist";
    }

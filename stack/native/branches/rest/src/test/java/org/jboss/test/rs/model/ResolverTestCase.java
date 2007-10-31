@@ -105,8 +105,9 @@ public class ResolverTestCase extends TestCase
    {
       URI uri = new URI("http://jboss.com/widgets");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
-      ResourceResolver resolver = ResourceResolver.newInstance(context);
+      context.parseAcceptHeader("text/plain");
 
+      ResourceResolver resolver = ResourceResolver.newInstance(context);
       ResourceMethod method = resolver.resolve();
 
       assertNotNull(method);
