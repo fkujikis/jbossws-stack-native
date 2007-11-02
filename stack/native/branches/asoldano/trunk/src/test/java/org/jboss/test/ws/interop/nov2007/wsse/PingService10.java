@@ -15,7 +15,7 @@ import javax.xml.ws.WebServiceClient;
  * Generated source version: 2.0
  * 
  */
-@WebServiceClient(name = "PingService10", targetNamespace = "http://tempuri.org/", wsdlLocation = "file:/dati/jbossws/stack/native/branches/asoldano/trunk/src/test/resources/interop/nov2007/wsse/shared/WEB-INF/wsdl/WSSecurty10.wsdl")
+@WebServiceClient(name = "PingService10", targetNamespace = "http://InteropBaseAddress/interop", wsdlLocation = "file:/home/alessio/Desktop/WS-Security%20interop%20files/wsdl_live_WsSecurity10.svc/WsSecurity10.wsdl")
 public class PingService10
     extends Service
 {
@@ -25,7 +25,7 @@ public class PingService10
     static {
         URL url = null;
         try {
-            url = new URL("file:/dati/jbossws/stack/native/branches/asoldano/trunk/src/test/resources/interop/nov2007/wsse/shared/WEB-INF/wsdl/WSSecurty10.wsdl");
+            url = new URL("file:/home/alessio/Desktop/WS-Security%20interop%20files/wsdl_live_WsSecurity10.svc/WsSecurity10.wsdl");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -37,7 +37,7 @@ public class PingService10
     }
 
     public PingService10() {
-        super(PINGSERVICE10_WSDL_LOCATION, new QName("http://tempuri.org/", "PingService10"));
+        super(PINGSERVICE10_WSDL_LOCATION, new QName("http://InteropBaseAddress/interop", "PingService10"));
     }
 
     /**
@@ -45,9 +45,9 @@ public class PingService10
      * @return
      *     returns IPingService
      */
-    @WebEndpoint(name = "Username_IPingService_port")
-    public IPingService getUsernameIPingServicePort() {
-        return (IPingService)super.getPort(new QName("http://tempuri.org/", "Username_IPingService_port"), IPingService.class);
+    @WebEndpoint(name = "UserNameOverTransport_IPingService")
+    public IPingService getUserNameOverTransportIPingService() {
+        return (IPingService)super.getPort(new QName("http://InteropBaseAddress/interop", "UserNameOverTransport_IPingService"), IPingService.class);
     }
 
     /**
@@ -55,9 +55,9 @@ public class PingService10
      * @return
      *     returns IPingService
      */
-    @WebEndpoint(name = "MutualCertificate10SignEncrypt_IPingService_port")
-    public IPingService getMutualCertificate10SignEncryptIPingServicePort() {
-        return (IPingService)super.getPort(new QName("http://tempuri.org/", "MutualCertificate10SignEncrypt_IPingService_port"), IPingService.class);
+    @WebEndpoint(name = "MutualCertificate10SignEncrypt_IPingService")
+    public IPingService getMutualCertificate10SignEncryptIPingService() {
+        return (IPingService)super.getPort(new QName("http://InteropBaseAddress/interop", "MutualCertificate10SignEncrypt_IPingService"), IPingService.class);
     }
 
     /**
@@ -65,9 +65,9 @@ public class PingService10
      * @return
      *     returns IPingService
      */
-    @WebEndpoint(name = "MutualCertificate10SignEncryptRsa15TripleDes_IPingService_port")
-    public IPingService getMutualCertificate10SignEncryptRsa15TripleDesIPingServicePort() {
-        return (IPingService)super.getPort(new QName("http://tempuri.org/", "MutualCertificate10SignEncryptRsa15TripleDes_IPingService_port"), IPingService.class);
+    @WebEndpoint(name = "MutualCertificate10SignEncryptRsa15TripleDes_IPingService")
+    public IPingService getMutualCertificate10SignEncryptRsa15TripleDesIPingService() {
+        return (IPingService)super.getPort(new QName("http://InteropBaseAddress/interop", "MutualCertificate10SignEncryptRsa15TripleDes_IPingService"), IPingService.class);
     }
 
     /**
@@ -75,9 +75,19 @@ public class PingService10
      * @return
      *     returns IPingService
      */
-    @WebEndpoint(name = "MutualCertificate10Sign_IPingService_port")
-    public IPingService getMutualCertificate10SignIPingServicePort() {
-        return (IPingService)super.getPort(new QName("http://tempuri.org/", "MutualCertificate10Sign_IPingService_port"), IPingService.class);
+    @WebEndpoint(name = "X10_IPingService")
+    public IPingService getX10IPingService() {
+        return (IPingService)super.getPort(new QName("http://InteropBaseAddress/interop", "X10_IPingService"), IPingService.class);
+    }
+
+    /**
+     * 
+     * @return
+     *     returns IPingService
+     */
+    @WebEndpoint(name = "X10-NoTimestamp_IPingService")
+    public IPingService getX10NoTimestampIPingService() {
+        return (IPingService)super.getPort(new QName("http://InteropBaseAddress/interop", "X10-NoTimestamp_IPingService"), IPingService.class);
     }
 
 }

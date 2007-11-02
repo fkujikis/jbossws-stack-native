@@ -21,10 +21,12 @@
  */
 package org.jboss.test.ws.interop.nov2007.wsse;
 
-import javax.jws.WebService;
 
-import org.jboss.ws.annotation.EndpointConfig;
+import javax.xml.bind.JAXBElement;
 
+import org.jboss.test.ws.interop.nov2007.wsse.EchoDataSet.Request;
+import org.jboss.test.ws.interop.nov2007.wsse.EchoDataSetResponse.EchoDataSetResult;
+import org.jboss.test.ws.interop.nov2007.wsse.EchoXmlResponse.EchoXmlResult;
 
 /**
  * WCF Interoperability Plug-fest - November 2007
@@ -33,30 +35,93 @@ import org.jboss.ws.annotation.EndpointConfig;
  * 
  * @author Alessio Soldano <alessio.soldano@jboss.com>
  * 
- * @version $Id:$
+ * @version $Id$
  * @since 26-Oct-2007
  */
-//@WebService(
-//      serviceName = "PingService10",
-//      name = "IPingService",
-//      targetNamespace = "http://tempuri.org/",
-//      endpointInterface = "org.jboss.test.ws.interop.nov2007.wsse.IPingService",
-//      portName = "Username_IPingService_port")
-@WebService(
-      wsdlLocation = "WEB-INF/wsdl/WSSecurty10.wsdl", 
-      serviceName = "PingService10",
-      name = "IPingService",
-      targetNamespace = "http://tempuri.org/",
-      endpointInterface = "org.jboss.test.ws.interop.nov2007.wsse.IPingService",
-      portName = "Username_IPingService_port")
-@EndpointConfig(configName = "Standard WSSecurity Endpoint")
-public class TestService implements IPingService
+public class TestService
 {
-
+   
    public String ping(String ping)
    {
-      System.out.println("ping: "+ping);
+      System.out.println("ping: " + ping);
       return ping;
+   }
+
+   public String echo(String request)
+   {
+      System.out.println("echo: " + request);
+      return request;
+   }
+
+   @SuppressWarnings("unchecked")
+   public EchoDataSetResult echoDataSet(Request request)
+   {
+      System.out.println("echoDataSet, request=" + request);
+      EchoDataSetResult result = new EchoDataSetResult();
+      if (request != null)
+      {
+         Object any = request.getAny();
+         System.out.println("echoDataSet, request.getAny()="+any);
+         if (any != null)
+         {
+            try
+            {
+               JAXBElement<DataSet> jaxbEl = (JAXBElement<DataSet>)any;
+               JAXBElement inner = (JAXBElement)(jaxbEl.getValue().getAny());
+               System.out.println("echoDataSet, DataSet inner value=" + inner.getValue());
+            } catch (Exception e) {}
+         }
+         result.setAny(request.getAny());
+      }
+      return result;
+   }
+
+   @SuppressWarnings("unchecked")
+   public EchoXmlResult echoXml(org.jboss.test.ws.interop.nov2007.wsse.EchoXml.Request request)
+   {
+      System.out.println("echoXml, request=" + request);
+      EchoXmlResult result = new EchoXmlResult();
+      if (request != null)
+      {
+         Object any = request.getAny();
+         System.out.println("echoXml, request.getAny()=" + any);
+         if (any != null)
+         {
+            try
+            {
+               System.out.println("echoXml, inner value=" + ((JAXBElement)any).getValue());
+            } catch (Exception e) {}
+         }
+         result.setAny(request.getAny());         
+      }
+      return result;
+   }
+
+   public String fault(String request)
+   {
+      System.out.println("fault: " + request);
+      return request;
+   }
+
+   public String header(String request)
+   {
+      System.out.println("header: "+request);
+      return request;
+   }
+
+   public PingResponse ping(PingRequest parameters)
+   {
+      System.out.println("ping: " + parameters);
+      PingResponse result = new PingResponse();
+      PingResponseBody responseBody = new PingResponseBody();
+      if (parameters.getPing() != null)
+      {
+         responseBody.setOrigin(parameters.getPing().getOrigin());
+         responseBody.setScenario(parameters.getPing().getScenario());
+         responseBody.setText(parameters.getPing().getText());
+      }
+      result.setPingResponse(responseBody);
+      return result;
    }
    
 }

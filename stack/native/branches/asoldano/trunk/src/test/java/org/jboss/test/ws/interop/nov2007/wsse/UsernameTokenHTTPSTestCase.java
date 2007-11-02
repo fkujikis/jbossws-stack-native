@@ -58,13 +58,6 @@ public class UsernameTokenHTTPSTestCase extends AbstractWSSEBase
       return new JBossWSTestSetup(UsernameTokenHTTPSTestCase.class, "jbossws-interop-nov2007-wsseUsernameTokenHTTPS.war");
    }
 
-   public void testScenario() throws Exception
-   {
-      String text = "Hello!";
-      String result = port.ping(text);
-      assertNotNull(result);
-      assertEquals(text, result);
-   }
 
    @Override
    protected void scenarioSetup(IPingService port)
@@ -83,7 +76,7 @@ public class UsernameTokenHTTPSTestCase extends AbstractWSSEBase
    @Override
    protected QName getScenarioPortQName()
    {
-      return new QName("http://tempuri.org/", "Username_IPingService_port");
+      return new QName("http://InteropBaseAddress/interop", "UserNameOverTransport_IPingService");
    }
 
 }

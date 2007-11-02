@@ -7,6 +7,8 @@ import javax.jws.WebResult;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 import javax.xml.ws.Action;
+import javax.xml.ws.RequestWrapper;
+import javax.xml.ws.ResponseWrapper;
 
 
 /**
@@ -15,22 +17,97 @@ import javax.xml.ws.Action;
  * Generated source version: 2.0
  * 
  */
-@WebService(name = "IPingService", targetNamespace = "http://xmlsoap.org/Ping")
-@SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.BARE)
+@WebService(name = "IPingService", targetNamespace = "http://InteropBaseAddress/interop")
 public interface IPingService {
 
 
     /**
      * 
-     * @param ping
+     * @param parameters
+     * @return
+     *     returns org.jboss.test.ws.interop.nov2007.wsse.PingResponse
+     */
+    @WebMethod(operationName = "Ping", action = "http://xmlsoap.org/Ping")
+    @WebResult(name = "PingResponse", targetNamespace = "http://InteropBaseAddress/interop", partName = "parameters")
+    @SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.BARE)
+    @Action(input = "http://xmlsoap.org/Ping", output = "http://xmlsoap.org/Ping")
+    public PingResponse ping(
+        @WebParam(name = "PingRequest", targetNamespace = "http://InteropBaseAddress/interop", partName = "parameters")
+        PingRequest parameters);
+
+    /**
+     * 
+     * @param request
      * @return
      *     returns java.lang.String
      */
-    @WebMethod(operationName = "Ping", action = "http://xmlsoap.org/Ping")
-    @WebResult(name = "PingResponse", targetNamespace = "http://xmlsoap.org/Ping", partName = "PingResponse")
-    @Action(input = "http://xmlsoap.org/Ping", output = "http://xmlsoap.org/PingResponse")
-    public String ping(
-        @WebParam(name = "Ping", targetNamespace = "http://xmlsoap.org/Ping", partName = "Ping")
-        String ping);
+    @WebMethod(action = "http://InteropBaseAddress/interop/echo")
+    @WebResult(name = "echoResult", targetNamespace = "http://InteropBaseAddress/interop")
+    @RequestWrapper(localName = "echo", targetNamespace = "http://InteropBaseAddress/interop", className = "org.jboss.test.ws.interop.nov2007.wsse.Echo")
+    @ResponseWrapper(localName = "echoResponse", targetNamespace = "http://InteropBaseAddress/interop", className = "org.jboss.test.ws.interop.nov2007.wsse.EchoResponse")
+    @Action(input = "http://InteropBaseAddress/interop/echo", output = "http://InteropBaseAddress/interop/echo")
+    public String echo(
+        @WebParam(name = "request", targetNamespace = "http://InteropBaseAddress/interop")
+        String request);
+
+    /**
+     * 
+     * @param request
+     * @return
+     *     returns org.jboss.test.ws.interop.nov2007.wsse.EchoXmlResponse.EchoXmlResult
+     */
+    @WebMethod(action = "http://InteropBaseAddress/interop/echoXml")
+    @WebResult(name = "echoXmlResult", targetNamespace = "http://InteropBaseAddress/interop")
+    @RequestWrapper(localName = "echoXml", targetNamespace = "http://InteropBaseAddress/interop", className = "org.jboss.test.ws.interop.nov2007.wsse.EchoXml")
+    @ResponseWrapper(localName = "echoXmlResponse", targetNamespace = "http://InteropBaseAddress/interop", className = "org.jboss.test.ws.interop.nov2007.wsse.EchoXmlResponse")
+    @Action(input = "http://InteropBaseAddress/interop/echoXml", output = "http://InteropBaseAddress/interop/echoXml")
+    public org.jboss.test.ws.interop.nov2007.wsse.EchoXmlResponse.EchoXmlResult echoXml(
+        @WebParam(name = "request", targetNamespace = "http://InteropBaseAddress/interop")
+        org.jboss.test.ws.interop.nov2007.wsse.EchoXml.Request request);
+
+    /**
+     * 
+     * @param request
+     * @return
+     *     returns org.jboss.test.ws.interop.nov2007.wsse.EchoDataSetResponse.EchoDataSetResult
+     */
+    @WebMethod(action = "http://InteropBaseAddress/interop/echoDataSet")
+    @WebResult(name = "echoDataSetResult", targetNamespace = "http://InteropBaseAddress/interop")
+    @RequestWrapper(localName = "echoDataSet", targetNamespace = "http://InteropBaseAddress/interop", className = "org.jboss.test.ws.interop.nov2007.wsse.EchoDataSet")
+    @ResponseWrapper(localName = "echoDataSetResponse", targetNamespace = "http://InteropBaseAddress/interop", className = "org.jboss.test.ws.interop.nov2007.wsse.EchoDataSetResponse")
+    @Action(input = "http://InteropBaseAddress/interop/echoDataSet", output = "http://InteropBaseAddress/interop/echoDataSet")
+    public org.jboss.test.ws.interop.nov2007.wsse.EchoDataSetResponse.EchoDataSetResult echoDataSet(
+        @WebParam(name = "request", targetNamespace = "http://InteropBaseAddress/interop")
+        org.jboss.test.ws.interop.nov2007.wsse.EchoDataSet.Request request);
+
+    /**
+     * 
+     * @param request
+     * @return
+     *     returns java.lang.String
+     */
+    @WebMethod(action = "http://InteropBaseAddress/interop/header")
+    @WebResult(name = "headerResult", targetNamespace = "http://InteropBaseAddress/interop")
+    @RequestWrapper(localName = "header", targetNamespace = "http://InteropBaseAddress/interop", className = "org.jboss.test.ws.interop.nov2007.wsse.Header")
+    @ResponseWrapper(localName = "headerResponse", targetNamespace = "http://InteropBaseAddress/interop", className = "org.jboss.test.ws.interop.nov2007.wsse.HeaderResponse")
+    @Action(input = "http://InteropBaseAddress/interop/header", output = "http://InteropBaseAddress/interop/headerResponse")
+    public String header(
+        @WebParam(name = "request", targetNamespace = "http://InteropBaseAddress/interop")
+        String request);
+
+    /**
+     * 
+     * @param request
+     * @return
+     *     returns java.lang.String
+     */
+    @WebMethod(action = "http://InteropBaseAddress/interop/fault")
+    @WebResult(name = "faultResult", targetNamespace = "http://InteropBaseAddress/interop")
+    @RequestWrapper(localName = "fault", targetNamespace = "http://InteropBaseAddress/interop", className = "org.jboss.test.ws.interop.nov2007.wsse.Fault")
+    @ResponseWrapper(localName = "faultResponse", targetNamespace = "http://InteropBaseAddress/interop", className = "org.jboss.test.ws.interop.nov2007.wsse.FaultResponse")
+    @Action(input = "http://InteropBaseAddress/interop/fault", output = "http://InteropBaseAddress/interop/faultResponse")
+    public String fault(
+        @WebParam(name = "request", targetNamespace = "http://InteropBaseAddress/interop")
+        String request);
 
 }

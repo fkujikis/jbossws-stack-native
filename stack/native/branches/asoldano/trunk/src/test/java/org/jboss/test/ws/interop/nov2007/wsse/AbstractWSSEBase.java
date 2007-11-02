@@ -26,19 +26,23 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 
 import org.jboss.test.ws.interop.ClientScenario;
 import org.jboss.test.ws.interop.InteropConfigFactory;
+import org.jboss.test.ws.interop.nov2007.wsse.EchoDataSet.Request;
+import org.jboss.test.ws.interop.nov2007.wsse.EchoDataSetResponse.EchoDataSetResult;
+import org.jboss.test.ws.interop.nov2007.wsse.EchoXmlResponse.EchoXmlResult;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestHelper;
 
 /**
  * @author Alessio Soldano <alessio.soldano@jboss.com>
  * 
- * @version $Id:$
+ * @version $Id$
  * @since 26-Oct-2007
  */
 public abstract class AbstractWSSEBase extends JBossWSTest
@@ -52,8 +56,8 @@ public abstract class AbstractWSSEBase extends JBossWSTest
 
       if (port == null)
       {
-         URL wsdlLocation = new File("resources/interop/nov2007/wsse/shared/WEB-INF/wsdl/WSSecurty10.wsdl").toURL();
-         QName serviceName = new QName("http://tempuri.org/", "PingService10");
+         URL wsdlLocation = new File("resources/interop/nov2007/wsse/shared/WEB-INF/wsdl/WsSecurity10.wsdl").toURL();
+         QName serviceName = new QName("http://InteropBaseAddress/interop", "PingService10");
          Service service = Service.create(wsdlLocation, serviceName);
          port = (IPingService)service.getPort(getScenarioPortQName(), IPingService.class);
          configureClient();
@@ -61,7 +65,7 @@ public abstract class AbstractWSSEBase extends JBossWSTest
 
       scenarioSetup(port);
    }
-
+   
    protected abstract void scenarioSetup(IPingService port);
 
    protected abstract QName getScenarioPortQName();
@@ -99,5 +103,74 @@ public abstract class AbstractWSSEBase extends JBossWSTest
       {
          throw new IllegalStateException(e);
       }
+   }
+   
+   public void testEcho() throws Exception
+   {
+      String text = "Hello!";
+      String result = port.echo(text);
+      assertNotNull(result);
+      assertEquals(text, result);
+   }
+   
+   @SuppressWarnings("unchecked")
+   public void testEchoDataSet() throws Exception
+   {
+      String text = "Hello!";
+      ObjectFactory factory = new ObjectFactory();
+      DataSet dataSet = new DataSet();
+      dataSet.setAny(factory.createAnyType(text));
+      Request request = new Request();
+      request.setAny(factory.createDataSet(dataSet));
+      EchoDataSetResult echoDataSetResult = port.echoDataSet(request);
+      assertNotNull(echoDataSetResult);
+      assertEquals(text, ((JAXBElement)((JAXBElement<DataSet>)echoDataSetResult.getAny()).getValue().getAny()).getValue());
+   }
+   
+   public void testFault() throws Exception
+   {
+      String text = "Hello!";
+      String result = port.fault(text);
+      assertNotNull(result);
+      assertEquals(text, result);
+   }
+   
+   public void testHeader() throws Exception
+   {
+      String text = "Hello!";
+      String result = port.header(text);
+      assertNotNull(result);
+      assertEquals(text, result);
+   }
+   
+   @SuppressWarnings("unchecked")
+   public void testEchoXml() throws Exception
+   {
+      String text = "Hello!";
+      ObjectFactory factory = new ObjectFactory();
+      org.jboss.test.ws.interop.nov2007.wsse.EchoXml.Request request = new org.jboss.test.ws.interop.nov2007.wsse.EchoXml.Request();
+      request.setAny(factory.createAnyType(text));
+      EchoXmlResult result = port.echoXml(request);
+      assertNotNull(result);
+      assertEquals(text, ((JAXBElement)result.getAny()).getValue());
+   }
+   
+   public void testPing() throws Exception
+   {
+      String text = "Hello!";
+      String origin = "origin";
+      String scenario = "scenario";
+      PingRequest parameters = new PingRequest();
+      Ping ping = new Ping();
+      ping.setOrigin(origin);
+      ping.setScenario(scenario);
+      ping.setText(text);
+      parameters.setPing(ping);
+      PingResponse result = port.ping(parameters);
+      assertNotNull(result);
+      assertNotNull(result.getPingResponse());
+      assertEquals(origin, result.getPingResponse().getOrigin());
+      assertEquals(scenario, result.getPingResponse().getScenario());
+      assertEquals(text, result.getPingResponse().getText());
    }
 }

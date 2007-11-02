@@ -25,7 +25,6 @@ import javax.jws.WebService;
 
 import org.jboss.ws.annotation.EndpointConfig;
 
-
 /**
  * WCF Interoperability Plug-fest - November 2007
  * 
@@ -33,24 +32,18 @@ import org.jboss.ws.annotation.EndpointConfig;
  * 
  * @author Alessio Soldano <alessio.soldano@jboss.com>
  * 
- * @version $Id:$
+ * @version $Id$
  * @since 26-Oct-2007
  */
 @WebService(
-      wsdlLocation = "WEB-INF/wsdl/WSSecurty10.wsdl", 
+      wsdlLocation = "WEB-INF/wsdl/WsSecurity10.wsdl", 
       serviceName = "PingService10",
       name = "IPingService",
-      targetNamespace = "http://tempuri.org/",
+      targetNamespace = "http://InteropBaseAddress/interop",
       endpointInterface = "org.jboss.test.ws.interop.nov2007.wsse.IPingService",
-      portName = "MutualCertificate10Sign_IPingService_port")
+      portName = "UserNameOverTransport_IPingService")
 @EndpointConfig(configName = "Standard WSSecurity Endpoint")
-public class SignTestService implements IPingService
+public class UsernameTokenHTTPSTestService extends TestService implements IPingService
 {
 
-   public String ping(String ping)
-   {
-      System.out.println("ping: "+ping);
-      return ping;
-   }
-   
 }

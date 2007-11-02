@@ -67,14 +67,6 @@ public class Encrypt3DESTestCase extends AbstractWSSEBase
       return new JBossWSTestSetup(Encrypt3DESTestCase.class, "jbossws-interop-nov2007-wsseEncrypt3DES.war");
    }
 
-   public void testScenario() throws Exception
-   {
-      String text = "Hello!";
-      String result = port.ping(text);
-      assertNotNull(result);
-      assertEquals(text, result);
-   }
-
    @Override
    protected void scenarioSetup(IPingService port)
    {
@@ -91,7 +83,7 @@ public class Encrypt3DESTestCase extends AbstractWSSEBase
    @Override
    protected QName getScenarioPortQName()
    {
-      return new QName("http://tempuri.org/", "MutualCertificate10SignEncryptRsa15TripleDes_IPingService_port");
+      return new QName("http://InteropBaseAddress/interop", "MutualCertificate10SignEncryptRsa15TripleDes_IPingService");
    }
 
 }

@@ -37,20 +37,14 @@ import org.jboss.ws.annotation.EndpointConfig;
  * @since 29-Oct-2007
  */
 @WebService(
-      wsdlLocation = "WEB-INF/wsdl/WSSecurty10.wsdl", 
+      wsdlLocation = "WEB-INF/wsdl/WsSecurity10.wsdl", 
       serviceName = "PingService10",
       name = "IPingService",
-      targetNamespace = "http://tempuri.org/",
+      targetNamespace = "http://InteropBaseAddress/interop",
       endpointInterface = "org.jboss.test.ws.interop.nov2007.wsse.IPingService",
-      portName = "MutualCertificate10SignEncryptRsa15TripleDes_IPingService_port")
+      portName = "MutualCertificate10SignEncryptRsa15TripleDes_IPingService")
 @EndpointConfig(configName = "Standard WSSecurity Endpoint")
-public class Encrypt3DESTestService implements IPingService
+public class Encrypt3DESTestService extends TestService implements IPingService
 {
-
-   public String ping(String ping)
-   {
-      System.out.println("ping: "+ping);
-      return ping;
-   }
    
 }

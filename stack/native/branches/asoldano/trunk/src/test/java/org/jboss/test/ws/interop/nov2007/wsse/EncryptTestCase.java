@@ -68,18 +68,72 @@ public class EncryptTestCase extends AbstractWSSEBase
       return new JBossWSTestSetup(EncryptTestCase.class, "jbossws-interop-nov2007-wsseEncrypt.war");
    }
 
-   public void testScenario() throws Exception
+   public void testEcho() throws Exception
    {
       if (!EncryptionOperation.probeUnlimitedCrypto())
       {
          System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
-         		"please note that your country might have limits on allowed crypto strength.\n Test skipped.");
+               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
          return;
       }
-      String text = "Hello!";
-      String result = port.ping(text);
-      assertNotNull(result);
-      assertEquals(text, result);
+      super.testEcho();
+   }
+   
+   @SuppressWarnings("unchecked")
+   public void testEchoDataSet() throws Exception
+   {
+      if (!EncryptionOperation.probeUnlimitedCrypto())
+      {
+         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
+               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
+         return;
+      }
+      super.testEchoDataSet();
+   }
+   
+   public void testFault() throws Exception
+   {
+      if (!EncryptionOperation.probeUnlimitedCrypto())
+      {
+         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
+               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
+         return;
+      }
+      super.testFault();
+   }
+   
+   public void testHeader() throws Exception
+   {
+      if (!EncryptionOperation.probeUnlimitedCrypto())
+      {
+         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
+               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
+         return;
+      }
+      super.testHeader();
+   }
+   
+   @SuppressWarnings("unchecked")
+   public void testEchoXml() throws Exception
+   {
+      if (!EncryptionOperation.probeUnlimitedCrypto())
+      {
+         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
+               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
+         return;
+      }
+      super.testEchoXml();
+   }
+   
+   public void testPing() throws Exception
+   {
+      if (!EncryptionOperation.probeUnlimitedCrypto())
+      {
+         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
+               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
+         return;
+      }
+      super.testPing();
    }
 
    @Override
@@ -98,7 +152,7 @@ public class EncryptTestCase extends AbstractWSSEBase
    @Override
    protected QName getScenarioPortQName()
    {
-      return new QName("http://tempuri.org/", "MutualCertificate10SignEncrypt_IPingService_port");
+      return new QName("http://InteropBaseAddress/interop", "MutualCertificate10SignEncrypt_IPingService");
    }
 
 }
