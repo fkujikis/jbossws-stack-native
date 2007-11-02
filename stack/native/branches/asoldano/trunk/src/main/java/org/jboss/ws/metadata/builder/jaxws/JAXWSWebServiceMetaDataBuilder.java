@@ -371,7 +371,7 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
             //we can no longer use the user provided wsdl without parsing it right now, since we
             //need to look for policies and eventually choose the supported policy alternatives
             WSDLDefinitions wsdlDefinitions = factory.parse(wsdlLocation);
-            policyBuilder.processPolicyExtensions(epMetaData, wsdlDefinitions);
+//            policyBuilder.processPolicyExtensions(epMetaData, wsdlDefinitions);
             //now we have the UMDM containing policy data; anyway we can't write a new wsdl file with
             //the supported alternatives and so on, since we need to publish the file the user provided
             serviceMetaData.setWsdlLocation(wsdlLocation);
