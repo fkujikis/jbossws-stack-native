@@ -8,4 +8,7 @@
    <scenario name="microsoft" description="Microsoft public endpoint">
       <target-endpoint>http://131.107.72.15/Security_WsSecurity_Service_Indigo/WsSecurity10.svc/MutualCertificate10SignEncrypt</target-endpoint>
    </scenario>
+   <scenario name="microsoft-local" description="Microsoft public endpoint">
+      <target-endpoint>http://10.10.34.2/Security_WsSecurity_Service_Indigo/WsSecurity10.svc/MutualCertificate10SignEncrypt</target-endpoint>
+   </scenario>
 </client-scenarios>

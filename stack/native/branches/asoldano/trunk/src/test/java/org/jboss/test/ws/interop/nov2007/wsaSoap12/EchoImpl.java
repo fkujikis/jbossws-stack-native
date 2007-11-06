@@ -28,6 +28,7 @@ import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
+import javax.xml.ws.Action;
 import javax.xml.ws.BindingType;
 
 /**
@@ -46,11 +47,14 @@ import javax.xml.ws.BindingType;
 @EndpointConfig(configName = "Standard SOAP 1.2 WSAddressing Endpoint")
 @BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class EchoImpl implements Echo {
-
+   
    @WebMethod(operationName = "Echo", action = "http://example.org/action/echoIn")
-   @WebResult(name = "EchoOutMessage", targetNamespace = "http://example.org/echo", partName = "parameters")
-   public EchoOutMessage echo(@WebParam(name = "EchoInMessage", targetNamespace = "http://example.org/echo", partName = "parameters") EchoInMessage parameters) {
-      System.out.println("EchoImpl: " + parameters.getEchoIn().getValue());
-      return new EchoOutMessage( parameters.getEchoIn().getValue() );
+   @WebResult(name = "echoOut", targetNamespace = "http://example.org/echo", partName = "echoOut")
+   @Action(input = "http://example.org/action/echoIn", output = "http://example.org/action/echoOut")
+   public String echo(
+         @WebParam(name = "echoIn", targetNamespace = "http://example.org/echo", partName = "echoIn")
+         String echoIn)
+   {
+      return echoIn;
    }
 }

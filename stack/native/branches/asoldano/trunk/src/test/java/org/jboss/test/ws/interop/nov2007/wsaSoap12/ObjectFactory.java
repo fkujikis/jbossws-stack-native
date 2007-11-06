@@ -1,40 +1,20 @@
-/*
- * JBoss, Home of Professional Open Source
- * Copyright 2005, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
+
 package org.jboss.test.ws.interop.nov2007.wsaSoap12;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 
 
 /**
  * This object contains factory methods for each 
  * Java content interface and Java element interface 
- * generated in the org.jboss.test.ws.interop.wsa package. 
+ * generated in the org.jboss.test.ws.interop.nov2007.wsaSoap12 package. 
  * <p>An ObjectFactory allows you to programatically 
  * construct new instances of the Java representation 
  * for XML content. The Java representation of XML 
@@ -48,9 +28,7 @@ import java.math.BigInteger;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _EchoOutMessageEchoOut_QNAME = new QName("http://example.org/echo", "echoOut");
-    private final static QName _NotifyMessageNotify_QNAME = new QName("http://example.org/notify", "notify");
-    private final static QName _EchoInMessageEchoIn_QNAME = new QName("http://example.org/echo", "echoIn");
+    private final static QName _Notify_QNAME = new QName("http://example.org/notify", "notify");
     private final static QName _UnsignedInt_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "unsignedInt");
     private final static QName _Long_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "long");
     private final static QName _Float_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "float");
@@ -61,74 +39,34 @@ public class ObjectFactory {
     private final static QName _UnsignedByte_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "unsignedByte");
     private final static QName _Short_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "short");
     private final static QName _String_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "string");
-    private final static QName _AnyType_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "anyType");
     private final static QName _Char_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "char");
+    private final static QName _AnyType_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "anyType");
     private final static QName _Guid_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "guid");
     private final static QName _AnyURI_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "anyURI");
     private final static QName _Byte_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "byte");
     private final static QName _DateTime_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "dateTime");
+    private final static QName _EchoOut_QNAME = new QName("http://example.org/echo", "echoOut");
     private final static QName _Int_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "int");
     private final static QName _QName_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "QName");
+    private final static QName _EchoIn_QNAME = new QName("http://example.org/echo", "echoIn");
     private final static QName _Duration_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "duration");
     private final static QName _UnsignedLong_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "unsignedLong");
     private final static QName _Base64Binary_QNAME = new QName("http://schemas.microsoft.com/2003/10/Serialization/", "base64Binary");
 
     /**
-     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.jboss.test.ws.interop.wsa
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.jboss.test.ws.interop.nov2007.wsaSoap12
      * 
      */
     public ObjectFactory() {
     }
 
     /**
-     * Create an instance of {@link EchoOutMessage }
-     * 
-     */
-    public EchoOutMessage createEchoOutMessage() {
-        return new EchoOutMessage();
-    }
-
-    /**
-     * Create an instance of {@link NotifyMessage }
-     * 
-     */
-    public NotifyMessage createNotifyMessage() {
-        return new NotifyMessage();
-    }
-
-    /**
-     * Create an instance of {@link EchoInMessage }
-     * 
-     */
-    public EchoInMessage createEchoInMessage() {
-        return new EchoInMessage();
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://example.org/echo", name = "echoOut", scope = EchoOutMessage.class)
-    public JAXBElement<String> createEchoOutMessageEchoOut(String value) {
-        return new JAXBElement<String>(_EchoOutMessageEchoOut_QNAME, String.class, EchoOutMessage.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://example.org/notify", name = "notify", scope = NotifyMessage.class)
-    public JAXBElement<String> createNotifyMessageNotify(String value) {
-        return new JAXBElement<String>(_NotifyMessageNotify_QNAME, String.class, NotifyMessage.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://example.org/echo", name = "echoIn", scope = EchoInMessage.class)
-    public JAXBElement<String> createEchoInMessageEchoIn(String value) {
-        return new JAXBElement<String>(_EchoInMessageEchoIn_QNAME, String.class, EchoInMessage.class, value);
+    @XmlElementDecl(namespace = "http://example.org/notify", name = "notify")
+    public JAXBElement<String> createNotify(String value) {
+        return new JAXBElement<String>(_Notify_QNAME, String.class, null, value);
     }
 
     /**
@@ -222,21 +160,21 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://schemas.microsoft.com/2003/10/Serialization/", name = "anyType")
-    public JAXBElement<Object> createAnyType(Object value) {
-        return new JAXBElement<Object>(_AnyType_QNAME, Object.class, null, value);
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/2003/10/Serialization/", name = "char")
     public JAXBElement<Integer> createChar(Integer value) {
         return new JAXBElement<Integer>(_Char_QNAME, Integer.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://schemas.microsoft.com/2003/10/Serialization/", name = "anyType")
+    public JAXBElement<Object> createAnyType(Object value) {
+        return new JAXBElement<Object>(_AnyType_QNAME, Object.class, null, value);
     }
 
     /**
@@ -276,6 +214,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://example.org/echo", name = "echoOut")
+    public JAXBElement<String> createEchoOut(String value) {
+        return new JAXBElement<String>(_EchoOut_QNAME, String.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Integer }{@code >}}
      * 
      */
@@ -291,6 +238,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://schemas.microsoft.com/2003/10/Serialization/", name = "QName")
     public JAXBElement<QName> createQName(QName value) {
         return new JAXBElement<QName>(_QName_QNAME, QName.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://example.org/echo", name = "echoIn")
+    public JAXBElement<String> createEchoIn(String value) {
+        return new JAXBElement<String>(_EchoIn_QNAME, String.class, null, value);
     }
 
     /**

@@ -62,9 +62,11 @@ public class AddressingTestCase extends JBossWSTest {
    private static Notify notifyPort;
 
    final static String WSA_FROM = "http://example.org/node/A";
-   final static String WSA_TO = "http://example.org/node/B";
+   //final static String WSA_TO = "http://example.org/node/B";
 //   final static String WSA_TO = "http://131.107.72.15/WSAddressingCR_Service_WCF/WSAddressing10.svc/Soap12";
-
+   final static String WSA_TO = "http://10.10.34.79/WSAddressingCR_Service_WCF/WSAddressing10.svc/Soap12";
+   final static String WSA_TO_DUPLEX = "http://10.10.34.79/WSAddressingCR_Service_WCF/WSAddressing10.svc/Soap12/Duplex";
+   
    private static URL wsdlLocation;
 
    private static AddressingBuilder BUILDER;
@@ -184,7 +186,7 @@ public class AddressingTestCase extends JBossWSTest {
       setRequestProperties((BindingProvider)notifyPort, requestProps);
 
       // invoke service
-      notifyPort.notify( new NotifyMessage("Message 1200"));
+      notifyPort.notify("Message 1200");
       forceReset();
    }
 
@@ -199,7 +201,7 @@ public class AddressingTestCase extends JBossWSTest {
          setRequestProperties((BindingProvider)notifyPort, requestProps);
 
          // invoke service
-         notifyPort.notify(new NotifyMessage("Message 1201"));
+         notifyPort.notify("Message 1201");
          forceReset();
       }
       catch (Exception e)
@@ -218,7 +220,7 @@ public class AddressingTestCase extends JBossWSTest {
          setRequestProperties((BindingProvider)notifyPort, requestProps);
 
          // invoke service
-         notifyPort.notify(new NotifyMessage("Message 1202"));
+         notifyPort.notify("Message 1202");
          forceReset();
       }
       catch (Exception e)
@@ -236,7 +238,7 @@ public class AddressingTestCase extends JBossWSTest {
       requestProps.setFaultTo(AddressingTestCase.BUILDER.newEndpointReference(new URI(AddressingTestCase.CONSTANTS.getNoneURI())));
       setRequestProperties((BindingProvider)notifyPort, requestProps);
 
-      notifyPort.notify(new NotifyMessage("Message 1203"));
+      notifyPort.notify("Message 1203");
       forceReset();
    }
 
@@ -250,7 +252,7 @@ public class AddressingTestCase extends JBossWSTest {
 
       requestProps.setFaultTo(AddressingTestCase.BUILDER.newEndpointReference(new URI(AddressingTestCase.CONSTANTS.getNoneURI())));
       setRequestProperties((BindingProvider)notifyPort, requestProps);
-      notifyPort.notify(new NotifyMessage("Message 1204"));
+      notifyPort.notify("Message 1204");
       forceReset();
    }
 
@@ -265,7 +267,7 @@ public class AddressingTestCase extends JBossWSTest {
       requestProps.getReplyTo().getReferenceParameters().addElement(customerParam);
       setRequestProperties((BindingProvider)notifyPort, requestProps);
 
-      notifyPort.notify(new NotifyMessage("Message 1206"));
+      notifyPort.notify("Message 1206");
       forceReset();
    }
 
@@ -280,7 +282,7 @@ public class AddressingTestCase extends JBossWSTest {
 
       setRequestProperties((BindingProvider)notifyPort, requestProps);
 
-      notifyPort.notify(new NotifyMessage("Message 1207"));
+      notifyPort.notify("Message 1207");
       forceReset();
    }
 
@@ -302,7 +304,7 @@ public class AddressingTestCase extends JBossWSTest {
 
       setRequestProperties((BindingProvider)notifyPort, requestProps);
 
-      notifyPort.notify(new NotifyMessage("Message 1208"));
+      notifyPort.notify("Message 1208");
       forceReset();
    }
 
@@ -319,7 +321,7 @@ public class AddressingTestCase extends JBossWSTest {
       setRequestProperties((BindingProvider)echoPort, requestProps);
 
       // invoke service
-      echoPort.echo(new EchoInMessage("Message 1230"));
+      echoPort.echo("Message 1230");
 
       SOAPAddressingProperties responseProperties = (SOAPAddressingProperties)
           getResponseProperties((BindingProvider)echoPort);
@@ -343,7 +345,7 @@ public class AddressingTestCase extends JBossWSTest {
       setRequestProperties((BindingProvider)echoPort, requestProps);
 
       // invoke service
-      echoPort.echo(new EchoInMessage("Message 1231"));
+      echoPort.echo("Message 1231");
 
       SOAPAddressingProperties responseProperties = (SOAPAddressingProperties)
           getResponseProperties((BindingProvider)echoPort);
@@ -371,7 +373,7 @@ public class AddressingTestCase extends JBossWSTest {
       setRequestProperties((BindingProvider)echoPort, requestProps);
 
       // invoke service
-      echoPort.echo(new EchoInMessage("Message 1232"));
+      echoPort.echo("Message 1232");
 
       SOAPAddressingProperties responseProperties = (SOAPAddressingProperties)
           getResponseProperties((BindingProvider)echoPort);
@@ -408,7 +410,7 @@ public class AddressingTestCase extends JBossWSTest {
       // invoke service
       try
       {
-         echoPort.echo(new EchoInMessage("Message 1233"));
+         echoPort.echo("Message 1233");
       }
       catch (Exception e)
       {
@@ -447,7 +449,7 @@ public class AddressingTestCase extends JBossWSTest {
       // invoke service
       try
       {
-         echoPort.echo(new EchoInMessage("Message 1234"));
+         echoPort.echo("Message 1234");
       }
       catch (Exception e)
       {
@@ -509,17 +511,17 @@ public class AddressingTestCase extends JBossWSTest {
    //
    public void test1250() throws Exception {
       AddressingProperties requestProps =
-          AddressingClientUtil.createDefaultProps("http://example.org/action/echoIn", AddressingTestCase.WSA_TO);
+          AddressingClientUtil.createDefaultProps("http://example.org/action/echoIn", AddressingTestCase.WSA_TO_DUPLEX);
       requestProps.setMessageID(AddressingClientUtil.createMessageID());
       requestProps.setReplyTo(
           AddressingTestCase.BUILDER.newEndpointReference(
-              new URI("http://localhost:8080/nov2007/wsaSoap12/replyTo")
+              new URI("http://10.10.34.89:8080/nov2007/wsaSoap12/replyTo")
           )
       );
 
       setRequestProperties((BindingProvider)echoPort, requestProps);
 
-      echoPort.echo(new EchoInMessage("Message 1250"));
+      echoPort.echo("Message 1250");
 
       forceReset();
 

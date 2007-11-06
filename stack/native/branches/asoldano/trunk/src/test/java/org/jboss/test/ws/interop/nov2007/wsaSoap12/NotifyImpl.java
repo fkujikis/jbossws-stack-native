@@ -28,6 +28,7 @@ import javax.jws.Oneway;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
+import javax.xml.ws.Action;
 import javax.xml.ws.BindingType;
 
 /**
@@ -49,7 +50,11 @@ public class NotifyImpl implements Notify {
 
    @WebMethod(operationName = "Notify", action = "http://example.org/action/notify")
    @Oneway
-   public void notify(@WebParam(name = "NotifyMessage", targetNamespace = "http://example.org/notify", partName = "parameters") NotifyMessage parameters) {
-      System.out.println("NotifyImpl: " + parameters.getNotify().getValue());
+   @Action(input = "http://example.org/action/notify")
+   public void notify(
+       @WebParam(name = "notify", targetNamespace = "http://example.org/notify", partName = "notify")
+       String notify)
+   {
+      System.out.println("NotifyImpl: " + notify);
    }
 }
