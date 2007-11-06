@@ -40,22 +40,37 @@ abstract class AbstractRegexResolveable
 
    protected void initFromUriTemplate(String uriTemplate)
    {
+      initFromUriTemplate(uriTemplate, null);         
+   }
+
+   protected void initFromUriTemplate(String uriTemplate, UriParamHandler handler)
+   {
       assert uriTemplate!=null;
       assert !uriTemplate.startsWith("/");
       
       StringTokenizer tokenizer = new StringTokenizer(uriTemplate, "/");
       StringBuffer patternBuffer = new StringBuffer();
+      int groupIndex = 1; // matching regex groups start with 1
       while(tokenizer.hasMoreTokens())
       {
-         String tok = tokenizer.nextToken();
+         String tok = tokenizer.nextToken();         
          if(isUriParam(tok))
          {
+            if(handler != null)
+            {
+               // register uri param callback
+               String paramName = tok.substring(1, tok.length()-1);
+               handler.newUriParam(groupIndex, paramName);
+
+            }
             patternBuffer.append( regexFromUriParam(tok) );
          }
          else
          {
             patternBuffer.append( regexFromPathSegment(tok) );
          }
+
+         groupIndex++;
       }
 
       if(hasChildren())
@@ -135,5 +150,10 @@ abstract class AbstractRegexResolveable
    abstract boolean hasChildren();
 
    abstract void freeze();
+
+   public interface UriParamHandler
+   {
+      void newUriParam(int regexGroup, String paramName);
+   }
  
 }

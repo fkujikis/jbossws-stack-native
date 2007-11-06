@@ -19,29 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.rs.model;
+package org.jboss.test.rs.invocation;
 
 import junit.framework.TestCase;
 import org.jboss.rs.ResourceRegistry;
 import org.jboss.rs.MethodHTTP;
 import org.jboss.rs.runtime.RuntimeContext;
+import org.jboss.rs.runtime.InvocationBuilder;
+import org.jboss.rs.runtime.DefaultInvocationBuilder;
+import org.jboss.rs.runtime.Invocation;
+import org.jboss.rs.runtime.InvocationHandler;
 import org.jboss.rs.model.ResourceModel;
 import org.jboss.rs.model.ResourceModelParser;
 import org.jboss.rs.model.ResourceResolver;
 import org.jboss.rs.model.ResourceMethod;
 import org.jboss.test.rs.WidgetList;
 
+import javax.ws.rs.core.HttpHeaders;
 import java.util.List;
-import java.lang.reflect.Method;
 import java.net.URI;
 
 /**
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class ResolverTestCase extends TestCase
+public class InvocationBuilderTestCase extends TestCase
 {
-
    ResourceRegistry registry;
    List<ResourceModel> rootModels;
 
@@ -53,46 +56,9 @@ public class ResolverTestCase extends TestCase
       rootModels = registry.getResourceModelsForContext("/rest");
    }
 
-   public void testRegexResolver1() throws Exception
+   public void testUriParamBinding() throws Exception
    {
-      URI uri = new URI("http://jboss.com/widgets/Id/spec");
-      RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
-      ResourceResolver resolver = ResourceResolver.newInstance(context);
-      ResourceMethod method = resolver.resolve();
-
-      assertNotNull(method);
-      assertEquals("spec", method.getUriTemplate());
-   }
-
-   public void testRegexResolver2() throws Exception
-   {
-      URI uri = new URI("http://jboss.com/widgets/special");
-      RuntimeContext context = defaultRuntimeContext(MethodHTTP.POST, uri);
-      context.parseContentTypeHeader("text/xml");
-      
-      ResourceResolver resolver = ResourceResolver.newInstance(context);
-
-      ResourceMethod method = resolver.resolve();
-
-      assertNotNull(method);
-      assertEquals("special", method.getUriTemplate());
-   }
-
-   public void testRegexResolver3() throws Exception
-   {
-      URI uri = new URI("http://jboss.com/widgets/offers");
-      RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
-      ResourceResolver resolver = ResourceResolver.newInstance(context);
-
-      ResourceMethod method = resolver.resolve();
-
-      assertNotNull(method);
-      assertEquals("offers", method.getUriTemplate());
-   }
-
-   public void testRegexResolver4() throws Exception
-   {
-      URI uri = new URI("http://jboss.com/widgets/Id/spec/SpecName");
+      URI uri = new URI("http://jboss.com/widgets/Foo/spec/Bar");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
       ResourceResolver resolver = ResourceResolver.newInstance(context);
 
@@ -100,21 +66,41 @@ public class ResolverTestCase extends TestCase
 
       assertNotNull(method);
       assertEquals("spec/{name}", method.getUriTemplate());
+
+      // setup a builder
+      InvocationBuilder builder = new DefaultInvocationBuilder();
+      builder.addInvocationModel(method.getParameterBinding());
+
+      // create an Invocation instance
+      Invocation invocation = builder.build(context);
+      Object parameterInstance = invocation.getParameterInstances().get(0);
+      assertTrue(parameterInstance!=null);
+      assertTrue("Wildcard parameter {name} not bound", parameterInstance.equals("Bar"));
+           
    }
 
-   public void testRegexResolver5() throws Exception
+   public void testHttpContextParamBinding() throws Exception
    {
-      URI uri = new URI("http://jboss.com/widgets");
-      RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
-      context.parseAcceptHeader("text/plain");
-
+      URI uri = new URI("http://jboss.com/widgets/special");
+      RuntimeContext context = defaultRuntimeContext(MethodHTTP.POST, uri);
+      context.parseContentTypeHeader("text/xml");
       ResourceResolver resolver = ResourceResolver.newInstance(context);
+
       ResourceMethod method = resolver.resolve();
 
       assertNotNull(method);
-      Method target = method.getInvocationTarget();
-      String result = (String)target.invoke( target.getDeclaringClass().newInstance());
-      assertEquals("A widgetlist", result);
+      assertEquals("special", method.getUriTemplate());
+
+      // setup a builder
+      InvocationBuilder builder = new DefaultInvocationBuilder();
+      builder.addInvocationModel(method.getParameterBinding());
+
+      // create an Invocation instance
+      Invocation invocation = builder.build(context);
+      Object parameterInstance = invocation.getParameterInstances().get(0);
+      assertTrue(parameterInstance!=null);
+      assertTrue("HttpContext parameter not bound", parameterInstance instanceof HttpHeaders);
+
    }
 
    private RuntimeContext defaultRuntimeContext(MethodHTTP method, URI uri)
@@ -123,5 +109,4 @@ public class ResolverTestCase extends TestCase
       context.parseAcceptHeader("*/*");
       return context;
    }
-
 }

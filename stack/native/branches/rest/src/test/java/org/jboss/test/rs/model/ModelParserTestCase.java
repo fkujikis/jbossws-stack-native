@@ -26,6 +26,7 @@ import org.jboss.rs.model.ResourceModelParser;
 import org.jboss.rs.model.ResourceModel;
 import org.jboss.rs.model.ResourceMethod;
 import org.jboss.rs.MethodHTTP;
+import org.jboss.test.rs.WidgetList;
 
 /**
  * @author Heiko.Braun@jboss.com

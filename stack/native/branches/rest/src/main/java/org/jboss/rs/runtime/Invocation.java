@@ -19,22 +19,54 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.rs.model;
+package org.jboss.rs.runtime;
+
+import java.util.List;
+import java.util.LinkedList;
 
 /**
+ * The visitor part of the pattern.
+ *
+ * @see org.jboss.rs.runtime.InvocationModel
+ * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class Specification
+public class Invocation
 {
-   public String name = "Unknown";
+   private RuntimeContext context;
 
-   public Specification()
+   List parameterInstances = new LinkedList();
+   
+   public Invocation(RuntimeContext context)
    {
+      this.context = context;
    }
 
-   public Specification(String name)
+   public RuntimeContext getContext()
    {
-      this.name = name;
+      return context;
+   }
+
+   /**
+    * Convinience method to work with String parameter types
+    * @param index
+    * @param param
+    */
+   public void insertParameterInstance(int index, String param)
+   {
+      if(param.startsWith("/"))
+         param = param.substring(1);
+      parameterInstances.add(index, param);
+   }
+
+   public void insertParameterInstance(int index, Object param)
+   {
+      parameterInstances.add(index, param);
+   }
+
+   public List getParameterInstances()
+   {
+      return parameterInstances;
    }
 }

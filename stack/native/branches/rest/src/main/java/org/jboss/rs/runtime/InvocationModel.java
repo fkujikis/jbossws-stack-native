@@ -19,35 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.rs.model;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.UriParam;
-import javax.ws.rs.UriTemplate;
+package org.jboss.rs.runtime;
 
 /**
+ * An <code>InvocationModel</code> will be visited by an {@link org.jboss.rs.runtime.Invocation}
+ * instance and supplies a certain aspect (i.e. Parameter mapping, injection, etc) to it.
+ * <p>
+ * It's the visitable part of the pattern.
+ *  
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class Widget
+public interface InvocationModel
 {
-   String id;
-
-   public Widget(String id)
-   {
-      this.id = id;
-   }
-
-   @GET
-   @UriTemplate("spec")
-   Specification[] getSpecification() {
-      return new Specification[]{ new Specification() };
-   }
-
-   @GET
-   @UriTemplate("spec/{name}")
-   Specification getSpecByName(@UriParam("name")String name)
-   {
-      return new Specification(name);
-   }
+   void accept(Invocation invocation);
 }

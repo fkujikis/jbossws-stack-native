@@ -19,39 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.rs.model;
+package org.jboss.rs.media;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.UriParam;
-import javax.ws.rs.UriTemplate;
-import javax.ws.rs.POST;
-import javax.ws.rs.ConsumeMime;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.ext.EntityProvider;
+import javax.activation.MimeType;
+import java.util.List;
+import java.util.ArrayList;
 
-@UriTemplate("widgets")
-public class WidgetList
+/**
+ * @author Heiko.Braun@jboss.com
+ * @version $Revision$
+ */
+public class EntityProviderRegistry
 {
-   @GET
-   @ProduceMime({"text/plain"})
-   String getDescription() {
-      return "A widgetlist";
+   private List<EntityProvider> providers = new ArrayList<EntityProvider>();
+
+   public void addProvider(EntityProvider provider)
+   {
+      providers.add(provider);
    }
 
-   @GET
-   @UriTemplate("offers")
-   WidgetList getDiscounted() {
-      return null;
+   public EntityProvider getProviderByMime(MimeType mime)
+   {
+      EntityProvider match = null;
+
+      for(EntityProvider p : providers)
+      {
+         // 
+      }
+
+      return match;
    }
 
-   @POST
-   @UriTemplate("special")
-   @ConsumeMime({"text/xml", "application/xml"})
-   void setDiscounted(Widget special) {
-      // TODO: Should return a new location                
-   }
 
-   @UriTemplate("{id}")
-   Widget findWidget(@UriParam("id") String id) {
-      return new Widget(id);
-   }
 }

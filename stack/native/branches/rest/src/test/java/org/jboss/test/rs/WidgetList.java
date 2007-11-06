@@ -19,39 +19,45 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.rs;
+package org.jboss.test.rs;
 
-import org.jboss.rs.model.ResourceModel;
+import javax.ws.rs.GET;
+import javax.ws.rs.UriParam;
+import javax.ws.rs.UriTemplate;
+import javax.ws.rs.POST;
+import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.ProduceMime;
+import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.HttpHeaders;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-/**
- * Register root resources for webContext's.
- * 
- * @author Heiko.Braun@jboss.com
- * @version $Revision$
- */
-public class ResourceRegistry
+@UriTemplate("widgets")
+public class WidgetList
 {
-   private Map<String, List<ResourceModel>> webContextMapping = new HashMap<String, List<ResourceModel>>();
-
-   public void addResourceModelForContext(String webContext, ResourceModel model)
-   {
-      if(null == webContextMapping.get(webContext))
-         webContextMapping.put(webContext, new ArrayList<ResourceModel>());
-
-      webContextMapping.get(webContext).add(model);
+   @GET
+   @ProduceMime({"text/plain"})
+   String getDescription() {
+      return "A widgetlist";
    }
 
-   public List<ResourceModel> getResourceModelsForContext(String webContext)
-   {
-      if(null == webContextMapping.get(webContext))
-         webContextMapping.put(webContext, new ArrayList<ResourceModel>());
-
-      return webContextMapping.get(webContext);
+   @GET
+   @UriTemplate("offers")
+   WidgetList getDiscounted() {
+      return null;
    }
-   
+
+   @POST
+   @UriTemplate("special")
+   @ConsumeMime({"text/xml", "application/xml"})
+   void setDiscounted(
+     @HttpContext HttpHeaders headers,
+     Widget special
+   )
+   {
+                      
+   }
+
+   @UriTemplate("{id}")
+   Widget findWidget(@UriParam("id") String id) {
+      return new Widget(id);
+   }
 }

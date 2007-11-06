@@ -19,39 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.rs;
-
-import org.jboss.rs.model.ResourceModel;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+package org.jboss.rs.runtime;
 
 /**
- * Register root resources for webContext's.
- * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class ResourceRegistry
+public class DefaultInvocationBuilder extends InvocationBuilder
 {
-   private Map<String, List<ResourceModel>> webContextMapping = new HashMap<String, List<ResourceModel>>();
 
-   public void addResourceModelForContext(String webContext, ResourceModel model)
+   public Invocation build(RuntimeContext context)
    {
-      if(null == webContextMapping.get(webContext))
-         webContextMapping.put(webContext, new ArrayList<ResourceModel>());
-
-      webContextMapping.get(webContext).add(model);
+      // Possible runtime aspects here      
+      return super.build(context);
    }
-
-   public List<ResourceModel> getResourceModelsForContext(String webContext)
-   {
-      if(null == webContextMapping.get(webContext))
-         webContextMapping.put(webContext, new ArrayList<ResourceModel>());
-
-      return webContextMapping.get(webContext);
-   }
-   
 }

@@ -28,8 +28,11 @@ import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.ProduceMime;
 import javax.activation.MimeType;
 import java.lang.reflect.Method;
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * @author Heiko.Braun@jboss.com
@@ -43,6 +46,10 @@ public class ResourceMethod extends AbstractRegexResolveable
 
    private List<MimeType> consumeMimeTypes = new ArrayList<MimeType>();
    private List<MimeType> produceMimeTypes = new ArrayList<MimeType>();
+
+   private ParameterBinding parameterBinding;
+
+   private boolean frozen;
 
    ResourceMethod(MethodHTTP method, String uriTemplate, Method invocationTarget)
    {
@@ -83,39 +90,72 @@ public class ResourceMethod extends AbstractRegexResolveable
       return produceMimeTypes;
    }
 
+   public ParameterBinding getParameterBinding()
+   {
+      assert frozen;
+      return parameterBinding;
+   }
+
    void freeze()
    {
-      initFromUriTemplate(this.uriTemplate);
+      // We need to know which param belongs to what regex group
+      final Map<String, Integer> regexInfo = new HashMap<String, Integer>();
+      UriParamHandler collectRegexInfo = new UriParamHandler()
+      {
+         public void newUriParam(int regexGroup, String paramName)
+         {
+            regexInfo.put(paramName, regexGroup);
+         }
+      };
+
+      // setup the regex stuff and push uriParam info to ParameterBinding
+      initFromUriTemplate(this.uriTemplate, collectRegexInfo);
+
+      // parse the mime annotations
       initMimeTypes();
+
+      // Create ParameterBindig
+      this.parameterBinding = new ParameterBinding(this.regexPattern);
+
+      // Annotations on method parameters
+      this.parameterBinding.registerParameterAnnotations(invocationTarget);
+
+      // Additional info abpout the regex binding
+      for(String paramName : regexInfo.keySet())
+      {
+         int group = regexInfo.get(paramName);
+         this.parameterBinding.registerRegexGroupForParam(group, paramName);
+      }
+
+      // Lock instance
+      this.frozen = true;
    }
 
    private void initMimeTypes()
-   {
-
-      // In the absence of either of these annotations,
-      // support for any media type (“*/*”) is assumed.
-
-      if(invocationTarget.isAnnotationPresent(ConsumeMime.class))
-      {
-         ConsumeMime cm = invocationTarget.getAnnotation(ConsumeMime.class);
-         consumeMimeTypes.addAll(Convert.annotationToMimeType(cm));
-      }
+   {      
+      // ConsumeMime
+      ConsumeMime consumeMime = (ConsumeMime)mimeFromMethodOrClass(ConsumeMime.class);
+      if(consumeMime != null)
+         consumeMimeTypes.addAll(Convert.annotationToMimeType(consumeMime));
       else
-      {
          consumeMimeTypes.add( Convert.ANY_MIME );
-      }
 
-      if(invocationTarget.isAnnotationPresent(ProduceMime.class))
-      {
-         ProduceMime pm = invocationTarget.getAnnotation(ProduceMime.class);
-         produceMimeTypes.addAll(Convert.annotationToMimeType(pm));
-      }
+      // ProduceMime
+      ProduceMime produceMime = (ProduceMime)mimeFromMethodOrClass(ProduceMime.class);
+      if(produceMime != null)
+         produceMimeTypes.addAll(Convert.annotationToMimeType(produceMime));
       else
-      {
          produceMimeTypes.add( Convert.ANY_MIME );
-      }
    }
 
+   private Annotation mimeFromMethodOrClass( Class type )
+   {
+      Annotation ann = invocationTarget.isAnnotationPresent(type) ?
+        invocationTarget.getAnnotation(type) :
+        invocationTarget.getDeclaringClass().getAnnotation(type);
+
+      return ann;
+   }
 
    public String toString()
    {

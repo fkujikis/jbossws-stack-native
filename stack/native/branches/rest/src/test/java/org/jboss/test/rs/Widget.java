@@ -19,39 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.rs;
+package org.jboss.test.rs;
 
-import org.jboss.rs.model.ResourceModel;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.ws.rs.GET;
+import javax.ws.rs.UriParam;
+import javax.ws.rs.UriTemplate;
 
 /**
- * Register root resources for webContext's.
- * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class ResourceRegistry
+public class Widget
 {
-   private Map<String, List<ResourceModel>> webContextMapping = new HashMap<String, List<ResourceModel>>();
+   String id;
 
-   public void addResourceModelForContext(String webContext, ResourceModel model)
+   public Widget(String id)
    {
-      if(null == webContextMapping.get(webContext))
-         webContextMapping.put(webContext, new ArrayList<ResourceModel>());
-
-      webContextMapping.get(webContext).add(model);
+      this.id = id;
    }
 
-   public List<ResourceModel> getResourceModelsForContext(String webContext)
-   {
-      if(null == webContextMapping.get(webContext))
-         webContextMapping.put(webContext, new ArrayList<ResourceModel>());
-
-      return webContextMapping.get(webContext);
+   @GET
+   @UriTemplate("spec")
+   Specification[] getSpecification() {
+      return new Specification[]{ new Specification() };
    }
-   
+
+   @GET
+   @UriTemplate("spec/{name}")
+   Specification getSpecByName(@UriParam("name")String name)
+   {
+      return new Specification(name);
+   }
 }

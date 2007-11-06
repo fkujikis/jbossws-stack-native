@@ -19,39 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.rs;
+package org.jboss.rs.runtime;
 
-import org.jboss.rs.model.ResourceModel;
-
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Register root resources for webContext's.
+ * Gathers invocation models (both static and runtime)
+ * and builds an {@link org.jboss.rs.runtime.Invocation} instance that can be consumed
+ * by an {@link org.jboss.rs.runtime.InvocationHandler}
  * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class ResourceRegistry
+public abstract class InvocationBuilder
 {
-   private Map<String, List<ResourceModel>> webContextMapping = new HashMap<String, List<ResourceModel>>();
+   private List<InvocationModel> invocationModels = new LinkedList<InvocationModel>();
 
-   public void addResourceModelForContext(String webContext, ResourceModel model)
+   /**
+    * Add invocaiton model to an order list.
+    * 
+    * @param model
+    */
+   public void addInvocationModel(InvocationModel model )
    {
-      if(null == webContextMapping.get(webContext))
-         webContextMapping.put(webContext, new ArrayList<ResourceModel>());
-
-      webContextMapping.get(webContext).add(model);
+      invocationModels.add(model);
    }
 
-   public List<ResourceModel> getResourceModelsForContext(String webContext)
+   public Invocation build(RuntimeContext context)
    {
-      if(null == webContextMapping.get(webContext))
-         webContextMapping.put(webContext, new ArrayList<ResourceModel>());
+      Invocation invocation = new Invocation(context);
+      
+      for(InvocationModel model : invocationModels)
+      {
+         model.accept(invocation);
+      }
 
-      return webContextMapping.get(webContext);
+      return invocation;
    }
-   
 }
