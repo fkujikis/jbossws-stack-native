@@ -25,28 +25,37 @@ import javax.ws.rs.ext.EntityProvider;
 import javax.activation.MimeType;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
+ * Register {@link javax.ws.rs.ext.EntityProvider} for MimeTypes
+ * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
 public class EntityProviderRegistry
 {
-   private List<EntityProvider> providers = new ArrayList<EntityProvider>();
+ 
+   private Map<MimeType, List<EntityProvider>> providers = new HashMap<MimeType, List<EntityProvider>>();
 
-   public void addProvider(EntityProvider provider)
+   public void addProvider(EntityProvider provider, MimeType... mimeTypes)
    {
-      providers.add(provider);
+      for(MimeType m : mimeTypes)
+      {
+         if(null == providers.get(m))
+            providers.put(m, new ArrayList<EntityProvider>());
+
+         providers.get(m).add(provider);
+      }
    }
 
-   public EntityProvider getProviderByMime(MimeType mime)
+   public List<EntityProvider> getProviders(MimeType mime)
    {
-      EntityProvider match = null;
+      List<EntityProvider> match = new ArrayList<EntityProvider>();
 
-      for(EntityProvider p : providers)
-      {
-         // 
-      }
+      if(providers.get(mime)!=null)
+         match = providers.get(mime);
 
       return match;
    }
