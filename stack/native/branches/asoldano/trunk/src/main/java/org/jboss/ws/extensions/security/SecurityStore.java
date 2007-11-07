@@ -346,7 +346,7 @@ public class SecurityStore
 
       try
       {
-         Enumeration i = keyStore.aliases();
+         Enumeration<String> i = keyStore.aliases();
 
          while (i.hasMoreElements())
          {
