@@ -57,6 +57,8 @@ public class EncryptedKey implements SecurityProcess
 
    private Element cachedElement;
    
+   private String tokenRefType;
+   
    private static HashMap<String, String> keyWrapAlgorithms;
    private static final String DEFAULT_ALGORITHM = "rsa_15";
    static
@@ -66,12 +68,12 @@ public class EncryptedKey implements SecurityProcess
       keyWrapAlgorithms.put("rsa_oaep", XMLCipher.RSA_OAEP);
    }
 
-   public EncryptedKey(Document document, SecretKey secretKey, X509Token token, String wrap)
+   public EncryptedKey(Document document, SecretKey secretKey, X509Token token, String wrap, String tokenRefType)
    {
-      this(document, secretKey, token, new ReferenceList(), wrap);
+      this(document, secretKey, token, new ReferenceList(), wrap, tokenRefType);
    }
 
-   public EncryptedKey(Document document, SecretKey secretKey, X509Token token, ReferenceList list, String wrap)
+   public EncryptedKey(Document document, SecretKey secretKey, X509Token token, ReferenceList list, String wrap, String tokenRefType)
    {
       this.document = document;
       this.secretKey = secretKey;
@@ -80,6 +82,7 @@ public class EncryptedKey implements SecurityProcess
       this.wrapAlgorithm = keyWrapAlgorithms.get(wrap);
       if (wrapAlgorithm ==null)
          wrapAlgorithm = keyWrapAlgorithms.get(DEFAULT_ALGORITHM);
+      this.tokenRefType = tokenRefType;
    }
 
    public EncryptedKey(Element element, KeyResolver resolver) throws WSSecurityException
@@ -178,7 +181,7 @@ public class EncryptedKey implements SecurityProcess
          throw new WSSecurityException("Error encrypting key: " + e.getMessage(), e);
       }
 
-      SecurityTokenReference reference = new SecurityTokenReference(new DirectReference(document, token));
+      SecurityTokenReference reference = new SecurityTokenReference(Reference.getReference(tokenRefType, document, token));
       KeyInfo keyInfo = new KeyInfo(document);
       keyInfo.addUnknownElement(reference.getElement());
       key.setKeyInfo(keyInfo);

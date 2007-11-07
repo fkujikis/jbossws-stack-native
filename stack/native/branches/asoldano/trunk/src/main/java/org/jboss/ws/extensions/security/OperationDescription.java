@@ -41,8 +41,10 @@ public class OperationDescription<T extends Operation>
    private String algorithm;
    
    private String keyWrapAlgorithm;
+   
+   private String tokenRefType;
 
-   public OperationDescription(Class<? extends T> operation, List<Target> targets, String certicateAlias, String credential, String algorithm, String keyWrapAlgorithm)
+   public OperationDescription(Class<? extends T> operation, List<Target> targets, String certicateAlias, String credential, String algorithm, String keyWrapAlgorithm, String tokenRefType)
    {
       this.operation = operation;
       this.targets = targets;
@@ -50,6 +52,7 @@ public class OperationDescription<T extends Operation>
       this.credential = credential;
       this.algorithm = algorithm;
       this.keyWrapAlgorithm = keyWrapAlgorithm;
+      this.tokenRefType = tokenRefType;
    }
 
    public Class<? extends T> getOperation()
@@ -113,6 +116,16 @@ public class OperationDescription<T extends Operation>
    public void setKeyWrapAlgorithm(String keyWrapAlgorithm)
    {
       this.keyWrapAlgorithm = keyWrapAlgorithm;
+   }
+
+   public String getTokenRefType()
+   {
+      return tokenRefType;
+   }
+
+   public void setTokenRefType(String tokenRefType)
+   {
+      this.tokenRefType = tokenRefType;
    }
 
 }

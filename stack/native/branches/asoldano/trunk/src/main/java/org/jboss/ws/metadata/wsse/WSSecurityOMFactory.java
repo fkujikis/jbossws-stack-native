@@ -228,11 +228,11 @@ public class WSSecurityOMFactory implements ObjectModelFactory
          if (timestamp != null)
             include = (Boolean)SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, timestamp, null);
 
-         return new Sign(attrs.getValue("", "type"), attrs.getValue("", "alias"), include.booleanValue());
+         return new Sign(attrs.getValue("", "type"), attrs.getValue("", "alias"), include.booleanValue(), attrs.getValue("", "tokenReference"));
       }
       else if ("encrypt".equals(localName))
       {
-         return new Encrypt(attrs.getValue("", "type"), attrs.getValue("", "alias"), attrs.getValue("", "algorithm"), attrs.getValue("", "keyWrapAlgorithm"));
+         return new Encrypt(attrs.getValue("", "type"), attrs.getValue("", "alias"), attrs.getValue("", "algorithm"), attrs.getValue("", "keyWrapAlgorithm"), attrs.getValue("", "tokenReference"));
       }
       else if ("timestamp".equals(localName))
       {

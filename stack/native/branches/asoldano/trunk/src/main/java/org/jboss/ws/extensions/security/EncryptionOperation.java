@@ -37,6 +37,7 @@ import org.apache.xml.security.encryption.XMLCipher;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.jboss.util.NotImplementedException;
 import org.jboss.ws.extensions.security.element.EncryptedKey;
+import org.jboss.ws.extensions.security.element.Reference;
 import org.jboss.ws.extensions.security.element.ReferenceList;
 import org.jboss.ws.extensions.security.element.SecurityHeader;
 import org.jboss.ws.extensions.security.element.X509Token;
@@ -128,7 +129,7 @@ public class EncryptionOperation implements EncodingOperation
       }
    }
 
-   public void process(Document message, List<Target> targets, String alias, String credential, String algorithm, String wrap) throws WSSecurityException
+   public void process(Document message, List<Target> targets, String alias, String credential, String algorithm, String wrap, String tokenRefType) throws WSSecurityException
    {
       if (! algorithms.containsKey(algorithm))
          algorithm = DEFAULT_ALGORITHM;
@@ -166,10 +167,11 @@ public class EncryptionOperation implements EncodingOperation
       if (token == null)
       {
          token = new X509Token(cert, message);
-         header.addToken(token);
+         if (tokenRefType == null || Reference.DIRECT_REFERENCE.equals(tokenRefType))
+            header.addToken(token);
       }
 
-      EncryptedKey eKey = new EncryptedKey(message, secretKey, token, list, wrap);
+      EncryptedKey eKey = new EncryptedKey(message, secretKey, token, list, wrap, tokenRefType);
       header.addSecurityProcess(eKey);
    }
    
