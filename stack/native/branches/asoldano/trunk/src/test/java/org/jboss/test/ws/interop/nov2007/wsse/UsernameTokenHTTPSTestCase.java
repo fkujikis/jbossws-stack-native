@@ -70,7 +70,7 @@ public class UsernameTokenHTTPSTestCase extends AbstractWSSEBase
       System.setProperty("org.jboss.security.ignoreHttpsHost", "true");
       
       ((BindingProvider)port).getRequestContext().put(BindingProvider.USERNAME_PROPERTY, "Alice");
-      ((BindingProvider)port).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, "abcd!1234");
+      ((BindingProvider)port).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, "ecilA");
    }
 
    @Override
