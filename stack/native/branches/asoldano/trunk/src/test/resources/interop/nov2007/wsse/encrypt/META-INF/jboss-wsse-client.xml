@@ -5,7 +5,7 @@
   <config>
   	<timestamp ttl="300"/>
   	<sign type="x509v3" alias="1" includeTimestamp="true"/>
-    <encrypt type="x509v3" alias="bob" algorithm="aes-256" keyWrapAlgorithm="rsa_oaep"/>
+    <encrypt type="x509v3" alias="bob" algorithm="aes-256" keyWrapAlgorithm="rsa_oaep" tokenReference="keyIdentifier"/>
     <requires>
       <signature/>
       <encryption/>
