@@ -82,58 +82,58 @@ public class EncryptTestCase extends AbstractWSSEBase
    @SuppressWarnings("unchecked")
    public void testEchoDataSet() throws Exception
    {
-//      if (!EncryptionOperation.probeUnlimitedCrypto())
-//      {
-//         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
-//               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
-//         return;
-//      }
-//      super.testEchoDataSet();
+      if (!EncryptionOperation.probeUnlimitedCrypto())
+      {
+         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
+               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
+         return;
+      }
+      super.testEchoDataSet();
    }
    
    public void testFault() throws Exception
    {
-//      if (!EncryptionOperation.probeUnlimitedCrypto())
-//      {
-//         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
-//               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
-//         return;
-//      }
-//      super.testFault();
+      if (!EncryptionOperation.probeUnlimitedCrypto())
+      {
+         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
+               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
+         return;
+      }
+      super.testFault();
    }
    
    public void testHeader() throws Exception
    {
-//      if (!EncryptionOperation.probeUnlimitedCrypto())
-//      {
-//         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
-//               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
-//         return;
-//      }
-//      super.testHeader();
+      if (!EncryptionOperation.probeUnlimitedCrypto())
+      {
+         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
+               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
+         return;
+      }
+      super.testHeader();
    }
    
    @SuppressWarnings("unchecked")
    public void testEchoXml() throws Exception
    {
-//      if (!EncryptionOperation.probeUnlimitedCrypto())
-//      {
-//         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
-//               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
-//         return;
-//      }
-//      super.testEchoXml();
+      if (!EncryptionOperation.probeUnlimitedCrypto())
+      {
+         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
+               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
+         return;
+      }
+      super.testEchoXml();
    }
    
    public void testPing() throws Exception
    {
-//      if (!EncryptionOperation.probeUnlimitedCrypto())
-//      {
-//         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
-//               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
-//         return;
-//      }
-//      super.testPing();
+      if (!EncryptionOperation.probeUnlimitedCrypto())
+      {
+         System.out.println("Please install the Unlimited Strength Java(TM) Cryptography Extension to run this test; " +
+               "please note that your country might have limits on allowed crypto strength.\n Test skipped.");
+         return;
+      }
+      super.testPing();
    }
 
    @Override
