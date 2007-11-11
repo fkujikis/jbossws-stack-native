@@ -28,6 +28,11 @@
   <bean name="WSEndpointRegistry" class="org.jboss.wsf.framework.management.ManagedEndpointRegistry">
     <property name="mbeanServer"><inject bean="WSMBeanServerLocator" property="mbeanServer"/></property>
   </bean>
+
+      <!-- The registry for REST resources -->
+  <bean name="RS_RESOURCE_REGISTRY" class="org.jboss.rs.ResourceRegistry">
+    <!--property name="mbeanServer"><inject bean="WSMBeanServerLocator" property="mbeanServer"/></property-->
+  </bean>
   
   <!-- A subscription manager for WS-Eventing -->
   <bean name="WSSubscriptionManager" class="org.jboss.ws.extensions.eventing.mgmt.SubscriptionManager">
@@ -78,6 +83,15 @@
     <property name="provides">JAXBIntros</property>
   </bean>
 
+  <bean name="RSDescriptorDeploymentAspect" class="org.jboss.rs.deployment.DescriptorDeploymentAspect">
+    <property name="provides">ContainerMetaData</property>
+  </bean>
+
+  <bean name="RSModelDeploymentAspect" class="org.jboss.rs.deployment.ModelDeploymentAspect">
+    <property name="requires">RuntimeLoader</property>
+    <property name="provides">ResourceModel</property>
+  </bean>
+      
       <!-- Deployment aspect installers -->
   <!-- Phase 1 -->
   <bean name="WSNativeDeploymentAspectInstallerPreJSE" class="org.jboss.wsf.framework.deployment.DeploymentAspectInstaller">
@@ -143,4 +157,16 @@
     </property>
     <depends>WSDeploymentAspectInstallerEndpointAPI</depends>
   </bean>
-  
+
+
+  <bean name="WSNativeDeploymentAspectInstallerREST" class="org.jboss.wsf.framework.deployment.DeploymentAspectInstaller">
+    <property name="manager"><inject bean="WSDeploymentAspectManagerREST"/></property>
+    <property name="sortAspectsOnCreate">true</property>
+    <property name="aspects">
+      <set class="java.util.HashSet" elementClass="org.jboss.wsf.spi.deployment.DeploymentAspect">
+        <inject bean="RSDescriptorDeploymentAspect"/>
+        <inject bean="RSModelDeploymentAspect"/>
+      </set>
+    </property>
+  </bean>    
+

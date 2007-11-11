@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<jbossrs xmlns="http://org.jboss.rs/">
+  <resource>
+    <name>Widget</name>
+    <implementation>org.jboss.test.rs.WidgetList</implementation>
+  </resource>
+</jbossrs>

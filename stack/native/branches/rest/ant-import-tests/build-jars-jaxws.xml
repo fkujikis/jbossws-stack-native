@@ -649,7 +649,20 @@
         <include name="wsdl/**"/>
       </webinf>
     </war>
-    
+
+    <!-- RS stuff -->
+
+    <war warfile="${tests.output.dir}/libs/jbossrs-deployment.war" webxml="${tests.output.dir}/resources/rs/deployment/web.xml">
+      <classes dir="${tests.output.dir}/classes">
+        <include name="org/jboss/test/rs/WidgetList.class"/>
+        <include name="org/jboss/test/rs/Widget.class"/>
+        <include name="org/jboss/test/rs/Specification.class"/>
+      </classes>
+      <webinf dir="${tests.output.dir}/resources/rs/deployment">
+        <include name="jbossrs.xml"/>
+      </webinf>
+    </war>
+
     <!-- Please add alphabetically -->
     
     <antcall target="build-interop-jars"/>

@@ -28,6 +28,7 @@ import org.jboss.rs.util.Convert;
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,10 @@ public class RuntimeContext
    // Request URI
    private URI uri;
 
+   private String path;
+
+   private String webcontext;
+
    // Accepted response body mime types
    private List<MimeType> consumeMimeTypes = new ArrayList<MimeType>();
 
@@ -57,6 +62,31 @@ public class RuntimeContext
       this.requestMethod = requestMethod;
       this.rootResources = rootResources;
       this.uri = uri;
+
+      tokenizeUri(this.uri);
+   }
+
+   private void tokenizeUri(URI uri)
+   {
+      try
+      {
+         // path without web context
+         String tmpPath = uri.toString();
+         if(tmpPath.startsWith("/"))
+            tmpPath = tmpPath.substring(1);
+         int i = tmpPath.indexOf("/");
+
+         this.path = tmpPath.substring(i);
+         if(path.startsWith("/"))
+            path = path.substring(1);
+
+         this.webcontext = tmpPath.substring(0, i+1);                     
+      }
+      catch (Exception e)
+      {
+         throw new IllegalArgumentException(e);
+      }
+
    }
 
    public MethodHTTP getRequestMethod()
@@ -103,14 +133,18 @@ public class RuntimeContext
       return provideMimeType;
    }
 
+   public String getWebcontext()
+   {
+      return webcontext;
+   }
+
    /**
     * @return the path info of the associated URI.
     */
    public String getPath()
    {
-      String path = uri.getPath();
-      if(path.startsWith("/"))
-         path = path.substring(1);
       return path;
    }
+
+
 }

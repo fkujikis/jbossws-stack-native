@@ -453,6 +453,9 @@
           <include name="jboss-jaxws-ext.jar"/>
           <include name="jboss-saaj.jar"/>
         </fileset>
+        <fileset dir="@{thirdpartylibs}">
+          <include name="jsr311-api.jar"/>
+        </fileset>          
       </copy>
       
       <mkdir dir="${jboss500.home}/server/${jboss.server.instance}/deploy/jbossws.sar"/>

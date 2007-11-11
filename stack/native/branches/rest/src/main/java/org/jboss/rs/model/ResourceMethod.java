@@ -96,6 +96,11 @@ public class ResourceMethod extends AbstractRegexResolveable
       return parameterBinding;
    }
 
+   public OperationBinding getOperationBinding()
+   {
+      return new OperationBinding(this.invocationTarget);
+   }
+
    void freeze()
    {
       // We need to know which param belongs to what regex group

@@ -23,6 +23,7 @@ package org.jboss.rs.runtime;
 
 import java.util.List;
 import java.util.LinkedList;
+import java.lang.reflect.Method;
 
 /**
  * The visitor part of the pattern.
@@ -36,7 +37,14 @@ public class Invocation
 {
    private RuntimeContext context;
 
-   List parameterInstances = new LinkedList();
+   // Actual paramter instances
+   private List parameterInstances = new LinkedList();
+
+   // invocation metadata about the method
+   private Method targetMethod;
+
+   // invocation metadata about the bean
+   private Class targetBean;
    
    public Invocation(RuntimeContext context)
    {
@@ -68,5 +76,25 @@ public class Invocation
    public List getParameterInstances()
    {
       return parameterInstances;
+   }
+
+   public void setTargetMethod(Method targetMethod)
+   {
+      this.targetMethod = targetMethod;
+   }
+
+   public void setTargetBean(Class targetBean)
+   {
+      this.targetBean = targetBean;
+   }
+
+   public Method getTargetMethod()
+   {
+      return targetMethod;
+   }
+
+   public Class getTargetBean()
+   {
+      return targetBean;
    }
 }

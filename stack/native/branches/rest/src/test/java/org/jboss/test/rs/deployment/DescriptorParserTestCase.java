@@ -29,6 +29,8 @@ import org.jboss.rs.model.dd.ResourceType;
 import java.io.ByteArrayInputStream;
 
 /**
+ * Test the deployment descriptor parser.
+ * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
