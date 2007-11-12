@@ -171,6 +171,6 @@ public abstract class AbstractWSSEBase extends JBossWSTest
       assertNotNull(result.getPingResponse());
       assertEquals(origin, result.getPingResponse().getOrigin());
       assertEquals(scenario, result.getPingResponse().getScenario());
-      assertEquals(text, result.getPingResponse().getText());
+      assertEquals(origin + " : " + text, result.getPingResponse().getText());
    }
 }

@@ -513,7 +513,7 @@ public class AddressingTestCase extends JBossWSTest {
       requestProps.setMessageID(AddressingClientUtil.createMessageID());
       requestProps.setReplyTo(
           AddressingTestCase.BUILDER.newEndpointReference(
-              new URI("http://10.10.34.89:8080/nov2007/wsaSoap12/replyTo")
+              new URI("http://localhost:8080/nov2007/wsaSoap12/replyTo")
           )
       );
 
