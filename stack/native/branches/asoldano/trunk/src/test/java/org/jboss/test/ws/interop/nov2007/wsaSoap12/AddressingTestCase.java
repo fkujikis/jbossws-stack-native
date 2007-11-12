@@ -62,10 +62,8 @@ public class AddressingTestCase extends JBossWSTest {
    private static Notify notifyPort;
 
    final static String WSA_FROM = "http://example.org/node/A";
-   //final static String WSA_TO = "http://example.org/node/B";
+   final static String WSA_TO = "http://example.org/node/B";
 //   final static String WSA_TO = "http://131.107.72.15/WSAddressingCR_Service_WCF/WSAddressing10.svc/Soap12";
-   final static String WSA_TO = "http://10.10.34.79/WSAddressingCR_Service_WCF/WSAddressing10.svc/Soap12";
-   final static String WSA_TO_DUPLEX = "http://10.10.34.79/WSAddressingCR_Service_WCF/WSAddressing10.svc/Soap12/Duplex";
    
    private static URL wsdlLocation;
 
@@ -511,7 +509,7 @@ public class AddressingTestCase extends JBossWSTest {
    //
    public void test1250() throws Exception {
       AddressingProperties requestProps =
-          AddressingClientUtil.createDefaultProps("http://example.org/action/echoIn", AddressingTestCase.WSA_TO_DUPLEX);
+          AddressingClientUtil.createDefaultProps("http://example.org/action/echoIn", AddressingTestCase.WSA_TO);
       requestProps.setMessageID(AddressingClientUtil.createMessageID());
       requestProps.setReplyTo(
           AddressingTestCase.BUILDER.newEndpointReference(

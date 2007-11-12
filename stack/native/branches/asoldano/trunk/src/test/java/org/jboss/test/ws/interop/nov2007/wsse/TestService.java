@@ -118,7 +118,7 @@ public class TestService
       {
          responseBody.setOrigin(parameters.getPing().getOrigin());
          responseBody.setScenario(parameters.getPing().getScenario());
-         responseBody.setText(parameters.getPing().getText());
+         responseBody.setText(parameters.getPing().getOrigin() + " : " + parameters.getPing().getText());
       }
       result.setPingResponse(responseBody);
       return result;
