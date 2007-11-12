@@ -5,7 +5,7 @@
   <config>
   	<timestamp ttl="300"/>
   	<sign type="x509v3" alias="1" includeTimestamp="true"/>
-    <encrypt type="x509v3" alias="bob" algorithm="tripledes"/>
+    <encrypt type="x509v3" alias="bob" algorithm="tripledes" tokenReference="keyIdentifier"/>
     <requires>
       <signature/>
       <encryption/>
