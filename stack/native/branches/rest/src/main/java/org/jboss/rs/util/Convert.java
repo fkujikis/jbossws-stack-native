@@ -80,7 +80,7 @@ public class Convert
       return mimeStringsToMimeTypes(consumeMime.value());
    }
 
-    public static List<MimeType> annotationToMimeType(ProduceMime produceMime)
+   public static List<MimeType> annotationToMimeType(ProduceMime produceMime)
    {
       return mimeStringsToMimeTypes(produceMime.value());
    }
@@ -93,9 +93,10 @@ public class Convert
       {
          StringTokenizer tokenizer = new StringTokenizer(mime, ",");
          while(tokenizer.hasMoreTokens())
-      {
-         String tok = tokenizer.nextToken().trim();
-            mimes.add( new MimeType(tok) );
+         {
+            String tok = tokenizer.nextToken().trim();
+            if(tok.indexOf("/") != -1)  // Ignore mimes without subtype, i.e '*; q=.2'
+               mimes.add( new MimeType(tok) );
          }
       }
       catch (MimeTypeParseException e)
@@ -113,7 +114,7 @@ public class Convert
       try
       {
          for(String s : mimeStrings)
-         {         
+         {
             mimes.add( new MimeType(s) );
          }
       }

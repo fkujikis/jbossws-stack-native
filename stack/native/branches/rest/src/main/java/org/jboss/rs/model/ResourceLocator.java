@@ -31,15 +31,6 @@ public class ResourceLocator extends AbstractRegexResolveable
 
    private String uriTemplate;
 
-   UriParamHandler paramHandler = new UriParamHandler()
-   {
-
-      public void newUriParam(int regexGroup, String paramName)
-      {
-         System.out.println("UriParam: group="+regexGroup +", name="+paramName);
-      }
-   };
-
    ResourceLocator(ResourceModel target)
    {
       this.uriTemplate = target.getUriTemplate();
@@ -64,6 +55,6 @@ public class ResourceLocator extends AbstractRegexResolveable
 
    void freeze()
    {
-      initFromUriTemplate(this.uriTemplate, paramHandler);
+      initFromUriTemplate(this.uriTemplate, null);
    }
 }

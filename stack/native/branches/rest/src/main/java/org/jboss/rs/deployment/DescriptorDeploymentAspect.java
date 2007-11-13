@@ -24,15 +24,9 @@ package org.jboss.rs.deployment;
 import org.jboss.rs.model.dd.DeploymentDescriptorParser;
 import org.jboss.rs.model.dd.JbossrsType;
 import org.jboss.rs.model.dd.ResourceType;
-import org.jboss.rs.ResourceRegistry;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
-import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.deployment.DeploymentAspect;
-import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
-import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.deployment.Service;
-import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
+import org.jboss.wsf.spi.deployment.*;
 
 import java.io.IOException;
 
@@ -48,10 +42,12 @@ import java.io.IOException;
 public class DescriptorDeploymentAspect extends DeploymentAspect
 {
 
+   public final static String RSDD_POINTER = "jbossrs.dd.pointer";
+
    public void create(Deployment deployment)
    {
       try
-      {
+      {         
          UnifiedVirtualFile vf = getJBossRSDescriptor(deployment);
          JbossrsType dd = DeploymentDescriptorParser.read(vf.toURL().openStream());
 
@@ -59,7 +55,7 @@ public class DescriptorDeploymentAspect extends DeploymentAspect
          deployment.addAttachment(JbossrsType.class, dd);
 
          Service service = deployment.getService();
-         
+
          for(ResourceType resourceDesc : dd.getResource())
          {
             String name = resourceDesc.getName() != null ? resourceDesc.getName() : "";
@@ -74,12 +70,17 @@ public class DescriptorDeploymentAspect extends DeploymentAspect
       {
          throw new RuntimeException("Failed to parse JBossRS descriptor", e);
       }
-      
+
    }
 
    private UnifiedVirtualFile getJBossRSDescriptor(Deployment deployment)
    {
-      return  (UnifiedVirtualFile)deployment.getProperty("jbossrs.dd.pointer");            
+      Object vfs = deployment.getProperty(RSDD_POINTER);
+
+      if(null==vfs)
+         throw new IllegalArgumentException("JBossRS deployment descripto not found");
+      
+      return  (UnifiedVirtualFile) vfs;
    }
 
    private Endpoint newEndpoint(String impl)

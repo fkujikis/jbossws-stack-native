@@ -33,6 +33,10 @@ public class Widget
 {
    String id;
 
+
+   public Widget() {
+   }
+
    public Widget(String id)
    {
       this.id = id;
@@ -40,13 +44,13 @@ public class Widget
 
    @GET
    @UriTemplate("spec")
-   Specification[] getSpecification() {
+   public Specification[] getSpecification() {
       return new Specification[]{ new Specification() };
    }
 
    @GET
    @UriTemplate("spec/{name}")
-   Specification getSpecByName(@UriParam("name")String name)
+   public Specification getSpecByName(@UriParam("name")String name)
    {
       return new Specification(name);
    }

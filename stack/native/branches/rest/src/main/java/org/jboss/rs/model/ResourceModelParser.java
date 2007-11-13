@@ -22,6 +22,7 @@
 package org.jboss.rs.model;
 
 import org.jboss.rs.util.Convert;
+import org.jboss.logging.Logger;
 
 import javax.ws.rs.UriTemplate;
 import java.lang.annotation.Annotation;
@@ -33,6 +34,8 @@ import java.lang.reflect.Method;
  */
 public class ResourceModelParser
 {
+   private static Logger log = Logger.getLogger(ResourceModelParser.class);
+
    ResourceModelParser()
    {
    }
@@ -50,7 +53,7 @@ public class ResourceModelParser
       UriTemplate rootUri = (UriTemplate)bean.getAnnotation(UriTemplate.class);
       ResourceModel rootResource = new ResourceModel(rootUri.value(), bean);
 
-      System.out.println("Creating resource model from bean: " + bean);
+      log.debug("Creating resource model from bean: " + bean);
 
       parseInternal(rootResource);
 
@@ -70,24 +73,24 @@ public class ResourceModelParser
       // freeze resource
       resource.freeze();
 
-      System.out.println("---");
-      System.out.println(resource);
+      log.debug("---");
+      log.debug(resource);
 
       // freeze resource methods
       for(ResourceMethod rm : resource.getResourceMethods())
       {
          rm.freeze();
-         System.out.println(rm);
+         log.debug(rm);
       }
 
       // freeze sub resource methods
       for(ResourceMethod srm : resource.getSubResourceMethods())
       {
          srm.freeze();
-         System.out.println(srm);
+         log.debug(srm);
       }
 
-      System.out.println("---");
+      log.debug("---");
    }
 
    private void parseMethod(Method method, ResourceModel resource)

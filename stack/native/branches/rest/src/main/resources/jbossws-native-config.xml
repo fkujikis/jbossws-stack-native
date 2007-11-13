@@ -159,8 +159,8 @@
   </bean>
 
 
-  <bean name="WSNativeDeploymentAspectInstallerREST" class="org.jboss.wsf.framework.deployment.DeploymentAspectInstaller">
-    <property name="manager"><inject bean="WSDeploymentAspectManagerREST"/></property>
+  <bean name="NativeRestDeploymentAspectInstaller" class="org.jboss.wsf.framework.deployment.DeploymentAspectInstaller">
+    <property name="manager"><inject bean="RestDeploymentAspectManager"/></property>
     <property name="sortAspectsOnCreate">true</property>
     <property name="aspects">
       <set class="java.util.HashSet" elementClass="org.jboss.wsf.spi.deployment.DeploymentAspect">

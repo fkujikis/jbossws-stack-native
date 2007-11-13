@@ -95,10 +95,8 @@ public class ResourceServlet extends HttpServlet
       {
          // construct a runtime context
          URI uri = new URI(req.getRequestURI());
-         RuntimeContext rt = new RuntimeContext(method, uri, rootResources);
-
-         // TODO: impement accept header parsing
-         rt.parseAcceptHeader("text/plain, text/html");
+         RuntimeContext rt = new RuntimeContext(method, uri, rootResources);         
+         parseAcceptHeader(req, rt);
 
          // locate the resource to be invoked
          ResourceResolver resolver = ResourceResolver.newInstance(rt);
@@ -136,6 +134,14 @@ public class ResourceServlet extends HttpServlet
       {
          throw new ServletException(e);
       }
+   }
+
+   private void parseAcceptHeader(HttpServletRequest req, RuntimeContext rt) throws ServletException {
+      String requestAccept = req.getHeader("Accept");
+      if(requestAccept!=null)
+            rt.parseAcceptHeader("text/plain, text/html");
+      else
+         throw new ServletException("Accept header is missing");
    }
 
    private void serverError(int status, String message, HttpServletResponse res)

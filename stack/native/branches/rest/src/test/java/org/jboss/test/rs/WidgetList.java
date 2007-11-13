@@ -35,20 +35,20 @@ public class WidgetList
 {
    @GET
    @ProduceMime({"text/plain"})
-   String getDescription() {
+   public String getDescription() {
       return "A widgetlist";
    }
 
    @GET
    @UriTemplate("offers")
-   WidgetList getDiscounted() {
+   public WidgetList getDiscounted() {
       return null;
    }
 
    @POST
    @UriTemplate("special")
    @ConsumeMime({"text/xml", "application/xml"})
-   void setDiscounted(
+   public void setDiscounted(
      @HttpContext HttpHeaders headers,
      Widget special
    )
@@ -57,7 +57,7 @@ public class WidgetList
    }
 
    @UriTemplate("{id}")
-   Widget findWidget(@UriParam("id") String id) {
+   public Widget findWidget(@UriParam("id") String id) {
       return new Widget(id);
    }
 }
