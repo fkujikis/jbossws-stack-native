@@ -24,6 +24,7 @@ package org.jboss.test.rs;
 import javax.ws.rs.GET;
 import javax.ws.rs.UriParam;
 import javax.ws.rs.UriTemplate;
+import javax.ws.rs.ProduceMime;
 
 /**
  * @author Heiko.Braun@jboss.com
@@ -31,8 +32,7 @@ import javax.ws.rs.UriTemplate;
  */
 public class Widget
 {
-   String id;
-
+   String id = "";
 
    public Widget() {
    }
@@ -43,13 +43,20 @@ public class Widget
    }
 
    @GET
+   @UriTemplate("id")
+   @ProduceMime("text/plain")
+   public String getId() {
+      return this.id;
+   }
+
+   @GET
    @UriTemplate("spec")
    public Specification[] getSpecification() {
       return new Specification[]{ new Specification() };
    }
 
    @GET
-   @UriTemplate("spec/{name}")
+   @UriTemplate("spec/{name}")   
    public Specification getSpecByName(@UriParam("name")String name)
    {
       return new Specification(name);

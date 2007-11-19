@@ -28,12 +28,8 @@ import org.jboss.rs.ResourceRegistryFactory;
 import org.jboss.rs.model.ResourceMethod;
 import org.jboss.rs.model.ResourceModel;
 import org.jboss.rs.model.ResourceResolver;
-import org.jboss.rs.runtime.DefaultInvocationBuilder;
-import org.jboss.rs.runtime.DefaultInvocationHandler;
-import org.jboss.rs.runtime.Invocation;
-import org.jboss.rs.runtime.InvocationBuilder;
-import org.jboss.rs.runtime.RuntimeContext;
-import org.jboss.rs.runtime.InvocationHandler;
+import org.jboss.rs.model.ResourceLocator;
+import org.jboss.rs.runtime.*;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -45,6 +41,7 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * @author Heiko.Braun@jboss.com
@@ -102,8 +99,29 @@ public class ResourceServlet extends HttpServlet
          ResourceResolver resolver = ResourceResolver.newInstance(rt);
          ResourceMethod resourceMethod = resolver.resolve();
 
+         // evaluate locator stack
+         Object subResourceInstance = null;
+         Stack<ResourceLocator> visitedLocators = resolver.getVisitedLocator();
+         while(!visitedLocators.isEmpty())
+         {
+            ResourceLocator loc = visitedLocators.pop();
+            
+            InvocationBuilder builder = new DefaultInvocationBuilder();
+            builder.addInvocationModel(loc.getParameterBinding());
+            builder.addInvocationModel(loc.getOperationBinding());
+            Invocation locatorInvocation = builder.build(rt);
+
+            InvocationHandler bridgeInvoker = new DefaultInvocationHandler();
+            subResourceInstance = bridgeInvoker.invoke(locatorInvocation);
+
+         }
+
          // create an Invocation instance
          InvocationBuilder builder = new DefaultInvocationBuilder();
+                  
+         if(subResourceInstance!=null)
+            builder.addInvocationModel(new PresetInvocationTarget(subResourceInstance));
+                  
          builder.addInvocationModel( resourceMethod.getParameterBinding() );
          builder.addInvocationModel( resourceMethod.getOperationBinding() );
          Invocation invocation = builder.build(rt);

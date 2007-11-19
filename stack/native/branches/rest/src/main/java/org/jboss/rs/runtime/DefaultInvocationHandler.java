@@ -32,7 +32,9 @@ public class DefaultInvocationHandler implements InvocationHandler
    {
       try
       {
-         Object targetInstance = invocation.getTargetBean().newInstance();
+         Object targetInstance = invocation.getTargetInstance() == null ?
+           invocation.getTargetBean().newInstance() :
+           invocation.getTargetInstance();
 
          Object result;
 

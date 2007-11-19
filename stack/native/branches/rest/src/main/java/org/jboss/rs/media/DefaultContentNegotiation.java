@@ -26,6 +26,7 @@ import org.jboss.rs.model.ResourceMatch;
 import org.jboss.rs.model.NoMethodException;
 import org.jboss.rs.runtime.RuntimeContext;
 import org.jboss.rs.MethodHTTP;
+import org.jboss.logging.Logger;
 
 import javax.activation.MimeType;
 import java.util.List;
@@ -54,6 +55,8 @@ import java.util.ArrayList;
 public class DefaultContentNegotiation implements ContentNegotiation
 {
 
+   private static Logger log = Logger.getLogger(DefaultContentNegotiation.class);
+
    public ResourceMethod match(RuntimeContext context, List<ResourceMatch<ResourceMethod>> candidates)
      throws NoMethodException
    {
@@ -67,6 +70,7 @@ public class DefaultContentNegotiation implements ContentNegotiation
          matches = matchByOutputMime(context, matches);
 
          // TODO: sort results, requires abstracting of RegexQualifier to a more general Qualifier
+         log.warn("Conneg sort algo is missing");
          match = matches.get(0);
       }
 

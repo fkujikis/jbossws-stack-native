@@ -45,7 +45,9 @@ public class Invocation
 
    // invocation metadata about the bean
    private Class targetBean;
-   
+
+   private Object targetInstance;
+
    public Invocation(RuntimeContext context)
    {
       this.context = context;
@@ -96,5 +98,13 @@ public class Invocation
    public Class getTargetBean()
    {
       return targetBean;
+   }
+
+   public Object getTargetInstance() {
+      return targetInstance;
+   }
+
+   public void setTargetInstance(Object targetInstance) {
+      this.targetInstance = targetInstance;
    }
 }

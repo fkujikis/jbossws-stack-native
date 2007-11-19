@@ -55,7 +55,7 @@ public class ResolverTestCase extends TestCase
 
    public void testRegexResolver1() throws Exception
    {
-      URI uri = new URI("http://jboss.com/widgets/Id/spec");
+      URI uri = new URI("/rest/widgets/Id/spec");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
       ResourceResolver resolver = ResourceResolver.newInstance(context);
       ResourceMethod method = resolver.resolve();
@@ -66,7 +66,7 @@ public class ResolverTestCase extends TestCase
 
    public void testRegexResolver2() throws Exception
    {
-      URI uri = new URI("http://jboss.com/widgets/special");
+      URI uri = new URI("/rest/widgets/special");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.POST, uri);
       context.parseContentTypeHeader("text/xml");
       
@@ -80,7 +80,7 @@ public class ResolverTestCase extends TestCase
 
    public void testRegexResolver3() throws Exception
    {
-      URI uri = new URI("http://jboss.com/widgets/offers");
+      URI uri = new URI("/rest/widgets/offers");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
       ResourceResolver resolver = ResourceResolver.newInstance(context);
 
@@ -92,7 +92,7 @@ public class ResolverTestCase extends TestCase
 
    public void testRegexResolver4() throws Exception
    {
-      URI uri = new URI("http://jboss.com/widgets/Id/spec/SpecName");
+      URI uri = new URI("/rest/widgets/Id/spec/SpecName");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
       ResourceResolver resolver = ResourceResolver.newInstance(context);
 
@@ -104,7 +104,7 @@ public class ResolverTestCase extends TestCase
 
    public void testRegexResolver5() throws Exception
    {
-      URI uri = new URI("http://jboss.com/widgets");
+      URI uri = new URI("/rest/widgets");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
       context.parseAcceptHeader("text/plain");
 
@@ -120,7 +120,7 @@ public class ResolverTestCase extends TestCase
    private RuntimeContext defaultRuntimeContext(MethodHTTP method, URI uri)
    {
       RuntimeContext context = new RuntimeContext(method, uri, rootModels );
-      context.parseAcceptHeader("*/*");
+      context.parseAcceptHeader("text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2");
       return context;
    }
 

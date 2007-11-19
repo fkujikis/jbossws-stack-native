@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * @author Heiko.Braun@jboss.com
@@ -102,6 +103,7 @@ public class RuntimeContext
 
    public void parseAcceptHeader(String headerValue)
    {
+      assert headerValue!=null;
       consumeMimeTypes.addAll( Convert.mimeStringToMimeTypes(headerValue) );
    }
 
@@ -145,6 +147,4 @@ public class RuntimeContext
    {
       return path;
    }
-
-
 }

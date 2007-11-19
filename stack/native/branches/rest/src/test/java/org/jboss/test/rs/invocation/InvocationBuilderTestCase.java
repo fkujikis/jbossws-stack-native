@@ -58,7 +58,7 @@ public class InvocationBuilderTestCase extends TestCase
 
    public void testUriParamBinding() throws Exception
    {
-      URI uri = new URI("http://jboss.com/widgets/Foo/spec/Bar");
+      URI uri = new URI("/rest/widgets/Foo/spec/Bar");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
       ResourceResolver resolver = ResourceResolver.newInstance(context);
 
@@ -81,7 +81,7 @@ public class InvocationBuilderTestCase extends TestCase
 
    public void testHttpContextParamBinding() throws Exception
    {
-      URI uri = new URI("http://jboss.com/widgets/special");
+      URI uri = new URI("/rest/widgets/special");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.POST, uri);
       context.parseContentTypeHeader("text/xml");
       ResourceResolver resolver = ResourceResolver.newInstance(context);

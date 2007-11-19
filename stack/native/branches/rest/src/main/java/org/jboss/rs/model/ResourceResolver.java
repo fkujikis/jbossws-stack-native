@@ -25,10 +25,7 @@ import org.jboss.rs.media.ContentNegotiation;
 import org.jboss.rs.media.DefaultContentNegotiation;
 import org.jboss.rs.runtime.RuntimeContext;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Resolves resource methods from {@link org.jboss.rs.runtime.RuntimeContext#getPath()}.<br>
@@ -47,6 +44,8 @@ public class ResourceResolver
    // pluggable content negotitation
    private ContentNegotiation connegPlugin;
 
+   private Stack<ResourceLocator> visitedLocator = new Stack<ResourceLocator>();
+   
    /**
     * Provides a resolver with the default content negotitation.
     * 
@@ -105,7 +104,7 @@ public class ResourceResolver
 
    /**
     * Recursive scan for resource methods.
-    * Inspect a resource match for methods and it fails try the locators.
+    * Inspect a resource match for methods and if it fails try the locators.
     *
     * @param dfsEntry
     * @return
@@ -122,33 +121,41 @@ public class ResourceResolver
       // root didn't match, so recurse locators to find a resource
       if(null == resourceMethod)
       {
-         ResourceMatch subResource = resolveByLocator(dfsEntry);
+         ResourceMatch<ResourceModel> subResource = resolveByLocator(dfsEntry);
          if(subResource!=null)
-            resourceMethod = dfsResourceMatch(subResource);
+            resourceMethod = dfsResourceMatch(subResource);         
       }
 
       return resourceMethod;
    }
 
-   private ResourceMatch resolveByLocator(ResourceMatch<ResourceModel> resourceMatch)
+   private ResourceMatch<ResourceModel> resolveByLocator(ResourceMatch<ResourceModel> resourceMatch)
      throws NoResourceException
    {
-      ResourceMatch match = null;
+      ResourceMatch<ResourceModel> match = null;
 
-      List<ResourceMatch> weightedResults = new ArrayList<ResourceMatch>();
+      List<ResourceMatch<ResourceModel>> weightedResults = new ArrayList<ResourceMatch<ResourceModel>>();
       Iterator<ResourceLocator> locators = resourceMatch.model.getResourceLocator().iterator();
       while(locators.hasNext())
       {
          ResourceLocator bridge = locators.next();
          RegexQualifier qualifier = bridge.resolve(resourceMatch.qualifier.nextUriToken);
          if(qualifier!=null)
-            weightedResults.add( new ResourceMatch( bridge.field(), qualifier) );
+            weightedResults.add( new ResourceMatch<ResourceModel>( bridge.field(), qualifier) );
       }
 
       if(!weightedResults.isEmpty())
       {
          Collections.sort(weightedResults);
          match = weightedResults.get(0);
+      }
+
+      // TODO: cleanup locator matching after sort
+      for(ResourceLocator loc : resourceMatch.model.getResourceLocator())
+      {
+         if(match.model == loc.field())
+            visitedLocator.add(0, loc);
+
       }
 
       return match;
@@ -205,4 +212,8 @@ public class ResourceResolver
       return connegPlugin.match(context, matches);
    }
 
+
+   public Stack<ResourceLocator> getVisitedLocator() {
+      return visitedLocator;
+   }
 }

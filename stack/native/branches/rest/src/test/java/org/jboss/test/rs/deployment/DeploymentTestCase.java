@@ -27,6 +27,7 @@ import junit.framework.Test;
 
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.HttpURLConnection;
 import java.io.OutputStreamWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -42,7 +43,10 @@ public class DeploymentTestCase extends JBossWSTest
       return new JBossWSTestSetup(DeploymentTestCase.class, "jbossrs-deployment.war");
    }
 
-
+   /**
+    * Invoke a root resource
+    * @throws Exception
+    */
    public void testRequest1() throws Exception
    {
       URL url = new URL("http://localhost:8080/jbossrs-deployment/widgets");
@@ -51,10 +55,24 @@ public class DeploymentTestCase extends JBossWSTest
       assertEquals("A widgetlist", response);
    }
 
+   /**
+    * Invoke a subresource
+    *
+    * @throws Exception
+    */
+   public void testRequest2() throws Exception
+   {
+      URL url = new URL("http://localhost:8080/jbossrs-deployment/widgets/123/id");
+      String response = doTextPlainRequest(url, null);
+      assertNotNull(response);
+      assertEquals("123", response);
+   }
+   
    private String doTextPlainRequest(URL url, String data) throws Exception
    {
-      URLConnection conn = url.openConnection();
+      HttpURLConnection conn = (HttpURLConnection)url.openConnection();
       conn.setDoOutput( data!=null );
+      conn.setRequestProperty("accept", "text/*");
 
       if(data !=null)
       {

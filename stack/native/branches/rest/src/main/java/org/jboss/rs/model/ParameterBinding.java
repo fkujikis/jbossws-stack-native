@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
  */
 public class ParameterBinding implements InvocationModel
 {
-   /* Pattenern of the owning ResourceMethod */
+   /* Pattern of the owning ResourceMethod */
    private final Pattern regex;
 
    /* Pattern to strip prefix from runtime path */

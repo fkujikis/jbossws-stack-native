@@ -118,9 +118,8 @@ public class ResourceModelParser
          // subresource locator
          if(null == resourceMethod)
          {
-            // locator
             ResourceModel subResource = new ResourceModel(resource, uri.value(), method.getReturnType());
-            ResourceLocator locator = new ResourceLocator(subResource);
+            ResourceLocator locator = new ResourceLocator(method, subResource);
             locator.freeze();
             resource.addSubResourceLocator(locator);
 
