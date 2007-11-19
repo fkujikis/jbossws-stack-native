@@ -56,6 +56,14 @@ abstract class AbstractRegexResolveable
          String tok = tokenizer.nextToken();         
          if(isUriParam(tok))
          {
+
+            if(groupIndex>1)
+            {
+               // i.e. 'spec/{name}'
+               patternBuffer.append("(/)");
+               groupIndex++;
+            }
+
             if(handler != null)
             {
                // register uri param callback
@@ -63,6 +71,7 @@ abstract class AbstractRegexResolveable
                handler.newUriParam(groupIndex, paramName);
 
             }
+
             patternBuffer.append( regexFromUriParam(tok) );
          }
          else

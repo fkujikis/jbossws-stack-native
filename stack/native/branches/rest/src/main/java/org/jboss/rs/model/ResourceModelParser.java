@@ -83,6 +83,12 @@ public class ResourceModelParser
          log.debug(rm);
       }
 
+      // log locators methods
+      for(ResourceLocator loc : resource.getResourceLocator())
+      {
+         log.debug(loc);
+      }
+
       // freeze sub resource methods
       for(ResourceMethod srm : resource.getSubResourceMethods())
       {
@@ -120,7 +126,7 @@ public class ResourceModelParser
          {
             ResourceModel subResource = new ResourceModel(resource, uri.value(), method.getReturnType());
             ResourceLocator locator = new ResourceLocator(method, subResource);
-            locator.freeze();
+            locator.freeze();        
             resource.addSubResourceLocator(locator);
 
             // recursive

@@ -100,4 +100,9 @@ public class ResourceLocator extends AbstractRegexResolveable
    {
       return new OperationBinding(this.invocationTarget);
    }
+
+
+   public String toString() {
+      return "ResourceLocator{uri="+uriTemplate+", regex="+regexPattern+"}";
+   }
 }
