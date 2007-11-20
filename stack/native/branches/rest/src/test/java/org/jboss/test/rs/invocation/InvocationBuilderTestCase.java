@@ -24,19 +24,13 @@ package org.jboss.test.rs.invocation;
 import junit.framework.TestCase;
 import org.jboss.rs.ResourceRegistry;
 import org.jboss.rs.MethodHTTP;
-import org.jboss.rs.runtime.RuntimeContext;
-import org.jboss.rs.runtime.InvocationBuilder;
-import org.jboss.rs.runtime.DefaultInvocationBuilder;
-import org.jboss.rs.runtime.Invocation;
-import org.jboss.rs.runtime.InvocationHandler;
-import org.jboss.rs.model.ResourceModel;
-import org.jboss.rs.model.ResourceModelParser;
-import org.jboss.rs.model.ResourceResolver;
-import org.jboss.rs.model.ResourceMethod;
+import org.jboss.rs.runtime.*;
+import org.jboss.rs.model.*;
 import org.jboss.test.rs.WidgetList;
 
 import javax.ws.rs.core.HttpHeaders;
 import java.util.List;
+import java.util.Stack;
 import java.net.URI;
 
 /**
@@ -67,12 +61,37 @@ public class InvocationBuilderTestCase extends TestCase
       assertNotNull(method);
       assertEquals("spec/{name}", method.getUriTemplate());
 
+      // evaluate locator stack
+      Object subResourceInstance = null;
+      Stack<ResourceLocator> visitedLocators = resolver.getVisitedLocator();
+      while(!visitedLocators.isEmpty())
+      {
+         ResourceLocator loc = visitedLocators.pop();
+
+         // adopt working path
+         context.setWorkingPath(resolver.getLocatorWorkingPath(loc));
+
+         InvocationBuilder builder = new DefaultInvocationBuilder();
+         builder.addInvocationModel(loc.getParameterBinding());
+         builder.addInvocationModel(loc.getOperationBinding());
+         Invocation locatorInvocation = builder.build(context);
+
+         InvocationHandler bridgeInvoker = new DefaultInvocationHandler();
+         subResourceInstance = bridgeInvoker.invoke(locatorInvocation);
+
+      }
+
       // setup a builder
       InvocationBuilder builder = new DefaultInvocationBuilder();
-      builder.addInvocationModel(method.getParameterBinding());
+      context.setWorkingPath(resolver.getMethodWorkingPath());
 
-      // create an Invocation instance
+      if(subResourceInstance!=null)
+         builder.addInvocationModel(new PresetInvocationTarget(subResourceInstance));
+
+      builder.addInvocationModel(method.getParameterBinding());
+      builder.addInvocationModel(method.getOperationBinding());
       Invocation invocation = builder.build(context);
+      
       Object parameterInstance = invocation.getParameterInstances().get(0);
       assertTrue(parameterInstance!=null);
       assertTrue("Wildcard parameter {name} not bound", parameterInstance.equals("Bar"));
@@ -87,6 +106,7 @@ public class InvocationBuilderTestCase extends TestCase
       ResourceResolver resolver = ResourceResolver.newInstance(context);
 
       ResourceMethod method = resolver.resolve();
+      context.setWorkingPath(resolver.getMethodWorkingPath());
 
       assertNotNull(method);
       assertEquals("special", method.getUriTemplate());

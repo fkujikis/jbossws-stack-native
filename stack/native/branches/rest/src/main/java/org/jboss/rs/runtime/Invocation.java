@@ -46,7 +46,7 @@ public class Invocation
    // invocation metadata about the bean
    private Class targetBean;
 
-   private Object targetInstance;
+   private Object targetInstance;     
 
    public Invocation(RuntimeContext context)
    {

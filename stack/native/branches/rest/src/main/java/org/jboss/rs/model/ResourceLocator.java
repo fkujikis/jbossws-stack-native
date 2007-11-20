@@ -22,25 +22,20 @@
 package org.jboss.rs.model;
 
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
+ * Resource locator meta data.
+ * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class ResourceLocator extends AbstractRegexResolveable
-{
+public class ResourceLocator extends AbstractResourceOperation {
    private ResourceModel link;
-
-   private String uriTemplate;
-   private Method invocationTarget;
-   private ParameterBinding parameterBinding;   
-
-   ResourceLocator(Method invocationTarget, ResourceModel link)
+   
+   ResourceLocator(ResourceModel parent, Method invocationTarget, ResourceModel link)
    {
-      this.invocationTarget = invocationTarget;
-      this.uriTemplate = link.getUriTemplate();
+      super(link.getUriTemplate(), invocationTarget);
+      super.parent = parent;            
       this.link = link;
    }
 
@@ -59,48 +54,6 @@ public class ResourceLocator extends AbstractRegexResolveable
       // always append '(/.*)?' to the regex
       return true;
    }
-
-   void freeze()
-   {
-      // We need to know which param belongs to what regex group
-      final Map<String, Integer> regexInfo = new HashMap<String, Integer>();
-      UriParamHandler collectRegexInfo = new UriParamHandler()
-      {
-         public void newUriParam(int regexGroup, String paramName)
-         {
-            regexInfo.put(paramName, regexGroup);
-         }
-      };
-
-      initFromUriTemplate(this.uriTemplate, collectRegexInfo);
-
-      // Create ParameterBindig
-      this.parameterBinding = new ParameterBinding(this.regexPattern);
-
-      // Annotations on method parameters
-      this.parameterBinding.registerParameterAnnotations(invocationTarget);
-
-      // Additional info abpout the regex binding
-      for(String paramName : regexInfo.keySet())
-      {
-         int group = regexInfo.get(paramName);
-         this.parameterBinding.registerRegexGroupForParam(group, paramName);
-      }
-   }
-
-   public ParameterBinding getParameterBinding() {
-      return parameterBinding;
-   }
-
-   public Method getInvocationTarget() {
-      return invocationTarget;
-   }
-
-   public OperationBinding getOperationBinding()
-   {
-      return new OperationBinding(this.invocationTarget);
-   }
-
 
    public String toString() {
       return "ResourceLocator{uri="+uriTemplate+", regex="+regexPattern+"}";

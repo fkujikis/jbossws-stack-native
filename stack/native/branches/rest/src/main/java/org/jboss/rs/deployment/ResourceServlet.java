@@ -104,8 +104,9 @@ public class ResourceServlet extends HttpServlet
          Stack<ResourceLocator> visitedLocators = resolver.getVisitedLocator();
          while(!visitedLocators.isEmpty())
          {
-            ResourceLocator loc = visitedLocators.pop();
-            
+            ResourceLocator loc = visitedLocators.pop();            
+            rt.setWorkingPath(resolver.getLocatorWorkingPath(loc));
+
             InvocationBuilder builder = new DefaultInvocationBuilder();
             builder.addInvocationModel(loc.getParameterBinding());
             builder.addInvocationModel(loc.getOperationBinding());
@@ -118,7 +119,8 @@ public class ResourceServlet extends HttpServlet
 
          // create an Invocation instance
          InvocationBuilder builder = new DefaultInvocationBuilder();
-                  
+         rt.setWorkingPath(resolver.getMethodWorkingPath());
+         
          if(subResourceInstance!=null)
             builder.addInvocationModel(new PresetInvocationTarget(subResourceInstance));
                   

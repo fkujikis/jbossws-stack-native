@@ -25,13 +25,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Resource meta data.
+ * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
 public class ResourceModel extends AbstractRegexResolveable
 {
-   private ResourceModel parent = null;
-
    private String uriTemplate;
    private Class invocationTarget;
    
@@ -46,7 +46,7 @@ public class ResourceModel extends AbstractRegexResolveable
 
    public ResourceModel(ResourceModel parent, String uriTemplate, Class invocationTarget)
    {
-      this.parent = parent;
+      super.parent = parent;
       this.uriTemplate = uriTemplate;
       this.invocationTarget = invocationTarget;
    }
@@ -78,12 +78,7 @@ public class ResourceModel extends AbstractRegexResolveable
    {
       return !subResourceMethods.isEmpty() || !resourceLocators.isEmpty();
    }
-
-   ResourceModel getParent()
-   {
-      return parent;
-   }
-
+   
    public Class getInvocationTarget()
    {
       return invocationTarget;

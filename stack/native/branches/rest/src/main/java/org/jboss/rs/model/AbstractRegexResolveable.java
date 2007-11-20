@@ -29,21 +29,23 @@ import java.util.regex.Matcher;
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-abstract class AbstractRegexResolveable
+abstract class AbstractRegexResolveable<T>
 {
    public final String URI_PARAM_PATTERN        = "(.*?)";
    public final String CHILD_SUFFIX_PATTERN     = "(/.*)?";
    public final String CHILDLESS_SUFFIX_PATTERN = "(/)?";
 
    protected Pattern regexPattern;
-   private boolean isCompiled;   
+   private boolean isCompiled;
+
+   protected T parent = null;   
 
    protected void initFromUriTemplate(String uriTemplate)
    {
-      initFromUriTemplate(uriTemplate, null);         
+      setupRegexPatterns(uriTemplate, null);
    }
 
-   protected void initFromUriTemplate(String uriTemplate, UriParamHandler handler)
+   protected void setupRegexPatterns(String uriTemplate, UriParamHandler handler)
    {
       assert uriTemplate!=null;
       assert !uriTemplate.startsWith("/");
@@ -156,6 +158,10 @@ abstract class AbstractRegexResolveable
       return token.startsWith("{") && token.endsWith("}");
    }
 
+   public T getParent() {
+      return parent;
+   }
+
    abstract boolean hasChildren();
 
    abstract void freeze();
@@ -164,5 +170,5 @@ abstract class AbstractRegexResolveable
    {
       void newUriParam(int regexGroup, String paramName);
    }
- 
+
 }

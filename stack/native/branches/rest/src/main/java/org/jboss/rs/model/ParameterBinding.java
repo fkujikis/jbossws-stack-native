@@ -38,14 +38,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Carries mapping information about
+ * ParameterBinding maps {@link org.jboss.rs.runtime.RuntimeContext} parameter
+ * to {@link Invocation} instances. ParameterBinding works on the full request path
+ * ({@link org.jboss.rs.runtime.RuntimeContext#getPath()}).
+ *
+ * <p>
+ * It carries mapping information about
  * <ul>
- * <li>MatrixParam
- * <li>QueryParam
- * <li>UriParam
- * <li>HttpContext
- * <li>HeaderParam
+ *    <li>MatrixParam
+ *    <li>QueryParam
+ *    <li>UriParam
+ *    <li>HttpContext
+ *    <li>HeaderParam
  * </ul>
+ *
+ * <p>
+ * UriParameter are extracted by using using regular expressions.
+ *
+ * @see org.jboss.rs.model.ResourceMethod
+ * @see org.jboss.rs.model.ResourceLocator
+ * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
@@ -80,12 +92,21 @@ public class ParameterBinding implements InvocationModel
    /* Parameter types except for entity body*/
    Map<Integer, Class> parameterTypes = new HashMap<Integer, Class>();
 
+   ParameterBinding(Pattern rootPattern)
+   {
+      this.regex = rootPattern;
+   }
+
    public void accept(Invocation invocation)
    {
       RuntimeContext ctx = invocation.getContext();
-      String path = ctx.getPath();
+      String workingPath = ctx.getWorkingPath();
 
-      Matcher matcher = regex.matcher(path);
+      assert ctx!=null;
+      assert workingPath !=null;
+      
+      // local workingPath matching
+      Matcher matcher = regex.matcher(workingPath);
       boolean matches = matcher.matches();
 
       if(!matches)
@@ -95,7 +116,7 @@ public class ParameterBinding implements InvocationModel
       for(String param : uriParam.keySet())
       {
          int paramIndex = uriParam.get(param);
-         String paramValue = matcher.group(regexMapping.get(param) + 1);
+         String paramValue = matcher.group(regexMapping.get(param));
          invocation.insertParameterInstance(paramIndex, paramValue);
       }
 
@@ -121,12 +142,6 @@ public class ParameterBinding implements InvocationModel
 
          // unmarshall body
       }
-   }
-
-   ParameterBinding(Pattern rootPattern)
-   {
-      // Extend pattern to strip root path, results in additional groups
-      this.regex = Pattern.compile(PREFIX_PATTERN +rootPattern.toString());
    }
 
    void registerRegexGroupForParam(int group, String paramName)

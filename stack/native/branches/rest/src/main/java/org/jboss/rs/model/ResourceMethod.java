@@ -24,38 +24,31 @@ package org.jboss.rs.model;
 import org.jboss.rs.MethodHTTP;
 import org.jboss.rs.util.Convert;
 
+import javax.activation.MimeType;
 import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.ProduceMime;
-import javax.activation.MimeType;
-import java.lang.reflect.Method;
 import java.lang.annotation.Annotation;
-import java.util.List;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
 
 /**
+ * Resource mthod meta data.
+ * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class ResourceMethod extends AbstractRegexResolveable
-{   
-   private MethodHTTP methodHTTP;
-   private String uriTemplate;
-   private Method invocationTarget;
+public class ResourceMethod extends AbstractResourceOperation {
 
+   private MethodHTTP methodHTTP;
    private List<MimeType> consumeMimeTypes = new ArrayList<MimeType>();
    private List<MimeType> produceMimeTypes = new ArrayList<MimeType>();
 
-   private ParameterBinding parameterBinding;
-
-   private boolean frozen;
-
-   ResourceMethod(MethodHTTP method, String uriTemplate, Method invocationTarget)
+   ResourceMethod(ResourceModel parent, MethodHTTP method, String uriTemplate, Method invocationTarget)
    {
-      this.uriTemplate = uriTemplate;
+      super(uriTemplate, invocationTarget);
+      super.parent = parent;
       this.methodHTTP = method;
-      this.invocationTarget = invocationTarget;
    }
 
    public MethodHTTP getMethodHTTP()
@@ -90,50 +83,12 @@ public class ResourceMethod extends AbstractRegexResolveable
       return produceMimeTypes;
    }
 
-   public ParameterBinding getParameterBinding()
-   {
-      assert frozen;
-      return parameterBinding;
-   }
-
-   public OperationBinding getOperationBinding()
-   {
-      return new OperationBinding(this.invocationTarget);
-   }
-
    void freeze()
    {
-      // We need to know which param belongs to what regex group
-      final Map<String, Integer> regexInfo = new HashMap<String, Integer>();
-      UriParamHandler collectRegexInfo = new UriParamHandler()
-      {
-         public void newUriParam(int regexGroup, String paramName)
-         {
-            regexInfo.put(paramName, regexGroup);
-         }
-      };
-
-      // setup the regex stuff and push uriParam info to ParameterBinding
-      initFromUriTemplate(this.uriTemplate, collectRegexInfo);
+      super.freeze();
 
       // parse the mime annotations
       initMimeTypes();
-
-      // Create ParameterBindig
-      this.parameterBinding = new ParameterBinding(this.regexPattern);
-
-      // Annotations on method parameters
-      this.parameterBinding.registerParameterAnnotations(invocationTarget);
-
-      // Additional info abpout the regex binding
-      for(String paramName : regexInfo.keySet())
-      {
-         int group = regexInfo.get(paramName);
-         this.parameterBinding.registerRegexGroupForParam(group, paramName);
-      }
-
-      // Lock instance
-      this.frozen = true;
    }
 
    private void initMimeTypes()

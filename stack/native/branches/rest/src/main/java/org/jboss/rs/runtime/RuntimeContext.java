@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.Stack;
 
 /**
+ * Requesting a resource thorugh HTTP creates a runtime context<br>
+ * The context is associated with a set of {@link ResourceModel}
+ *
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
@@ -57,6 +60,8 @@ public class RuntimeContext
 
    // The associated runtime model for a web context
    private List<ResourceModel> rootResources;
+
+   private String workingPath;
 
    public RuntimeContext(MethodHTTP requestMethod, URI uri, List<ResourceModel> rootResources)
    {
@@ -146,5 +151,15 @@ public class RuntimeContext
    public String getPath()
    {
       return path;
+   }
+
+   public String getWorkingPath()
+   {
+      return workingPath;
+   }
+
+   public void setWorkingPath(String workingPath)
+   {
+      this.workingPath = workingPath;
    }
 }

@@ -31,7 +31,7 @@ import java.util.*;
  * Resolves resource methods from {@link org.jboss.rs.runtime.RuntimeContext#getPath()}.<br>
  * Once a set a of resource methods is identified, the resolver
  * delegates to a {@link org.jboss.rs.media.ContentNegotiation} plugin
- * to do the fine grained media type matching.
+ * to do a more fine grained media type matching.
  * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
@@ -45,6 +45,10 @@ public class ResourceResolver
    private ContentNegotiation connegPlugin;
 
    private Stack<ResourceLocator> visitedLocator = new Stack<ResourceLocator>();
+
+   private Map<ResourceLocator, String> locatorWorkingPath = new HashMap<ResourceLocator, String>();
+
+   private String methodWorkingPath;
    
    /**
     * Provides a resolver with the default content negotitation.
@@ -96,7 +100,7 @@ public class ResourceResolver
       }
 
       if(null == resourceMethod)
-         throw new NoMethodException("No method for URI '"+context.getPath());
+         throw new NoMethodException("No method matches URI '"+context.getPath());
 
       // gotcha
       return resourceMethod;
@@ -119,11 +123,15 @@ public class ResourceResolver
       resourceMethod = resolveResourceMethod(dfsEntry, nextUriToken);
 
       // root didn't match, so recurse locators to find a resource
-      if(null == resourceMethod)
+      if(resourceMethod!=null)
+      {
+         methodWorkingPath = nextUriToken;
+      }
+      else
       {
          ResourceMatch<ResourceModel> subResource = resolveByLocator(dfsEntry);
          if(subResource!=null)
-            resourceMethod = dfsResourceMatch(subResource);         
+            resourceMethod = dfsResourceMatch(subResource);
       }
 
       return resourceMethod;
@@ -154,8 +162,10 @@ public class ResourceResolver
       for(ResourceLocator loc : resourceMatch.model.getResourceLocator())
       {
          if(match.model == loc.field())
+         {
             visitedLocator.add(0, loc);
-
+            locatorWorkingPath.put(loc, resourceMatch.qualifier.nextUriToken);
+         }
       }
 
       return match;
@@ -212,8 +222,19 @@ public class ResourceResolver
       return connegPlugin.match(context, matches);
    }
 
-
    public Stack<ResourceLocator> getVisitedLocator() {
       return visitedLocator;
+   }
+
+   public String getLocatorWorkingPath(ResourceLocator loc)
+   {
+      assert locatorWorkingPath.containsKey(loc);
+      return locatorWorkingPath.get(loc);
+   }
+
+   public String getMethodWorkingPath()
+   {
+      assert methodWorkingPath!=null;
+      return methodWorkingPath;
    }
 }

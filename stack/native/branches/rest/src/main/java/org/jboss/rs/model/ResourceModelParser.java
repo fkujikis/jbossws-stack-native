@@ -64,43 +64,20 @@ public class ResourceModelParser
    {
 
       for( Method m : resource.getInvocationTarget().getDeclaredMethods() )
-      {         
+      {
          parseMethod(m, resource);
 
          // todo: constructors
       }
 
-      // freeze resource
+      // freeze root resource
       resource.freeze();
 
-      log.debug("---");
-      log.debug(resource);
-
-      // freeze resource methods
-      for(ResourceMethod rm : resource.getResourceMethods())
-      {
-         rm.freeze();
-         log.debug(rm);
-      }
-
-      // log locators methods
-      for(ResourceLocator loc : resource.getResourceLocator())
-      {
-         log.debug(loc);
-      }
-
-      // freeze sub resource methods
-      for(ResourceMethod srm : resource.getSubResourceMethods())
-      {
-         srm.freeze();
-         log.debug(srm);
-      }
-
-      log.debug("---");
+      logResourceTree(resource);
    }
 
-   private void parseMethod(Method method, ResourceModel resource)
-   {      
+   private void parseMethod(Method method, ResourceModel parentResource)
+   {
       if(method.isAnnotationPresent(UriTemplate.class))
       {
          UriTemplate uri = method.getAnnotation(UriTemplate.class);
@@ -115,19 +92,23 @@ public class ResourceModelParser
                // sub resource method
                Annotation a = method.getAnnotation(requestType);
                resourceMethod = new ResourceMethod(
+                 parentResource,
                  Convert.annotationToMethodHTTP(a), uri.value(), method
                );
-               resource.addSubResourceMethod(resourceMethod);
+
+               resourceMethod.freeze();
+               parentResource.addSubResourceMethod(resourceMethod);
             }
          }
 
          // subresource locator
          if(null == resourceMethod)
          {
-            ResourceModel subResource = new ResourceModel(resource, uri.value(), method.getReturnType());
-            ResourceLocator locator = new ResourceLocator(method, subResource);
-            locator.freeze();        
-            resource.addSubResourceLocator(locator);
+            ResourceModel subResource = new ResourceModel(parentResource, uri.value(), method.getReturnType());
+            ResourceLocator locator = new ResourceLocator(parentResource, method, subResource);
+
+            locator.freeze();
+            parentResource.addSubResourceLocator(locator);
 
             // recursive
             parseInternal(subResource);
@@ -142,12 +123,41 @@ public class ResourceModelParser
                // resource method
                Annotation a = method.getAnnotation(requestType);
                ResourceMethod resourceMethod = new ResourceMethod(
+                 parentResource,
                  Convert.annotationToMethodHTTP(a), "", method
                );
-               resource.addResourceMethod(resourceMethod);
+
+               resourceMethod.freeze();
+               parentResource.addResourceMethod(resourceMethod);
             }
          }
       }
+   }
+
+   private void logResourceTree(ResourceModel resource)
+   {
+      log.debug("---");
+      log.debug(resource);
+
+      // freeze resource methods
+      for(ResourceMethod rm : resource.getResourceMethods())
+      {
+         log.debug(rm);
+      }
+
+      // log locators methods
+      for(ResourceLocator loc : resource.getResourceLocator())
+      {
+         log.debug(loc);
+      }
+
+      // freeze sub resource methods
+      for(ResourceMethod srm : resource.getSubResourceMethods())
+      {
+         log.debug(srm);
+      }
+
+      log.debug("---");
    }
 
 }

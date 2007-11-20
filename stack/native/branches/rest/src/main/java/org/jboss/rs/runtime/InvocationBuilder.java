@@ -37,7 +37,7 @@ public abstract class InvocationBuilder
    private List<InvocationModel> invocationModels = new LinkedList<InvocationModel>();
 
    /**
-    * Add invocaiton model to an order list.
+    * Add invocaiton model to an ordered list.
     * 
     * @param model
     */
