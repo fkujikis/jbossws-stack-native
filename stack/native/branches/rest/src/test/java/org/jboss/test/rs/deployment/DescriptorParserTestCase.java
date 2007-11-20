@@ -27,6 +27,7 @@ import org.jboss.rs.model.dd.JbossrsType;
 import org.jboss.rs.model.dd.ResourceType;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 /**
  * Test the deployment descriptor parser.
@@ -64,6 +65,9 @@ public class DescriptorParserTestCase extends TestCase
 
       dd.getResource().add(resource);
 
-      DeploymentDescriptorParser.write(dd, System.out);
+      ByteArrayOutputStream bout = new ByteArrayOutputStream();
+      DeploymentDescriptorParser.write(dd, bout);
+      String result = new String(bout.toByteArray());
+      assertTrue(result.indexOf("FooBarResource")!=-1);
    }
 }
