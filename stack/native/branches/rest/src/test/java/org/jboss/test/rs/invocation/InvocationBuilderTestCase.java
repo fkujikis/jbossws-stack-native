@@ -114,6 +114,7 @@ public class InvocationBuilderTestCase extends TestCase
       // setup a builder
       InvocationBuilder builder = new DefaultInvocationBuilder();
       builder.addInvocationModel(method.getParameterBinding());
+      builder.addInvocationModel(method.getOperationBinding());
 
       // create an Invocation instance
       Invocation invocation = builder.build(context);

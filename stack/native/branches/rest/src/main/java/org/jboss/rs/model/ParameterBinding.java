@@ -66,9 +66,6 @@ public class ParameterBinding implements InvocationModel
    /* Pattern of the owning ResourceMethod */
    private final Pattern regex;
 
-   /* Pattern to strip prefix from runtime path */
-   private static final String PREFIX_PATTERN = "(.*?)";
-
    /*the total number of parameters */
    private int totalParameters = 0;
 

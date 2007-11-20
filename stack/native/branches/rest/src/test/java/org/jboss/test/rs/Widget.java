@@ -25,6 +25,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.UriParam;
 import javax.ws.rs.UriTemplate;
 import javax.ws.rs.ProduceMime;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author Heiko.Braun@jboss.com
@@ -51,8 +53,10 @@ public class Widget
 
    @GET
    @UriTemplate("spec")
-   public Specification[] getSpecification() {
-      return new Specification[]{ new Specification() };
+   public List<Specification> getSpecifications() {
+      List<Specification> specs = new ArrayList<Specification>();
+      specs.add( new Specification());
+      return specs;
    }
 
    @GET

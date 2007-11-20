@@ -53,7 +53,7 @@ public class WidgetList
      Widget special
    )
    {
-                      
+                        
    }
 
    @UriTemplate("{id}")
