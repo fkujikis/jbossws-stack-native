@@ -36,7 +36,7 @@ import java.util.*;
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
  */
-public class ResourceResolver
+public class StatefulResourceResolver
 {
    // the runtime context
    private RuntimeContext context;
@@ -56,15 +56,15 @@ public class ResourceResolver
     * @param context the runtime context
     * @return a configured resource resolver instance
     */
-   public static ResourceResolver newInstance(RuntimeContext context)
+   public static StatefulResourceResolver newInstance(RuntimeContext context)
    {
       assert context!=null;
-      ResourceResolver resourceResolver = new ResourceResolver(context);
+      StatefulResourceResolver resourceResolver = new StatefulResourceResolver(context);
       resourceResolver.connegPlugin = new DefaultContentNegotiation();
       return resourceResolver;
    }
 
-   private ResourceResolver(RuntimeContext context)
+   private StatefulResourceResolver(RuntimeContext context)
    {
       this.context = context;
    }

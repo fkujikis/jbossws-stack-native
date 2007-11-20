@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  * Matches available resource methods against the runtime context.<br>
- * Since this is likely to change it can be plugged into the {@link org.jboss.rs.model.ResourceResolver}.
+ * Since this is likely to change it can be plugged into the {@link org.jboss.rs.model.StatefulResourceResolver}.
  * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$

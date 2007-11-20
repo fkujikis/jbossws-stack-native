@@ -54,7 +54,7 @@ public class InvocationBuilderTestCase extends TestCase
    {
       URI uri = new URI("/rest/widgets/Foo/spec/Bar");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
-      ResourceResolver resolver = ResourceResolver.newInstance(context);
+      StatefulResourceResolver resolver = StatefulResourceResolver.newInstance(context);
 
       ResourceMethod method = resolver.resolve();
 
@@ -103,7 +103,7 @@ public class InvocationBuilderTestCase extends TestCase
       URI uri = new URI("/rest/widgets/special");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.POST, uri);
       context.parseContentTypeHeader("text/xml");
-      ResourceResolver resolver = ResourceResolver.newInstance(context);
+      StatefulResourceResolver resolver = StatefulResourceResolver.newInstance(context);
 
       ResourceMethod method = resolver.resolve();
       context.setWorkingPath(resolver.getMethodWorkingPath());

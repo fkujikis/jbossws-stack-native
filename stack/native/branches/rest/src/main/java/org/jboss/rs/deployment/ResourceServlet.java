@@ -27,7 +27,7 @@ import org.jboss.rs.ResourceRegistry;
 import org.jboss.rs.ResourceRegistryFactory;
 import org.jboss.rs.model.ResourceMethod;
 import org.jboss.rs.model.ResourceModel;
-import org.jboss.rs.model.ResourceResolver;
+import org.jboss.rs.model.StatefulResourceResolver;
 import org.jboss.rs.model.ResourceLocator;
 import org.jboss.rs.runtime.*;
 
@@ -96,7 +96,7 @@ public class ResourceServlet extends HttpServlet
          parseAcceptHeader(req, rt);
 
          // locate the resource to be invoked
-         ResourceResolver resolver = ResourceResolver.newInstance(rt);
+         StatefulResourceResolver resolver = StatefulResourceResolver.newInstance(rt);
          ResourceMethod resourceMethod = resolver.resolve();
 
          // evaluate locator stack

@@ -47,7 +47,7 @@ import java.util.ArrayList;
  * <li>HTTP 406
  * </ol>
  *
- * @see org.jboss.rs.model.ResourceResolver
+ * @see org.jboss.rs.model.StatefulResourceResolver
  * 
  * @author Heiko.Braun@jboss.com
  * @version $Revision$

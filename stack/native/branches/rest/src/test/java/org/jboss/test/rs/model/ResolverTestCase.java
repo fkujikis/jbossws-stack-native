@@ -27,7 +27,7 @@ import org.jboss.rs.MethodHTTP;
 import org.jboss.rs.runtime.RuntimeContext;
 import org.jboss.rs.model.ResourceModel;
 import org.jboss.rs.model.ResourceModelParser;
-import org.jboss.rs.model.ResourceResolver;
+import org.jboss.rs.model.StatefulResourceResolver;
 import org.jboss.rs.model.ResourceMethod;
 import org.jboss.test.rs.WidgetList;
 
@@ -57,7 +57,7 @@ public class ResolverTestCase extends TestCase
    {
       URI uri = new URI("/rest/widgets/Id/spec");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
-      ResourceResolver resolver = ResourceResolver.newInstance(context);
+      StatefulResourceResolver resolver = StatefulResourceResolver.newInstance(context);
       ResourceMethod method = resolver.resolve();
 
       assertNotNull(method);
@@ -70,7 +70,7 @@ public class ResolverTestCase extends TestCase
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.POST, uri);
       context.parseContentTypeHeader("text/xml");
       
-      ResourceResolver resolver = ResourceResolver.newInstance(context);
+      StatefulResourceResolver resolver = StatefulResourceResolver.newInstance(context);
 
       ResourceMethod method = resolver.resolve();
 
@@ -82,7 +82,7 @@ public class ResolverTestCase extends TestCase
    {
       URI uri = new URI("/rest/widgets/offers");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
-      ResourceResolver resolver = ResourceResolver.newInstance(context);
+      StatefulResourceResolver resolver = StatefulResourceResolver.newInstance(context);
 
       ResourceMethod method = resolver.resolve();
 
@@ -94,7 +94,7 @@ public class ResolverTestCase extends TestCase
    {
       URI uri = new URI("/rest/widgets/Id/spec/SpecName");
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
-      ResourceResolver resolver = ResourceResolver.newInstance(context);
+      StatefulResourceResolver resolver = StatefulResourceResolver.newInstance(context);
 
       ResourceMethod method = resolver.resolve();
 
@@ -108,7 +108,7 @@ public class ResolverTestCase extends TestCase
       RuntimeContext context = defaultRuntimeContext(MethodHTTP.GET, uri);
       context.parseAcceptHeader("text/plain");
 
-      ResourceResolver resolver = ResourceResolver.newInstance(context);
+      StatefulResourceResolver resolver = StatefulResourceResolver.newInstance(context);
       ResourceMethod method = resolver.resolve();
 
       assertNotNull(method);
