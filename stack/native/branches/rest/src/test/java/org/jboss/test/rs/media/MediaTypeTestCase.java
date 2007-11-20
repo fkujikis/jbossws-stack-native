@@ -1,11 +1,14 @@
 package org.jboss.test.rs.media;
 
 import junit.framework.Test;
+import org.jboss.rs.media.DefaultProviderFactory;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
-import org.jboss.rs.media.JAXBReader;
 
-import java.io.OutputStreamWriter;
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.ext.ProviderFactory;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -27,8 +30,7 @@ public class MediaTypeTestCase extends JBossWSTest
     */
    public void testRequest1() throws Exception
    {
-      URL url = new URL("http://localhost:8080/jbossrs-mediatype" +
-        "/books/3897217279");
+      URL url = new URL("http://localhost:8080/jbossrs-mediatype/books/3897217279");
 
       Object response = doMediaRequest(url, null);
       assertNotNull(response );
@@ -38,31 +40,28 @@ public class MediaTypeTestCase extends JBossWSTest
 
    private Object doMediaRequest(URL url, Object data) throws Exception
    {
+      ProviderFactory providerFactory = DefaultProviderFactory.newInstance();
+
       HttpURLConnection conn = (HttpURLConnection)url.openConnection();
       conn.setDoOutput( data!=null );
       conn.setRequestProperty("accept", "text/xml");
 
       if(data !=null)
       {
-         OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-
-         // TODO: resolve MessageBodyWriter
-
-         wr.flush();
-         wr.close();
+         OutputStream out = conn.getOutputStream();
+         MessageBodyWriter writer = providerFactory.createMessageBodyWriter(data.getClass(), null);
+         writer.writeTo(data, null, null, out);
+         out.flush();
+         out.close();
       }
 
-      // TODO: resolve MessageBodyReader
-
-      Object result = null;
-
-      JAXBReader reader = new JAXBReader();
+      Object returnValue = null;
+      MessageBodyReader reader = providerFactory.createMessageBodyReader(BookResource.class, null);
       if(reader.isReadable(BookResource.class))
       {
-         result = reader.readFrom(BookResource.class, null, null, conn.getInputStream());
+         returnValue = reader.readFrom(BookResource.class, null, null, conn.getInputStream());
       }
 
-
-      return result;
+      return returnValue;
    }
 }

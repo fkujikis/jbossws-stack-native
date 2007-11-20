@@ -25,6 +25,7 @@ import org.jboss.rs.MethodHTTP;
 import org.jboss.rs.ResourceError;
 import org.jboss.rs.ResourceRegistry;
 import org.jboss.rs.ResourceRegistryFactory;
+import org.jboss.rs.media.DefaultProviderFactory;
 import org.jboss.rs.model.ResourceModel;
 import org.jboss.rs.runtime.InvocationMediator;
 import org.jboss.rs.runtime.RuntimeContext;
@@ -35,8 +36,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.ext.ProviderFactory;
+import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,21 +100,29 @@ public class ResourceServlet extends HttpServlet
 
          // mediate the invocation
          InvocationMediator mediator = new InvocationMediator(rt);
-         Object result = mediator.invoke();
+         Object invocationResult = mediator.invoke();
+         Object returnValue = null;
 
-         // write to output stream
-         if(result instanceof String)
+         // may be a Response object
+         if(invocationResult instanceof Response)
          {
-            res.setContentType("text/plain");
-            PrintWriter writer = res.getWriter();
-            writer.write(result.toString());
-            writer.flush();
-            writer.close();
+            Response response = (Response)invocationResult;
+            returnValue = response.getEntity();
+            log.warn("Not implemented: Response metadata currently ignored");
          }
          else
          {
-            serverError(405, "Cannot marshall " + result.getClass(), res);
+            returnValue = invocationResult;
          }
+
+         // response meta data         
+         // write to output stream, TODO: mediatypes
+         ProviderFactory providerfactory = DefaultProviderFactory.newInstance();
+         MessageBodyWriter writer = providerfactory.createMessageBodyWriter(returnValue.getClass(), null);
+         OutputStream out = res.getOutputStream();
+         writer.writeTo(returnValue, null, null, out);
+         out.flush();
+         out.close();
 
       }
       catch(ResourceError resourceError)
