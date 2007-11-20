@@ -663,6 +663,16 @@
       </webinf>
     </war>
 
+     <war warfile="${tests.output.dir}/libs/jbossrs-mediatype.war" webxml="${tests.output.dir}/resources/rs/media/web.xml">
+      <classes dir="${tests.output.dir}/classes">
+        <include name="org/jboss/test/rs/media/BookResource.class"/>
+        <include name="org/jboss/test/rs/media/BookStoreResource.class"/>        
+      </classes>
+      <webinf dir="${tests.output.dir}/resources/rs/media">
+        <include name="jbossrs.xml"/>
+      </webinf>
+    </war>
+
     <!-- Please add alphabetically -->
     
     <antcall target="build-interop-jars"/>

@@ -41,7 +41,7 @@ import java.net.URL;
 /**
  * Test the JAXBIntroduction features.
  * 
- * jaxb-intros.xml can reside under META-INF or WEB-INF and should be
+ * xml-intros.xml can reside under META-INF or WEB-INF and should be
  * picked up by JAXBIntroduction deployment aspect.
  *
  * On the server side the default JAXBContextFactory takes it into consideration.

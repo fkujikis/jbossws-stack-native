@@ -28,6 +28,7 @@ import org.jboss.rs.ResourceRegistryFactory;
 import org.jboss.rs.model.ResourceModel;
 import org.jboss.rs.runtime.InvocationMediator;
 import org.jboss.rs.runtime.RuntimeContext;
+import org.jboss.logging.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -46,7 +47,7 @@ import java.util.List;
  */
 public class ResourceServlet extends HttpServlet
 {
-   
+   private static Logger log = Logger.getLogger(ResourceServlet.class);
    private List<ResourceModel> rootResources = new ArrayList<ResourceModel>();
 
    public void init(ServletConfig servletConfig) throws ServletException
@@ -131,6 +132,9 @@ public class ResourceServlet extends HttpServlet
 
    private void serverError(int status, String message, HttpServletResponse res)
    {
+
+      log.error(status + ":" + message);
+
       try
       {
          res.setStatus(status);

@@ -314,7 +314,7 @@ public class FaultMetaData
    private AccessorFactory getAccessorFactory(Class faultBean)
    {
       // This should catch all cases due to the constraints that JAX-WS puts on the fault bean
-      // However, if issues arrise then switch this to a full jaxb reflection library
+      // However, if issues arrise then switch this to a full xml reflection library
       XmlAccessorType type = (XmlAccessorType)faultBean.getAnnotation(XmlAccessorType.class);
       if (type != null && type.value() == XmlAccessType.FIELD)
          return ReflectiveFieldAccessor.FACTORY_CREATOR.create(this);

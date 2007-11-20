@@ -99,7 +99,7 @@ public class StatefulResourceResolver
          resourceMethod = dfsResourceMatch(rootResource);
       }
 
-      if(null == resourceMethod)
+      if(null == resourceMethod && visitedLocator.isEmpty())
          throw new NoMethodException("No method matches URI '"+context.getPath());
 
       // gotcha
@@ -141,34 +141,51 @@ public class StatefulResourceResolver
      throws NoResourceException
    {
       ResourceMatch<ResourceModel> match = null;
+      String uriToken = resourceMatch.qualifier.nextUriToken;
 
       List<ResourceMatch<ResourceModel>> weightedResults = new ArrayList<ResourceMatch<ResourceModel>>();
       Iterator<ResourceLocator> locators = resourceMatch.model.getResourceLocator().iterator();
       while(locators.hasNext())
       {
          ResourceLocator bridge = locators.next();
-         RegexQualifier qualifier = bridge.resolve(resourceMatch.qualifier.nextUriToken);
-         if(qualifier!=null)
+         RegexQualifier qualifier = bridge.resolve(uriToken);
+         
+         if(qualifier!=null && ! ("".equals(qualifier.nextUriToken) || "/".equals(qualifier.nextUriToken)))
+         {
+            // a subresource method is the target
             weightedResults.add( new ResourceMatch<ResourceModel>( bridge.field(), qualifier) );
+         }
+         else if(qualifier!=null)
+         {
+            // the locator is the target itself
+            rememberLocator(bridge, uriToken);
+         }
       }
 
       if(!weightedResults.isEmpty())
       {
          Collections.sort(weightedResults);
          match = weightedResults.get(0);
-      }
 
-      // TODO: cleanup locator matching after sort
-      for(ResourceLocator loc : resourceMatch.model.getResourceLocator())
-      {
-         if(match.model == loc.field())
+         // for subresource methods we need to identify the locator after sorting
+         for(ResourceLocator loc : resourceMatch.model.getResourceLocator())
          {
-            visitedLocator.add(0, loc);
-            locatorWorkingPath.put(loc, resourceMatch.qualifier.nextUriToken);
+            if(match.model == loc.field())
+            {
+               rememberLocator(loc, uriToken);
+            }
          }
       }
 
+
+
       return match;
+   }
+
+   private void rememberLocator(ResourceLocator loc, String workingPath)
+   {
+      visitedLocator.add(0, loc);
+      locatorWorkingPath.put(loc, workingPath);
    }
 
    private ResourceMethod resolveResourceMethod(ResourceMatch<ResourceModel> methodTarget, String uriToken)

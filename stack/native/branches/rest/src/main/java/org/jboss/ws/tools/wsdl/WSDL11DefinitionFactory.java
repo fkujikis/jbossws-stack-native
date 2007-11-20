@@ -59,7 +59,7 @@ public class WSDL11DefinitionFactory
    {
       WSDLFactory wsdlFactory = WSDLFactory.newInstance();
       wsdlReader = wsdlFactory.newWSDLReader();
-      // Allow unknown extensions (jaxws/jaxb binding elements)
+      // Allow unknown extensions (jaxws/xml binding elements)
       wsdlReader.setExtensionRegistry(new ExtensionRegistry());
       wsdlReader.setFeature(WSDL11DefinitionFactory.FEATURE_VERBOSE, false);
    }

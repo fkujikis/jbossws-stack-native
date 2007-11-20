@@ -24,6 +24,8 @@ public class InvocationMediator
 
    public Object invoke() throws ResourceError
    {
+      Object result = null;
+      
       StatefulResourceResolver resolver = StatefulResourceResolver.newInstance(runtimeContext);
       ResourceMethod resourceMethod = resolver.resolve();
 
@@ -42,23 +44,26 @@ public class InvocationMediator
 
          InvocationHandler bridgeInvoker = new DefaultInvocationHandler();
          subResourceInstance = bridgeInvoker.invoke(locatorInvocation);
-
+         result = subResourceInstance; // best match
       }
 
-      // create an Invocation instance
-      InvocationBuilder builder = new DefaultInvocationBuilder();
-      runtimeContext.setWorkingPath(resolver.getMethodWorkingPath());
+      if(resourceMethod!=null)
+      {
+         // create an Invocation instance
+         InvocationBuilder builder = new DefaultInvocationBuilder();
+         runtimeContext.setWorkingPath(resolver.getMethodWorkingPath());
 
-      if(subResourceInstance!=null)
-         builder.addInvocationModel(new PresetInvocationTarget(subResourceInstance));
+         if(subResourceInstance!=null)
+            builder.addInvocationModel(new PresetInvocationTarget(subResourceInstance));
 
-      builder.addInvocationModel( resourceMethod.getParameterBinding() );
-      builder.addInvocationModel( resourceMethod.getOperationBinding() );
-      Invocation invocation = builder.build(runtimeContext);
+         builder.addInvocationModel( resourceMethod.getParameterBinding() );
+         builder.addInvocationModel( resourceMethod.getOperationBinding() );
+         Invocation invocation = builder.build(runtimeContext);
 
-      // invoke it
-      InvocationHandler invoker = new DefaultInvocationHandler();
-      Object result = invoker.invoke(invocation);
+         // invoke it
+         InvocationHandler invoker = new DefaultInvocationHandler();
+         result = invoker.invoke(invocation); // more fine grained match
+      }      
 
       return result;
    }

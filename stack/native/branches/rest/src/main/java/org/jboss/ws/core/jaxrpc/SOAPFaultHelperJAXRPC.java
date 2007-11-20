@@ -128,7 +128,7 @@ public class SOAPFaultHelperJAXRPC
                if (desFactory == null)
                   throw new JAXRPCException("Cannot obtain deserializer factory for: " + xmlType);
 
-               // Try jaxb deserialization
+               // Try xml deserialization
                try
                {
                   // http://jira.jboss.org/jira/browse/JBWS-955

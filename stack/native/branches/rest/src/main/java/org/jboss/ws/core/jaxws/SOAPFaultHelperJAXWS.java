@@ -118,7 +118,7 @@ public class SOAPFaultHelperJAXWS
                   }
                }
 
-               // Try jaxb deserialization
+               // Try xml deserialization
                try
                {
                   Class[] types = opMetaData.getEndpointMetaData().getRegisteredTypes().toArray(new Class[0]);
