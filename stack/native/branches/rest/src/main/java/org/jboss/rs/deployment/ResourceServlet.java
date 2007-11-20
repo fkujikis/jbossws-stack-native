@@ -25,11 +25,9 @@ import org.jboss.rs.MethodHTTP;
 import org.jboss.rs.ResourceError;
 import org.jboss.rs.ResourceRegistry;
 import org.jboss.rs.ResourceRegistryFactory;
-import org.jboss.rs.model.ResourceMethod;
 import org.jboss.rs.model.ResourceModel;
-import org.jboss.rs.model.StatefulResourceResolver;
-import org.jboss.rs.model.ResourceLocator;
-import org.jboss.rs.runtime.*;
+import org.jboss.rs.runtime.InvocationMediator;
+import org.jboss.rs.runtime.RuntimeContext;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -41,7 +39,6 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * @author Heiko.Braun@jboss.com
@@ -95,43 +92,11 @@ public class ResourceServlet extends HttpServlet
          RuntimeContext rt = new RuntimeContext(method, uri, rootResources);         
          parseAcceptHeader(req, rt);
 
-         // locate the resource to be invoked
-         StatefulResourceResolver resolver = StatefulResourceResolver.newInstance(rt);
-         ResourceMethod resourceMethod = resolver.resolve();
+         // mediate the invocation
+         InvocationMediator mediator = new InvocationMediator(rt);
+         Object result = mediator.invoke();
 
-         // evaluate locator stack
-         Object subResourceInstance = null;
-         Stack<ResourceLocator> visitedLocators = resolver.getVisitedLocator();
-         while(!visitedLocators.isEmpty())
-         {
-            ResourceLocator loc = visitedLocators.pop();            
-            rt.setWorkingPath(resolver.getLocatorWorkingPath(loc));
-
-            InvocationBuilder builder = new DefaultInvocationBuilder();
-            builder.addInvocationModel(loc.getParameterBinding());
-            builder.addInvocationModel(loc.getOperationBinding());
-            Invocation locatorInvocation = builder.build(rt);
-
-            InvocationHandler bridgeInvoker = new DefaultInvocationHandler();
-            subResourceInstance = bridgeInvoker.invoke(locatorInvocation);
-
-         }
-
-         // create an Invocation instance
-         InvocationBuilder builder = new DefaultInvocationBuilder();
-         rt.setWorkingPath(resolver.getMethodWorkingPath());
-         
-         if(subResourceInstance!=null)
-            builder.addInvocationModel(new PresetInvocationTarget(subResourceInstance));
-                  
-         builder.addInvocationModel( resourceMethod.getParameterBinding() );
-         builder.addInvocationModel( resourceMethod.getOperationBinding() );
-         Invocation invocation = builder.build(rt);
-
-         // invoke it
-         InvocationHandler invoker = new DefaultInvocationHandler();
-         Object result = invoker.invoke(invocation);
-
+         // write to output stream
          if(result instanceof String)
          {
             res.setContentType("text/plain");
