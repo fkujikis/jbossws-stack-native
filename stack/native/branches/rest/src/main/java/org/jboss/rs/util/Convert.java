@@ -23,15 +23,13 @@ package org.jboss.rs.util;
 
 import org.jboss.rs.MethodHTTP;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.DELETE;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.ProduceMime;
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
@@ -42,8 +40,7 @@ import java.util.StringTokenizer;
  */
 public class Convert
 {
-   public static Class[] REQUEST_TYPES = new Class[] { GET.class, POST.class, PUT.class, DELETE.class };
-
+   
    public static MimeType ANY_MIME;
 
    static
@@ -58,20 +55,44 @@ public class Convert
       }
    }
 
-   public static MethodHTTP annotationToMethodHTTP(Annotation a)
+   public static MethodHTTP prefixToMethodHTTP(Method m)
    {
-      MethodHTTP m = null;
+      MethodHTTP result = null;
 
-      if(a instanceof GET)
-         m = MethodHTTP.GET;
-      else if(a instanceof POST)
-         m = MethodHTTP.POST;
-      else if(a instanceof PUT)
-         m = MethodHTTP.PUT;
-      else if(a instanceof DELETE)
-         m = MethodHTTP.DELETE;
+      String methodName = m.getName();
+      if(methodName.startsWith("get"))
+         result = MethodHTTP.GET;
+      else if(methodName.startsWith("post"))
+         result = MethodHTTP.POST;
+      else if(methodName.startsWith("put"))
+         result = MethodHTTP.PUT;
+      else if(methodName.startsWith("delete"))
+         result = MethodHTTP.DELETE;
 
-      return m;
+      if(null==result)
+         throw new IllegalArgumentException("Failed to match method by prefix: " + methodName);
+      
+      return result;
+   }
+
+   public static MethodHTTP annotationToMethodHTTP(HttpMethod a)
+   {    
+      HttpMethod hm = (HttpMethod)a;
+      MethodHTTP result = null;
+
+      if(hm.value() == HttpMethod.GET)
+         result = MethodHTTP.GET;
+      else if(hm.value() == HttpMethod.POST)
+         result = MethodHTTP.POST;
+      else if(hm.value() == HttpMethod.PUT)
+         result = MethodHTTP.PUT;
+      else if(hm.value() == HttpMethod.DELETE)
+         result = MethodHTTP.DELETE;
+
+      if(null==result)
+         throw new IllegalArgumentException("Failed to match method by value: " + hm.value());
+
+      return result;
 
    }
 

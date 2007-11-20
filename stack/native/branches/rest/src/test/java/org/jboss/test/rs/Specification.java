@@ -21,6 +21,8 @@
  */
 package org.jboss.test.rs;
 
+import javax.ws.rs.HttpMethod;
+
 /**
  * @author Heiko.Braun@jboss.com
  * @version $Revision$
@@ -36,5 +38,11 @@ public class Specification
    public Specification(String name)
    {
       this.name = name;
+   }
+
+   @HttpMethod
+   public String getName()
+   {
+      return name;     
    }
 }

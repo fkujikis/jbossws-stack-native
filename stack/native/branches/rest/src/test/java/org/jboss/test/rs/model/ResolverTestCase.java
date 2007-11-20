@@ -67,7 +67,7 @@ public class ResolverTestCase extends TestCase
    public void testRegexResolver2() throws Exception
    {
       URI uri = new URI("/rest/widgets/special");
-      RuntimeContext context = defaultRuntimeContext(MethodHTTP.POST, uri);
+      RuntimeContext context = defaultRuntimeContext(MethodHTTP.PUT, uri);
       context.parseContentTypeHeader("text/xml");
       
       StatefulResourceResolver resolver = StatefulResourceResolver.newInstance(context);

@@ -41,7 +41,7 @@ public class ModelParserTestCase extends TestCase
       ResourceMethod match = null;
       for(ResourceMethod m : root.getSubResourceMethods())
       {
-         if(m.getMethodHTTP() == MethodHTTP.POST
+         if(m.getMethodHTTP() == MethodHTTP.PUT
            && m.getUriTemplate().equals("special"))
          {
             match = m;

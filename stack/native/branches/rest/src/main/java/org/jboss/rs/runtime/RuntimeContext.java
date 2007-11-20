@@ -132,7 +132,7 @@ public class RuntimeContext
 
    public MimeType getProvideMimeType()
    {
-      if(! (requestMethod == MethodHTTP.POST) )
+      if(! (requestMethod == MethodHTTP.POST || requestMethod == MethodHTTP.PUT) )
          throw new IllegalArgumentException(requestMethod + " does not provide a 'Content-Type header'");
 
       assert provideMimeType !=null;

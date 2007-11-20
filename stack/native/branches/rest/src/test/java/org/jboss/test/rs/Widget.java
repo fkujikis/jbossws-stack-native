@@ -21,7 +21,7 @@
  */
 package org.jboss.test.rs;
 
-import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.UriParam;
 import javax.ws.rs.UriTemplate;
 import javax.ws.rs.ProduceMime;
@@ -44,14 +44,14 @@ public class Widget
       this.id = id;
    }
 
-   @GET
+   @HttpMethod
    @UriTemplate("id")
    @ProduceMime("text/plain")
    public String getId() {
       return this.id;
    }
 
-   @GET
+   @HttpMethod
    @UriTemplate("spec")
    public List<Specification> getSpecifications() {
       List<Specification> specs = new ArrayList<Specification>();
@@ -59,7 +59,7 @@ public class Widget
       return specs;
    }
 
-   @GET
+   @HttpMethod
    @UriTemplate("spec/{name}")   
    public Specification getSpecByName(@UriParam("name")String name)
    {

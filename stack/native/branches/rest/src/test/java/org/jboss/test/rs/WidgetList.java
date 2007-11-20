@@ -21,10 +21,9 @@
  */
 package org.jboss.test.rs;
 
-import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.UriParam;
 import javax.ws.rs.UriTemplate;
-import javax.ws.rs.POST;
 import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.core.HttpContext;
@@ -33,22 +32,22 @@ import javax.ws.rs.core.HttpHeaders;
 @UriTemplate("widgets")
 public class WidgetList
 {
-   @GET
+   @HttpMethod
    @ProduceMime({"text/plain"})
    public String getDescription() {
       return "A widgetlist";
    }
 
-   @GET
+   @HttpMethod
    @UriTemplate("offers")
    public WidgetList getDiscounted() {
       return null;
    }
 
-   @POST
+   @HttpMethod
    @UriTemplate("special")
    @ConsumeMime({"text/xml", "application/xml"})
-   public void setDiscounted(
+   public void putDiscounted(
      @HttpContext HttpHeaders headers,
      Widget special
    )

@@ -21,11 +21,12 @@
  */
 package org.jboss.rs.model;
 
-import org.jboss.rs.util.Convert;
 import org.jboss.logging.Logger;
+import org.jboss.rs.MethodHTTP;
+import org.jboss.rs.util.Convert;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.UriTemplate;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 /**
@@ -85,21 +86,23 @@ public class ResourceModelParser
          ResourceMethod resourceMethod = null;
 
          // subresource methods
-         for(Class requestType : Convert.REQUEST_TYPES)
-         {
-            if(method.isAnnotationPresent(requestType))
-            {
-               // sub resource method
-               Annotation a = method.getAnnotation(requestType);
-               resourceMethod = new ResourceMethod(
-                 parentResource,
-                 Convert.annotationToMethodHTTP(a), uri.value(), method
-               );
 
-               resourceMethod.freeze();
-               parentResource.addSubResourceMethod(resourceMethod);
-            }
+         if(method.isAnnotationPresent(HttpMethod.class))
+         {
+            // sub resource method
+            HttpMethod a = method.getAnnotation(HttpMethod.class);
+            MethodHTTP methodHttp = a.value().equals("") ?
+              Convert.prefixToMethodHTTP(method) : Convert.annotationToMethodHTTP(a);
+
+            resourceMethod = new ResourceMethod(
+              parentResource,
+              methodHttp, uri.value(), method
+            );
+
+            resourceMethod.freeze();
+            parentResource.addSubResourceMethod(resourceMethod);
          }
+
 
          // subresource locator
          if(null == resourceMethod)
@@ -116,20 +119,20 @@ public class ResourceModelParser
       }
       else
       {
-         for(Class requestType : Convert.REQUEST_TYPES)
+         if(method.isAnnotationPresent(HttpMethod.class))
          {
-            if(method.isAnnotationPresent(requestType))
-            {
-               // resource method
-               Annotation a = method.getAnnotation(requestType);
-               ResourceMethod resourceMethod = new ResourceMethod(
-                 parentResource,
-                 Convert.annotationToMethodHTTP(a), "", method
-               );
+            // resource method
+            HttpMethod a = method.getAnnotation(HttpMethod.class);
+            MethodHTTP methodHttp = a.value().equals("") ?
+              Convert.prefixToMethodHTTP(method) : Convert.annotationToMethodHTTP(a);
 
-               resourceMethod.freeze();
-               parentResource.addResourceMethod(resourceMethod);
-            }
+            ResourceMethod resourceMethod = new ResourceMethod(
+              parentResource,
+              methodHttp, "", method
+            );
+
+            resourceMethod.freeze();
+            parentResource.addResourceMethod(resourceMethod);
          }
       }
    }
