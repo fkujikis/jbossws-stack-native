@@ -120,7 +120,7 @@ public class StatefulResourceResolver
       String nextUriToken = dfsEntry.qualifier.nextUriToken;
 
       // resource and subresource methods first
-      resourceMethod = resolveResourceMethod(dfsEntry, nextUriToken);
+      resourceMethod = resolveResourceMethod(dfsEntry);
 
       // root didn't match, so recurse locators to find a resource
       if(resourceMethod!=null)
@@ -150,7 +150,7 @@ public class StatefulResourceResolver
          ResourceLocator bridge = locators.next();
          RegexQualifier qualifier = bridge.resolve(uriToken);
          
-         if(qualifier!=null && ! ("".equals(qualifier.nextUriToken) || "/".equals(qualifier.nextUriToken)))
+         if(qualifier!=null && ! qualifier.marksEnd() )
          {
             // a subresource method is the target
             weightedResults.add( new ResourceMatch<ResourceModel>( bridge.field(), qualifier) );
@@ -188,13 +188,14 @@ public class StatefulResourceResolver
       locatorWorkingPath.put(loc, workingPath);
    }
 
-   private ResourceMethod resolveResourceMethod(ResourceMatch<ResourceModel> methodTarget, String uriToken)
+   private ResourceMethod resolveResourceMethod(ResourceMatch<ResourceModel> methodTarget)
      throws NoMethodException
    {
       ResourceMethod match = null;
       List<ResourceMatch<ResourceMethod>> matches = new ArrayList<ResourceMatch<ResourceMethod>>();
+      String uriToken = methodTarget.qualifier.nextUriToken;
 
-      if("".equals(uriToken) || "/".equals(uriToken)) // resources methods
+      if( methodTarget.qualifier.marksEnd() ) // resources methods
       {
          // use any available resource method for further mathing by mimetype, etc
          for(ResourceMethod resourceMethod : methodTarget.model.getResourceMethods())
@@ -212,7 +213,7 @@ public class StatefulResourceResolver
          {
             ResourceMethod method = it.next();
             RegexQualifier qualifier = method.resolve(uriToken);
-            if(qualifier!=null && ("".equals(qualifier.nextUriToken) || "/".equals(qualifier.nextUriToken)))
+            if(qualifier!=null && qualifier.marksEnd() )
             {
                matches.add(
                  new ResourceMatch<ResourceMethod>(method, qualifier)

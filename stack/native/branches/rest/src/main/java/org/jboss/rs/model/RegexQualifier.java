@@ -68,6 +68,11 @@ public class RegexQualifier implements Comparable
 
    }
 
+   public boolean marksEnd()
+   {
+      return ("".equals(nextUriToken) || "/".equals(nextUriToken));
+   }
+   
    public String toString()
    {
       return "RegexQualifier{groups="+ numGroups +", patternLength="+patternLength+"}";
