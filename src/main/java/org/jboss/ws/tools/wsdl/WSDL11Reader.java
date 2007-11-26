@@ -31,12 +31,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.wsdl.Binding;
 import javax.wsdl.BindingInput;
@@ -153,8 +151,6 @@ public class WSDL11Reader
    private Map<String, List<Binding>> bindingsByNamespace = new HashMap<String, List<Binding>>();
    private Map<String, List<PortType>> portTypesByNamespace = new HashMap<String, List<PortType>>();
    private Map<String, List<Message>> messagesByNamespace = new HashMap<String, List<Message>>();
-   
-   private Set<Definition> importedDefinitions = new HashSet<Definition>();
 
    /**
     * Takes a WSDL11 Definition element and converts into
@@ -189,7 +185,6 @@ public class WSDL11Reader
    private void processTopLevelElements(Definition srcWsdl)
    {
       String targetNS = srcWsdl.getTargetNamespace();
-      importedDefinitions.add(srcWsdl);
 
       // Messages
       Collection<Message> messages = srcWsdl.getMessages().values();
@@ -253,10 +248,7 @@ public class WSDL11Reader
          for (Import imp : imports)
          {
             Definition impWsdl = imp.getDefinition();
-            if (!importedDefinitions.contains(impWsdl))
-            {
-               processTopLevelElements(impWsdl);
-            }
+            processTopLevelElements(impWsdl);
          }
       }
    }

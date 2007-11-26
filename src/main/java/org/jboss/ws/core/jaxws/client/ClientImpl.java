@@ -23,7 +23,6 @@ package org.jboss.ws.core.jaxws.client;
 
 // $Id$
 
-import java.net.URI;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
@@ -40,9 +37,6 @@ import javax.xml.ws.Binding;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.EndpointReference;
 import javax.xml.ws.WebServiceException;
-import javax.xml.ws.addressing.AddressingBuilder;
-import javax.xml.ws.addressing.AddressingProperties;
-import javax.xml.ws.addressing.JAXWSAConstants;
 import javax.xml.ws.handler.Handler;
 import javax.xml.ws.handler.HandlerResolver;
 import javax.xml.ws.handler.MessageContext;
@@ -67,14 +61,6 @@ import org.jboss.ws.core.jaxws.handler.HandlerResolverImpl;
 import org.jboss.ws.core.jaxws.handler.MessageContextJAXWS;
 import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
 import org.jboss.ws.core.soap.MessageContextAssociation;
-import org.jboss.ws.extensions.addressing.AddressingClientUtil;
-import org.jboss.ws.extensions.wsrm.RMConstant;
-import org.jboss.ws.extensions.wsrm.RMSequenceImpl;
-import org.jboss.ws.extensions.wsrm.client_api.RMException;
-import org.jboss.ws.extensions.wsrm.client_api.RMProvider;
-import org.jboss.ws.extensions.wsrm.client_api.RMSequence;
-import org.jboss.ws.extensions.wsrm.spi.Provider;
-import org.jboss.ws.extensions.wsrm.spi.protocol.CreateSequenceResponse;
 import org.jboss.ws.metadata.config.Configurable;
 import org.jboss.ws.metadata.config.ConfigurationProvider;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
@@ -88,7 +74,7 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  * @author Thomas.Diesler@jboss.org
  * @since 04-Jul-2006
  */
-public class ClientImpl extends CommonClient implements RMProvider, BindingProvider21, Configurable
+public class ClientImpl extends CommonClient implements BindingProvider21, Configurable
 {
    // provide logging
    private static Logger log = Logger.getLogger(ClientImpl.class);
@@ -101,26 +87,6 @@ public class ClientImpl extends CommonClient implements RMProvider, BindingProvi
 
    private Map<HandlerType, HandlerChainExecutor> executorMap = new HashMap<HandlerType, HandlerChainExecutor>();
    private static HandlerType[] HANDLER_TYPES = new HandlerType[] { HandlerType.PRE, HandlerType.ENDPOINT, HandlerType.POST };
-
-   // WS-RM locking utility
-   private final Lock wsrmLock = new ReentrantLock();
-   // WS-RM sequence associated with the proxy
-   private RMSequenceImpl wsrmSequence;
-
-   public final Lock getWSRMLock()
-   {
-      return this.wsrmLock;
-   }
-
-   public final void setWSRMSequence(RMSequenceImpl wsrmSequence)
-   {
-      this.wsrmSequence = wsrmSequence;
-   }
-
-   public final RMSequenceImpl getWSRMSequence()
-   {
-      return this.wsrmSequence;
-   }
 
    public ClientImpl(EndpointMetaData epMetaData, HandlerResolver handlerResolver)
    {
@@ -262,44 +228,15 @@ public class ClientImpl extends CommonClient implements RMProvider, BindingProvi
    // Invoked by the proxy invokation handler
    public Object invoke(QName opName, Object[] args, Map<String, Object> resContext) throws RemoteException
    {
-      this.wsrmLock.lock();
+      // Associate a message context with the current thread
+      CommonMessageContext msgContext = new SOAPMessageContextJAXWS();
+      MessageContextAssociation.pushMessageContext(msgContext);
 
-      try
-      {
-         // Associate a message context with the current thread
-         CommonMessageContext msgContext = new SOAPMessageContextJAXWS();
-         MessageContextAssociation.pushMessageContext(msgContext);
-
-         // The contents of the request context are used to initialize the message context (see section 9.4.1)
-         // prior to invoking any handlers (see chapter 9) for the outbound message. Each property within the
-         // request context is copied to the message context with a scope of HANDLER.
-         Map<String, Object> reqContext = getBindingProvider().getRequestContext();
-
-         if (this.wsrmSequence != null)
-         {
-            if (RMConstant.PROTOCOL_OPERATION_QNAMES.contains(opName) == false)
-            {
-               if (this.wsrmSequence.getBackPort() != null)
-               {
-                  // rewrite ReplyTo to use client addressable back port
-                  Map<String, Object> requestContext = getBindingProvider().getRequestContext();
-                  AddressingProperties addressingProps = (AddressingProperties)requestContext.get(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND);
-                  addressingProps.setReplyTo(AddressingBuilder.getAddressingBuilder().newEndpointReference(this.wsrmSequence.getBackPort()));
-               }
-               Map<String, Object> rmRequestContext = new HashMap<String, Object>();
-               QName sequenceQName = Provider.get().getConstants().getSequenceQName();
-               rmRequestContext.put(RMConstant.OPERATION_QNAME, sequenceQName);
-               rmRequestContext.put(RMConstant.SEQUENCE_REFERENCE, wsrmSequence);
-               reqContext.put(RMConstant.REQUEST_CONTEXT, rmRequestContext);
-            }
-         }
-
-         msgContext.putAll(reqContext);
-      }
-      finally
-      {
-         this.wsrmLock.unlock();
-      }
+      // The contents of the request context are used to initialize the message context (see section 9.4.1)
+      // prior to invoking any handlers (see chapter 9) for the outbound message. Each property within the
+      // request context is copied to the message context with a scope of HANDLER.
+      Map<String, Object> reqContext = getBindingProvider().getRequestContext();
+      msgContext.putAll(reqContext);
 
       try
       {
@@ -322,7 +259,7 @@ public class ClientImpl extends CommonClient implements RMProvider, BindingProvi
       finally
       {
          // Copy the inbound msg properties to the binding's response context
-         CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
+         msgContext = MessageContextAssociation.peekMessageContext();
          for (String key : msgContext.keySet())
          {
             Object value = msgContext.get(key);
@@ -479,59 +416,4 @@ public class ClientImpl extends CommonClient implements RMProvider, BindingProvi
       Object bool = getRequestContext().get(BindingProvider.SESSION_MAINTAIN_PROPERTY);
       return Boolean.TRUE.equals(bool);
    }
-
-   ///////////////////
-   // WS-RM support //
-   ///////////////////
-   @SuppressWarnings("unchecked")
-   public RMSequence createSequence(boolean addressableClient) throws RMException
-   {
-      this.getWSRMLock().lock();
-      try
-      {
-         if (this.wsrmSequence != null)
-            throw new IllegalStateException("Sequence already registered with proxy instance");
-
-         try
-         {
-            // set up addressing data
-            String address = getEndpointMetaData().getEndpointAddress();
-            String action = RMConstant.CREATE_SEQUENCE_WSA_ACTION;
-            URI backPort = null;
-            AddressingProperties addressingProps = null;
-            if (addressableClient)
-            {
-               backPort = new URI("http://localhost:8888/packports/1234567890-1234567890/1234567890-1234567890"); // TODO: use generator
-               addressingProps = AddressingClientUtil.createDefaultProps(action, address);
-               addressingProps.setReplyTo(AddressingBuilder.getAddressingBuilder().newEndpointReference(backPort));
-            }
-            else
-            {
-               addressingProps = AddressingClientUtil.createAnonymousProps(action, address);
-            }
-            Map requestContext = getBindingProvider().getRequestContext();
-            requestContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND, addressingProps);
-            // set up wsrm request context
-            QName createSequenceQN = Provider.get().getConstants().getCreateSequenceQName();
-            Map rmRequestContext = new HashMap();
-            rmRequestContext.put(RMConstant.OPERATION_QNAME, createSequenceQN);
-            requestContext.put(RMConstant.REQUEST_CONTEXT, rmRequestContext);
-            // invoke stub method
-            invoke(createSequenceQN, new Object[] {}, getBindingProvider().getResponseContext());
-            // read WSRM sequence id from response context
-            Map rmResponseContext = (Map)getBindingProvider().getResponseContext().get(RMConstant.RESPONSE_CONTEXT);
-            String id = ((CreateSequenceResponse)((List)rmResponseContext.get(RMConstant.DATA)).get(0)).getIdentifier();
-            return this.wsrmSequence = new RMSequenceImpl(this, id, backPort);
-         }
-         catch (Exception e)
-         {
-            throw new RMException("Unable to create WSRM sequence", e);
-         }
-      }
-      finally
-      {
-         this.getWSRMLock().unlock();
-      }
-   }
-
 }

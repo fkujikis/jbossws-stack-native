@@ -21,20 +21,44 @@
 */
 package org.jboss.ws.extensions.security;
 
-import java.util.Collection;
+import javax.xml.namespace.QName;
 
-import org.jboss.ws.extensions.security.element.SecurityProcess;
-import org.w3c.dom.Document;
 
 /**
- * <code>DecodingOperation</code> represents an operation that is applied to a
- * WS-Security encoded message to both convert and verify the contents of the
- * message.
- *
  * @author <a href="mailto:jason.greene@jboss.com">Jason T. Greene</a>
  * @version $Revision$
  */
-public interface DecodingOperation extends Operation
+public class SecurityTokenUnavailableException extends WSSecurityException
 {
-   public Collection<String> process(Document message, SecurityProcess process) throws WSSecurityException;
+   public static final QName faultCode = new QName(Constants.WSSE_NS, "SecurityTokenUnavailable", Constants.WSSE_PREFIX);
+
+   public static final String faultString = "Referenced security token could not be retrieved.";
+
+   public SecurityTokenUnavailableException()
+   {
+      super(faultString);
+      setFaultCode(faultCode);
+      setFaultString(faultString);
+   }
+
+   public SecurityTokenUnavailableException(Throwable cause)
+   {
+      super(faultString);
+      setFaultCode(faultCode);
+      setFaultString(faultString);
+   }
+
+   public SecurityTokenUnavailableException(String message)
+   {
+      super(message);
+      setFaultCode(faultCode);
+      setFaultString(message);
+   }
+
+   public SecurityTokenUnavailableException(String message, Throwable cause)
+   {
+      super(message, cause);
+      setFaultCode(faultCode);
+      setFaultString(message);
+   }
 }

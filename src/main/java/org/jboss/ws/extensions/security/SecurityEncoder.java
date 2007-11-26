@@ -25,7 +25,6 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 
 import org.jboss.ws.extensions.security.element.SecurityHeader;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -59,10 +58,7 @@ public class SecurityEncoder
          wsse.setAttributeNS(soapHeader.getNamespaceURI(), soapHeader.getPrefix() + ":mustUnderstand", "1");
          soapHeader.insertBefore(wsse, soapHeader.getFirstChild());
       }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
+      catch (Exception e) {}
 
    }
 
@@ -83,7 +79,7 @@ public class SecurityEncoder
             throw new WSSecurityException("Error constructing operation: " + op.getOperation());
          }
 
-         operation.process(message, op.getTargets(), op.getCertificateAlias(), op.getCredential(), op.getAlgorithm(), op.getKeyWrapAlgorithm(), op.getTokenRefType());
+         operation.process(message, op.getTargets(), op.getCertificateAlias(), op.getCredential(), op.getAlgorithm());
       }
       attachHeader(header, message);
    }

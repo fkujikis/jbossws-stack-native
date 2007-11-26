@@ -105,7 +105,6 @@ public class SOAPBindingTestCase extends JBossWSTest
       List<Handler> handlerChain = new ArrayList<Handler>();
       handlerChain.addAll(provider.getBinding().getHandlerChain());
       handlerChain.add(new ClientHandler());
-      handlerChain.add(new ClientHandler2());
       provider.getBinding().setHandlerChain(handlerChain);
 
       String nsURI = port.namespace();

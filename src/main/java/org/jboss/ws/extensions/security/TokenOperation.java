@@ -22,7 +22,6 @@
 package org.jboss.ws.extensions.security;
 
 import org.jboss.ws.extensions.security.element.Token;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.w3c.dom.Document;
 
 /**

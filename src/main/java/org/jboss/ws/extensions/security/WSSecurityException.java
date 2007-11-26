@@ -21,20 +21,54 @@
 */
 package org.jboss.ws.extensions.security;
 
-import java.util.Collection;
-
-import org.jboss.ws.extensions.security.element.SecurityProcess;
-import org.w3c.dom.Document;
+import javax.xml.namespace.QName;
 
 /**
- * <code>DecodingOperation</code> represents an operation that is applied to a
- * WS-Security encoded message to both convert and verify the contents of the
- * message.
- *
  * @author <a href="mailto:jason.greene@jboss.com">Jason T. Greene</a>
  * @version $Revision$
  */
-public interface DecodingOperation extends Operation
+public class WSSecurityException extends Exception
 {
-   public Collection<String> process(Document message, SecurityProcess process) throws WSSecurityException;
+   private boolean internal = false;
+
+   private QName faultCode = new QName(Constants.JBOSS_WSSE_NS, "InternalError", Constants.JBOSS_WSSE_PREFIX);
+
+   private String faultString = "An internal WS-Security error occurred. See log for details";
+
+   public WSSecurityException(String message)
+   {
+      super(message);
+      this.internal = true;
+   }
+
+   public WSSecurityException(String message, Throwable cause)
+   {
+      super(message, cause);
+      this.internal = true;
+   }
+
+   protected void setFaultCode(QName faultCode)
+   {
+      this.faultCode = faultCode;
+   }
+
+   protected void setFaultString(String faultMessage)
+   {
+      this.faultString = faultMessage;
+   }
+
+   public boolean isInternalError()
+   {
+      return internal;
+   }
+
+   public QName getFaultCode()
+   {
+      return faultCode;
+   }
+
+   public String getFaultString()
+   {
+      return faultString;
+   }
 }

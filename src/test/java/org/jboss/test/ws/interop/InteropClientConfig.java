@@ -65,7 +65,7 @@ public class InteropClientConfig {
                Iterator parameter = DOMUtils.getChildElements(child, "param");
                while(parameter.hasNext())
                {
-                  Element param = (Element)parameter.next();
+                  Element param = (Element)it.next();
                   String key = DOMUtils.getAttributeValue(param, "name");
                   String value = DOMUtils.getAttributeValue(param, "value");
                   cs.getParameterMap().put(key, value);

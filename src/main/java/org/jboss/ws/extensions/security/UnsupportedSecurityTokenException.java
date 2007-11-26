@@ -21,20 +21,44 @@
 */
 package org.jboss.ws.extensions.security;
 
-import java.util.Collection;
+import javax.xml.namespace.QName;
 
-import org.jboss.ws.extensions.security.element.SecurityProcess;
-import org.w3c.dom.Document;
 
 /**
- * <code>DecodingOperation</code> represents an operation that is applied to a
- * WS-Security encoded message to both convert and verify the contents of the
- * message.
- *
  * @author <a href="mailto:jason.greene@jboss.com">Jason T. Greene</a>
  * @version $Revision$
  */
-public interface DecodingOperation extends Operation
+public class UnsupportedSecurityTokenException extends WSSecurityException
 {
-   public Collection<String> process(Document message, SecurityProcess process) throws WSSecurityException;
+   public static final QName faultCode = new QName("UnsupportedSecurityToken", Constants.WSSE_PREFIX, Constants.WSSE_NS);
+
+   public static final String faultString = "An unsupported token was provided.";
+
+   public UnsupportedSecurityTokenException()
+   {
+      super(faultString);
+      setFaultCode(faultCode);
+      setFaultString(faultString);
+   }
+
+   public UnsupportedSecurityTokenException(Throwable cause)
+   {
+      super(faultString);
+      setFaultCode(faultCode);
+      setFaultString(faultString);
+   }
+
+   public UnsupportedSecurityTokenException(String message)
+   {
+      super(message);
+      setFaultCode(faultCode);
+      setFaultString(message);
+   }
+
+   public UnsupportedSecurityTokenException(String message, Throwable cause)
+   {
+      super(message, cause);
+      setFaultCode(faultCode);
+      setFaultString(message);
+   }
 }

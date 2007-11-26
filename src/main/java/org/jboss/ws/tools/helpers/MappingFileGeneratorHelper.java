@@ -298,7 +298,7 @@ public class MappingFileGeneratorHelper
                xt = element.getTypeDefinition();
                primitive = unwrapper.primitive;
                partName = element.getName();
-               containingElement = containingElement + ToolsUtils.firstLetterUpperCase(unwrapper.unwrappedElement.getName());
+               containingElement = containingElement + unwrapper.unwrappedElement.getName();
                array = unwrapper.array;
                if (xt.getAnonymous())
                {
@@ -632,8 +632,7 @@ public class MappingFileGeneratorHelper
             QName xmlType;
             if (type.getAnonymous())
             {
-               String tempName = ToolsUtils.firstLetterUpperCase(containingElement) + ToolsUtils.firstLetterUpperCase(element.getName());
-               xmlType = new QName(type.getNamespace(), tempName);
+               xmlType = new QName(type.getNamespace(), containingElement + element.getName());
             }
             else
             {
@@ -716,8 +715,7 @@ public class MappingFileGeneratorHelper
             // Anonymous
             if (localName == null)
             {
-               String tempName = containingElement + ToolsUtils.firstLetterUpperCase(name);
-               javaType = getJavaTypeAsString(null, new QName(tempName), false, true);
+               javaType = getJavaTypeAsString(null, new QName(containingElement + name), false, true);
                StringBuilder temp = new StringBuilder();
                if (containingType != null && containingType.length() > 0)
                   temp.append(">").append(containingType);

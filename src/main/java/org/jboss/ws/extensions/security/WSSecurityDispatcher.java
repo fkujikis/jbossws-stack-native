@@ -39,8 +39,6 @@ import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.CommonSOAPFaultException;
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
-import org.jboss.ws.extensions.security.exception.InvalidSecurityHeaderException;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.wsse.Config;
@@ -208,20 +206,20 @@ public class WSSecurityDispatcher
       ArrayList<OperationDescription<RequireOperation>> operations = new ArrayList<OperationDescription<RequireOperation>>();
       RequireTimestamp requireTimestamp = requires.getRequireTimestamp();
       if (requireTimestamp != null)
-         operations.add(new OperationDescription<RequireOperation>(RequireTimestampOperation.class, null, requireTimestamp.getMaxAge(), null, null, null, null));
+         operations.add(new OperationDescription<RequireOperation>(RequireTimestampOperation.class, null, requireTimestamp.getMaxAge(), null, null));
 
       RequireSignature requireSignature = requires.getRequireSignature();
       if (requireSignature != null)
       {
          List<Target> targets = convertTargets(requireSignature.getTargets());
-         operations.add(new OperationDescription<RequireOperation>(RequireSignatureOperation.class, targets, null, null, null, null, null));
+         operations.add(new OperationDescription<RequireOperation>(RequireSignatureOperation.class, targets, null, null, null));
       }
 
       RequireEncryption requireEncryption = requires.getRequireEncryption();
       if (requireEncryption != null)
       {
          List<Target> targets = convertTargets(requireEncryption.getTargets());
-         operations.add(new OperationDescription<RequireOperation>(RequireEncryptionOperation.class, targets, null, null, null, null, null));
+         operations.add(new OperationDescription<RequireOperation>(RequireEncryptionOperation.class, targets, null, null, null));
       }
 
       return operations;
@@ -251,7 +249,7 @@ public class WSSecurityDispatcher
       Timestamp timestamp = opConfig.getTimestamp();
       if (timestamp != null)
       {
-         operations.add(new OperationDescription<EncodingOperation>(TimestampOperation.class, null, null, timestamp.getTtl(), null, null, null));
+         operations.add(new OperationDescription<EncodingOperation>(TimestampOperation.class, null, null, timestamp.getTtl(), null));
       }
 
       if (opConfig.getUsername() != null)
@@ -267,7 +265,7 @@ public class WSSecurityDispatcher
 
          if (user != null && pass != null)
          {
-            operations.add(new OperationDescription<EncodingOperation>(SendUsernameOperation.class, null, user.toString(), pass.toString(), null, null, null));
+            operations.add(new OperationDescription<EncodingOperation>(SendUsernameOperation.class, null, user.toString(), pass.toString(), null));
             ctx.put(StubExt.PROPERTY_AUTH_TYPE, StubExt.PROPERTY_AUTH_TYPE_WSSE);
          }
       }
@@ -279,20 +277,20 @@ public class WSSecurityDispatcher
          if (sign.isIncludeTimestamp())
          {
             if (timestamp == null)
-               operations.add(new OperationDescription<EncodingOperation>(TimestampOperation.class, null, null, null, null, null, null));
+               operations.add(new OperationDescription<EncodingOperation>(TimestampOperation.class, null, null, null, null));
 
             if (targets != null && targets.size() > 0)
                targets.add(new WsuIdTarget("timestamp"));
          }
 
-         operations.add(new OperationDescription<EncodingOperation>(SignatureOperation.class, targets, sign.getAlias(), null, null, null, sign.getTokenRefType()));
+         operations.add(new OperationDescription<EncodingOperation>(SignatureOperation.class, targets, sign.getAlias(), null, null));
       }
 
       Encrypt encrypt = opConfig.getEncrypt();
       if (encrypt != null)
       {
          List<Target> targets = convertTargets(encrypt.getTargets());
-         operations.add(new OperationDescription<EncodingOperation>(EncryptionOperation.class, targets, encrypt.getAlias(), null, encrypt.getAlgorithm(), encrypt.getWrap(), encrypt.getTokenRefType()));
+         operations.add(new OperationDescription<EncodingOperation>(EncryptionOperation.class, targets, encrypt.getAlias(), null, encrypt.getAlgorithm()));
       }
 
       if (operations.size() == 0)

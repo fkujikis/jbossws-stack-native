@@ -23,7 +23,6 @@ package org.jboss.ws.extensions.security;
 
 import java.util.List;
 
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.w3c.dom.Document;
 
 /**
@@ -36,5 +35,5 @@ import org.w3c.dom.Document;
  */
 public interface EncodingOperation extends Operation
 {
-   public void process(Document message, List<Target> targets, String alias, String credential, String algorithm, String wrap, String tokenRefType) throws WSSecurityException;
+   public void process(Document message, List<Target> targets, String alias, String credential, String algorithm) throws WSSecurityException;
 }

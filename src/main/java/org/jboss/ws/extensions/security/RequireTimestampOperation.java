@@ -27,8 +27,6 @@ import java.util.List;
 
 import org.jboss.ws.extensions.security.element.SecurityHeader;
 import org.jboss.ws.extensions.security.element.Timestamp;
-import org.jboss.ws.extensions.security.exception.FailedCheckException;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.w3c.dom.Document;
 
 
