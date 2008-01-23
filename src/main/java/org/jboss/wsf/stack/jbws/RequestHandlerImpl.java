@@ -77,7 +77,6 @@ import org.jboss.ws.core.soap.SOAPConnectionImpl;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.core.utils.ThreadLocalAssociation;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
-import org.jboss.ws.extensions.wsrm.RMConstant;
 import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
@@ -92,7 +91,6 @@ import org.jboss.wsf.spi.management.ServerConfigFactory;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.common.DOMWriter;
-import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Document;
 
 /**
@@ -304,10 +302,7 @@ public class RequestHandlerImpl implements RequestHandler
             }
          }
 
-         Map<String, Object> rmResCtx = (Map<String, Object>)msgContext.get(RMConstant.RESPONSE_CONTEXT);  
-         boolean isWsrmMessage = rmResCtx != null;
-         boolean isWsrmOneWay = isWsrmMessage && (Boolean)rmResCtx.get(RMConstant.ONE_WAY_OPERATION);
-         if ((outStream != null) && (isWsrmOneWay == false)) // RM hack
+         if (outStream != null)
             sendResponse(outStream, msgContext, isFault);
       }
       catch (Exception ex)
@@ -316,16 +311,11 @@ public class RequestHandlerImpl implements RequestHandler
       }
       finally
       {
-
-         // Cleanup outbound attachments
-         CommonMessageContext.cleanupAttachments( MessageContextAssociation.peekMessageContext() );         
-
          // Reset the message context association
          MessageContextAssociation.popMessageContext();
 
          // clear thread local storage
          ThreadLocalAssociation.clear();
-         DOMUtils.clearThreadLocals();
       }
    }
 

@@ -30,7 +30,6 @@ import java.net.URLClassLoader;
 import org.jboss.ws.WSException;
 import org.jboss.ws.metadata.builder.jaxws.JAXWSWebServiceMetaDataBuilder;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
-import org.jboss.ws.tools.io.NullPrintStream;
 import org.jboss.wsf.common.ResourceLoaderAdapter;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
@@ -51,7 +50,7 @@ final class JBossWSProviderImpl extends WSContractProvider
    private File outputDir = new File("output");
    private File resourceDir = null;
    private File sourceDir = null;
-   private PrintStream messageStream = NullPrintStream.getInstance();
+   private PrintStream messageStream = new NullPrintStream();
 
    private void createDirectories(File resourceDir, File sourceDir)
    {

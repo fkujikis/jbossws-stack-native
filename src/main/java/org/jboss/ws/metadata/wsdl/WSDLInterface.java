@@ -66,8 +66,6 @@ public class WSDLInterface extends Extendable
    private Map<QName, WSDLInterfaceOperation> operations = new LinkedHashMap<QName, WSDLInterfaceOperation>();
    /** Zero or more fault element information items */
    private Map<QName, WSDLInterfaceFault> faults = new LinkedHashMap<QName, WSDLInterfaceFault>();
-   
-   private WSDLDocumentation documentationElement;
 
    /** Construct a WSDL interface for a given WSDL definition */
    public WSDLInterface(WSDLDefinitions wsdlDefinitions, QName name)
@@ -159,15 +157,5 @@ public class WSDLInterface extends Extendable
    public void addFault(WSDLInterfaceFault fault)
    {
       faults.put(fault.getName(), fault);
-   }
-
-   public WSDLDocumentation getDocumentationElement()
-   {
-      return documentationElement;
-   }
-
-   public void setDocumentationElement(WSDLDocumentation documentationElement)
-   {
-      this.documentationElement = documentationElement;
    }
 }

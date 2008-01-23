@@ -238,13 +238,9 @@ public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
          // load all service endpoint interface classes
          for (UnifiedPortComponentRefMetaData pcr : serviceRef.getPortComponentRefs())
          {
-            String seiName = pcr.getServiceEndpointInterface();
-            if (seiName != null)
-            {
-               Class seiClass = contextCL.loadClass(seiName);
-               if (Remote.class.isAssignableFrom(seiClass) == false)
-                  throw new IllegalArgumentException("The SEI does not implement java.rmi.Remote: " + seiClass.getName());
-            }
+            Class seiClass = contextCL.loadClass(pcr.getServiceEndpointInterface());
+            if (Remote.class.isAssignableFrom(seiClass) == false)
+               throw new IllegalArgumentException("The SEI does not implement java.rmi.Remote: " + seiClass.getName());
          }
 
          // Setup the handler chain

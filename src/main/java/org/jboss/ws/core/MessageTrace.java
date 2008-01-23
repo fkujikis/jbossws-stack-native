@@ -23,17 +23,13 @@ package org.jboss.ws.core;
 
 // $Id$
 
-import java.io.ByteArrayInputStream;
-
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
-import javax.xml.transform.stream.StreamSource;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.core.soap.SOAPElementImpl;
 import org.jboss.ws.core.soap.SOAPElementWriter;
-import org.jboss.ws.core.soap.XMLFragment;
 import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
 
@@ -45,49 +41,44 @@ import org.w3c.dom.Element;
  */
 public final class MessageTrace
 {
-   private static final Logger msgLog = Logger.getLogger(MessageTrace.class);
+   private static Logger msgLog = Logger.getLogger(MessageTrace.class);
 
+   // Hide ctor
    private MessageTrace()
    {
-      // forbidden constructor
    }
 
-   public static void traceMessage(String messagePrefix, Object message)
+   public static void traceMessage(String messagePrefix, MessageAbstraction message)
    {
-      if (!msgLog.isTraceEnabled()) return;
-      
-      if (message instanceof SOAPMessage)
+      if (msgLog.isTraceEnabled())
       {
-         try
+         if (message instanceof SOAPMessage)
          {
-            SOAPEnvelope soapEnv = ((SOAPMessage)message).getSOAPPart().getEnvelope();
-            if (soapEnv != null)
+            try
             {
-               String envStr = SOAPElementWriter.writeElement((SOAPElementImpl)soapEnv, true);
-               msgLog.trace(messagePrefix + "\n" + envStr);
+               SOAPEnvelope soapEnv = ((SOAPMessage)message).getSOAPPart().getEnvelope();
+               if (soapEnv != null)
+               {
+                  String envStr = SOAPElementWriter.writeElement((SOAPElementImpl)soapEnv, true);
+                  msgLog.trace(messagePrefix + "\n" + envStr);
+               }
+            }
+            catch (SOAPException ex)
+            {
+               msgLog.error("Cannot trace SOAPMessage", ex);
             }
          }
-         catch (SOAPException ex)
+         else if (message instanceof HTTPMessageImpl)
          {
-            msgLog.error("Cannot trace SOAPMessage", ex);
+            HTTPMessageImpl httpMessage = (HTTPMessageImpl)message;
+            Element root = httpMessage.getXmlFragment().toElement();
+            String xmlString = DOMWriter.printNode(root, true);
+            msgLog.trace(messagePrefix + "\n" + xmlString);
          }
-      }
-      else if (message instanceof HTTPMessageImpl)
-      {
-         HTTPMessageImpl httpMessage = (HTTPMessageImpl)message;
-         Element root = httpMessage.getXmlFragment().toElement();
-         String xmlString = DOMWriter.printNode(root, true);
-         msgLog.trace(messagePrefix + "\n" + xmlString);
-      }
-      else if (message instanceof byte[])
-      {
-         Element root = new XMLFragment(new StreamSource(new ByteArrayInputStream((byte[])message))).toElement();
-         String xmlString = DOMWriter.printNode(root, true);
-         msgLog.trace(messagePrefix + "\n" + xmlString);
-      }
-      else
-      {
-          msgLog.warn("Unsupported message type: " + message);
+         else
+         {
+            msgLog.warn("Unsupported message type: " + message);
+         }
       }
    }
 }

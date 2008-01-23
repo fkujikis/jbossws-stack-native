@@ -93,13 +93,11 @@
 				<include name="jbossws-framework-scripts.zip"/>
 				<include name="jbossws-spi.jar"/>
 				<include name="jbossws-jboss40.jar"/>
-				<include name="jbossws-jboss421.jar"/>
 			</fileset>
 			<fileset dir="${core.dir}/output/lib">
 				<include name="jboss-jaxrpc.jar"/>
 				<include name="jboss-jaxws.jar"/>
-        <include name="jboss-jaxws-ext.jar"/>
-        <include name="jboss-saaj.jar"/>
+				<include name="jboss-saaj.jar"/>
 				<include name="jbossws-client.jar"/>
 				<include name="jbossws-core.jar"/>
 				<include name="jbossws-core-scripts.zip"/>
@@ -117,7 +115,7 @@
 				<include name="jaxb-xjc.jar"/>
 				<include name="jaxws-tools.jar"/>
 				<include name="jaxws-rt.jar"/>
-        <include name="jboss-xml-binding.jar"/>
+				<include name="jboss-xml-binding.jar"/>
 				<include name="juddi-service.sar"/>
 				<include name="policy.jar"/>
 				<include name="stax-api.jar"/>

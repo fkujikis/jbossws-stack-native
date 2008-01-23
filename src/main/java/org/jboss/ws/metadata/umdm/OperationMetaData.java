@@ -37,8 +37,9 @@ import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.core.soap.Use;
-import org.jboss.ws.extensions.wsrm.spi.RMProvider;
+import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
 import org.jboss.wsf.common.JavaUtils;
+import org.jboss.wsf.common.ResourceLoaderAdapter;
 import org.w3c.dom.Element;
 
 /**
@@ -66,7 +67,6 @@ public class OperationMetaData extends ExtensibleMetaData
    private List<ParameterMetaData> parameters = new ArrayList<ParameterMetaData>();
    private List<FaultMetaData> faults = new ArrayList<FaultMetaData>();
    private ParameterMetaData returnParam;
-   private String documentation;
 
    public OperationMetaData(EndpointMetaData epMetaData, QName qname, String javaName)
    {
@@ -185,7 +185,7 @@ public class OperationMetaData extends ExtensibleMetaData
             }
          }
 
-         if ((tmpMethod == null) && (epMetaData.getConfig().getRMMetaData() == null)) // RM hack
+         if (tmpMethod == null)
             throw new WSException("Cannot find java method: " + javaName);
       }
       return tmpMethod;
@@ -474,8 +474,7 @@ return false;
       }
 
       // Report unsynchronized java method
-      boolean isRMMethod = RMProvider.get().getConstants().getNamespaceURI().equals(qname.getNamespaceURI());
-      if ((javaMethod == null) && (isRMMethod == false)) // RM hack
+      if (javaMethod == null)
       {
          StringBuilder errMsg = new StringBuilder("Cannot synchronize to any of these methods:");
          for (Method method : unsynchronizedMethods)
@@ -512,15 +511,5 @@ return false;
          buffer.append(fault);
       }
       return buffer.toString();
-   }
-
-   public String getDocumentation()
-   {
-      return documentation;
-   }
-
-   public void setDocumentation(String documentation)
-   {
-      this.documentation = documentation;
    }
 }

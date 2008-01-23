@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/main/java"/>
-	<classpathentry kind="src" path="src/test-framework/java"/>
 	<classpathentry kind="src" path="output/tests/wsconsume/java"/>
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
@@ -11,7 +10,6 @@
 	<classpathentry kind="lib" path="thirdparty/jaxb-api.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jaxb-impl.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jaxb-xjc.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss-common-core.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss-dependency.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss-j2ee.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss-logging-spi.jar"/>
@@ -37,8 +35,9 @@
 	<classpathentry kind="lib" path="thirdparty/jaxws-rt.jar"/>
 	<classpathentry kind="lib" path="thirdparty/concurrent.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss-jaxb-intros.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jbossws-common.jar" sourcepath="thirdparty/jbossws-common-src.zip"/>
-	<classpathentry kind="lib" path="thirdparty/jbossws-spi.jar" sourcepath="thirdparty/jbossws-spi-src.zip"/>
+	<classpathentry kind="lib" path="thirdparty/ejb3.deployer/jboss-ejb3.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jbossws-spi.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss-jaxb-intros.jar"/>
 	<classpathentry kind="output" path="output/eclipse"/>
 </classpath>

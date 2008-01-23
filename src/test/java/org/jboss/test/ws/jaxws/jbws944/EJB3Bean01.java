@@ -28,15 +28,17 @@ import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 
+import org.jboss.annotation.ejb.RemoteBinding;
 import org.jboss.wsf.spi.annotation.WebContext;
 
 @WebService(name = "EJB3Bean", serviceName = "EJB3BeanService", targetNamespace = "http://org.jboss.ws/jbws944")
 @WebContext(contextRoot = "/jaxws-jbws944", urlPattern = "/FooBean01")
 @SOAPBinding(style = SOAPBinding.Style.RPC)
-@Remote({EJB3RemoteBusinessInterface.class,EJB3RemoteInterface.class})
+@Remote(EJB3RemoteInterface.class)
 @RemoteHome(EJB3RemoteHome.class)
+@RemoteBinding(jndiBinding = "/ejb3/EJB3EndpointInterface")
 @Stateless(name = "FooBean01")
-public class EJB3Bean01 implements EJB3RemoteBusinessInterface
+public class EJB3Bean01 implements EJB3RemoteInterface
 {
    @WebMethod
    public String echo(String input)

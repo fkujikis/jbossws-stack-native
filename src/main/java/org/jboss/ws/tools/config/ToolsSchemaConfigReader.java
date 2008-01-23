@@ -251,7 +251,7 @@ public class ToolsSchemaConfigReader implements ObjectModelFactory
       {
          String pkgname = attrs.getValue(PACKAGE_ATTRIBUTE);
          String ns = attrs.getValue(NAMESPACE_ATTRIBUTE);
-         globalc.packageNamespaceMap.put(ns, pkgname);
+         globalc.packageNamespaceMap.put(pkgname, ns);
       }
       return globalc;
    }

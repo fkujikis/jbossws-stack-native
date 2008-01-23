@@ -23,11 +23,12 @@ package javax.xml.ws.soap;
 
 // $Id$
 
+import java.util.Set;
+
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPFactory;
 import javax.xml.ws.Binding;
 import javax.xml.ws.WebServiceException;
-import java.util.Set;
 
 /** The <code>SOAPBinding</code> interface is an abstraction for
  *  the SOAP binding.

@@ -102,7 +102,7 @@ public class WSDLRequestHandler
    /**
     * Modify the location of wsdl and schema imports
     */
-   private void modifyAddressReferences(URL reqURL, String wsdlHost, String resPath, Element element) throws IOException
+   private void modifyAddressReferences(URL reqURL, String wsdlHost, String resPath, Element element) throws MalformedURLException
    {
       // map wsdl definition imports
       NodeList nlist = element.getChildNodes();
@@ -124,40 +124,13 @@ public class WSDLRequestHandler
                if (locationAttr != null)
                {
                   String orgLocation = locationAttr.getNodeValue();
-                  
-                  while (orgLocation.startsWith("./"))
-                     orgLocation = orgLocation.substring(2);
-                  
                   boolean isAbsolute = orgLocation.startsWith("http://") || orgLocation.startsWith("https://");
                   if (isAbsolute == false && orgLocation.startsWith(reqURL.getPath()) == false)
                   {
                      String newResourcePath = orgLocation;
 
                      if (resPath != null && resPath.indexOf("/") > 0)
-                     {
-                        String resParent = resPath.substring(0, resPath.lastIndexOf("/"));
-
-                        // replace parent traversal, results in resParent == null when successfully executed
-                        while (orgLocation.startsWith("../")  && resParent != null)
-                        {
-                           if (resParent.indexOf("/") > 0)
-                           {
-                              resParent = resParent.substring(0, resParent.lastIndexOf("/"));
-                              orgLocation = orgLocation.substring(3);
-                              newResourcePath = resParent + "/" + orgLocation;
-                           }
-                           else
-                           {
-                              orgLocation = orgLocation.substring(3);
-                              newResourcePath = orgLocation;
-                              resParent = null;
-                           }
-                        }
-
-                        // no parent traversal happend
-                        if(resParent!=null)
-                           newResourcePath = resParent +"/"+ orgLocation;
-                     }
+                        newResourcePath = resPath.substring(0, resPath.lastIndexOf("/") + 1) + orgLocation;
 
                      String reqPath = reqURL.getPath();
                      String completeHost = wsdlHost;
@@ -199,10 +172,10 @@ public class WSDLRequestHandler
                      int newPort = newURL.getPort();
                      
                      String newLocation = orgProtocol + "://" + newHost;
-                     if (newPort != -1)
-                        newLocation += ":" + newPort;
-                     else if (orgPort != -1)
+                     if (orgPort != -1)
                         newLocation += ":" + orgPort;
+                     else if (newPort != -1)
+                        newLocation += ":" + newPort;
                      
                      newLocation += orgPath;
                      locationAttr.setNodeValue(newLocation);

@@ -27,7 +27,6 @@ import java.util.Iterator;
 
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
-import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.ws.policy.Policy;
 import org.apache.ws.policy.util.PolicyFactory;
@@ -50,7 +49,6 @@ import org.jboss.ws.metadata.wsdl.WSDLBindingOperation;
 import org.jboss.ws.metadata.wsdl.WSDLBindingOperationInput;
 import org.jboss.ws.metadata.wsdl.WSDLBindingOperationOutput;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
-import org.jboss.ws.metadata.wsdl.WSDLDocumentation;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
 import org.jboss.ws.metadata.wsdl.WSDLExtensibilityElement;
 import org.jboss.ws.metadata.wsdl.WSDLImport;
@@ -106,15 +104,9 @@ public abstract class WSDLGenerator
       QName bindingQName = new QName(interfaceQName.getNamespaceURI(), interfaceQName.getLocalPart() + "Binding");
       WSDLBinding wsdlBinding = new WSDLBinding(wsdl, bindingQName);
       wsdlBinding.setInterfaceName(interfaceQName);
-      wsdlBinding.setType(endpoint.getBindingId());
       wsdl.addBinding(wsdlBinding);
       wsdlEndpoint.setBinding(bindingQName);
 
-      if (endpoint.getDocumentation() != null)
-      {
-         wsdlInterface.setDocumentationElement(new WSDLDocumentation(endpoint.getDocumentation()));
-      }
-      
       for (OperationMetaData operation : endpoint.getOperations())
       {
          processOperation(wsdlInterface, wsdlBinding, operation);
@@ -230,12 +222,6 @@ public abstract class WSDLGenerator
          wsdlBinding.addFault(bindingFault);
       }
 
-      // process optional documentation
-      if (operation.getDocumentation() != null)
-      {
-         interfaceOperation.setDocumentationElement(new WSDLDocumentation(operation.getDocumentation()));
-      }
-      
       wsdlInterface.addOperation(interfaceOperation);
       wsdlBinding.addOperation(bindingOperation);
    }
@@ -438,28 +424,9 @@ public abstract class WSDLGenerator
       String ns = service.getServiceName().getNamespaceURI();
       wsdl.setTargetNamespace(ns);
       wsdl.registerNamespaceURI(ns, "tns");
+      wsdl.registerNamespaceURI(Constants.NS_SOAP11, "soap");
       wsdl.registerNamespaceURI(Constants.NS_SCHEMA_XSD, "xsd");
 
-      String soapURI = null;
-      String soapPrefix = null;
-      for (EndpointMetaData ep : service.getEndpoints())
-      {
-         String bindingId = ep.getBindingId();
-         if (bindingId.startsWith(SOAPBinding.SOAP11HTTP_BINDING))
-         {
-            soapPrefix = "soap";
-            soapURI = Constants.NS_SOAP11;
-         }
-         else if (bindingId.startsWith(SOAPBinding.SOAP12HTTP_BINDING))
-         {
-            soapPrefix = "soap12";
-            soapURI = Constants.NS_SOAP12;
-         }
-      }
-      
-      if (soapURI != null && soapPrefix != null)
-         wsdl.registerNamespaceURI(soapURI, soapPrefix);
-      
       processTypes();
       processService(service);
 

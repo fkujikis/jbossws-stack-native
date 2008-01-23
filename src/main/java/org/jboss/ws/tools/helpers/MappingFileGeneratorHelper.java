@@ -25,7 +25,6 @@ import java.beans.Introspector;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -77,7 +76,6 @@ import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
 import org.jboss.ws.metadata.wsdl.xsd.SchemaUtils;
 import org.jboss.ws.tools.HeaderUtil;
-import org.jboss.ws.tools.NamespacePackageMapping;
 import org.jboss.ws.tools.RPCSignature;
 import org.jboss.ws.tools.ToolsUtils;
 import org.jboss.ws.tools.WSToolsConstants;
@@ -99,7 +97,6 @@ public class MappingFileGeneratorHelper
    private String typeNamespace;
    private String serviceName = null;
    private String packageName = null;
-   private Map<String, String> namespacePackageMap = null;
    private Set<String> registeredTypes = new HashSet<String>();
    private Set<String> registeredExceptions = new HashSet<String>();
 
@@ -110,13 +107,11 @@ public class MappingFileGeneratorHelper
 
    private String parameterStyle;
 
-   public MappingFileGeneratorHelper(WSDLDefinitions wsdl, String sname, Map<String, String> map, Class seiClass, LiteralTypeMapping ltm, String paramStyle)
+   public MappingFileGeneratorHelper(WSDLDefinitions wsdl, String sname, String pname, Class seiClass, LiteralTypeMapping ltm, String paramStyle)
    {
       this.wsdlDefinitions = wsdl;
       this.serviceName = sname;
-      String targetNS = wsdl.getTargetNamespace();
-      packageName = NamespacePackageMapping.getJavaPackageName(targetNS);
-      this.namespacePackageMap = map;
+      this.packageName = pname;
       this.typeMapping = ltm;
 
       this.wsdlStyle = utils.getWSDLStyle(wsdl);
@@ -154,7 +149,7 @@ public class MappingFileGeneratorHelper
       String targetNS = wsdlDefinitions.getTargetNamespace();
       String prefix = WSToolsConstants.WSTOOLS_CONSTANT_MAPPING_SERVICE_PREFIX;
       ServiceInterfaceMapping sim = new ServiceInterfaceMapping(jwm);
-      sim.setServiceInterface(getPackageName(targetNS) + "." + javaServiceName);
+      sim.setServiceInterface(packageName + "." + javaServiceName);
       sim.setWsdlServiceName(new QName(targetNS, serviceName, prefix));
 
       WSDLEndpoint[] endpoints = ser.getEndpoints();
@@ -200,7 +195,7 @@ public class MappingFileGeneratorHelper
             javaPortName += "_PortType";
 
          ServiceEndpointInterfaceMapping seim = new ServiceEndpointInterfaceMapping(jwm);
-         seim.setServiceEndpointInterface(getPackageName(targetNS) + "." + javaPortName);
+         seim.setServiceEndpointInterface(packageName + "." + javaPortName);
          seim.setWsdlPortType(new QName(targetNS, portName, "portTypeNS"));
          seim.setWsdlBinding(new QName(targetNS, bindName, "bindingNS"));
          constructServiceEndpointMethodMapping(seim, wsdlintf);
@@ -303,7 +298,7 @@ public class MappingFileGeneratorHelper
                xt = element.getTypeDefinition();
                primitive = unwrapper.primitive;
                partName = element.getName();
-               containingElement = containingElement + ToolsUtils.firstLetterUpperCase(unwrapper.unwrappedElement.getName());
+               containingElement = containingElement + unwrapper.unwrappedElement.getName();
                array = unwrapper.array;
                if (xt.getAnonymous())
                {
@@ -319,15 +314,11 @@ public class MappingFileGeneratorHelper
          //Check it is a holder.
          if (wiop.getInputByPartName(xmlName.getLocalPart()) == null)
          {
-            String nameSpace = null;
-            if (xt != null)
-            {
-               nameSpace = xt.getNamespace();
-            }
+
             if (xt instanceof XSSimpleTypeDefinition)
                xmlType = SchemaUtils.handleSimpleType((XSSimpleTypeDefinition)xt);
 
-            String javaType = getJavaTypeAsString(xmlName, xmlType, nameSpace, array, primitive);
+            String javaType = getJavaTypeAsString(xmlName, xmlType, array, primitive);
 
             if ((isDocStyle() == false && "void".equals(javaType)) == false)
             {
@@ -464,18 +455,11 @@ public class MappingFileGeneratorHelper
          QName xmlType = returnParameter.getType();
 
          XSTypeDefinition xt = schemaModel.getTypeDefinition(xmlType.getLocalPart(), xmlType.getNamespaceURI());
-         String nameSpace = null;
-         if (xt != null)
-         {
-            nameSpace = xt.getNamespace();
-         }
          if (xt instanceof XSSimpleTypeDefinition)
-         {
             xmlType = SchemaUtils.handleSimpleType((XSSimpleTypeDefinition)xt);
-         }
 
          WsdlReturnValueMapping wrvm = new WsdlReturnValueMapping(semm);
-         wrvm.setMethodReturnValue(getJavaTypeAsString(xmlName, xmlType, nameSpace, false, true));
+         wrvm.setMethodReturnValue(getJavaTypeAsString(xmlName, xmlType, false, true));
          QName messageName = WSDLUtils.getWsdl11Output(wiop).getMessageName();
          wrvm.setWsdlMessage(new QName(messageName.getNamespaceURI(), messageName.getLocalPart(), WSToolsConstants.WSTOOLS_CONSTANT_MAPPING_WSDL_MESSAGE_NS));
          wrvm.setWsdlMessagePartName(partName);
@@ -505,8 +489,7 @@ public class MappingFileGeneratorHelper
                if (isDocStyle())
                {
                   XSTypeDefinition xt = getXSType(input);
-                  // Don't unwrap the actual parameter.
-                  addJavaXMLTypeMap(xt, input.getElement().getLocalPart(), "", "", jwm, false);
+                  addJavaXMLTypeMap(xt, input.getElement().getLocalPart(), "", "", jwm, !isWrapped());
                }
                else
                {
@@ -520,8 +503,7 @@ public class MappingFileGeneratorHelper
                if (isDocStyle())
                {
                   XSTypeDefinition xt = getXSType(output);
-                  // Don't unwrap the response type.
-                  addJavaXMLTypeMap(xt, output.getElement().getLocalPart(), "", "", jwm, false);
+                  addJavaXMLTypeMap(xt, output.getElement().getLocalPart(), "", "", jwm, !isWrapped());
                }
                else
                {
@@ -540,7 +522,7 @@ public class MappingFileGeneratorHelper
                XSTypeDefinition xt = xsmodel.getTypeDefinition(xmlType.getLocalPart(), xmlType.getNamespaceURI());
                addJavaXMLTypeMap(xt, xmlName.getLocalPart(), "", "", jwm, true);
 
-               String exceptionType = getJavaTypeAsString(null, xmlType, xt.getNamespace(), false, true);
+               String exceptionType = getJavaTypeAsString(null, xmlType, false, true);
 
                if (registeredExceptions.contains(exceptionType) == false)
                {
@@ -648,8 +630,7 @@ public class MappingFileGeneratorHelper
             QName xmlType;
             if (type.getAnonymous())
             {
-               String tempName = ToolsUtils.firstLetterUpperCase(containingElement) + ToolsUtils.firstLetterUpperCase(element.getName());
-               xmlType = new QName(type.getNamespace(), tempName);
+               xmlType = new QName(type.getNamespace(), containingElement + element.getName());
             }
             else
             {
@@ -723,7 +704,7 @@ public class MappingFileGeneratorHelper
             }
          }
 
-         if ((skipWrapperArray && SchemaUtils.isWrapperArrayType(xt)) == false)
+         if ((skipWrapperArray && isRepresentsArray(xt)) == false)
          {
             jxtm = new JavaXmlTypeMapping(jwm);
             String javaType;
@@ -732,8 +713,7 @@ public class MappingFileGeneratorHelper
             // Anonymous
             if (localName == null)
             {
-               String tempName = containingElement + ToolsUtils.firstLetterUpperCase(name);
-               javaType = getJavaTypeAsString(null, new QName(tempName), xt.getNamespace(), false, true);
+               javaType = getJavaTypeAsString(null, new QName(containingElement + name), false, true);
                StringBuilder temp = new StringBuilder();
                if (containingType != null && containingType.length() > 0)
                   temp.append(">").append(containingType);
@@ -743,7 +723,7 @@ public class MappingFileGeneratorHelper
             }
             else
             {
-               javaType = getJavaTypeAsString(null, new QName(localName), xt.getNamespace(), false, true);
+               javaType = getJavaTypeAsString(null, new QName(localName), false, true);
                jxtm.setRootTypeQName(new QName(xt.getNamespace(), xt.getName(), "typeNS"));
             }
 
@@ -854,7 +834,7 @@ public class MappingFileGeneratorHelper
       }
    }
 
-   private String getJavaTypeAsString(QName xmlName, QName xmlType, String targetNS, boolean array, boolean primitive)
+   private String getJavaTypeAsString(QName xmlName, QName xmlType, boolean array, boolean primitive)
    {
       String jtype = null;
 
@@ -899,7 +879,7 @@ public class MappingFileGeneratorHelper
          if (className.charAt(0) == '>')
             className = className.substring(1);
          className = ToolsUtils.convertInvalidCharacters(className);
-         jtype = getPackageName(targetNS) + "." + utils.firstLetterUpperCase(className);
+         jtype = packageName + "." + utils.firstLetterUpperCase(className);
       }
       else
       {
@@ -917,6 +897,40 @@ public class MappingFileGeneratorHelper
    private boolean isDocStyle()
    {
       return Constants.DOCUMENT_LITERAL.equals(wsdlStyle);
+   }
+
+   /**
+    * Checks whether the type represents an array type
+    *
+    * @param xst
+    * @return true: type represents an array
+    */
+   private boolean isRepresentsArray(XSTypeDefinition xst)
+   {
+      boolean bool = false;
+      if (xst instanceof XSComplexTypeDefinition)
+      {
+         XSComplexTypeDefinition xc = (XSComplexTypeDefinition)xst;
+         if (xc.getContentType() == XSComplexTypeDefinition.CONTENTTYPE_EMPTY)
+            return false;
+         XSParticle xsp = xc.getParticle();
+
+         if (xsp == null)
+            return false;
+
+         XSTerm xsterm = xsp.getTerm();
+         if (xsterm instanceof XSModelGroup)
+         {
+            XSModelGroup xm = (XSModelGroup)xsterm;
+            XSObjectList xo = xm.getParticles();
+            if (xo.getLength() == 1)
+            {
+               XSParticle xp = (XSParticle)xo.item(0);
+               bool = xp.getMaxOccursUnbounded() || xp.getMaxOccurs() > 1;
+            }
+         }
+      }
+      return bool;
    }
 
    /**
@@ -947,7 +961,7 @@ public class MappingFileGeneratorHelper
       String targetNS = wsdlDefinitions.getTargetNamespace();
       MethodParamPartsMapping mppm = new MethodParamPartsMapping(semm);
       mppm.setParamPosition(paramPosition);
-      String javaType = getJavaTypeAsString(xmlName, xmlType, targetNS, array, primitive);
+      String javaType = getJavaTypeAsString(xmlName, xmlType, array, primitive);
       mppm.setParamType(javaType);
 
       //WSDL Message Mapping
@@ -958,20 +972,5 @@ public class MappingFileGeneratorHelper
       wmm.setWsdlMessagePartName(wsdlMessagePartName);
       mppm.setWsdlMessageMapping(wmm);
       return mppm;
-   }
-
-   private String getPackageName(String targetNamespace)
-   {
-      //Get it from global config
-      if (namespacePackageMap != null)
-      {
-         String pkg = namespacePackageMap.get(targetNamespace);
-         if (pkg != null)
-         {
-            return pkg;
-         }
-      }
-      //Default behaviour will always generate all classes in the SEI package only
-      return packageName;
    }
 }

@@ -24,7 +24,6 @@ package org.jboss.ws.extensions.security;
 import java.util.Collection;
 
 import org.jboss.ws.extensions.security.element.SecurityProcess;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.w3c.dom.Document;
 
 /**

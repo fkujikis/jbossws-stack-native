@@ -30,7 +30,6 @@ package javax.jws.soap;
  * @since 26-Apr-2005
  * @deprecated
  */
-@Deprecated
 public @interface SOAPMessageHandler
 {
 

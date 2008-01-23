@@ -29,7 +29,6 @@ import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.ComplexTypeSerializer;
 import org.jboss.ws.core.binding.SerializationContext;
 import org.jboss.ws.core.binding.BufferedStreamResult;
-import org.jboss.wsf.spi.binding.BindingCustomization;
 import org.w3c.dom.NamedNodeMap;
 
 import javax.xml.bind.JAXBContext;
@@ -100,8 +99,7 @@ public class JAXBSerializer extends ComplexTypeSerializer
       JAXBContext context = cache.get(types);
       if(null==context)
       {
-         BindingCustomization bindingCustomization = getBindingCustomization();
-         context = JAXBContextFactory.newInstance().createContext(types, bindingCustomization);
+         context = JAXBContextFactory.newInstance().createContext(types);
          cache.add(types, context);
       }
       return context;

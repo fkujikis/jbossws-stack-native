@@ -22,7 +22,6 @@
 package org.jboss.ws.extensions.security;
 
 import org.jboss.ws.extensions.security.element.SecurityHeader;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
 
 
 public class RequireSignatureOperation extends RequireTargetableOperation

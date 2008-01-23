@@ -35,11 +35,9 @@ import javax.xml.ws.WebServiceFeature;
 import javax.xml.ws.soap.SOAPBinding;
 import javax.xml.ws.spi.Provider;
 import javax.xml.ws.spi.ServiceDelegate;
-import javax.xml.ws.spi.Provider21;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
 import org.jboss.util.NotImplementedException;
-import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -48,7 +46,7 @@ import org.w3c.dom.Element;
  * @author Thomas.Diesler@jboss.com
  * @since 03-May-2006
  */
-public class ProviderImpl extends Provider21
+public class ProviderImpl extends Provider
 {
    // 6.2 Conformance (Concrete javax.xml.ws.spi.Provider required): An implementation MUST provide
    // a concrete class that extends javax.xml.ws.spi.Provider. Such a class MUST have a public constructor
@@ -61,7 +59,6 @@ public class ProviderImpl extends Provider21
    public ServiceDelegate createServiceDelegate(URL wsdlLocation, QName serviceName, Class serviceClass)
    {
       ServiceDelegateImpl delegate = new ServiceDelegateImpl(wsdlLocation, serviceName, serviceClass);
-      DOMUtils.clearThreadLocals();
       return delegate;
    }
 

@@ -23,7 +23,6 @@ package org.jboss.ws.extensions.security;
 
 import org.jboss.ws.extensions.security.element.BinarySecurityToken;
 import org.jboss.ws.extensions.security.element.X509Token;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
 
 
 /**

@@ -24,21 +24,15 @@ package org.jboss.ws.core.jaxws.handler;
 // $Id: MessageContextImpl.java 275 2006-05-04 21:36:29Z jason.greene@jboss.com $
 
 import javax.xml.ws.handler.MessageContext;
-import javax.xml.soap.AttachmentPart;
-import javax.xml.soap.SOAPException;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.binding.SerializationContext;
 import org.jboss.ws.core.jaxws.SerializationContextJAXWS;
 import org.jboss.ws.core.soap.MessageContextAssociation;
-import org.jboss.ws.core.soap.attachment.SwapableMemoryDataSource;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.xb.binding.NamespaceRegistry;
-
-import java.util.Iterator;
 
 /**
  * The interface MessageContext abstracts the message context that is processed by a handler in the handle  method.
@@ -116,16 +110,7 @@ public abstract class MessageContextJAXWS extends CommonMessageContext implement
       resContext.put(MessageContext.MESSAGE_OUTBOUND_PROPERTY, new Boolean(!outbound));
       
       MessageContextAssociation.pushMessageContext(resContext);
-      cleanupAttachments(reqContext);
 
       return resContext;
-   }
-
-   @Override
-   public void setOperationMetaData(OperationMetaData opMetaData)
-   {
-      super.setOperationMetaData(opMetaData);
-      if (opMetaData != null)
-         this.put(MessageContext.WSDL_OPERATION, opMetaData.getQName());
    }
 }

@@ -54,7 +54,7 @@ public class JBWS1581WarTestCase extends JBossWSTest
    
    public void testEJBVehicle() throws Exception
    {
-      EJB3Remote remote = (EJB3Remote)getInitialContext().lookup("/EJB3Bean/remote");
+      EJB3Remote remote = (EJB3Remote)getInitialContext().lookup("/ejb3/EJB3Bean");
       String retStr = remote.runTest("Hello World!");
       assertEquals("Hello World!", retStr);
    }

@@ -461,60 +461,6 @@
       </metainf>
     </jar>
     
-    <!-- jaxrpc-samples-serviceref -->
-    <war warfile="${tests.output.dir}/libs/jaxrpc-samples-serviceref.war" webxml="${tests.output.dir}/resources/jaxrpc/samples/serviceref/WEB-INF/web.xml">
-      <classes dir="${tests.output.dir}/classes">
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/TestEndpointImpl.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/TestEndpoint.class"/>
-      </classes>
-      <webinf dir="${tests.output.dir}/resources/jaxrpc/samples/serviceref/META-INF">
-        <include name="jaxrpc-mapping.xml"/>
-        <include name="wsdl/**"/>
-      </webinf>
-      <webinf dir="${tests.output.dir}/resources/jaxrpc/samples/serviceref/WEB-INF">
-        <include name="webservices.xml"/>
-      </webinf>
-    </war>
-    <jar destfile="${tests.output.dir}/libs/jaxrpc-samples-serviceref-client.jar">
-      <fileset dir="${tests.output.dir}/classes">
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/ApplicationClient.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/TestEndpointService.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/TestEndpoint.class"/>
-      </fileset>
-      <metainf dir="${tests.output.dir}/resources/jaxrpc/samples/serviceref/META-INF">
-        <include name="application-client.xml"/>
-        <include name="jboss-client.xml"/>
-        <include name="jaxrpc-mapping.xml"/>
-        <include name="wsdl/**"/>
-      </metainf>
-    </jar>
-    <war destfile="${tests.output.dir}/libs/jaxrpc-samples-serviceref-servlet-client.war" webxml="${tests.output.dir}/resources/jaxrpc/samples/serviceref/servlet-client/WEB-INF/web.xml">
-      <classes dir="${tests.output.dir}/classes">
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/ServletClient.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/TestEndpointService.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/TestEndpoint.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/ExampleHandler.class"/>
-      </classes>
-      <webinf dir="${tests.output.dir}/resources/jaxrpc/samples/serviceref/META-INF">
-        <include name="jaxrpc-mapping.xml"/>
-        <include name="wsdl/**"/>
-      </webinf>
-    </war>
-    <jar destfile="${tests.output.dir}/libs/jaxrpc-samples-serviceref-ejb-client.jar">
-      <fileset dir="${tests.output.dir}/classes">
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/EJBClient.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/EJBRemote.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/EJBRemoteHome.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/TestEndpointService.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/serviceref/TestEndpoint.class"/>
-      </fileset>
-      <metainf dir="${tests.output.dir}/resources/jaxrpc/samples/serviceref/META-INF">
-        <include name="ejb-jar.xml"/>
-        <include name="jaxrpc-mapping.xml"/>
-        <include name="wsdl/**"/>
-      </metainf>
-    </jar>
-    
     <!-- jaxrpc-samples-swa -->
     <war warfile="${tests.output.dir}/libs/jaxrpc-samples-swa.war" webxml="${tests.output.dir}/resources/jaxrpc/samples/swa/WEB-INF/web.xml">
       <classes dir="${tests.output.dir}/classes">
@@ -578,55 +524,6 @@
         <include name="jaxrpc-mapping.xml"/>
       </metainf>
     </jar>
-
-    <!-- jaxrpc-samples-wsaddr-hello.war -->
-    <war warfile="${tests.output.dir}/libs/jaxrpc-samples-wsaddr-hello.war"
-      webxml="${tests.output.dir}/resources/jaxrpc/samples/wsaddr/hello/WEB-INF/web.xml">
-      <classes dir="${tests.output.dir}/classes">
-        <include name="org/jboss/test/ws/jaxrpc/samples/wsaddr/replyto/Hello.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/wsaddr/replyto/Hello_*.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/wsaddr/replyto/HelloEndpointJSE.class"/>
-      </classes>
-      <webinf dir="${tests.output.dir}/resources/jaxrpc/samples/wsaddr/hello/WEB-INF">
-        <include name="jaxrpc-mapping.xml"/>
-        <include name="webservices.xml"/>
-        <include name="wsdl/**"/>
-      </webinf>
-    </war>
-    <war warfile="${tests.output.dir}/libs/jaxrpc-samples-wsaddr-replyto.war"
-      webxml="${tests.output.dir}/resources/jaxrpc/samples/wsaddr/replyto/WEB-INF/web.xml">
-      <classes dir="${tests.output.dir}/classes">
-        <include name="org/jboss/test/ws/jaxrpc/samples/wsaddr/replyto/ReplyTo.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/wsaddr/replyto/ReplyTo_*.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/wsaddr/replyto/ReplyToEndpointJSE.class"/>
-      </classes>
-      <webinf dir="${tests.output.dir}/resources/jaxrpc/samples/wsaddr/replyto/WEB-INF">
-        <include name="replyto-jaxrpc-mapping.xml"/>
-        <include name="webservices.xml"/>
-        <include name="wsdl/**"/>
-      </webinf>
-    </war>
-    <jar jarfile="${tests.output.dir}/libs/jaxrpc-samples-wsaddr-hello-client.jar">
-      <fileset dir="${tests.output.dir}/classes">
-        <include name="org/jboss/test/ws/jaxrpc/samples/wsaddr/replyto/Hello.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/wsaddr/replyto/Hello_*.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/wsaddr/replyto/ClientHandler.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/wsaddr/replyto/ReplyTo.class"/>
-        <include name="org/jboss/test/ws/jaxrpc/samples/wsaddr/replyto/ReplyTo_*.class"/>
-      </fileset>
-      <metainf dir="${tests.output.dir}/resources/jaxrpc/samples/wsaddr/hello/META-INF">
-        <include name="application-client.xml"/>
-        <include name="jboss-client.xml"/>
-      </metainf>
-      <metainf dir="${tests.output.dir}/resources/jaxrpc/samples/wsaddr/hello/WEB-INF">
-        <include name="jaxrpc-mapping.xml"/>
-        <include name="wsdl/**"/>
-      </metainf>
-      <metainf dir="${tests.output.dir}/resources/jaxrpc/samples/wsaddr/replyto/WEB-INF">
-        <include name="replyto-jaxrpc-mapping.xml"/>
-        <include name="wsdl/**"/>
-      </metainf>
-     </jar>
     
     <!-- jaxrpc-samples-wsbpel -->
     <war warfile="${tests.output.dir}/libs/jaxrpc-samples-wsbpel-hello.war" webxml="${tests.output.dir}/resources/jaxrpc/samples/wsbpel/hello/WEB-INF/web.xml">
