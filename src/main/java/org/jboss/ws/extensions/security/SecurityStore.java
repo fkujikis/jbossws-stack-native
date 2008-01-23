@@ -50,8 +50,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.extensions.security.exception.FailedAuthenticationException;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
 
 /**
  * <code>SecurityStore</code> holds and loads the keystore and truststore required for encyption and signing.
@@ -346,7 +344,7 @@ public class SecurityStore
 
       try
       {
-         Enumeration<String> i = keyStore.aliases();
+         Enumeration i = keyStore.aliases();
 
          while (i.hasMoreElements())
          {

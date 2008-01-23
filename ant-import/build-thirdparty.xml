@@ -57,7 +57,6 @@
     <get src="${jboss.repository}/jboss/jbossws-jboss40/${jbossws-jboss40}/lib/jbossws-jboss40-resources.zip" dest="${thirdparty.dir}/jbossws-jboss40-resources.zip" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/jbossws-jboss40/${jbossws-jboss40}/lib/jbossws-jboss40-src.zip" dest="${thirdparty.dir}/jbossws-jboss40-src.zip" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/jbossws-jboss42/${jbossws-jboss42}/lib/jbossws-jboss42.jar" dest="${thirdparty.dir}/jbossws-jboss421.jar" usetimestamp="true" verbose="true"/>
-    <get src="${jboss.repository}/jboss/jbossws-jboss42/${jbossws-jboss42}/lib/jbossws-jboss42-src.zip" dest="${thirdparty.dir}/jbossws-jboss421-src.zip" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/jbossws-jboss42/${jbossws-jboss42}/lib/jbossws-jboss42-resources.zip" dest="${thirdparty.dir}/jbossws-jboss42-resources.zip" usetimestamp="true" verbose="true"/>
 	      
     <get src="${jboss.repository}/apache-ant/${apache-ant}/lib/ant.jar" dest="${thirdparty.dir}/ant.jar" usetimestamp="true" verbose="true"/>
@@ -81,8 +80,8 @@
     <get src="${jboss.repository}/jboss/common-core/${jboss-common-core}/lib/jboss-common-core-sources.jar" dest="${thirdparty.dir}/jboss-common-core-sources.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/common-logging-log4j/${jboss-common-logging-log4j}/lib/jboss-logging-log4j.jar" dest="${thirdparty.dir}/jboss-logging-log4j.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/common-logging-spi/${jboss-common-logging-spi}/lib/jboss-logging-spi.jar" dest="${thirdparty.dir}/jboss-logging-spi.jar" usetimestamp="true" verbose="true"/>
+    <get src="${jboss.repository}/jboss/ejb3/${jboss-ejb3}/bin/ejb3.deployer" dest="${thirdparty.dir}/ejb3.deployer.zip" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/jaxr/${jboss-jaxr}/lib/juddi-service.sar" dest="${thirdparty.dir}/juddi-service.sar" usetimestamp="true" verbose="true"/>
-    <get src="${jboss.repository}/jboss/jboss-javaee/${jboss-javaee}/lib/jboss-javaee.jar" dest="${thirdparty.dir}/jboss-javaee.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/jboss-vfs/${jboss-vfs}/lib/jboss-vfs.jar" dest="${thirdparty.dir}/jboss-vfs.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/jboss-vfs/${jboss-vfs}/lib/jboss-vfs-sources.jar" dest="${thirdparty.dir}/jboss-vfs-sources.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/jbossxb/${jboss-jbossxb-jboss40}/lib/jboss-xml-binding.jar" dest="${thirdparty.dir}/jboss-xml-binding.jar" usetimestamp="true" verbose="true"/>
@@ -123,6 +122,7 @@
 
     <mkdir dir="${thirdparty.dir}/jbpm-bpel"/>
     <unzip dest="${thirdparty.dir}/jbpm-bpel" src="${thirdparty.dir}/jbpm-bpel.sar"/>
+    <unzip dest="${thirdparty.dir}" src="${thirdparty.dir}/ejb3.deployer.zip"/>
     
     <checksum file="${core.dir}/version.properties" fileext=".md5"/>
   </target>
@@ -135,6 +135,8 @@
         <pathelement location="${thirdparty.dir}/jbossws-common.jar"/>
         <pathelement location="${thirdparty.dir}/jbossws-spi.jar"/>
        
+        <pathelement location="${thirdparty.dir}/ejb3.deployer/jboss-annotations-ejb3.jar"/>
+        <pathelement location="${thirdparty.dir}/ejb3.deployer/jboss-ejb3x.jar"/>
   		  <pathelement location="${thirdparty.dir}/ant.jar"/>
 		    <pathelement location="${thirdparty.dir}/activation.jar"/>
         <pathelement location="${thirdparty.dir}/dom4j.jar"/>
@@ -148,7 +150,6 @@
         <pathelement location="${thirdparty.dir}/jboss-common-core.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-dependency.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-j2ee.jar"/>
-        <pathelement location="${thirdparty.dir}/jboss-javaee.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-logging-spi.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-microcontainer.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-remoting.jar"/>

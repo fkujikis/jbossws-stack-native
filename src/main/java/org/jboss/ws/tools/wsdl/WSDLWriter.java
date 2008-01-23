@@ -66,6 +66,7 @@ public class WSDLWriter
     */
    protected boolean includeSchemaInWSDL = true;
 
+   /** Use WSDLDefinitions.writeWSDL instead. */
    public WSDLWriter(WSDLDefinitions wsdl)
    {
       if (wsdl == null)
@@ -132,7 +133,7 @@ public class WSDLWriter
          if (prefix.length() > 0)
          {
             buffer.append(" xmlns:" + prefix + "='" + namespaceURI + "'");
-            if (prefix.startsWith("soap"))
+            if (Constants.PREFIX_SOAP11.equals(prefix))
                soapPrefix = prefix;
          }
       }

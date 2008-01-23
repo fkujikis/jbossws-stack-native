@@ -47,7 +47,6 @@ import javax.xml.ws.WebServiceFeature;
 import javax.xml.ws.Service.Mode;
 import javax.xml.ws.handler.HandlerResolver;
 import javax.xml.ws.spi.ServiceDelegate;
-import javax.xml.ws.spi.ServiceDelegate21;
 
 import org.jboss.logging.Logger;
 import org.jboss.util.NotImplementedException;
@@ -57,7 +56,6 @@ import org.jboss.ws.core.jaxws.client.ClientProxy;
 import org.jboss.ws.core.jaxws.client.DispatchImpl;
 import org.jboss.ws.core.jaxws.client.ServiceObjectFactoryJAXWS;
 import org.jboss.ws.core.jaxws.handler.HandlerResolverImpl;
-import org.jboss.ws.extensions.wsrm.api.RMProvider;
 import org.jboss.ws.metadata.builder.jaxws.JAXWSClientMetaDataBuilder;
 import org.jboss.ws.metadata.builder.jaxws.JAXWSMetaDataBuilder;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
@@ -86,7 +84,7 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  * @author Thomas.Diesler@jboss.com
  * @since 03-May-2006
  */
-public class ServiceDelegateImpl extends ServiceDelegate21
+public class ServiceDelegateImpl extends ServiceDelegate
 {
    // provide logging
    private final Logger log = Logger.getLogger(ServiceDelegateImpl.class);
@@ -392,7 +390,7 @@ public class ServiceDelegateImpl extends ServiceDelegate21
          T proxy;
          try 
          {
-            proxy = (T)Proxy.newProxyInstance(cl, new Class[] { seiClass, RMProvider.class, BindingProvider.class, StubExt.class }, handler);
+            proxy = (T)Proxy.newProxyInstance(cl, new Class[] { seiClass, BindingProvider.class, StubExt.class }, handler);
          }
          catch (RuntimeException rte)
          {

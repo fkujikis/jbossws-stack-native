@@ -37,7 +37,6 @@ import javax.xml.namespace.QName;
 
 import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.annotation.Documentation;
 import org.jboss.ws.extensions.policy.annotation.PolicyAttachment;
 import org.jboss.ws.extensions.policy.metadata.PolicyMetaDataBuilder;
 import org.jboss.ws.metadata.builder.MetaDataBuilder;
@@ -132,15 +131,11 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
          processSOAPBinding(sepMetaData, seiClass);
 
          // Process an optional @BindingType annotation
-         processBindingType(sepMetaData, sepClass);
+         processBindingType(sepMetaData, seiClass);
 
          // process config
-         processEndpointConfig(dep, sepMetaData, sepClass, linkName);
+         processEndpointConfig(sepClass, linkName, sepMetaData);
 
-         // Process endpoint documentation
-         if (seiClass.isAnnotationPresent(Documentation.class))
-            sepMetaData.setDocumentation(seiClass.getAnnotation(Documentation.class).content());
-         
          // Process web methods
          processWebMethods(sepMetaData, seiClass);
 

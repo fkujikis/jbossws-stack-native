@@ -32,7 +32,6 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.wsdl.Definition;
@@ -121,12 +120,11 @@ public class WSDLFilePublisher
             Definition wsdl11Definition = wsdlDefinitions.getWsdlOneOneDefinition();
             if (wsdl11Definition != null)
             {
-               List<String> published = new LinkedList<String>();
-               publishWsdlImports(wsdlFile.toURL(), wsdl11Definition, published);
+               publishWsdlImports(wsdlFile.toURL(), wsdl11Definition);
 
                // Publish XMLSchema imports
                Document document = wsdlDefinitions.getWsdlDocument();
-               publishSchemaImports(wsdlFile.toURL(), document.getDocumentElement(), published);
+               publishSchemaImports(wsdlFile.toURL(), document.getDocumentElement());
             }
             else
             {
@@ -146,7 +144,7 @@ public class WSDLFilePublisher
 
    /** Publish the wsdl imports for a given wsdl definition
     */
-   private void publishWsdlImports(URL parentURL, Definition parentDefinition, List<String> published) throws Exception
+   private void publishWsdlImports(URL parentURL, Definition parentDefinition) throws Exception
    {
       String baseURI = parentURL.toExternalForm();
 
@@ -161,16 +159,6 @@ public class WSDLFilePublisher
             // its an external import, don't publish locally
             if (locationURI.startsWith("http://") == false)
             {
-               // infinity loops prevention
-               if (published.contains(locationURI))
-               {
-                  return;
-               }
-               else
-               {
-                  published.add(locationURI);
-               }
-               
                URL targetURL = new URL(baseURI.substring(0, baseURI.lastIndexOf("/") + 1) + locationURI);
                File targetFile = new File(targetURL.getPath());
                targetFile.getParentFile().mkdirs();
@@ -184,12 +172,12 @@ public class WSDLFilePublisher
                if (log.isDebugEnabled())
                   log.debug("WSDL import published to: " + targetURL);
 
-               // recursively publish imports
-               publishWsdlImports(targetURL, subdef, published);
+               // recursivly publish imports
+               publishWsdlImports(targetURL, subdef);
 
                // Publish XMLSchema imports
                Element subdoc = DOMUtils.parse(targetURL.openStream());
-               publishSchemaImports(targetURL, subdoc, published);
+               publishSchemaImports(targetURL, subdoc);
             }
          }
       }
@@ -197,7 +185,7 @@ public class WSDLFilePublisher
 
    /** Publish the schema imports for a given wsdl definition
     */
-   private void publishSchemaImports(URL parentURL, Element element, List<String> published) throws Exception
+   private void publishSchemaImports(URL parentURL, Element element) throws Exception
    {
       String baseURI = parentURL.toExternalForm();
 
@@ -212,16 +200,6 @@ public class WSDLFilePublisher
             {
                if (schemaLocation.startsWith("http://") == false)
                {
-                  // infinity loops prevention
-                  if (published.contains(schemaLocation))
-                  {
-                     return;
-                  }
-                  else
-                  {
-                     published.add(schemaLocation);
-                  }
-                  
                   URL xsdURL = new URL(baseURI.substring(0, baseURI.lastIndexOf("/") + 1) + schemaLocation);
                   File targetFile = new File(xsdURL.getPath());
                   targetFile.getParentFile().mkdirs();
@@ -251,13 +229,13 @@ public class WSDLFilePublisher
 
                   // recursivly publish imports
                   Element subdoc = DOMUtils.parse(xsdURL.openStream());
-                  publishSchemaImports(xsdURL, subdoc, published);
+                  publishSchemaImports(xsdURL, subdoc);
                }
             }
          }
          else
          {
-            publishSchemaImports(parentURL, childElement, published);
+            publishSchemaImports(parentURL, childElement);
          }
       }
    }

@@ -34,12 +34,11 @@ import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xml.security.transforms.TransformationException;
 import org.apache.xml.security.transforms.Transforms;
 import org.jboss.util.NotImplementedException;
-import org.jboss.ws.extensions.security.element.Reference;
+import org.jboss.ws.extensions.security.element.DirectReference;
 import org.jboss.ws.extensions.security.element.SecurityHeader;
 import org.jboss.ws.extensions.security.element.SecurityTokenReference;
 import org.jboss.ws.extensions.security.element.Signature;
 import org.jboss.ws.extensions.security.element.X509Token;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -120,7 +119,7 @@ public class SignatureOperation implements EncodingOperation
       }
    }
 
-   public void process(Document message, List<Target> targets, String alias, String credential, String algorithm, String keyWrapAlgorithm, String tokenRefType) throws WSSecurityException
+   public void process(Document message, List<Target> targets, String alias, String credential, String algorithm) throws WSSecurityException
    {
       Element envelope = message.getDocumentElement();
       XMLSignature sig;
@@ -168,11 +167,10 @@ public class SignatureOperation implements EncodingOperation
       if (token == null)
       {
          token = new X509Token(cert, message);
-         if (tokenRefType == null || Reference.DIRECT_REFERENCE.equals(tokenRefType))
-            header.addToken(token);
+         header.addToken(token);
       }
 
-      SecurityTokenReference reference = new SecurityTokenReference(Reference.getReference(tokenRefType, message, token));
+      SecurityTokenReference reference = new SecurityTokenReference(new DirectReference(message, token));
       sig.getKeyInfo().addUnknownElement(reference.getElement());
 
       header.addSecurityProcess(new Signature(sig));

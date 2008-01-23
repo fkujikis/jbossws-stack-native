@@ -308,8 +308,7 @@ public class ToolsHelper
          if (w2jc.mappingFileNeeded)
          {
             MappingFileGenerator mgf = new MappingFileGenerator(wsdl, new LiteralTypeMapping());
-            if (glc != null && glc.packageNamespaceMap != null)
-               mgf.setNamespacePackageMap(glc.packageNamespaceMap);        
+            mgf.setPackageName(getPackageName(wsdl, glc));
             mgf.setServiceName(wsdl.getServices()[0].getName().getLocalPart());
             mgf.setParameterStyle(w2jc.parameterStyle);
 
@@ -398,16 +397,21 @@ public class ToolsHelper
    private String getPackageName(WSDLDefinitions wsdl, GlobalConfig glc)
    {
       String targetNamespace = wsdl.getTargetNamespace();
-      //Get it from global config if it is overriden
+      //Get it from global config
       if (glc != null && glc.packageNamespaceMap != null)
       {
-         String pkg = glc.packageNamespaceMap.get(targetNamespace);
-         if (pkg != null)
+         Map<String, String> map = glc.packageNamespaceMap;
+         Iterator iter = map.keySet().iterator();
+         while (iter.hasNext())
          {
-            return pkg;
+            String pkg = (String)iter.next();
+            String ns = map.get(pkg);
+            if (ns.equals(targetNamespace))
+               return pkg;
          }
       }
-      return NamespacePackageMapping.getJavaPackageName(targetNamespace);
+
+      return NamespacePackageMapping.getJavaPackageName(wsdl.getTargetNamespace());
    }
 
    private void createDir(String path)

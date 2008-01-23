@@ -62,8 +62,6 @@ import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
 import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.core.soap.SOAPBodyImpl;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
-import org.jboss.ws.extensions.wsrm.RMConstant;
-import org.jboss.ws.extensions.wsrm.server.RMInvocationHandler;
 import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -257,8 +255,7 @@ public class ServiceEndpointInvoker
             msgContext.setMessageAbstraction(resMessage);
          }
 
-         boolean isWsrmMessage = msgContext.get(RMConstant.RESPONSE_CONTEXT) != null;
-         if ((oneway == false) || (isWsrmMessage)) // RM hack
+         if (oneway == false)
          {
             // call the  response handler chain, removing the fault type entry will not call handleFault for that chain 
             handlersPass = callResponseHandlerChain(sepMetaData, handlerType[2]);
@@ -345,39 +342,31 @@ public class ServiceEndpointInvoker
    {
       Class implClass = endpoint.getTargetBeanClass();
       Method seiMethod = sepInv.getJavaMethod();
+
+      String methodName = seiMethod.getName();
+      Class[] paramTypes = seiMethod.getParameterTypes();
+      for (int i = 0; i < paramTypes.length; i++)
+      {
+         Class paramType = paramTypes[i];
+         if (JavaUtils.isPrimitive(paramType) == false)
+         {
+            String paramTypeName = paramType.getName();
+            paramType = JavaUtils.loadJavaType(paramTypeName);
+            paramTypes[i] = paramType;
+         }
+      }
+
       Method implMethod = null;
-
-      if (seiMethod != null) // RM hack
+      try
       {
-         String methodName = seiMethod.getName();
-         Class[] paramTypes = seiMethod.getParameterTypes();
-         for (int i = 0; i < paramTypes.length; i++)
-         {
-            Class paramType = paramTypes[i];
-            if (JavaUtils.isPrimitive(paramType) == false)
-            {
-               String paramTypeName = paramType.getName();
-               paramType = JavaUtils.loadJavaType(paramTypeName);
-               paramTypes[i] = paramType;
-            }
-         }
-
-         try
-         {
-            implMethod = implClass.getMethod(methodName, paramTypes);
-         }
-         catch (NoSuchMethodException ex)
-         {
-            log.error("CodeSource: " + implClass.getProtectionDomain().getCodeSource());
-            log.error("ClassLoader: " + implClass.getClassLoader());
-            throw ex;
-         }
+         implMethod = implClass.getMethod(methodName, paramTypes);
       }
-      else
+      catch (NoSuchMethodException ex)
       {
-         log.debug("RM method returned as null");
+         log.error("CodeSource: " + implClass.getProtectionDomain().getCodeSource());
+         log.error("ClassLoader: " + implClass.getClassLoader());
+         throw ex;
       }
-      
       return implMethod;
    }
 

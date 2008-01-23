@@ -40,7 +40,6 @@ import org.jboss.ws.metadata.wsdl.WSDLBindingOperation;
 import org.jboss.ws.metadata.wsdl.WSDLBindingOperationInput;
 import org.jboss.ws.metadata.wsdl.WSDLBindingOperationOutput;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
-import org.jboss.ws.metadata.wsdl.WSDLDocumentation;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
 import org.jboss.ws.metadata.wsdl.WSDLExtensibilityElement;
 import org.jboss.ws.metadata.wsdl.WSDLImport;
@@ -387,7 +386,6 @@ public class WSDL11Writer extends WSDLWriter
             buffer.append("'");
          }
          buffer.append(">");
-         appendDocumentation(buffer, intf.getDocumentationElement());
          appendPortOperations(buffer, intf);
          buffer.append("</portType>");
       }
@@ -427,7 +425,6 @@ public class WSDL11Writer extends WSDLWriter
           
          }
          buffer.append(">");
-         appendDocumentation(buffer, operation.getDocumentationElement());
          appendUnknownExtensibilityElements(buffer, operation);
 
          String opname = operation.getName().getLocalPart();
@@ -454,16 +451,6 @@ public class WSDL11Writer extends WSDLWriter
          buffer.append("</operation>");
       }
    }
-   
-   protected void appendDocumentation(StringBuilder buffer, WSDLDocumentation documentation)
-   {
-      if (documentation != null && documentation.getContent() != null)
-      {
-         buffer.append("<documentation>");
-         buffer.append(documentation.getContent());
-         buffer.append("</documentation>");
-      }
-   }
 
    protected void appendBindings(StringBuilder buffer, String namespace)
    {
@@ -481,12 +468,7 @@ public class WSDL11Writer extends WSDLWriter
          if (wsdlStyle.equals(Constants.DOCUMENT_LITERAL))
             style = "document";
          appendUnknownExtensibilityElements(buffer, binding);
-         
-         // The value of the REQUIRED transport attribute (of type xs:anyURI) indicates which transport of SOAP this binding corresponds to. 
-         // The URI value "http://schemas.xmlsoap.org/soap/http" corresponds to the HTTP binding. 
-         // Other URIs may be used here to indicate other transports (such as SMTP, FTP, etc.).
-         
-         buffer.append("<" + soapPrefix + ":binding transport='" + Constants.URI_SOAP_HTTP + "' style='" + style + "'/>");
+         buffer.append("<" + soapPrefix + ":binding transport='http://schemas.xmlsoap.org/soap/http' style='" + style + "'/>");
          appendBindingOperations(buffer, binding);
          buffer.append("</binding>");
       }

@@ -60,7 +60,7 @@ public class ThreadLocalAssociation
 
    public static void clear()
    {
-      msgContextAssoc.remove();
-      strTransformAssoc.remove();
+      msgContextAssoc.set(null);
+      strTransformAssoc.set(null);
    }
 }
