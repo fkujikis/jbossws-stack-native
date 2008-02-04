@@ -33,7 +33,7 @@ fi
 while [ $# -ge 1 ]; do
    case $1 in
        "-classpath") WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$2"; shift;;
-       *) args="$1";;
+       *) args=$args" $1";;
    esac
    shift
 done
@@ -66,6 +66,7 @@ JBOSS_ENDORSED_DIRS="$JBOSS_HOME/lib/endorsed"
 # Setup the client classpath
 WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$JBOSS_HOME/client/log4j.jar"
 WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$JBOSS_HOME/client/jbossws-client.jar"
+WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$JBOSS_HOME/client/xmlsec.jar"
 
 # JBossAS-5.0 subset of jbossall-client.jar
 WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$JBOSS_HOME/client/jboss-logging-spi.jar"
@@ -87,4 +88,4 @@ fi
    -Djava.endorsed.dirs="$JBOSS_ENDORSED_DIRS" \
    -Dlog4j.configuration=wstools-log4j.xml \
    -classpath "$WSRUNCLIENT_CLASSPATH" \
-   "$args"
+   $args
