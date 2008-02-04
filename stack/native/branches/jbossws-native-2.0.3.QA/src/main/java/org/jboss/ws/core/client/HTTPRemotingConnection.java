@@ -307,7 +307,7 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
             int chunkSize = chunkSizeValue != null ? Integer.valueOf(chunkSizeValue) : -1;
             if (chunkSize > 0)
             {
-               clientConfig.put(EndpointProperty.CHUNKED_ENCODING_SIZE, chunkSizeValue);
+               clientConfig.put("chunkedLength", chunkSizeValue);
             }
             else
             {
