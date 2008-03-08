@@ -34,29 +34,47 @@ import org.jboss.wsf.spi.transport.*;
 public class HttpEndpointPublishAspect extends DeploymentAspect
 {
 
+   private SPIProvider spi;
+   private TransportManagerFactory tmf;
+   private TransportManager<HttpSpec> http;
+
+   public HttpEndpointPublishAspect()
+   {
+      spi = SPIProviderResolver.getInstance().getProvider();
+      tmf = spi.getSPI(TransportManagerFactory.class);
+      http = tmf.createTransportManager(Protocol.HTTP);
+   }
+
    public void start(Deployment dep)
    {
       String webcontext = dep.getService().getContextRoot();
       assert webcontext!=null;
       assert dep.getService().getEndpoints().size()>0;
 
-      Endpoint endpoint = dep.getService().getEndpoints().get(0);
-      String urlPattern = endpoint.getURLPattern();
+      for(Endpoint endpoint : dep.getService().getEndpoints())
+      {
+         String urlPattern = endpoint.getURLPattern();
 
-      SPIProvider spi = SPIProviderResolver.getInstance().getProvider();
-      TransportManagerFactory tmf = spi.getSPI(TransportManagerFactory.class);
-      TransportManager<HttpSpec> http = tmf.createTransportManager(Protocol.HTTP);
+         HttpSpec spec = new HttpSpec(webcontext, urlPattern);
+         ListenerRef ref = this.http.createListener(endpoint, spec);
 
-      HttpSpec spec = new HttpSpec(webcontext, urlPattern);
-      ListenerRef ref = http.createListener(endpoint, spec);
-
-      // Update endpoint address
-      endpoint.setAddress(ref.getAddress().toString());
-      endpoint.addAttachment(ListenerRef.class, ref);
+         // Update endpoint address
+         endpoint.setAddress(ref.getAddress().toString());
+         endpoint.addAttachment(ListenerRef.class, ref);
+      }            
    }
 
    public void stop(Deployment dep)
    {
-      super.stop(dep); 
+      assert dep.getService().getEndpoints().size()>0;
+
+      for(Endpoint endpoint : dep.getService().getEndpoints())
+      {
+         ListenerRef ref = endpoint.getAttachment(ListenerRef.class);
+         assert ref!=null;
+         
+         this.http.destroyListener(ref);
+      }
+
    }
 }

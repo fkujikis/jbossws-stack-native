@@ -21,22 +21,15 @@
  */
 package org.jboss.wsf.stack.jbws.standalone;
 
-import org.jboss.wsf.spi.SPIProvider;
-import org.jboss.wsf.spi.SPIProviderResolver;
-import org.jboss.wsf.spi.Container;
-import org.jboss.wsf.spi.transport.TransportManager;
-import org.jboss.wsf.spi.transport.HttpSpec;
-import org.jboss.wsf.spi.transport.TransportManagerFactory;
-import org.jboss.wsf.spi.transport.Protocol;
-import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.deployment.DeploymentAspectManager;
-import org.jboss.wsf.spi.deployment.DeploymentAspectManagerFactory;
-import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.management.EndpointRegistry;
-import org.jboss.wsf.spi.management.EndpointRegistryFactory;
 import org.jboss.kernel.Kernel;
 import org.jboss.kernel.spi.dependency.KernelController;
 import org.jboss.kernel.spi.registry.KernelBus;
+import org.jboss.wsf.spi.Container;
+import org.jboss.wsf.spi.SPIProvider;
+import org.jboss.wsf.spi.SPIProviderResolver;
+import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.deployment.DeploymentAspectManager;
+import org.jboss.wsf.spi.deployment.DeploymentAspectManagerFactory;
 
 import java.net.URL;
 
@@ -54,8 +47,6 @@ public class StandaloneContainer implements Container
    private KernelController controller;
    private KernelBus bus;
 
-   private EndpointRegistry registry;
-   private TransportManager<HttpSpec> httpTransport;
    private DeploymentAspectManager deploymentManager;
 
    private StandaloneContainer(Kernel kernel, KernelController controller, KernelBus bus)
@@ -79,49 +70,20 @@ public class StandaloneContainer implements Container
    }
 
    private void assemble()
-   {
-      // Registry
-      EndpointRegistryFactory erf = spi.getSPI(EndpointRegistryFactory.class);
-      registry = erf.getEndpointRegistry();
-
-      // Http Transport
-      TransportManagerFactory tmf = spi.getSPI(TransportManagerFactory.class);
-      httpTransport = tmf.createTransportManager(Protocol.HTTP);
-
-      // DeploymentAspcetManager
+   {     
+      // DeploymentAspectManager
       DeploymentAspectManagerFactory daf = spi.getSPI(DeploymentAspectManagerFactory.class);
       deploymentManager = daf.getDeploymentAspectManager("WSDeploymentAspectManagerJSE");
    }
 
    public void publish(Deployment deployment)
    {
-      /*
-         1. create runtime model (deployment aspects)
-         2. add request handler
-         3. add invocation handler
-         4. register endpoint
-         5. create transport listener
-       */
-       deploymentManager.deploy(deployment);
-      
+      deploymentManager.deploy(deployment);
    }
 
    public void remove(Deployment deployment)
    {
-      /*
-         1. remove transport listener
-         2. remove endpoint from registry
-      */
+      deploymentManager.undeploy(deployment);
    }
 
-
-   public void publish(Endpoint endpoint)
-   {
-
-   }
-
-   public void remove(Endpoint endpoint)
-   {
-      
-   }
 }

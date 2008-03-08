@@ -36,13 +36,13 @@ import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.stack.jbws.standalone.EmbeddedBootstrap;
 import org.jboss.wsf.stack.jbws.standalone.StandaloneContainer;
 
-import javax.xml.ws.Service;
 import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 /**
  * @author Heiko.Braun <heiko.braun@jboss.com>
@@ -133,6 +133,17 @@ public class ContainerTestCase extends TestCase
       HelloWorldSEI port = service.getPort(HelloWorldSEI.class);
       String response = port.hello("StandaloneContainer");
       assertEquals("Hello StandaloneContainer", response);
+
+      // Undeploy
+      container.remove(dep);
+      try
+      {
+         wsdl = GETRequest("/hello/endpoint?wsdl");
+      } catch (IOException e)
+      {
+         //
+      }
+      assertNull("Endpoint not removed", wsdl);
    }
 
    public static String GETRequest(String context)
