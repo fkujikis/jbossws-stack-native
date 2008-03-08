@@ -154,6 +154,12 @@
       <classpath path="${core.output.classes14.dir}"/>
       <classpath refid="thirdparty.classpath"/>
     </javac>
+
+    <copy todir="${core.output.classes.dir}">
+       <fileset dir="${core.java.dir}">
+          <include name="**/*.xml"/>
+       </fileset>
+    </copy>
   </target>
 
   <!-- Compile etc files (manifests and such) -->
@@ -257,7 +263,7 @@
     <jar jarfile="${core.output.lib.dir}/jbossws-core.jar" manifest="${core.output.etc.dir}/default.mf">
       <fileset dir="${core.output.classes.dir}">
         <include name="org/jboss/annotation/**"/>
-        <include name="org/jboss/wsf/stack/jbws/**"/>
+        <include name="org/jboss/wsf/stack/jbws/*"/>
         <include name="org/jboss/ws/**"/>
       </fileset>
       <fileset dir="${core.resources.dir}">
@@ -267,7 +273,17 @@
       <metainf dir="${core.resources.dir}/jbossws-core.jar/META-INF"/>
     </jar>
 
-    <!-- Build jbossws-client.jar -->
+     <!-- Build jbossws-standalone.jar -->
+     <mkdir dir="${core.output.lib.dir}"/>
+     <jar jarfile="${core.output.lib.dir}/jbossws-standalone.jar" manifest="${core.output.etc.dir}/default.mf">
+        <fileset dir="${core.output.classes.dir}">
+           <include name="org/jboss/wsf/stack/jbws/standalone/**"/>           
+        </fileset>        
+        <metainf dir="${core.resources.dir}/jbossws-standalone.jar/META-INF"/>
+     </jar>
+
+
+     <!-- Build jbossws-client.jar -->
     <jar jarfile="${core.output.lib.dir}/jbossws-client.jar" manifest="${core.output.etc.dir}/default.mf">
       <fileset dir="${core.output.classes.dir}">
         <include name="org/jboss/wsf/**"/>
