@@ -111,6 +111,7 @@
     <get src="${jboss.repository}/oswego-concurrent/${oswego-concurrent}/lib/concurrent.jar" dest="${thirdparty.dir}/concurrent.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/qdox/${qdox}/lib/qdox.jar" dest="${thirdparty.dir}/qdox.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/stax-api/${stax-api}/lib/stax-api.jar" dest="${thirdparty.dir}/stax-api.jar" usetimestamp="true" verbose="true"/>
+    <get src="${jboss.repository}/sun-fi/${sun-fi}/lib/FastInfoset.jar" dest="${thirdparty.dir}/FastInfoset.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/sun-jaf/${sun-jaf}/lib/activation.jar" dest="${thirdparty.dir}/activation.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/sun-javamail/${sun-javamail}/lib/mail.jar" dest="${thirdparty.dir}/mail.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/sun-jaxb/${sun-jaxb}/lib/jaxb-api.jar" dest="${thirdparty.dir}/jaxb-api.jar" usetimestamp="true" verbose="true"/>
