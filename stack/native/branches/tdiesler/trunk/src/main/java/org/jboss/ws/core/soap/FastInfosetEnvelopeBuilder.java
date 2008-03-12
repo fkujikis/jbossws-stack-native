@@ -59,6 +59,7 @@ public class FastInfosetEnvelopeBuilder extends EnvelopeBuilderDOM
          DOMDocumentParser parser = new DOMDocumentParser();
          Document resDoc = DOMUtils.getDocumentBuilder().newDocument();
          parser.parse(resDoc, ins);
+         domEnv = resDoc.getDocumentElement();
       }
       catch (Exception ex)
       {

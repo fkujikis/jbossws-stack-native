@@ -63,6 +63,7 @@ import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.core.soap.Use;
 import org.jboss.ws.extensions.wsrm.config.RMConfig;
 import org.jboss.ws.extensions.wsrm.config.RMPortConfig;
+import org.jboss.ws.feature.FastInfosetFeature;
 import org.jboss.ws.metadata.accessor.AccessorFactory;
 import org.jboss.ws.metadata.accessor.AccessorFactoryCreator;
 import org.jboss.ws.metadata.accessor.JAXBAccessorFactoryCreator;
@@ -368,6 +369,11 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
       return features.getFeature(key);
    }
 
+   public <T extends WebServiceFeature> boolean isFeatureEnabled(Class<T> key)
+   {
+      return features.isFeatureEnabled(key);
+   }
+   
    public FeatureResolver getFeatureResolver()
    {
       return features;

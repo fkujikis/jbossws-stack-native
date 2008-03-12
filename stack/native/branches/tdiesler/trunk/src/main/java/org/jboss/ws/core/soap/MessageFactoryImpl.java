@@ -39,6 +39,7 @@ import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.WebServiceFeature;
 import javax.xml.ws.Service.Mode;
 
 import org.jboss.logging.Logger;
@@ -136,6 +137,11 @@ public class MessageFactoryImpl extends MessageFactory
       this.serviceMode = serviceMode;
    }
 
+   public void addFeature(WebServiceFeature feature)
+   {
+      this.features.addFeature(feature);
+   }
+   
    public void setFeatureResolver(FeatureResolver features)
    {
       this.features = features;

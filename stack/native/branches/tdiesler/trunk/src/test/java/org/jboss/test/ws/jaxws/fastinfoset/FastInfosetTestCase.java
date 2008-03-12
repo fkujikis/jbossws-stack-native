@@ -21,7 +21,11 @@
  */
 package org.jboss.test.ws.jaxws.fastinfoset;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service21;
@@ -29,8 +33,12 @@ import javax.xml.ws.Service21;
 import junit.framework.Test;
 
 import org.jboss.ws.feature.FastInfosetFeature;
+import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
+import org.w3c.dom.Element;
+
+import com.sun.xml.fastinfoset.dom.DOMDocumentSerializer;
 
 /**
  * Test FastInfoset functionality
@@ -45,15 +53,44 @@ public class FastInfosetTestCase extends JBossWSTest
       return new JBossWSTestSetup(FastInfosetTestCase.class, "jaxws-fastinfoset.war");
    }
 
-   public void testSimple() throws Exception
+   public void testURLConnection() throws Exception
+   {
+      String reqEnv = 
+         "<env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>" +
+         " <env:Body>" +
+         "  <ns1:echo xmlns:ns1='http://org.jboss.ws/fastinfoset'><arg0>hello world</arg0></ns1:echo>" +
+         " </env:Body>" +
+         "</env:Envelope>";
+      
+      String targetAddress = "http://" + getServerHost() + ":8080/jaxws-fastinfoset";
+      HttpURLConnection con = (HttpURLConnection)new URL(targetAddress).openConnection();
+      con.setRequestProperty("Content-Type", "text/xml; charset=UTF-8");
+      con.setRequestMethod("POST");
+      con.setDoOutput(true);
+      con.connect();
+      
+      OutputStream outs = con.getOutputStream();
+      DOMDocumentSerializer serializer = new DOMDocumentSerializer();
+      serializer.setOutputStream(outs);
+      
+      Element srcRoot = DOMUtils.parse(reqEnv);
+      serializer.serialize(srcRoot);
+      outs.close();
+      
+      int resCode = con.getResponseCode();
+      assertEquals(200, resCode);
+   }
+   
+   public void _testSimple() throws Exception
    {
       URL wsdlURL = new URL("http://" + getServerHost() + ":8080/jaxws-fastinfoset?wsdl");
       QName serviceName = new QName("http://org.jboss.ws/fastinfoset", "FastInfosetEndpointService");
       Service21 service = Service21.create(wsdlURL, serviceName);
 
-      FastInfosetFeature feature = new FastInfosetFeature();
+      FastInfosetFeature feature = new FastInfosetFeature(false);
       FastInfoset port = service.getPort(FastInfoset.class, feature);
       String retStr = port.echo("hello world");
       assertEquals("hello world", retStr);
    }
+   
 }

@@ -23,10 +23,21 @@ package org.jboss.test.ws.jaxws.fastinfoset;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPMessage;
+
+import org.jboss.ws.core.soap.MessageContextAssociation;
+import org.jboss.ws.core.soap.MessageFactoryImpl;
+import org.jboss.ws.feature.FastInfosetFeature;
 import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.common.DOMWriter;
 import org.jboss.wsf.test.JBossWSTest;
+import org.jvnet.fastinfoset.FastInfosetException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -43,58 +54,67 @@ public class FastInfosetAPITestCase extends JBossWSTest
 {
    public void testSimple() throws Exception
    {
-      DOMDocumentSerializer serializer = new DOMDocumentSerializer();
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      serializer.setOutputStream(baos);
-      
       String srcXML = "<root>hello world</root>";
-      Element srcRoot = DOMUtils.parse(srcXML);
-      serializer.serialize(srcRoot);
-
-      ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-      DOMDocumentParser parser = new DOMDocumentParser();
-      Document resDoc = DOMUtils.getDocumentBuilder().newDocument();
-      parser.parse(resDoc, bais);
-      
+      ByteArrayInputStream bais = getFastInputStream(srcXML);
+      Document resDoc = getFastDocument(bais);
       String resXML = DOMWriter.printNode(resDoc, false);
       assertEquals(srcXML, resXML);
    }
    
    public void testSimpleNamespace() throws Exception
    {
-      DOMDocumentSerializer serializer = new DOMDocumentSerializer();
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      serializer.setOutputStream(baos);
-      
       String srcXML = "<root xmlns='http://somens'>hello world</root>";
-      Element srcRoot = DOMUtils.parse(srcXML);
-      serializer.serialize(srcRoot);
-
-      ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-      DOMDocumentParser parser = new DOMDocumentParser();
-      Document resDoc = DOMUtils.getDocumentBuilder().newDocument();
-      parser.parse(resDoc, bais);
-      
+      ByteArrayInputStream bais = getFastInputStream(srcXML);
+      Document resDoc = getFastDocument(bais);
       String resXML = DOMWriter.printNode(resDoc, false);
       assertEquals(srcXML, resXML);
    }
    
    public void testPrefixedNamespace() throws Exception
    {
+      String srcXML = "<ns1:root xmlns:ns1='http://somens'>hello world</ns1:root>";
+      ByteArrayInputStream bais = getFastInputStream(srcXML);
+      Document resDoc = getFastDocument(bais);
+      String resXML = DOMWriter.printNode(resDoc, false);
+      assertEquals(srcXML, resXML);
+   }
+
+   public void testMessageFactory() throws Exception
+   {
+      String srcXML = 
+         "<env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>" +
+         " <env:Body>" +
+         "  <ns1:echo xmlns:ns1='http://org.jboss.ws/fastinfoset'><arg0>hello world</arg0></ns1:echo>" +
+         " </env:Body>" +
+         "</env:Envelope>";
+      
+      Element srcEnv = DOMUtils.parse(srcXML);
+      ByteArrayInputStream bais = getFastInputStream(srcXML);
+
+      MessageFactoryImpl factory = new MessageFactoryImpl();
+      factory.addFeature(new FastInfosetFeature());
+      SOAPMessage soapMessage = factory.createMessage(null, bais);
+      SOAPEnvelope resEnv = soapMessage.getSOAPPart().getEnvelope();
+      assertEquals(srcEnv, resEnv);
+   }
+
+   private ByteArrayInputStream getFastInputStream(String srcXML) throws IOException
+   {
       DOMDocumentSerializer serializer = new DOMDocumentSerializer();
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       serializer.setOutputStream(baos);
-      
-      String srcXML = "<ns1:root xmlns:ns1='http://somens'>hello world</ns1:root>";
       Element srcRoot = DOMUtils.parse(srcXML);
       serializer.serialize(srcRoot);
 
       ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+      return bais;
+   }
+
+   private Document getFastDocument(ByteArrayInputStream bais) throws FastInfosetException, IOException
+   {
       DOMDocumentParser parser = new DOMDocumentParser();
       Document resDoc = DOMUtils.getDocumentBuilder().newDocument();
       parser.parse(resDoc, bais);
-      
-      String resXML = DOMWriter.printNode(resDoc, false);
-      assertEquals(srcXML, resXML);
+      return resDoc;
    }
 }
