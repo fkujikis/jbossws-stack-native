@@ -19,27 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.ws.jaxws.fastinfoset;
+package org.jboss.ws.core.soap;
 
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
+import org.jboss.ws.core.CommonMessageContext;
+import org.jboss.ws.metadata.umdm.EndpointMetaData;
 
-import org.jboss.logging.Logger;
-import org.jboss.ws.annotation.FastInfoset;
-
-@WebService(targetNamespace = "http://org.jboss.ws/fastinfoset")
-@SOAPBinding(style = SOAPBinding.Style.RPC)
-@FastInfoset
-public class FastInfosetEndpoint
+/**
+ * @author Thomas.Diesler@jboss.org
+ * @since 12-Mar-2008
+ */
+public class FastInfosetUnMarshaller extends SOAPMessageUnMarshallerHTTP
 {
-   // provide logging
-   private static Logger log = Logger.getLogger(FastInfosetEndpoint.class);
-
-   @WebMethod
-   public String echo(String code)
+   @Override
+   protected MessageFactoryImpl getMessageFactory()
    {
-      log.info(code);
-      return code;
+      CommonMessageContext context = MessageContextAssociation.peekMessageContext();
+      EndpointMetaData epMetaData = context != null ? context.getEndpointMetaData() : null;
+
+      MessageFactoryImpl factory = super.getMessageFactory();
+      if (epMetaData != null)
+         factory.setFeatureResolver(epMetaData.getFeatureResolver());
+
+      return factory;
    }
+
 }

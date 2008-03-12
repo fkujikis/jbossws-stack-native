@@ -135,13 +135,14 @@
   <target name="thirdparty-classpath" depends="thirdparty-get">
     
     <!-- The compile classpath for jbossws core -->
-     <path id="thirdparty.classpath">
+      <path id="thirdparty.classpath">
         <!-- A stack MUST NOT have a compile time dependency on jbossws-framework.jar -->
         <pathelement location="${thirdparty.dir}/jbossws-common.jar"/>
         <pathelement location="${thirdparty.dir}/jbossws-spi.jar"/>
-       
-  		  <pathelement location="${thirdparty.dir}/ant.jar"/>
-		    <pathelement location="${thirdparty.dir}/activation.jar"/>
+        
+        <pathelement location="${thirdparty.dir}/FastInfoset.jar"/>
+        <pathelement location="${thirdparty.dir}/ant.jar"/>
+        <pathelement location="${thirdparty.dir}/activation.jar"/>
         <pathelement location="${thirdparty.dir}/dom4j.jar"/>
         <pathelement location="${thirdparty.dir}/getopt.jar"/>
         <pathelement location="${thirdparty.dir}/javassist.jar"/>
@@ -154,6 +155,7 @@
         <pathelement location="${thirdparty.dir}/jboss-dependency.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-j2ee.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-javaee.jar"/>
+        <pathelement location="${thirdparty.dir}/jboss-jaxb-intros.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-logging-spi.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-microcontainer.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-remoting.jar"/>
@@ -168,8 +170,7 @@
         <pathelement location="${thirdparty.dir}/xalan.jar"/>
         <pathelement location="${thirdparty.dir}/xmlsec.jar"/>
         <pathelement location="${thirdparty.dir}/xercesImpl.jar"/>
-       <pathelement location="${thirdparty.dir}/jboss-jaxb-intros.jar"/>
-     </path>
+      </path>
 
   </target>
 

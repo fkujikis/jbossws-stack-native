@@ -19,27 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.ws.jaxws.fastinfoset;
+package org.jboss.ws.core.client;
 
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
+// $Id$
 
-import org.jboss.logging.Logger;
-import org.jboss.ws.annotation.FastInfoset;
+import org.jboss.remoting.marshal.Marshaller;
+import org.jboss.remoting.marshal.UnMarshaller;
+import org.jboss.ws.core.soap.FastInfosetMarshaller;
+import org.jboss.ws.core.soap.FastInfosetUnMarshaller;
 
-@WebService(targetNamespace = "http://org.jboss.ws/fastinfoset")
-@SOAPBinding(style = SOAPBinding.Style.RPC)
-@FastInfoset
-public class FastInfosetEndpoint
+/**
+ * SOAPConnection implementation
+ *
+ * @author Thomas.Diesler@jboss.org
+ * @since 12-Mar-2008
+ */
+public class FastInfosetConnectionHTTP extends SOAPProtocolConnectionHTTP
 {
-   // provide logging
-   private static Logger log = Logger.getLogger(FastInfosetEndpoint.class);
-
-   @WebMethod
-   public String echo(String code)
+   public UnMarshaller getUnmarshaller()
    {
-      log.info(code);
-      return code;
+      return new FastInfosetUnMarshaller();
+   }
+
+   public Marshaller getMarshaller()
+   {
+      return new FastInfosetMarshaller();
    }
 }
