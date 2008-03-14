@@ -23,6 +23,7 @@ package org.jboss.wsf.stack.jbws.standalone;
 
 import org.jboss.kernel.plugins.deployment.xml.BasicXMLDeployer;
 import org.jboss.kernel.plugins.bootstrap.basic.BasicBootstrap;
+import org.jboss.logging.Logger;
 
 import java.net.URL;
 
@@ -37,6 +38,8 @@ public class EmbeddedBootstrap extends BasicBootstrap
 
    protected BasicXMLDeployer deployer;
 
+   private final Logger log = Logger.getLogger(getClass());
+   
    public EmbeddedBootstrap() throws Exception {
       super();
    }
@@ -49,6 +52,9 @@ public class EmbeddedBootstrap extends BasicBootstrap
 
    public void deploy(URL url) {
       try {
+
+         log.info("Deploy MC configuration " + url);
+         
          // Workaround the fact that the BasicXMLDeployer does not handle redeployment correctly
          if (deployer.getDeploymentNames().contains(url.toString())) {
             System.out.println("Service is already deployed.");
@@ -61,6 +67,9 @@ public class EmbeddedBootstrap extends BasicBootstrap
    }
 
    public void undeploy(URL url) {
+
+      log.info("Undeploy MC config " + url);
+      
       if (!deployer.getDeploymentNames().contains(url.toString())) {
          System.out.println("Service is already undeployed.");
          return;
