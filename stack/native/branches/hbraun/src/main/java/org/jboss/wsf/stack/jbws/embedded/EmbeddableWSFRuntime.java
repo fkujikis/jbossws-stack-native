@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.wsf.stack.jbws.standalone;
+package org.jboss.wsf.stack.jbws.embedded;
 
 import org.jboss.kernel.Kernel;
 import org.jboss.logging.Logger;
@@ -66,11 +66,10 @@ public class EmbeddableWSFRuntime implements WSFRuntime, ComposableRuntime
 
    static
    {
-      ClassLoader cl = org.jboss.wsf.stack.jbws.standalone.EmbeddableWSFRuntime.class.getClassLoader();
-      String config = "org/jboss/wsf/stack/jbws/standalone/standalone-config.xml";
+      ClassLoader cl = EmbeddableWSFRuntime.class.getClassLoader();
+      String config = "org/jboss/wsf/stack/jbws/embedded/standalone-config.xml";
       DEFAULT_CONFIG_URL = cl.getResource(config);
       if(null== DEFAULT_CONFIG_URL) throw new RuntimeException("Unable to read config: "+config);
-
    }
    
    private EmbeddableWSFRuntime(Kernel kernel)
@@ -121,14 +120,25 @@ public class EmbeddableWSFRuntime implements WSFRuntime, ComposableRuntime
 
    // ---------------------------------------------------------------------------------
 
-   public void publish(Deployment deployment)
+
+   public void create(Deployment deployment)
    {
-      deploymentManager.deploy(deployment, this);
+      deploymentManager.create(deployment, this);
    }
 
-   public void remove(Deployment deployment)
+   public void start(Deployment deployment)
    {
-      deploymentManager.undeploy(deployment, this);
+      deploymentManager.start(deployment, this);
+   }
+
+   public void stop(Deployment deployment)
+   {
+      deploymentManager.stop(deployment, this);
+   }
+
+   public void destroy(Deployment deployment)
+   {
+      deploymentManager.destroy(deployment, this);
    }
 
    // ---------------------------------------------------------------------------------

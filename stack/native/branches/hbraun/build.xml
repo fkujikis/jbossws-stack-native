@@ -265,6 +265,7 @@
         <include name="org/jboss/annotation/**"/>
         <include name="org/jboss/wsf/stack/jbws/*"/>
         <include name="org/jboss/ws/**"/>
+        <exclude name="org/jboss/wsf/stack/jbws/embedded/**"/>
       </fileset>
       <fileset dir="${core.resources.dir}">
         <include name="schema/**"/>
@@ -273,13 +274,13 @@
       <metainf dir="${core.resources.dir}/jbossws-core.jar/META-INF"/>
     </jar>
 
-     <!-- Build jbossws-standalone.jar -->
+     <!-- Build jbossws-embedded.jar -->
      <mkdir dir="${core.output.lib.dir}"/>
-     <jar jarfile="${core.output.lib.dir}/jbossws-standalone.jar" manifest="${core.output.etc.dir}/default.mf">
+     <jar jarfile="${core.output.lib.dir}/jbossws-embedded.jar" manifest="${core.output.etc.dir}/default.mf">
         <fileset dir="${core.output.classes.dir}">
-           <include name="org/jboss/wsf/stack/jbws/standalone/**"/>           
+           <include name="org/jboss/wsf/stack/jbws/embedded/**"/>
         </fileset>        
-        <metainf dir="${core.resources.dir}/jbossws-standalone.jar/META-INF"/>
+        <metainf dir="${core.resources.dir}/jbossws-embedded.jar/META-INF"/>
      </jar>
 
 
@@ -288,6 +289,8 @@
       <fileset dir="${core.output.classes.dir}">
         <include name="org/jboss/wsf/**"/>
         <include name="org/jboss/ws/**"/>
+        <exclude name="org/jboss/wsf/stack/jbws/embedded/**"/>
+         
         <!-- JAX-WS 2.1 extensions -->
         <include name="javax/xml/ws/**/*21.class"/>
         <include name="javax/xml/ws/Action.class"/>

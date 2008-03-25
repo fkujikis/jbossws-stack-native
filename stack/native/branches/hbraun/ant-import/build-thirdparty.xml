@@ -49,7 +49,7 @@
       Currently only jboss-xml-binding is deployed. Remoting should be downloaded in the version of the oldest supported target container.
       
       It is a mistake to switch the download version dependent on the target container, 
-      in which case it is random which version is used by the deploy targets. 
+      in which case it is random which version is used by the start targets.
     -->
     
     <mkdir dir="${thirdparty.dir}"/>
@@ -94,16 +94,17 @@
     <get src="${jboss.repository}/jboss/jbossxb/${jboss-jbossxb-jboss42}/lib/jboss-xml-binding-sources.jar" dest="${thirdparty.dir}/jboss-xml-binding-sources.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/jaxbintros/${jboss-jaxbintros}/lib/jboss-jaxb-intros.jar" dest="${thirdparty.dir}/jboss-jaxb-intros.jar" usetimestamp="true" verbose="true"/>
 
-     <get src="${jboss.repository}/jetty/${jetty}/lib/jetty.jar" dest="${thirdparty.dir}/jetty.jar" usetimestamp="true" verbose="true"/>
-     <get src="${jboss.repository}/jetty/${jetty}/lib/jetty-util.jar" dest="${thirdparty.dir}/jetty-util.jar" usetimestamp="true" verbose="true"/>
+    <get src="${jboss.repository}/jetty/${jetty}/lib/jetty.jar" dest="${thirdparty.dir}/jetty.jar" usetimestamp="true" verbose="true"/>
+    <get src="${jboss.repository}/jetty/${jetty}/lib/jetty-util.jar" dest="${thirdparty.dir}/jetty-util.jar" usetimestamp="true" verbose="true"/>
 
-    <get src="${jboss.repository}/jboss/microcontainer/${jboss-microcontainer}/lib/jboss-container.jar" dest="${thirdparty.dir}/jboss-container.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/microcontainer/${jboss-microcontainer}/lib/jboss-dependency.jar" dest="${thirdparty.dir}/jboss-dependency.jar" usetimestamp="true" verbose="true"/>
-    <get src="${jboss.repository}/jboss/microcontainer/${jboss-microcontainer}/lib/jboss-deployers.jar" dest="${thirdparty.dir}/jboss-deployers.jar" usetimestamp="true" verbose="true"/>
-    <get src="${jboss.repository}/jboss/microcontainer/${jboss-microcontainer}/lib/jboss-microcontainer.jar" dest="${thirdparty.dir}/jboss-microcontainer.jar" usetimestamp="true" verbose="true"/>
-    <get src="${jboss.repository}/jboss/microcontainer/${jboss-microcontainer}/lib/jboss-dependency-src.zip" dest="${thirdparty.dir}/jboss-dependency-src.zip" usetimestamp="true" verbose="true"/>
-    <get src="${jboss.repository}/jboss/microcontainer/${jboss-microcontainer}/lib/jboss-deployers-src.zip" dest="${thirdparty.dir}/jboss-deployers-src.zip" usetimestamp="true" verbose="true"/>
-    <get src="${jboss.repository}/jboss/microcontainer/${jboss-microcontainer}/lib/jboss-microcontainer-src.zip" dest="${thirdparty.dir}/jboss-microcontainer-src.zip" usetimestamp="true" verbose="true"/>
+    <get src="${jboss.repository}/jboss/microcontainer/${jboss-microcontainer}/lib/jboss-kernel.jar" dest="${thirdparty.dir}/jboss-kernel.jar" usetimestamp="true" verbose="true"/>
+    <get src="${jboss.repository}/jboss/microcontainer/${jboss-microcontainer}/lib/jboss-aop-mc-int.jar" dest="${thirdparty.dir}/jboss-aop-mc-int.jar" usetimestamp="true" verbose="true"/>
+
+    <get src="${jboss.repository}/jboss/jboss-reflect/${jboss-reflect}/lib/jboss-reflect.jar" dest="${thirdparty.dir}/jboss-reflect.jar" usetimestamp="true" verbose="true"/>
+    <get src="${jboss.repository}/jboss/jboss-mdr/${jboss-mdr}/lib/jboss-mdr.jar" dest="${thirdparty.dir}/jboss-mdr.jar" usetimestamp="true" verbose="true"/>
+
+
     <get src="${jboss.repository}/jboss/remoting/${jboss-remoting-jboss42}/lib/jboss-remoting.jar" dest="${thirdparty.dir}/jboss-remoting.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/remoting/${jboss-remoting-jboss42}/lib/jboss-remoting-src.jar" dest="${thirdparty.dir}/jboss-remoting-src.jar" usetimestamp="true" verbose="true"/>
     <get src="${jboss.repository}/jboss/security/${jboss-security}/lib/jbosssx-client.jar" dest="${thirdparty.dir}/jbosssx-client.jar" usetimestamp="true" verbose="true"/>
@@ -158,7 +159,7 @@
         <pathelement location="${thirdparty.dir}/jboss-j2ee.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-javaee.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-logging-spi.jar"/>
-        <pathelement location="${thirdparty.dir}/jboss-microcontainer.jar"/>
+        <pathelement location="${thirdparty.dir}/jboss-kernel.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-remoting.jar"/>
         <pathelement location="${thirdparty.dir}/jboss-xml-binding.jar"/>
         <pathelement location="${thirdparty.dir}/jbosssx.jar"/>

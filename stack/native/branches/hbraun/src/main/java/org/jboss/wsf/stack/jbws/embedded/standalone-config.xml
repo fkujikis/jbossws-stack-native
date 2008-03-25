@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<deployment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"            xsi:schemaLocation="urn:jboss:bean-deployer:2.0 bean-deployer_2_0.xsd"            xmlns="urn:jboss:bean-deployer:2.0">
+<deployment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:bean-deployer:2.0 bean-deployer_2_0.xsd"
+            xmlns="urn:jboss:bean-deployer:2.0">
 
    <!--
       ======================================================================
@@ -11,7 +13,7 @@
       <property name="kernel"><inject bean="jboss.kernel:service=Kernel"/></property>
    </bean>
 
-   <bean name="WSServerConfig" class="org.jboss.wsf.stack.jbws.standalone.StandaloneServerConfig">
+   <bean name="WSServerConfig" class="org.jboss.wsf.stack.jbws.embedded.StandaloneServerConfig">
       <property name="webServiceHost">localhost</property>
       <property name="modifySOAPAddress">true</property>
    </bean>
@@ -43,7 +45,7 @@
       <property name="provides">RegisteredEndpoint</property>
    </bean>
 
-   <bean name="WSHttpTransportDeploymentAspect" class="org.jboss.wsf.stack.jbws.standalone.HttpEndpointPublishAspect">
+   <bean name="WSHttpTransportDeploymentAspect" class="org.jboss.wsf.stack.jbws.embedded.HttpEndpointPublishAspect">
       <property name="requires">RegisteredEndpoint</property>
       <property name="provides">HttpTransport</property>
    </bean>

@@ -36,7 +36,7 @@ import org.jboss.wsf.spi.deployment.Deployment;
 public class EagerInitializeDeploymentAspect extends DeploymentAspect
 {
    @Override
-   public void create(Deployment dep)
+   public void start(Deployment dep)
    {
       UnifiedMetaData umd = dep.getAttachment(UnifiedMetaData.class);
       if (umd == null)

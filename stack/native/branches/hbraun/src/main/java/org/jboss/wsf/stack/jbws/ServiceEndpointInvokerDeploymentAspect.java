@@ -39,7 +39,7 @@ import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 public class ServiceEndpointInvokerDeploymentAspect extends DeploymentAspect
 {
    @Override
-   public void create(Deployment dep)
+   public void start(Deployment dep)
    {
       for (Endpoint ep : dep.getService().getEndpoints())
       {

@@ -29,7 +29,7 @@ import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
 import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.stack.jbws.standalone.EmbeddableWSFRuntime;
+import org.jboss.wsf.stack.jbws.embedded.EmbeddableWSFRuntime;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
@@ -79,7 +79,8 @@ public class EmbeddedTestCase extends TestCase
 
       // Publish
       EmbeddableWSFRuntime container = EmbeddableWSFRuntime.bootstrap( EmbeddableWSFRuntime.DEFAULT_CONFIG_URL);
-      container.publish(dep);
+      container.create(dep);
+      container.start(dep);
 
       // Invoke it
       String wsdl = GETRequest("/hello/endpoint?wsdl");
@@ -95,7 +96,8 @@ public class EmbeddedTestCase extends TestCase
       assertEquals("Hello StandaloneContainer", response);
 
       // Remove 
-      container.remove(dep);
+      container.stop(dep);
+      container.destroy(dep);
       try
       {
          wsdl = GETRequest("/hello/endpoint?wsdl");

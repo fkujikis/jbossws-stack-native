@@ -43,7 +43,7 @@ public class JAXBIntroDeploymentAspect extends DeploymentAspect
    private static final String META_INF_JAXB_INTROS_XML = "META-INF/jaxb-intros.xml";
    private static final String WEB_INF_JAXB_INTROS_XML = "WEB-INF/jaxb-intros.xml";
 
-   public void create(Deployment deployment)
+   public void start(Deployment deployment)
    {
 
       // assert ArchiveDeployment

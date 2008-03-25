@@ -43,7 +43,7 @@ import org.jboss.wsf.spi.deployment.Endpoint;
 public class EventingDeploymentAspect extends DeploymentAspect
 {
    @Override
-   public void create(Deployment dep)
+   public void start(Deployment dep)
    {
       for (Endpoint ep : dep.getService().getEndpoints())
       {

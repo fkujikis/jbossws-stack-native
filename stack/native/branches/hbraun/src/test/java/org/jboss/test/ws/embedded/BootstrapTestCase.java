@@ -21,7 +21,8 @@
  */
 package org.jboss.test.ws.embedded;
 
-import org.jboss.wsf.stack.jbws.standalone.EmbeddedBootstrap;
+import org.jboss.wsf.stack.jbws.embedded.EmbeddedBootstrap;
+import org.jboss.wsf.stack.jbws.embedded.EmbeddableWSFRuntime;
 import org.jboss.kernel.Kernel;
 import org.jboss.kernel.spi.dependency.KernelController;
 import org.jboss.dependency.spi.ControllerContext;
@@ -39,8 +40,8 @@ public class BootstrapTestCase extends TestCase
    
    protected void setUp() throws Exception
    {
-      ClassLoader cl = org.jboss.wsf.stack.jbws.standalone.EmbeddableWSFRuntime.class.getClassLoader();
-      String config = "org/jboss/wsf/stack/jbws/standalone/standalone-config.xml";
+      ClassLoader cl = EmbeddableWSFRuntime.class.getClassLoader();
+      String config = "org/jboss/wsf/stack/jbws/embedded/standalone-config.xml";
       standaloneConfig = cl.getResource(config);
       if(null==standaloneConfig)
          throw new RuntimeException("Unable to read config: "+config);
@@ -52,7 +53,7 @@ public class BootstrapTestCase extends TestCase
     */
    public void testBootStrap() throws Exception
    {
-      EmbeddedBootstrap bootstrap = new EmbeddedBootstrap();
+      EmbeddedBootstrap bootstrap = new EmbeddedBootstrap();     
       bootstrap.run();
       bootstrap.deploy(standaloneConfig);
 

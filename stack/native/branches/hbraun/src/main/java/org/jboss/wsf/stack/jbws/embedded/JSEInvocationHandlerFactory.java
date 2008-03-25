@@ -19,43 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.wsf.stack.jbws.standalone;
+package org.jboss.wsf.stack.jbws.embedded;
 
-import org.jboss.wsf.spi.invocation.ExtensibleWebServiceContext;
+import org.jboss.wsf.spi.invocation.InvocationHandler;
+import org.jboss.wsf.spi.invocation.InvocationHandlerFactory;
 import org.jboss.wsf.spi.invocation.InvocationType;
-import org.jboss.wsf.spi.invocation.WebServiceContextFactory;
-
-import javax.xml.ws.handler.MessageContext;
-import java.security.Principal;
 
 /**
  * @author Heiko.Braun <heiko.braun@jboss.com>
  */
-public class NoopWebServiceContextFactory extends WebServiceContextFactory
+public class JSEInvocationHandlerFactory extends InvocationHandlerFactory
 {
-   final static ExtensibleWebServiceContext NOOP_CONTEXT = new NoopWebServiceContext(null);
-
-   public ExtensibleWebServiceContext newWebServiceContext(InvocationType type, MessageContext messageContext)
+   public InvocationHandler newInvocationHandler(InvocationType type)
    {
-      return NOOP_CONTEXT;
-   }
+      InvocationHandler handler = null;
 
-   static class NoopWebServiceContext extends ExtensibleWebServiceContext
-   {
-
-      public NoopWebServiceContext(MessageContext messageContext)
+      switch(type)
       {
-         super(messageContext);
+         case JAXWS_JSE:
+            handler = new InvocationHandlerJSE();
+            break;
       }
 
-      public Principal getUserPrincipal()
-      {
-         throw new RuntimeException("Noop");
-      }
+      if(null == handler)
+         throw new IllegalArgumentException("Unable to resolve spi.invocation.InvocationHandler for type " +type);
 
-      public boolean isUserInRole(String role)
-      {
-         throw new RuntimeException("Noop");
-      }      
+      return handler;
    }
+
 }
+

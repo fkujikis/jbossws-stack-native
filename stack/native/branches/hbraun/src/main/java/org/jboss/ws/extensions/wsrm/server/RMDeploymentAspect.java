@@ -40,7 +40,7 @@ public final class RMDeploymentAspect extends DeploymentAspect
 {
 
    @Override
-   public final void create(Deployment dep)
+   public final void start(Deployment dep)
    {
       for (Endpoint ep : dep.getService().getEndpoints())
       {
