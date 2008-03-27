@@ -55,7 +55,7 @@ public class XSDToJava implements XSDToJavaIntf
    /**
     * Utility class that converts a XSD Type into a Java class
     */
-   protected XSDTypeToJava xsdJava = new XSDTypeToJava(null);
+   protected final XSDTypeToJava xsdJava = new XSDTypeToJava(null, false);
    
    private LiteralTypeMapping typeMapping = null;
 
@@ -106,7 +106,6 @@ public class XSDToJava implements XSDToJavaIntf
             String nsuri = type.getNamespace();
             String tname = type.getName();
             if (Constants.NS_SCHEMA_XSD.equals(nsuri) && "anyType".equals(tname)) continue;
-            checkXSDTypeToJava();
             xsdJava.createJavaFile(ctype, dirloc.getPath(), packageName, xsmodel);
          }
          else if (type instanceof XSSimpleTypeDefinition)
@@ -116,7 +115,6 @@ public class XSDToJava implements XSDToJavaIntf
             String nsuri = type.getNamespace();
             String tname = type.getName();
             if (Constants.NS_SCHEMA_XSD.equals(nsuri) && "anyType".equals(tname)) continue;
-            checkXSDTypeToJava();
             xsdJava.createJavaFile(stype, dirloc.getPath(), packageName, xsmodel);
          }
       }
@@ -158,16 +156,9 @@ public class XSDToJava implements XSDToJavaIntf
       String str = "Method should be used for anon complex types only";
       if (type.getName() != null)
          throw new IllegalArgumentException(str);
-      checkXSDTypeToJava();
       xsdJava.createJavaFile(type,outerElementName,loc.getPath(),pkgname,schema, false);
    }
    
-   private void checkXSDTypeToJava()
-   {
-      if(xsdJava == null)
-         xsdJava = new XSDTypeToJava(null);
-      xsdJava.setTypeMapping(typeMapping); 
-   }
 }
 
 
