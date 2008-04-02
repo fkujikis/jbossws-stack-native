@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +43,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.JAXRPCException;
 import javax.xml.soap.MimeHeaders;
-import javax.xml.soap.SOAPBodyElement;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
@@ -75,17 +73,11 @@ import org.jboss.ws.core.server.ServletRequestContext;
 import org.jboss.ws.core.server.WSDLRequestHandler;
 import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.core.soap.MessageFactoryImpl;
-import org.jboss.ws.core.soap.SOAPBodyImpl;
 import org.jboss.ws.core.soap.SOAPConnectionImpl;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.core.utils.ThreadLocalAssociation;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
-import org.jboss.ws.extensions.json.BadgerFishDOMDocumentParser;
-import org.jboss.ws.extensions.json.BadgerFishDOMDocumentSerializer;
-import org.jboss.ws.extensions.wsrm.RMConstant;
 import org.jboss.ws.extensions.xop.XOPContext;
-import org.jboss.ws.feature.FastInfosetFeature;
-import org.jboss.ws.feature.JsonEncodingFeature;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
@@ -99,11 +91,7 @@ import org.jboss.wsf.spi.management.ServerConfigFactory;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.common.DOMWriter;
-import org.jboss.wsf.common.DOMUtils;
-import org.jboss.wsf.common.IOUtils;
 import org.w3c.dom.Document;
-
-import com.sun.xml.fastinfoset.dom.DOMDocumentSerializer;
 
 /**
  * A request handler
@@ -314,11 +302,8 @@ public class RequestHandlerImpl implements RequestHandler
             }
          }
 
-         Map<String, Object> rmResCtx = (Map<String, Object>)msgContext.get(RMConstant.RESPONSE_CONTEXT);  
-         boolean isWsrmMessage = rmResCtx != null;
-         boolean isWsrmOneWay = isWsrmMessage && (Boolean)rmResCtx.get(RMConstant.ONE_WAY_OPERATION);
-         if ((outStream != null) && (isWsrmOneWay == false)) // RM hack
-            sendResponse(endpoint, outStream, isFault);
+         if (outStream != null)
+            sendResponse(outStream, msgContext, isFault);
       }
       catch (Exception ex)
       {
@@ -326,25 +311,17 @@ public class RequestHandlerImpl implements RequestHandler
       }
       finally
       {
-
-         // Cleanup outbound attachments
-         CommonMessageContext.cleanupAttachments( MessageContextAssociation.peekMessageContext() );         
-
          // Reset the message context association
          MessageContextAssociation.popMessageContext();
 
          // clear thread local storage
          ThreadLocalAssociation.clear();
-         DOMUtils.clearThreadLocals();
       }
    }
 
-   private void sendResponse(Endpoint endpoint, OutputStream output, boolean isFault) throws SOAPException, IOException
+   private void sendResponse(OutputStream outputStream, CommonMessageContext msgContext, boolean isFault) throws SOAPException, IOException
    {
-      CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
-      EndpointMetaData epMetaData = msgContext.getEndpointMetaData();
       MessageAbstraction resMessage = msgContext.getMessageAbstraction();
-      
       String wsaTo = null;
 
       // Get the destination from the AddressingProperties
@@ -359,38 +336,11 @@ public class RequestHandlerImpl implements RequestHandler
       if (wsaTo != null)
       {
          log.debug("Sending response to addressing destination: " + wsaTo);
-         SOAPMessage soapMessage = (SOAPMessage)resMessage;
-         new SOAPConnectionImpl().callOneWay(soapMessage, wsaTo);
+         new SOAPConnectionImpl().callOneWay((SOAPMessage)resMessage, wsaTo);
       }
       else
       {
-         // FastInfoset support
-         if (epMetaData.isFeatureEnabled(FastInfosetFeature.class) && resMessage instanceof SOAPMessage)
-         {
-            SOAPMessage soapMessage = (SOAPMessage)resMessage;
-            if (soapMessage.getAttachments().hasNext())
-               throw new IllegalStateException("Attachments not supported with FastInfoset");
-            
-            SOAPEnvelope soapEnv = soapMessage.getSOAPPart().getEnvelope();
-            DOMDocumentSerializer serializer = new DOMDocumentSerializer();
-            serializer.setOutputStream(output);
-            serializer.serialize(soapEnv);
-         }
-         // JSON support
-         else if (epMetaData.isFeatureEnabled(JsonEncodingFeature.class) && resMessage instanceof SOAPMessage)
-         {
-            SOAPMessage soapMessage = (SOAPMessage)resMessage;
-            if (soapMessage.getAttachments().hasNext())
-               throw new IllegalStateException("Attachments not supported with JSON");
-            
-            SOAPBodyImpl soapBody = (SOAPBodyImpl)soapMessage.getSOAPBody();
-            BadgerFishDOMDocumentSerializer serializer = new BadgerFishDOMDocumentSerializer(output);
-            serializer.serialize(soapBody.getBodyElement());
-         }
-         else
-         {
-            resMessage.writeTo(output);
-         }
+         resMessage.writeTo(outputStream);
       }
    }
 
@@ -430,19 +380,11 @@ public class RequestHandlerImpl implements RequestHandler
          {
             reqMessage = new HTTPMessageImpl(headers, inputStream);
          }
-         else if (sepMetaData.isFeatureEnabled(JsonEncodingFeature.class))
-         {
-            MessageFactoryImpl factory = new MessageFactoryImpl();
-            SOAPMessageImpl soapMsg = (SOAPMessageImpl)factory.createMessage();
-            Document doc = new BadgerFishDOMDocumentParser().parse(inputStream);
-            soapMsg.getSOAPBody().addDocument(doc);
-            reqMessage = soapMsg;
-         }
          else
          {
+
             msgFactory.setServiceMode(sepMetaData.getServiceMode());
             msgFactory.setStyle(sepMetaData.getStyle());
-            msgFactory.setFeatures(sepMetaData.getFeatures());
 
             reqMessage = (SOAPMessageImpl)msgFactory.createMessage(headers, inputStream);
          }
@@ -477,7 +419,7 @@ public class RequestHandlerImpl implements RequestHandler
       }
       catch (Exception ex)
       {
-         MessageAbstraction resMessage = MessageContextAssociation.peekMessageContext().getMessageAbstraction();
+         MessageAbstraction resMessage = msgContext.getMessageAbstraction();
 
          // In case we have an exception before the invoker is called
          // we create the fault message here.
@@ -497,7 +439,7 @@ public class RequestHandlerImpl implements RequestHandler
       {
          try
          {
-            MessageAbstraction resMessage = MessageContextAssociation.peekMessageContext().getMessageAbstraction();
+            MessageAbstraction resMessage = msgContext.getMessageAbstraction();
             if (resMessage != null)
             {
                if (resMessage.isFaultMessage())
@@ -569,26 +511,37 @@ public class RequestHandlerImpl implements RequestHandler
       }
    }
 
-   public void handleWSDLRequest(Endpoint endpoint, OutputStream outStream, InvocationContext context)
+   public void handleWSDLRequest(Endpoint endpoint, OutputStream outputStream, InvocationContext context)
    {
       log.debug("handleWSDLRequest: " + endpoint.getName());
 
+      ServerEndpointMetaData epMetaData = endpoint.getAttachment(ServerEndpointMetaData.class);
+      if (epMetaData == null)
+         throw new IllegalStateException("Cannot obtain endpoint meta data");
+
+      ServletRequestContext reqContext = (ServletRequestContext)context;
+      HttpServletRequest req = reqContext.getHttpServletRequest();
+
       try
       {
-         if (context instanceof ServletRequestContext)
-         {
-            handleWSDLRequestFromServletContext(endpoint, outStream, context);
-         }
-         else
-         {
-            String epAddress = endpoint.getAddress();
-            if (epAddress == null)
-               throw new IllegalArgumentException("Invalid endpoint address: " + epAddress);
-            
-            URL wsdlUrl = new URL(epAddress + "?wsdl");
-            InputStream inStream = wsdlUrl.openStream();
-            IOUtils.copyStream(outStream, inStream);
-         }
+         // For the base document the resourcePath should be null
+         String resPath = (String)req.getParameter("resource");
+         URL reqURL = new URL(req.getRequestURL().toString());
+
+         String wsdlHost = reqURL.getProtocol() + "://" + reqURL.getHost();
+         if (reqURL.getPort() != -1)
+            wsdlHost += ":" + reqURL.getPort();
+
+         if (ServerConfig.UNDEFINED_HOSTNAME.equals(serverConfig.getWebServiceHost()) == false)
+            wsdlHost = serverConfig.getWebServiceHost();
+         
+         log.debug("WSDL request, using host: " + wsdlHost);
+
+         WSDLRequestHandler wsdlRequestHandler = new WSDLRequestHandler(epMetaData);
+         Document document = wsdlRequestHandler.getDocumentForPath(reqURL, wsdlHost, resPath);
+
+         OutputStreamWriter writer = new OutputStreamWriter(outputStream);
+         new DOMWriter(writer).setPrettyprint(true).print(document.getDocumentElement());
       }
       catch (RuntimeException rte)
       {
@@ -598,35 +551,6 @@ public class RequestHandlerImpl implements RequestHandler
       {
          throw new WSException(ex);
       }
-   }
-
-   private void handleWSDLRequestFromServletContext(Endpoint endpoint, OutputStream outputStream, InvocationContext context) throws MalformedURLException, IOException
-   {
-      ServerEndpointMetaData epMetaData = endpoint.getAttachment(ServerEndpointMetaData.class);
-      if (epMetaData == null)
-         throw new IllegalStateException("Cannot obtain endpoint meta data");
-
-      ServletRequestContext reqContext = (ServletRequestContext)context;
-      HttpServletRequest req = reqContext.getHttpServletRequest();
-      
-      // For the base document the resourcePath should be null
-      String resPath = (String)req.getParameter("resource");
-      URL reqURL = new URL(req.getRequestURL().toString());
-
-      String wsdlHost = reqURL.getProtocol() + "://" + reqURL.getHost();
-      if (reqURL.getPort() != -1)
-         wsdlHost += ":" + reqURL.getPort();
-
-      if (ServerConfig.UNDEFINED_HOSTNAME.equals(serverConfig.getWebServiceHost()) == false)
-         wsdlHost = serverConfig.getWebServiceHost();
-      
-      log.debug("WSDL request, using host: " + wsdlHost);
-
-      WSDLRequestHandler wsdlRequestHandler = new WSDLRequestHandler(epMetaData);
-      Document document = wsdlRequestHandler.getDocumentForPath(reqURL, wsdlHost, resPath);
-
-      OutputStreamWriter writer = new OutputStreamWriter(outputStream);
-      new DOMWriter(writer).setPrettyprint(true).print(document.getDocumentElement());
    }
 
    private void handleException(Exception ex) throws ServletException

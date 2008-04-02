@@ -101,7 +101,7 @@ public class SysmonUtil
          delivery.setMode(EventingConstants.getDeliveryPush().toString());
          EndpointReferenceType notifyEPR = new EndpointReferenceType();
          AttributedURIType attURI = new AttributedURIType();
-         attURI.setValue("http://localhost:8080/jaxws-samples-wseventing-sink/EventSink");
+         attURI.setValue("http://jboss.org");
          notifyEPR.setAddress(attURI);
          delivery.setNotifyTo(notifyEPR);
          return delivery;

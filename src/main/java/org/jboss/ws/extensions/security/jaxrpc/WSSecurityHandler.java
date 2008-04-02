@@ -26,7 +26,6 @@ package org.jboss.ws.extensions.security.jaxrpc;
 import java.io.IOException;
 
 import javax.xml.namespace.QName;
-import javax.xml.rpc.Stub;
 import javax.xml.rpc.handler.GenericHandler;
 import javax.xml.rpc.handler.MessageContext;
 import javax.xml.soap.SOAPException;
@@ -34,7 +33,6 @@ import javax.xml.soap.SOAPException;
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonMessageContext;
-import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.extensions.security.Constants;
 import org.jboss.ws.extensions.security.WSSecurityDispatcher;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
@@ -63,13 +61,9 @@ public abstract class WSSecurityHandler extends GenericHandler
    {
       try
       {
-         WSSecurityConfiguration configuration = getSecurityConfiguration(msgContext);
-         if (configuration != null)
+         if (getSecurityConfiguration(msgContext) != null)
          {
-            CommonMessageContext ctx = (CommonMessageContext)msgContext;
-            SOAPMessageImpl soapMessage = (SOAPMessageImpl)ctx.getSOAPMessage();
-            
-            new WSSecurityDispatcher().decodeMessage(configuration, soapMessage, null);
+            WSSecurityDispatcher.handleInbound((CommonMessageContext)msgContext);
          }
       }
       catch (SOAPException ex)
@@ -84,15 +78,9 @@ public abstract class WSSecurityHandler extends GenericHandler
    {
       try
       {
-         WSSecurityConfiguration configuration = getSecurityConfiguration(msgContext);
-         if (configuration != null)
+         if (getSecurityConfiguration(msgContext) != null)
          {
-            CommonMessageContext ctx = (CommonMessageContext)msgContext;
-            SOAPMessageImpl soapMessage = (SOAPMessageImpl)ctx.getSOAPMessage();
-            
-            String user = (String)ctx.get(Stub.USERNAME_PROPERTY);
-            String pass = (String)ctx.get(Stub.PASSWORD_PROPERTY);
-            new WSSecurityDispatcher().encodeMessage(configuration, soapMessage, null, user, pass);
+            WSSecurityDispatcher.handleOutbound((CommonMessageContext)msgContext);
          }
       }
       catch (SOAPException ex)

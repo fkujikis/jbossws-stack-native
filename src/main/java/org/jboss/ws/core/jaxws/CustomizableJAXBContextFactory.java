@@ -21,29 +21,18 @@
  */
 package org.jboss.ws.core.jaxws;
 
-// $Id$
-
-import java.util.Collection;
+import org.jboss.ws.WSException;
+import org.jboss.ws.core.CommonMessageContext;
+import org.jboss.ws.core.soap.MessageContextAssociation;
+import org.jboss.wsf.spi.binding.BindingCustomization;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-
-import org.jboss.logging.Logger;
-import org.jboss.ws.WSException;
-import org.jboss.wsf.spi.binding.BindingCustomization;
-import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.invocation.EndpointAssociation;
-
-import com.sun.xml.bind.api.JAXBRIContext;
-import com.sun.xml.bind.api.TypeReference;
-import com.sun.xml.bind.v2.model.annotation.RuntimeAnnotationReader;
+import java.util.Iterator;
 
 /**
  * The default factory checks if a {@link JAXBBindingCustomization} exists
  * and uses it to customize the JAXBContext that will be created.
- * <p>
- * It uses the {@link org.jboss.wsf.spi.invocation.EndpointAssociation} to access customizations
- * if they are not passed explicitly.
  *
  * @see org.jboss.wsf.spi.deployment.Endpoint
  * @see org.jboss.wsf.spi.binding.BindingCustomization
@@ -57,69 +46,45 @@ import com.sun.xml.bind.v2.model.annotation.RuntimeAnnotationReader;
  */
 public class CustomizableJAXBContextFactory extends JAXBContextFactory
 {
-   protected Logger log = Logger.getLogger(CustomizableJAXBContextFactory.class);
-
-   public JAXBContext createContext(Class clazz) throws WSException
-   {
-      return createContext(new Class[] { clazz });
-   }
-
    public JAXBContext createContext(Class[] clazzes) throws WSException
    {
       try
       {
-         BindingCustomization bcust = getCustomization();
-
-         JAXBContext jaxbCtx;
-         if (null == bcust)
-            jaxbCtx = JAXBContext.newInstance(clazzes);
+         BindingCustomization customization = getCustomization();
+         if(null == customization)
+            return JAXBContext.newInstance(clazzes);
          else
-            jaxbCtx = createContext(clazzes, bcust);
-
-         incrementContextCount();
-         return jaxbCtx;
+            return JAXBContext.newInstance(clazzes, customization);
       }
-      catch (JAXBException e)
-      {
+      catch (JAXBException e) {
          throw new WSException("Failed to create JAXBContext", e);
       }
    }
 
-   public JAXBContext createContext(Class[] clazzes, BindingCustomization bcust) throws WSException
+   public JAXBContext createContext(Class clazz) throws WSException
    {
-      try
-      {
-         JAXBContext jaxbCtx = JAXBContext.newInstance(clazzes, bcust);
-         incrementContextCount();
-         return jaxbCtx;
-      }
-      catch (JAXBException e)
-      {
-         throw new WSException("Failed to create JAXBContext", e);
-      }
-   }
-
-   public JAXBRIContext createContext(Class[] classes, Collection<TypeReference> refs, String defaultNS, boolean c14n, BindingCustomization bcust)
-   {
-      try
-      {
-         RuntimeAnnotationReader anReader = null;
-         if (bcust != null)
-            anReader = (RuntimeAnnotationReader)bcust.get(JAXBRIContext.ANNOTATION_READER);
-
-         JAXBRIContext jaxbCtx = JAXBRIContext.newInstance(classes, refs, null, defaultNS, c14n, anReader);
-         incrementContextCount();
-         return jaxbCtx;
-      }
-      catch (JAXBException e)
-      {
-         throw new WSException("Failed to create JAXBContext", e);
-      }
+      return createContext(new Class[] {clazz});
    }
 
    private BindingCustomization getCustomization()
    {
-      Endpoint ep = EndpointAssociation.getEndpoint();
-      return ep != null ? ep.getAttachment(BindingCustomization.class) : null;
+      BindingCustomization customization = null;
+
+      CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
+      if(msgContext!=null) // may not be available anytime
+      {
+         Iterator<BindingCustomization> it = msgContext.getEndpointMetaData().getBindingCustomizations().iterator();
+         while(it.hasNext())
+         {
+            BindingCustomization current = it.next();
+            if(current instanceof JAXBBindingCustomization)
+            {
+               customization = current;
+               break;
+            }
+         }
+      }
+
+      return customization;
    }
 }

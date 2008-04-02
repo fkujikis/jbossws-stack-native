@@ -30,14 +30,12 @@ import java.util.Set;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPException;
-import javax.xml.ws.BindingProvider;
 import javax.xml.ws.handler.MessageContext;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.jaxws.handler.GenericSOAPHandler;
-import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.extensions.security.Constants;
 import org.jboss.ws.extensions.security.WSSecurityDispatcher;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
@@ -75,12 +73,9 @@ public abstract class WSSecurityHandler extends GenericSOAPHandler
    {
       try
       {
-         WSSecurityConfiguration configuration = getSecurityConfiguration(msgContext);
-         if (configuration != null)
+         if (getSecurityConfiguration(msgContext) != null)
          {
-            CommonMessageContext ctx = (CommonMessageContext)msgContext;
-            SOAPMessageImpl soapMessage = (SOAPMessageImpl)ctx.getSOAPMessage();
-            new WSSecurityDispatcher().decodeMessage(configuration, soapMessage, null);
+            WSSecurityDispatcher.handleInbound((CommonMessageContext)msgContext);
          }
       }
       catch (SOAPException ex)
@@ -95,15 +90,9 @@ public abstract class WSSecurityHandler extends GenericSOAPHandler
    {
       try
       {
-         WSSecurityConfiguration configuration = getSecurityConfiguration(msgContext);
-         if (configuration != null)
+         if (getSecurityConfiguration(msgContext) != null)
          {
-            CommonMessageContext ctx = (CommonMessageContext)msgContext;
-            SOAPMessageImpl soapMessage = (SOAPMessageImpl)ctx.getSOAPMessage();
-            
-            String user = (String)ctx.get(BindingProvider.USERNAME_PROPERTY);
-            String pass = (String)ctx.get(BindingProvider.PASSWORD_PROPERTY);
-            new WSSecurityDispatcher().encodeMessage(configuration, soapMessage, null, user, pass);
+            WSSecurityDispatcher.handleOutbound((CommonMessageContext)msgContext);
          }
       }
       catch (SOAPException ex)

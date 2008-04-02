@@ -12,161 +12,101 @@
 <!-- $Id$ -->
 
 <project>
-  
-  <!-- ================================================================== -->
-  <!-- Prepare Deployment Structure JBoss-4.2.x                           -->
-  <!-- ================================================================== -->
-  
-  <target name="deploy-structure-jboss42" depends="prepare-deploy">
-    <delete dir="${deploy.structure.jboss42}"/>
-    <antcall target="deploy-jbossws-native42" inheritall="false">
-      <param name="installserver" value="${deploy.structure.jboss42}/server/${jboss.server.instance}"/>
-      <param name="resourcesdir" value="${deploy.artifacts.dir}/resources/jbossws-jboss42.sar"/>
-      <param name="thirdpartydir" value="${deploy.artifacts.dir}"/>
-    </antcall>
-    <macro-create-deploy-conf deploystructure="${deploy.structure.jboss42}"/>
-  </target>
-  
-  <!-- ================================================================== -->
-  <!-- Deployment JBoss421                                                -->
-  <!-- ================================================================== -->
 
-  <target name="deploy-jboss421" depends="undeploy-jboss421,deploy-structure-jboss42" description="Deploy jbossws to jboss421">
-    <fail message="Not available: ${jboss421.available.file}" unless="jboss421.available"/>
-    <copy todir="${jboss421.home}" overwrite="true">
-      <fileset dir="${deploy.structure.jboss42}"/>
-    </copy>
-    <unzip dest="${jboss421.server.deploy}/juddi-service.sar" src="${deploy.artifacts.dir}/lib/juddi-service.sar"/>
-    <chmod dir="${jboss421.home}/bin" perm="+x" includes="*.sh"/>
-    
-    <!-- Extras for jboss-4.2.1 -->
-    <copy todir="${jboss421.client}" overwrite="true">
-      <fileset dir="${deploy.artifacts.dir}/lib">
-        <include name="jboss-xml-binding.jar"/>
-        <include name="jbossws-jboss421.jar"/>
-      </fileset>
-    </copy>
-    <copy todir="${jboss421.lib}" overwrite="true">
-      <fileset dir="${deploy.artifacts.dir}/lib">
-        <include name="jboss-xml-binding.jar"/>
-      </fileset>
-    </copy>
-    <copy todir="${jboss421.server.lib}" overwrite="true">
-      <fileset dir="${deploy.artifacts.dir}/lib">
-        <include name="jbossws-jboss421.jar"/>
-      </fileset>
-    </copy>
-  </target>
-  
-  <target name="undeploy-jboss421" depends="prepare" description="Remove jbossws from jboss421">
-    <fail message="Not available: ${jboss421.available.file}" unless="jboss421.available"/>
-    <macro-undeploy-jbossws targetdir="${jboss421.server.deploy}/jbossws.sar" defaultconf="${jbossws.default.deploy.conf}"/>
-    <delete file="${jboss421.server.lib}/jbossws-integration.jar"/>
-    <delete dir="${jboss421.server.deploy}/juddi-service.sar"/>
-  </target>
-  
-  <!-- ================================================================== -->
-  <!-- Deployment JBoss422                                                -->
-  <!-- ================================================================== -->
+	<import file="${core.dir}/ant-import/macros-deploy-framework.xml"/>
+	<import file="${core.dir}/ant-import/macros-deploy-native.xml"/>
 
-  <target name="deploy-jboss422" depends="undeploy-jboss422,deploy-structure-jboss42" description="Deploy jbossws to jboss422">
-    <fail message="Not available: ${jboss422.available.file}" unless="jboss422.available"/>
-    <copy todir="${jboss422.home}" overwrite="true">
-      <fileset dir="${deploy.structure.jboss42}"/>
-    </copy>
-    <unzip dest="${jboss422.server.deploy}/juddi-service.sar" src="${deploy.artifacts.dir}/lib/juddi-service.sar"/>
-    <chmod dir="${jboss422.home}/bin" perm="+x" includes="*.sh"/>
-  </target>
+  <!-- Check availability of container integration -->
+  <available property="jbossws.jboss42.available" file="${jboss42.home}/server/${jboss.server.instance}/lib/jbossws-jboss42.jar"/>
   
-  <target name="undeploy-jboss422" depends="prepare" description="Remove jbossws from jboss422">
-    <fail message="Not available: ${jboss422.available.file}" unless="jboss422.available"/>
-    <macro-undeploy-jbossws targetdir="${jboss422.server.deploy}/jbossws.sar" defaultconf="${jbossws.default.deploy.conf}"/>
-    <delete dir="${jboss422.server.deploy}/juddi-service.sar"/>
-  </target>
+	<!-- ================================================================== -->
+	<!-- Deployment  JBoss50                                                -->
+	<!-- ================================================================== -->
 
-  <!-- ================================================================== -->
-  <!-- Deployment JBoss423                                                -->
-  <!-- ================================================================== -->
+	<!-- Deploy jbossws to jboss50 -->
+	<target name="deploy-jboss50" depends="jars-jboss50,undeploy-jboss50,deploy-jboss50-endorsed" description="Deploy jbossws to jboss50">
+		<macro-deploy-native50
+				stacklibs="${core.dir}/output/lib"
+				thirdpartylibs="${core.dir}/thirdparty"/>
+		<macro-deploy-framework
+				thirdpartylibs="${core.dir}/thirdparty"
+				jbosshome="${jboss50.home}"/>
+  </target>
+  
+	<target name="deploy-jboss50-endorsed" depends="prepare" if="HAVE_JDK_1.6">
+		<macro-deploy-endorsed
+				jbosshome="${jboss50.home}"
+				stacklibs="${core.dir}/output/lib"
+				thirdpartylibs="${core.dir}/thirdparty"/>
+	</target>
 
-  <target name="deploy-jboss423" depends="undeploy-jboss423,deploy-structure-jboss42" description="Deploy jbossws to jboss423">
-    <fail message="Not available: ${jboss423.available.file}" unless="jboss423.available"/>
-    <copy todir="${jboss423.home}" overwrite="true">
-      <fileset dir="${deploy.structure.jboss42}"/>
-    </copy>
-    <unzip dest="${jboss423.server.deploy}/juddi-service.sar" src="${deploy.artifacts.dir}/lib/juddi-service.sar"/>
-    <chmod dir="${jboss423.home}/bin" perm="+x" includes="*.sh"/>
-  </target>
+	<!-- Remove jbossws from jboss50 -->
+	<target name="undeploy-jboss50" depends="prepare,undeploy-jboss50-endorsed" description="Remove jbossws from jboss50">		
+		<macro-undeploy-native50/>
+		<macro-undeploy-framework jbosshome="${jboss50.home}"/>
+	</target>
   
-  <target name="undeploy-jboss423" depends="prepare" description="Remove jbossws from jboss423">
-    <fail message="Not available: ${jboss423.available.file}" unless="jboss423.available"/>
-    <macro-undeploy-jbossws targetdir="${jboss423.server.deploy}/jbossws.sar" defaultconf="${jbossws.default.deploy.conf}"/>
-    <delete dir="${jboss423.server.deploy}/juddi-service.sar"/>
-  </target>
-  
-  <!-- ================================================================== -->
-  <!-- Prepare Deployment Structure JBoss-5.0.x                           -->
-  <!-- ================================================================== -->
-  
-  <target name="deploy-structure-jboss50" depends="prepare-deploy">
-    <delete dir="${deploy.structure.jboss50}"/>
-    <antcall target="deploy-jbossws-native50" inheritall="false">
-      <param name="installserver" value="${deploy.structure.jboss50}/server/${jboss.server.instance}"/>
-      <param name="thirdpartydir" value="${deploy.artifacts.dir}"/>
-    </antcall>
-    <macro-create-deploy-conf deploystructure="${deploy.structure.jboss50}"/>
-  </target>
-  
-  <!-- ================================================================== -->
-  <!-- Deployment JBoss500                                                -->
-  <!-- ================================================================== -->
+	<target name="undeploy-jboss50-endorsed" depends="prepare">		
+		<macro-undeploy-endorsed jbosshome="${jboss50.home}"/>
+	</target>
 
-  <target name="deploy-jboss500" depends="undeploy-jboss500,deploy-structure-jboss50" description="Deploy jbossws to jboss500">
-    <fail message="Not available: ${jboss500.available.file}" unless="jboss500.available"/>
-    <copy todir="${jboss500.home}" overwrite="true">
-      <fileset dir="${deploy.structure.jboss50}"/>
-    </copy>
-    <unzip dest="${jboss500.server.deploy}/juddi-service.sar" src="${deploy.artifacts.dir}/lib/juddi-service.sar"/>
-    <chmod dir="${jboss500.home}/bin" perm="+x" includes="*.sh"/>
+	<!-- Deploy jbossws to jboss42 -->
+	<target name="deploy-jboss42" depends="jars-jboss42,undeploy-jboss42,deploy-jboss42-endorsed, deploy-jboss421" description="Deploy jbossws to jboss42">
+		<macro-deploy-native42
+				stacklibs="${core.dir}/output/lib"
+				thirdpartylibs="${core.dir}/thirdparty"/>
+		<macro-deploy-framework
+				thirdpartylibs="${core.dir}/thirdparty"
+				jbosshome="${jboss42.home}"/>
   </target>
   
-  <target name="undeploy-jboss500" depends="prepare" description="Remove jbossws from jboss500">
-    <fail message="Not available: ${jboss500.available.file}" unless="jboss500.available"/>
-    <macro-undeploy-jbossws targetdir="${jboss500.server.deploy}/jbossws.sar" defaultconf="${jbossws.default.deploy.conf}"/>
-    <delete dir="${jboss500.server.deploy}/juddi-service.sar"/>
-  </target>
-  
-  <!-- ================================================================== -->
-  <!-- Deployment JBoss501                                                -->
-  <!-- ================================================================== -->
+	<target name="deploy-jboss42-endorsed" depends="prepare" if="HAVE_JDK_1.6">
+		<macro-deploy-endorsed
+				jbosshome="${jboss42.home}"
+				stacklibs="${core.dir}/output/lib"
+				thirdpartylibs="${core.dir}/thirdparty"/>
+	</target>
 
-  <target name="deploy-jboss501" depends="undeploy-jboss501,deploy-structure-jboss50" description="Deploy jbossws to jboss501">
-    <fail message="Not available: ${jboss501.available.file}" unless="jboss501.available"/>
-    <copy todir="${jboss501.home}" overwrite="true">
-      <fileset dir="${deploy.structure.jboss50}"/>
-    </copy>
-    <unzip dest="${jboss501.server.deploy}/juddi-service.sar" src="${deploy.artifacts.dir}/lib/juddi-service.sar"/>
-    <chmod dir="${jboss501.home}/bin" perm="+x" includes="*.sh"/>
-  </target>
+  <!-- Container integration is not contained in the jbossws.sar -->
+	<target name="deploy-jboss421" depends="prepare" unless="jbossws.jboss42.available">
+    <copy file="${thirdparty.dir}/jbossws-jboss421.jar" tofile="${jboss42.home}/server/${jboss.server.instance}/lib/jbossws-jboss42.jar"/>
+    <copy file="${thirdparty.dir}/jbossws-jboss421.jar" tofile="${jboss42.home}/client/jbossws-jboss42.jar"/>
+	</target>
+
+	<!-- Remove jbossws from jboss42 -->
+	<target name="undeploy-jboss42" depends="prepare,undeploy-jboss42-endorsed" description="Remove jbossws from jboss42">
+		<macro-undeploy-native42/>
+		<macro-undeploy-framework jbosshome="${jboss42.home}"/>
+	</target>
+	<target name="undeploy-jboss42-endorsed" depends="prepare">		
+		<macro-undeploy-endorsed jbosshome="${jboss42.home}"/>
+	</target>
   
-  <target name="undeploy-jboss501" depends="prepare" description="Remove jbossws from jboss501">
-    <fail message="Not available: ${jboss501.available.file}" unless="jboss501.available"/>
-    <macro-undeploy-jbossws targetdir="${jboss501.server.deploy}/jbossws.sar" defaultconf="${jbossws.default.deploy.conf}"/>
-    <delete dir="${jboss501.server.deploy}/juddi-service.sar"/>
-  </target>
+	<!-- Deploy jbossws to jboss40 -->
+	<target name="deploy-jboss40" depends="jars-jboss40,undeploy-jboss40,deploy-jboss40-no-ejb3" description="Deploy jbossws to jboss40"/>
   
-  <!-- ================================================================== -->
-  <!-- Create jbossws-deploy.conf                                         -->
-  <!-- ================================================================== -->
+	<target name="deploy-jboss40-ejb3">
+		<macro-deploy-native40
+				stacklibs="${core.dir}/output/lib"
+				thirdpartylibs="${core.dir}/thirdparty"/>
+		<macro-deploy-framework
+				thirdpartylibs="${core.dir}/thirdparty"
+				jbosshome="${jboss40.home}"/>
+	</target>
   
-  <macrodef name="macro-create-deploy-conf">
-    <attribute name="deploystructure"/>
-    <sequential>
-      <fileset id="jbossws.deploy.fileset" dir="@{deploystructure}" excludes="**/jbossws.sar/**"/>
-      <property name="jbossws.deploy.fileset" refid="jbossws.deploy.fileset"/>
-      <property name="jbossws.sar.dir" value="@{deploystructure}/server/${jboss.server.instance}/deploy/jbossws.sar"/>
-      <echo file="${jbossws.sar.dir}/jbossws-deploy.conf" message="${jbossws.deploy.fileset}"/>
-      <replace file="${jbossws.sar.dir}/jbossws-deploy.conf" token=";" value=" "/>
-    </sequential>
-  </macrodef>
+	<target name="deploy-jboss40-no-ejb3" depends="deploy-jboss40-ejb3" unless="jboss40.ejb3.available">
+		<macro-setup-native40-no-ejb3/>
+    <echo>
+      ***********************************
+      * JBossWS EJB3 support disabled   *
+      * All EJB3 tests will fail.       *
+      ***********************************
+    </echo>
+	</target>
   
+	<!-- Remove jbossws from jboss40 -->
+	<target name="undeploy-jboss40" depends="prepare" description="Remove jbossws from jboss40">
+		<macro-undeploy-native40/>
+		<macro-undeploy-framework jbosshome="${jboss40.home}"/>
+	</target>
 </project>

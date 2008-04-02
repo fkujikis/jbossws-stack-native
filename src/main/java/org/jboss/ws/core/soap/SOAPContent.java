@@ -39,14 +39,15 @@ public abstract class SOAPContent implements SOAPContentAccess
       OBJECT_VALID, XML_VALID, DOM_VALID
    }
 
-   protected SOAPContentElement container;
-
    abstract SOAPContent transitionTo(State nextState);
 
    abstract State getState();
+
+   protected SOAPContentElement container;
 
    protected SOAPContent(SOAPContentElement container)
    {
       this.container = container;
    }
+
 }

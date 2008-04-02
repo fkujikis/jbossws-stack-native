@@ -21,15 +21,10 @@
 */
 package org.jboss.ws.extensions.security.element;
 
-import java.util.Iterator;
-
-import javax.xml.namespace.QName;
-
 import org.apache.xml.security.utils.XMLUtils;
 import org.jboss.ws.extensions.security.Constants;
 import org.jboss.ws.extensions.security.Util;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
-import org.jboss.wsf.common.DOMUtils;
+import org.jboss.ws.extensions.security.WSSecurityException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -43,12 +38,6 @@ public class UsernameToken implements Token
    private String username;
 
    private String password;
-   
-   private boolean digest;
-   
-   private String nonce;
-   
-   private String created;
 
    private Document doc;
 
@@ -56,17 +45,13 @@ public class UsernameToken implements Token
 
    private Element cachedElement;
 
-   public UsernameToken(String username, String password, Document doc, boolean digest, String nonce, String created)
+   public UsernameToken(String username, String password, Document doc)
    {
       this.username = username;
       this.password = password;
       this.doc = doc;
-      this.digest = digest;
-      this.nonce = nonce;
-      this.created = created;
    }
 
-   @SuppressWarnings("unchecked")
    public UsernameToken(Element element) throws WSSecurityException
    {
       this.doc = element.getOwnerDocument();
@@ -87,24 +72,6 @@ public class UsernameToken implements Token
          throw new WSSecurityException("Password child expected in UsernameToken element");
 
       this.password = XMLUtils.getFullTextChildrenFromElement(child);
-      String passwordType = child.getAttribute("Type");
-      this.digest = Constants.PASSWORD_DIGEST_TYPE.equals(passwordType);
-      
-      Iterator<Element> itNonce = DOMUtils.getChildElements(element, new QName(Constants.WSSE_NS, "Nonce"));
-      if (itNonce != null && itNonce.hasNext())
-      {
-         Element elem = itNonce.next();
-         String encodingType = elem.getAttribute("EncodingType");
-         if (encodingType != null && !Constants.BASE64_ENCODING_TYPE.equalsIgnoreCase(encodingType))
-            throw new WSSecurityException("Unsupported nonce encoding type: " + encodingType);
-         this.nonce = XMLUtils.getFullTextChildrenFromElement(elem);
-      }
-      
-      Iterator<Element> itCreated = DOMUtils.getChildElements(element, new QName(Constants.WSSE_NS, "Created"));
-      if (itCreated != null && itCreated.hasNext())
-      {
-         this.created = XMLUtils.getFullTextChildrenFromElement(itCreated.next());
-      }
    }
 
    public String getId()
@@ -154,24 +121,8 @@ public class UsernameToken implements Token
       element.appendChild(child);
       child = doc.createElementNS(Constants.WSSE_NS, Constants.WSSE_PREFIX + ":" + "Password");
       child.appendChild(doc.createTextNode(password));
-      child.setAttribute("Type", digest ? Constants.PASSWORD_DIGEST_TYPE : Constants.PASSWORD_TEXT_TYPE);
       element.appendChild(child);
-      if (digest)
-      {
-         if (nonce != null)
-         {
-            child = doc.createElementNS(Constants.WSSE_NS, Constants.WSSE_PREFIX + ":" + "Nonce");
-            child.appendChild(doc.createTextNode(nonce));
-            child.setAttribute("EncodingType", Constants.BASE64_ENCODING_TYPE);
-            element.appendChild(child);
-         }
-         if (created != null)
-         {
-            child = doc.createElementNS(Constants.WSSE_NS, Constants.WSSE_PREFIX + ":" + "Created");
-            child.appendChild(doc.createTextNode(created));
-            element.appendChild(child);
-         }
-      }
+
       cachedElement = element;
       return cachedElement;
    }
@@ -179,20 +130,5 @@ public class UsernameToken implements Token
    public Object getUniqueContent()
    {
       return null;
-   }
-
-   public boolean isDigest()
-   {
-      return digest;
-   }
-
-   public String getNonce()
-   {
-      return nonce;
-   }
-
-   public String getCreated()
-   {
-      return created;
    }
 }

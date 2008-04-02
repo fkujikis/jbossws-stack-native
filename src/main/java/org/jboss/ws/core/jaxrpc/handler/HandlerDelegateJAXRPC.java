@@ -88,16 +88,10 @@ public class HandlerDelegateJAXRPC extends ServerHandlerDelegate implements Role
       // Initialize the handler chain
       if (isInitialized() == false)
       {
-         synchronized (sepMetaData)
-         {
-            if (isInitialized() == false)
-            {
-               initHandlerChain(sepMetaData, HandlerType.PRE);
-               initHandlerChain(sepMetaData, HandlerType.ENDPOINT);
-               initHandlerChain(sepMetaData, HandlerType.POST);
-               setInitialized(true);
-            }
-         }
+         initHandlerChain(sepMetaData, HandlerType.PRE);
+         initHandlerChain(sepMetaData, HandlerType.ENDPOINT);
+         initHandlerChain(sepMetaData, HandlerType.POST);
+         setInitialized(true);
       }
 
       boolean status = true;

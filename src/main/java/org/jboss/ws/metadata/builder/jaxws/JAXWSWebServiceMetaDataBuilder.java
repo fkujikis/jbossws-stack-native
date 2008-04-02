@@ -37,7 +37,6 @@ import javax.xml.namespace.QName;
 
 import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.annotation.Documentation;
 import org.jboss.ws.extensions.policy.annotation.PolicyAttachment;
 import org.jboss.ws.extensions.policy.metadata.PolicyMetaDataBuilder;
 import org.jboss.ws.metadata.builder.MetaDataBuilder;
@@ -112,7 +111,6 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
          ClassLoader runtimeClassLoader = dep.getRuntimeClassLoader();
          if(null == runtimeClassLoader)
             throw new IllegalArgumentException("Runtime loader cannot be null");
-         
          resetMetaDataBuilder(runtimeClassLoader);
 
          ServerEndpointMetaData sepMetaData = result.sepMetaData;
@@ -133,19 +131,11 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
          processSOAPBinding(sepMetaData, seiClass);
 
          // Process an optional @BindingType annotation
-         processBindingType(sepMetaData, sepClass);
+         processBindingType(sepMetaData, seiClass);
 
          // process config
-         processEndpointConfig(dep, sepMetaData, sepClass, linkName);
+         processEndpointConfig(sepClass, linkName, sepMetaData);
 
-         // process web service features
-         EndpointFeatureProcessor epFeatureProcessor = new EndpointFeatureProcessor();
-         epFeatureProcessor.processEndpointFeatures(dep, sepMetaData, sepClass);
-
-         // Process endpoint documentation
-         if (seiClass.isAnnotationPresent(Documentation.class))
-            sepMetaData.setDocumentation(seiClass.getAnnotation(Documentation.class).content());
-         
          // Process web methods
          processWebMethods(sepMetaData, seiClass);
 
@@ -214,8 +204,7 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
       }
       catch (Exception ex)
       {
-         WSException.rethrow("Cannot build meta data: " + ex.getMessage(), ex);
-         return null;
+         throw new WSException("Cannot build meta data: " + ex.getMessage(), ex);
       }
    }
 
@@ -327,7 +316,6 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
          ClassLoader runtimeClassLoader = dep.getRuntimeClassLoader();
          if(null == runtimeClassLoader)
             throw new IllegalArgumentException("Runtime loader cannot be null");
-         
          seiClass = runtimeClassLoader.loadClass(seiName);
          WebService seiAnnotation = seiClass.getAnnotation(WebService.class);
 
@@ -335,7 +323,7 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
             throw new WSException("Interface does not have a @WebService annotation: " + seiName);
 
          if (seiAnnotation.portName().length() > 0 || seiAnnotation.serviceName().length() > 0 || seiAnnotation.endpointInterface().length() > 0)
-            throw new WSException("@WebService cannot have attribute 'portName', 'serviceName', 'endpointInterface' on: " + seiName);
+            throw new WSException("@WebService[portName,serviceName,endpointInterface] MUST NOT be defined on: " + seiName);
 
          // Redefine the interface or "PortType" name
          name = seiAnnotation.name();
@@ -347,8 +335,8 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
             interfaceNS = wsdlUtils.getTypeNamespace(seiClass);
 
          // The spec states that WSDL location should be allowed on an SEI, although it
-         // makes far more sense on the implementation bean, so we ONLY consider the SEI
-         // wsdlLocation when it is not defined on the bean already
+         // makes far more sense on the implementation bean, so we ALWAYS override the SEI
+         // when wsdlLocation is defined on the bean
 
          if (wsdlLocation.length() == 0)
             wsdlLocation = seiAnnotation.wsdlLocation();

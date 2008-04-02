@@ -303,9 +303,6 @@ public class SubscriptionManager implements SubscriptionManagerMBean, EventDispa
       if (null == eventSource)
          throw new SubscriptionError(EventingConstants.CODE_UNABLE_TO_PROCESS, "EventSource '" + eventSourceNS + "' not registered");
 
-      if (eventSource.getState() != EventSource.State.STARTED)
-         throw new SubscriptionError(EventingConstants.CODE_UNABLE_TO_PROCESS, "EventSource '" + eventSourceNS + "' not started");
-
       // expiry constraints
       if (expires != null)
       {
@@ -460,7 +457,7 @@ public class SubscriptionManager implements SubscriptionManagerMBean, EventDispa
       {
          for (Subscription s : subscriptions)
          {
-            pw.println("<tr><td>" + s.getIdentifier() + "</td><td>" + s.getExpires() + "</td><td>" + (s.getFilter()!=null ? s.getFilter().getExpression() : "") + "</td></tr>");
+            pw.println("<tr><td>" + s.getIdentifier() + "</td><td>" + s.getExpires() + "</td><td>" + s.getFilter().getExpression() + "</td></tr>");
          }
       }
       pw.println("</table>");

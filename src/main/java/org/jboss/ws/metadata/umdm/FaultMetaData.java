@@ -39,9 +39,8 @@ import javax.xml.ws.WebServiceException;
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.jaxws.DynamicWrapperGenerator;
-import org.jboss.ws.metadata.accessor.AccessorFactory;
-import org.jboss.ws.metadata.accessor.ReflectiveFieldAccessorFactoryCreator;
-import org.jboss.ws.metadata.accessor.ReflectiveMethodAccessorFactoryCreator;
+import org.jboss.ws.metadata.acessor.ReflectiveFieldAccessor;
+import org.jboss.ws.metadata.acessor.ReflectiveMethodAccessor;
 import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
 import org.jboss.wsf.common.JavaUtils;
 
@@ -52,7 +51,7 @@ import org.jboss.wsf.common.JavaUtils;
  * @author jason.greene@jboss.com
  * @since 12-May-2005
  */
-public class FaultMetaData implements InitalizableMetaData
+public class FaultMetaData
 {
    // provide logging
    private final Logger log = Logger.getLogger(FaultMetaData.class);
@@ -318,9 +317,9 @@ public class FaultMetaData implements InitalizableMetaData
       // However, if issues arrise then switch this to a full jaxb reflection library
       XmlAccessorType type = (XmlAccessorType)faultBean.getAnnotation(XmlAccessorType.class);
       if (type != null && type.value() == XmlAccessType.FIELD)
-         return new ReflectiveFieldAccessorFactoryCreator().create(this);
+         return ReflectiveFieldAccessor.FACTORY_CREATOR.create(this);
 
-      return new ReflectiveMethodAccessorFactoryCreator().create(this);
+      return ReflectiveMethodAccessor.FACTORY_CREATOR.create(this);
    }
 
    public Object toFaultBean(Exception serviceException)

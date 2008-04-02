@@ -38,7 +38,6 @@ public class ToolsEndpointMetaData extends EndpointMetaData
 {
    public String typeNamespace;
    private String endpointAddress;
-   private String documentation;
 
    public ToolsEndpointMetaData(ServiceMetaData service, QName portName, QName portTypeName)
    {

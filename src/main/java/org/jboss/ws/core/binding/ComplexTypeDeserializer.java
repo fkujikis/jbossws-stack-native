@@ -21,10 +21,7 @@
  */
 package org.jboss.ws.core.binding;
 
-import org.jboss.wsf.spi.binding.BindingCustomization;
-import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
-import org.jboss.ws.core.soap.MessageContextAssociation;
+
 
 // $Id$
 
@@ -37,14 +34,4 @@ import org.jboss.ws.core.soap.MessageContextAssociation;
 public abstract class ComplexTypeDeserializer extends DeserializerSupport
 {
 
-   protected BindingCustomization getBindingCustomization()
-   {
-      BindingCustomization bindingCustomization = null;
-      EndpointMetaData epMetaData = MessageContextAssociation.peekMessageContext().getEndpointMetaData();
-      if(epMetaData instanceof ServerEndpointMetaData)
-      {
-         bindingCustomization = ((ServerEndpointMetaData)epMetaData).getEndpoint().getAttachment(BindingCustomization.class);
-      }
-      return bindingCustomization;
-   }
 }
