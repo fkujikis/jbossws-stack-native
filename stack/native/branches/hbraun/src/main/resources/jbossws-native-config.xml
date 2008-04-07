@@ -33,11 +33,15 @@
 <bean name="WSMemoryBufferRecorder" class="org.jboss.wsf.framework.management.recording.MemoryBufferRecorder">
    <property name="recording">false</property>
 </bean>
+
 <bean name="WSLogRecorder" class="org.jboss.wsf.framework.management.recording.LogRecorder">
    <property name="recording">false</property>
 </bean>
 
-  <!-- 
+  <bean name="StackRequestHandlerFactory" class="org.jboss.wsf.stack.jbws.RequestHandlerFactoryImpl"/>
+
+  <!--
+  *********************************************************************************************************************
     The stack specific deployment aspects
   -->
 <bean name="WSNativeContextPropertiesDeploymentAspect" class="org.jboss.wsf.framework.deployment.ContextPropertiesDeploymentAspect">
@@ -97,7 +101,11 @@
    <property name="provides">JAXBIntros</property>
 </bean>
 
-  <!-- Deployment aspect installers -->
+  <!--
+  *********************************************************************************************************************
+  Deployment aspect installers
+  -->
+
 <bean name="WSNativeDeploymentAspectInstallerJSE" class="org.jboss.wsf.framework.deployment.DeploymentAspectInstaller">
    <property name="manager"><inject bean="WSDeploymentAspectManagerJSE"/></property>
    <property name="sortAspectsOnCreate">true</property>
