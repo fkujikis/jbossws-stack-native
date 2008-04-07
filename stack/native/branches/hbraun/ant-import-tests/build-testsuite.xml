@@ -51,8 +51,7 @@
          <pathelement location="${core.dir}/thirdparty/jboss-mdr.jar"/> 
          <pathelement location="${core.dir}/thirdparty/jboss-common-core.jar"/>
          <pathelement location="${core.dir}/thirdparty/servlet-api.jar"/>
-         <pathelement location="${core.dir}/thirdparty/jetty.jar"/>
-         <pathelement location="${core.dir}/thirdparty/jetty-util.jar"/>
+         <pathelement location="${core.dir}/thirdparty/webserver.jar"/>         
          <!-- / embedded tests -->
 
          <pathelement location="${core.dir}/thirdparty/jboss-jaxb-intros.jar"/>

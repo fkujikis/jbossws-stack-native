@@ -40,11 +40,12 @@ public class BootstrapTestCase extends TestCase
    
    protected void setUp() throws Exception
    {
-      ClassLoader cl = EmbeddableWSFRuntime.class.getClassLoader();
+      /*ClassLoader cl = EmbeddableWSFRuntime.class.getClassLoader();
       String config = "org/jboss/wsf/stack/jbws/embedded/standalone-config.xml";
       standaloneConfig = cl.getResource(config);
       if(null==standaloneConfig)
          throw new RuntimeException("Unable to read config: "+config);
+         */
    }
    
    /**
@@ -55,7 +56,7 @@ public class BootstrapTestCase extends TestCase
    {
       EmbeddedBootstrap bootstrap = new EmbeddedBootstrap();     
       bootstrap.run();
-      bootstrap.deploy(standaloneConfig);
+      bootstrap.deploy(EmbeddableWSFRuntime.DEFAULT_CONFIG_URL);
 
       Kernel kernel = bootstrap.getKernel();
       KernelController controller = kernel.getController();

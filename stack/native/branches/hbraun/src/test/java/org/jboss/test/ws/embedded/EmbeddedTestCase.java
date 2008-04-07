@@ -84,7 +84,7 @@ public class EmbeddedTestCase extends TestCase
 
       // Invoke it
       String wsdl = GETRequest("/hello/endpoint?wsdl");
-      assertNotNull("Unable to retrieve WSDL", wsdl);
+      assertNotNull("Unable to retrieve WSDL", wsdl);      
 
       Service service = Service.create(
         new URL("http://localhost:20000/hello/endpoint?wsdl"),
@@ -105,8 +105,9 @@ public class EmbeddedTestCase extends TestCase
       {
          //
       }
-      
-      assertNull("Endpoint not removed", wsdl);
+
+      // The root context accepts the request
+      assertEquals("JBossWS HttpDeamon", wsdl);
    }
 
    public static String GETRequest(String context)
