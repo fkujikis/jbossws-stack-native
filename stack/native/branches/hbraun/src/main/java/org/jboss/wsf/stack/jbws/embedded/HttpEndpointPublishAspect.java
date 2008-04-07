@@ -23,6 +23,7 @@ package org.jboss.wsf.stack.jbws.embedded;
 
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
+import org.jboss.wsf.spi.WSFRuntime;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -45,7 +46,7 @@ public class HttpEndpointPublishAspect extends DeploymentAspect
       http = tmf.createTransportManager(Protocol.HTTP);
    }
 
-   public void start(Deployment dep)
+   public void start(Deployment dep, WSFRuntime runtime)
    {
       String webcontext = dep.getService().getContextRoot();
       assert webcontext!=null;
@@ -64,7 +65,7 @@ public class HttpEndpointPublishAspect extends DeploymentAspect
       }            
    }
 
-   public void stop(Deployment dep)
+   public void stop(Deployment dep, WSFRuntime runtime)
    {
       assert dep.getService().getEndpoints().size()>0;
 
