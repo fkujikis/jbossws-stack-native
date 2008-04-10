@@ -239,8 +239,17 @@
         <fileset dir="@{stacklibs}">
           <patternset refid="client.patternset"/>
         </fileset>
+         <fileset dir="@{thirdpartylibs}">
+            <patternset refid="client.patternset"/>
+            <include name="jbossws-jboss42.jar"/>
+         </fileset>
+      </copy>
+
+       <!-- SERVER LIB JARS -->
+      <mkdir dir="${deploy.dir}/server/${jboss.server.instance}/lib"/>
+      <copy todir="${deploy.dir}/server/${jboss.server.instance}/lib" overwrite="true">
         <fileset dir="@{thirdpartylibs}">
-          <patternset refid="client.patternset"/>
+          <include name="jbossws-jboss42.jar"/>
         </fileset>
       </copy>
       

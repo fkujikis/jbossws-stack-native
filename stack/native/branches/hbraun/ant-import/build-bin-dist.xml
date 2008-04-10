@@ -98,7 +98,7 @@
         <include name="jbossws-framework.jar"/>
         <include name="jbossws-framework-scripts.zip"/>
         <include name="jbossws-spi.jar"/>
-        <include name="jbossws-jboss421.jar"/>
+        <include name="jbossws-jboss42.jar"/>
       </fileset>
       <fileset dir="${core.dir}/output/lib">
         <include name="jboss-jaxrpc.jar"/>
