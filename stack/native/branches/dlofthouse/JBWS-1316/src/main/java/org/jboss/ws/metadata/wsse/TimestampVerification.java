@@ -29,6 +29,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision$
+ * @since Aril 14 2008
  */
 public class TimestampVerification implements Serializable
 {
