@@ -40,7 +40,6 @@ import org.jboss.ws.metadata.wsdl.WSDLBindingOperation;
 import org.jboss.ws.metadata.wsdl.WSDLBindingOperationInput;
 import org.jboss.ws.metadata.wsdl.WSDLBindingOperationOutput;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
-import org.jboss.ws.metadata.wsdl.WSDLDocumentation;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
 import org.jboss.ws.metadata.wsdl.WSDLExtensibilityElement;
 import org.jboss.ws.metadata.wsdl.WSDLImport;
@@ -179,7 +178,6 @@ public class WSDL11Writer extends WSDLWriter
       for (WSDLExtensibilityElement ext : extendable.getAllExtensibilityElements())
       {
          appendPolicyElements(builder, ext);
-         appendJAXWSCustomizationElements(builder, ext);
          //add processing of further extensibility element types below
       }
    }
@@ -188,14 +186,6 @@ public class WSDL11Writer extends WSDLWriter
    {
       if (Constants.WSDL_ELEMENT_POLICY.equalsIgnoreCase(extElem.getUri()) ||
             Constants.WSDL_ELEMENT_POLICYREFERENCE.equalsIgnoreCase(extElem.getUri()))
-      {
-         appendElementSkippingKnownNs(builder, extElem.getElement());
-      }
-   }
-   
-   private void appendJAXWSCustomizationElements(StringBuilder builder, WSDLExtensibilityElement extElem)
-   {
-      if (Constants.URI_JAXWS_WSDL_CUSTOMIZATIONS.equalsIgnoreCase(extElem.getUri()))
       {
          appendElementSkippingKnownNs(builder, extElem.getElement());
       }
@@ -292,7 +282,8 @@ public class WSDL11Writer extends WSDLWriter
          if (writtenFaultMessages.contains(exceptionName))
             continue;
 
-         QName xmlName = fault.getRef();
+         WSDLInterfaceFault interfaceFault = operation.getWsdlInterface().getFault(fault.getRef());
+         QName xmlName = interfaceFault.getElement();
 
          buffer.append("<message name='" + exceptionName + "' >");
          String prefix = wsdl.getPrefix(xmlName.getNamespaceURI());
@@ -395,8 +386,6 @@ public class WSDL11Writer extends WSDLWriter
             buffer.append("'");
          }
          buffer.append(">");
-         appendDocumentation(buffer, intf.getDocumentationElement());
-         appendUnknownExtensibilityElements(buffer, intf);
          appendPortOperations(buffer, intf);
          buffer.append("</portType>");
       }
@@ -436,7 +425,6 @@ public class WSDL11Writer extends WSDLWriter
           
          }
          buffer.append(">");
-         appendDocumentation(buffer, operation.getDocumentationElement());
          appendUnknownExtensibilityElements(buffer, operation);
 
          String opname = operation.getName().getLocalPart();
@@ -455,21 +443,12 @@ public class WSDL11Writer extends WSDLWriter
          for (WSDLInterfaceOperationOutfault fault : operation.getOutfaults())
          {
             QName element = fault.getRef();
-            buffer.append("<fault  message='" + prefix + ":" + element.getLocalPart());
+            String faultPrefix = wsdl.getPrefix(element.getNamespaceURI());
+            buffer.append("<fault  message='" + faultPrefix + ":" + element.getLocalPart());
             buffer.append("' name='" + element.getLocalPart() + "'/>");
          }
 
          buffer.append("</operation>");
-      }
-   }
-   
-   protected void appendDocumentation(StringBuilder buffer, WSDLDocumentation documentation)
-   {
-      if (documentation != null && documentation.getContent() != null)
-      {
-         buffer.append("<documentation>");
-         buffer.append(documentation.getContent());
-         buffer.append("</documentation>");
       }
    }
 
@@ -489,12 +468,7 @@ public class WSDL11Writer extends WSDLWriter
          if (wsdlStyle.equals(Constants.DOCUMENT_LITERAL))
             style = "document";
          appendUnknownExtensibilityElements(buffer, binding);
-         
-         // The value of the REQUIRED transport attribute (of type xs:anyURI) indicates which transport of SOAP this binding corresponds to. 
-         // The URI value "http://schemas.xmlsoap.org/soap/http" corresponds to the HTTP binding. 
-         // Other URIs may be used here to indicate other transports (such as SMTP, FTP, etc.).
-         
-         buffer.append("<" + soapPrefix + ":binding transport='" + Constants.URI_SOAP_HTTP + "' style='" + style + "'/>");
+         buffer.append("<" + soapPrefix + ":binding transport='http://schemas.xmlsoap.org/soap/http' style='" + style + "'/>");
          appendBindingOperations(buffer, binding);
          buffer.append("</binding>");
       }

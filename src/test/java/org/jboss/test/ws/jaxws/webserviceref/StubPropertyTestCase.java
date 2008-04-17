@@ -42,11 +42,11 @@ import org.jboss.wsf.test.JBossWSTestSetup;
  */
 public class StubPropertyTestCase extends JBossWSTest
 {
-   public final String TARGET_ENDPOINT_ADDRESS = "http://" + getServerHost() + ":8080/jaxws-webserviceref-secure";
+   public final String TARGET_ENDPOINT_ADDRESS = "http://" + getServerHost() + ":8080/jaxws-samples-webserviceref-secure";
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(StubPropertyTestCase.class, "jaxws-webserviceref-secure.jar, jaxws-webserviceref-secure-client.jar");
+      return new JBossWSTestSetup(StubPropertyTestCase.class, "jaxws-samples-webserviceref-secure.jar, jaxws-samples-webserviceref-secure-client.jar");
    }
 
    public void testWSDLAccess() throws Exception
@@ -73,45 +73,17 @@ public class StubPropertyTestCase extends JBossWSTest
       assertEquals(helloWorld, retObj);
    }
 
-   public void testExplicitSecureService1() throws Throwable
+   public void testUnconfiguredStub() throws Throwable
    {
-      String reqMsg = "SecureService1";
+      String reqMsg = "Hello World";
       new ClientLauncher().launch(SecureEndpointClient.class.getName(), "jbossws-client", new String[] { reqMsg, "kermit", "thefrog" });
-      assertEquals(reqMsg, SecureEndpointClient.retStr);
+      assertEquals("Hello World|Hello World|Hello World", SecureEndpointClient.retStr);
    }
 
-   public void testExplicitSecureService2() throws Throwable
+   public void testConfiguredStub() throws Throwable
    {
-      String reqMsg = "SecureService2";
-      new ClientLauncher().launch(SecureEndpointClient.class.getName(), "jbossws-client", new String[] { reqMsg, "kermit", "thefrog" });
-      assertEquals(reqMsg, SecureEndpointClient.retStr);
-   }
-
-   public void testExplicitSecurePort1() throws Throwable
-   {
-      String reqMsg = "SecurePort1";
-      new ClientLauncher().launch(SecureEndpointClient.class.getName(), "jbossws-client", new String[] { reqMsg, "kermit", "thefrog" });
-      assertEquals(reqMsg, SecureEndpointClient.retStr);
-   }
-
-   public void testImplicitSecureService1() throws Throwable
-   {
-      String reqMsg = "SecureService1";
+      String reqMsg = "Hello World";
       new ClientLauncher().launch(SecureEndpointClient.class.getName(), "jbossws-client", new String[] { reqMsg });
-      assertEquals(reqMsg, SecureEndpointClient.retStr);
-   }
-
-   public void testImplicitSecureService2() throws Throwable
-   {
-      String reqMsg = "SecureService2";
-      new ClientLauncher().launch(SecureEndpointClient.class.getName(), "jbossws-client", new String[] { reqMsg });
-      assertEquals(reqMsg, SecureEndpointClient.retStr);
-   }
-
-   public void testImplicitSecurePort1() throws Throwable
-   {
-      String reqMsg = "SecurePort1";
-      new ClientLauncher().launch(SecureEndpointClient.class.getName(), "jbossws-client", new String[] { reqMsg });
-      assertEquals(reqMsg, SecureEndpointClient.retStr);
+      assertEquals("Hello World|Hello World|Hello World", SecureEndpointClient.retStr);
    }
 }

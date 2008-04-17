@@ -9,39 +9,10 @@
     <artifact id="jbossws-core.jar"/>
     <artifact id="jboss-jaxrpc.jar"/>
     <artifact id="jboss-jaxws.jar"/>
-    <artifact id="jboss-jaxws-ext.jar"/>
     <artifact id="jboss-saaj.jar"/>
     <artifact id="jbossws-core-src.zip"/>
-    <artifact id="jbossws-context.war"/>
-    <artifact id="standard-jaxrpc-client-config.xml"/>
-    <artifact id="standard-jaxrpc-endpoint-config.xml"/>
-    <artifact id="standard-jaxws-client-config.xml"/>
-    <artifact id="standard-jaxws-endpoint-config.xml"/>
-    <artifact id="jbossws-native42-beans.xml"/>
-    <artifact id="jbossws-native50-beans.xml"/>
-    <artifact id="jbossws-deploy-macros.xml"/>
-    <artifact id="jbossws-deploy.conf"/>
-    <artifact id="wsrunclient.bat"/>
-    <artifact id="wsrunclient.sh"/>
-    <artifact id="wstools.bat"/>
-    <artifact id="wstools.sh"/>
+    <artifact id="jbossws-core-scripts.zip"/>
 
-    <import componentref="jboss/jbossxb">
-      <compatible version="@jboss-jbossxb-jboss42@"/>
-      <compatible version="@jboss-jbossxb-jboss42@-brew"/>
-      <compatible version="@jboss-jbossxb-jboss50@"/>
-      <compatible version="@jboss-jbossxb-jboss50@-brew"/>
-    </import>
-    <import componentref="jboss/remoting">
-      <compatible version="@jboss-remoting-jboss42@"/>
-      <compatible version="@jboss-remoting-jboss42@-brew"/>
-      <compatible version="@jboss-remoting-jboss50@"/>
-      <compatible version="@jboss-remoting-jboss50@-brew"/>
-    </import>
-    
-    <import componentref="jboss/jaxbintros">
-      <compatible version="@jboss-jaxbintros@"/>
-    </import>
     <import componentref="jboss/jbossws-common">
       <compatible version="@jbossws-common@"/>
     </import>
@@ -60,11 +31,11 @@
       <compatible version="@ibm-wsdl4j@"/>
       <compatible version="@ibm-wsdl4j@-brew"/>
     </import>
+    <import componentref="jbpm/bpel">
+      <compatible version="@jbpm-bpel@"/>
+    </import>
     <import componentref="stax-api">
       <compatible version="@stax-api@"/>
-    </import>
-    <import componentref="sun-fi">
-      <compatible version="@sun-fi@"/>
     </import>
     <import componentref="sun-jaxb">
       <compatible version="@sun-jaxb@"/>
@@ -84,7 +55,6 @@
       <include input="jbossws-core.jar"/>
       <include input="jboss-jaxrpc.jar"/>
       <include input="jboss-jaxws.jar"/>
-      <include input="jboss-jaxws-ext.jar"/>
       <include input="jboss-saaj.jar"/>
     </export>
     

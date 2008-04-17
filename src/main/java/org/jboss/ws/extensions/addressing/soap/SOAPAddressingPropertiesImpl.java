@@ -23,29 +23,6 @@ package org.jboss.ws.extensions.addressing.soap;
 
 //$Id$
 
-import java.lang.reflect.Array;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPElement;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPFactory;
-import javax.xml.soap.SOAPHeader;
-import javax.xml.soap.SOAPHeaderElement;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.ws.addressing.AddressingConstants;
-import javax.xml.ws.addressing.AddressingException;
-import javax.xml.ws.addressing.AttributedURI;
-import javax.xml.ws.addressing.ReferenceParameters;
-import javax.xml.ws.addressing.Relationship;
-import javax.xml.ws.addressing.soap.SOAPAddressingBuilder;
-import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
-
 import org.jboss.ws.core.soap.NameImpl;
 import org.jboss.ws.core.soap.SOAPFactoryImpl;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
@@ -56,6 +33,19 @@ import org.jboss.xb.binding.NamespaceRegistry;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
+
+import javax.xml.namespace.QName;
+import javax.xml.soap.*;
+import javax.xml.ws.addressing.*;
+import javax.xml.ws.addressing.soap.SOAPAddressingBuilder;
+import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
+import java.lang.reflect.Array;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Subimplementation of <code>AddressingProperties</code> includes methods that
@@ -121,7 +111,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 			if (wsaFrom != null)
 			{
 				EndpointReferenceImpl ref = new EndpointReferenceImpl(wsaFrom);
-				setFrom(ref);
+				setReplyTo(ref);
 			}
 
 			// Read wsa:ReplyTo
@@ -285,7 +275,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 					SOAPElement wsaRelatesTo = soapHeader.addChildElement(new NameImpl(ADDR.getRelatesToQName()));
 					if (rel.getType() != null)
 					{
-						wsaRelatesTo.setAttribute(ADDR.getRelationshipTypeName(), getQualifiedName(rel.getType()));
+						wsaRelatesTo.setAttribute(ADDR.getRelationshipTypeName(), getPrefixedName(rel.getType()));
 					}
 					wsaRelatesTo.addTextNode(rel.getID().toString());
 				}
@@ -293,14 +283,11 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 
 			// Write wsa:ReferenceParameters
 			ReferenceParameters refParams = getReferenceParameters();
-			if (refParams.getElements().size() > 0)
+			if (refParams.getElements().size() > 0 || refParams.getAttributes().size() > 0)
 			{
-            for (Object obj : refParams.getElements())
-            {
-               SOAPElement refElement = appendElement(soapHeader, obj);
-               QName refQName = new QName(ADDR.getNamespaceURI(), "IsReferenceParameter", ADDR.getNamespacePrefix());
-               refElement.addAttribute(refQName, "true");
-            }
+				SOAPElement wsaRefParams = soapHeader.addChildElement(new NameImpl(ADDR.getReferenceParametersQName()));
+				appendAttributes(wsaRefParams, refParams.getAttributes());
+				appendElements(wsaRefParams, refParams.getElements());
 			}
 
 			appendElements(soapHeader, getElements());
@@ -337,7 +324,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 	{
 		for (QName qname : attributes.keySet())
 		{
-			String qualname = getQualifiedName(qname);
+			String qualname = getPrefixedName(qname);
 			String value = attributes.get(qname);
 			soapElement.setAttribute(qualname, value);
 		}
@@ -347,9 +334,24 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 	{
 		try
 		{
+			SOAPFactoryImpl factory = (SOAPFactoryImpl)SOAPFactory.newInstance();
 			for (Object obj : elements)
 			{
-				appendElement(soapElement, obj);
+				if (obj instanceof Element)
+				{
+					SOAPElement child = factory.createElement((Element)obj);
+					soapElement.addChildElement(child);
+				}
+				else if (obj instanceof String)
+				{
+					Element el = DOMUtils.parse((String)obj);
+					SOAPElement child = factory.createElement(el);
+					soapElement.addChildElement(child);
+				}
+				else
+				{
+					throw new AddressingException("Unsupported element: " + obj.getClass().getName());
+				}
 			}
 		}
 		catch (RuntimeException rte)
@@ -362,40 +364,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 		}
 	}
 
-   private SOAPElement appendElement(SOAPElement soapElement, Object obj) 
-   {
-      SOAPElement child = null;
-      try
-      {
-         SOAPFactoryImpl factory = (SOAPFactoryImpl)SOAPFactory.newInstance();
-         if (obj instanceof Element)
-         {
-            child = factory.createElement((Element)obj);
-            soapElement.addChildElement(child);
-         }
-         else if (obj instanceof String)
-         {
-            Element el = DOMUtils.parse((String)obj);
-            child = factory.createElement(el);
-            soapElement.addChildElement(child);
-         }
-         else
-         {
-            throw new AddressingException("Unsupported element: " + obj.getClass().getName());
-         }
-         return child;
-      }
-      catch (RuntimeException rte)
-      {
-         throw rte;
-      }
-      catch (Exception ex)
-      {
-         throw new AddressingException("Cannot append elements", ex);
-      }
-   }
-
-	private String getQualifiedName(QName qname)
+	private String getPrefixedName(QName qname)
 	{
 		String prefix = qname.getPrefix();
 		String localPart = qname.getLocalPart();

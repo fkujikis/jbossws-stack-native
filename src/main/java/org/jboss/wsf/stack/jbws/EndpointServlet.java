@@ -124,7 +124,7 @@ public class EndpointServlet extends HttpServlet
          log.debug("Updating service endpoint config\n  config-name: " + configName + "\n  config-file: " + configFile);
          epMetaData.setConfigName(configName, configFile);
       }
-   }
+   }   
 
    private void initEndpoint(String contextPath, String servletName)
    {

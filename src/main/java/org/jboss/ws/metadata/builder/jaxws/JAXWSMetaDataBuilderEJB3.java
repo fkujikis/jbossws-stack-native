@@ -27,6 +27,7 @@ import java.util.Iterator;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceProvider;
 
+import org.jboss.annotation.security.SecurityDomain;
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
@@ -76,8 +77,7 @@ public class JAXWSMetaDataBuilderEJB3
                String ejbLink = beanMetaData.getEjbName();
                JAXWSServerMetaDataBuilder.setupProviderOrWebService(dep, wsMetaData, beanClass, ejbLink);
 
-               /* Resolve dependency on @SecurityDomain
-                * http://jira.jboss.org/jira/browse/JBWS-2107
+               // setup the security domain
                if (beanClass.isAnnotationPresent(SecurityDomain.class))
                {
                   SecurityDomain anSecurityDomain = (SecurityDomain)beanClass.getAnnotation(SecurityDomain.class);
@@ -88,7 +88,6 @@ public class JAXWSMetaDataBuilderEJB3
 
                   wsMetaData.setSecurityDomain(securityDomain);
                }
-               */
             }
          }
 

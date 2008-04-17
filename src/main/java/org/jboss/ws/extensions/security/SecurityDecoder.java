@@ -21,6 +21,7 @@
 */
 package org.jboss.ws.extensions.security;
 
+import java.lang.reflect.Constructor;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
@@ -33,16 +34,6 @@ import org.jboss.ws.extensions.security.element.Signature;
 import org.jboss.ws.extensions.security.element.Timestamp;
 import org.jboss.ws.extensions.security.element.Token;
 import org.jboss.ws.extensions.security.element.UsernameToken;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
-import org.jboss.ws.extensions.security.nonce.NonceFactory;
-import org.jboss.ws.extensions.security.operation.DecryptionOperation;
-import org.jboss.ws.extensions.security.operation.ReceiveUsernameOperation;
-import org.jboss.ws.extensions.security.operation.RequireEncryptionOperation;
-import org.jboss.ws.extensions.security.operation.RequireOperation;
-import org.jboss.ws.extensions.security.operation.RequireSignatureOperation;
-import org.jboss.ws.extensions.security.operation.SignatureVerificationOperation;
-import org.jboss.ws.extensions.security.operation.TimestampVerificationOperation;
-import org.jboss.ws.metadata.wsse.TimestampVerification;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -59,23 +50,17 @@ public class SecurityDecoder
    private SecurityHeader header;
 
    private Document message;
-   
-   private NonceFactory nonceFactory;
 
    private SecurityStore store;
-   
-   private TimestampVerification timestampVerification;
 
    private HashSet<String> signedIds = new HashSet<String>();
 
    private HashSet<String> encryptedIds = new HashSet<String>();
 
-   public SecurityDecoder(SecurityStore store, NonceFactory nonceFactory, TimestampVerification timestampVerification)
+   public SecurityDecoder(SecurityStore store)
    {
       org.apache.xml.security.Init.init();
       this.store = store;
-      this.nonceFactory = nonceFactory;
-      this.timestampVerification = timestampVerification;
    }
 
    /**
@@ -85,9 +70,9 @@ public class SecurityDecoder
     * @param SecurityStore the security store that contains key and trust information
     * @param now The timestamp to use as the current time when validating a message expiration
     */
-   public SecurityDecoder(SecurityStore store, Calendar now, NonceFactory nonceFactory, TimestampVerification timestampVerification)
+   public SecurityDecoder(SecurityStore store, Calendar now)
    {
-      this(store, nonceFactory, timestampVerification);
+      this(store);
       this.now = now;
    }
 
@@ -114,14 +99,14 @@ public class SecurityDecoder
       if (timestamp != null)
       {
          TimestampVerificationOperation operation =
-            (now == null) ? new TimestampVerificationOperation(timestampVerification) : new TimestampVerificationOperation(now);
+            (now == null) ? new TimestampVerificationOperation() : new TimestampVerificationOperation(now);
          operation.process(message, timestamp);
       }
 
       for (Token token : header.getTokens())
       {
          if (token instanceof UsernameToken)
-            new ReceiveUsernameOperation(header, store, (nonceFactory != null ? nonceFactory.getStore() : null)).process(message, token);
+            new ReceiveUsernameOperation(header, store).process(message, token);
       }
 
       signedIds.clear();
@@ -148,23 +133,41 @@ public class SecurityDecoder
       }
    }
 
-   public void verify(List<RequireOperation> requireOperations) throws WSSecurityException
+   public void verify(List<OperationDescription<RequireOperation>> requireOperations) throws WSSecurityException
    {
       if (requireOperations == null)
          return;
 
-      for (RequireOperation op : requireOperations)
+      for (OperationDescription<RequireOperation> o : requireOperations)
       {
+         Class<? extends RequireOperation> operation = o.getOperation();
+         RequireOperation op;
          Collection<String> processedIds = null;
-         if (op instanceof RequireSignatureOperation)
+
+         if (operation.equals(RequireSignatureOperation.class))
          {
+            op = new RequireSignatureOperation(header, store);
             processedIds = signedIds;
          }
-         else if (op instanceof RequireEncryptionOperation)
+         else if (operation.equals(RequireEncryptionOperation.class))
          {
+            op = new RequireEncryptionOperation(header, store);
             processedIds = encryptedIds;
          }
-         op.process(message, header, processedIds);
+         else
+         {
+            try
+            {
+               Constructor<? extends RequireOperation> c = operation.getConstructor(SecurityHeader.class, SecurityStore.class);
+               op = c.newInstance(header, store);
+            }
+            catch (Exception e)
+            {
+               throw new WSSecurityException("Error constructing operation: " + operation);
+            }
+         }
+
+         op.process(message, o.getTargets(), o.getCertificateAlias(), o.getCredential(), processedIds);
       }
    }
 

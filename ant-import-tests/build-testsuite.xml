@@ -21,9 +21,6 @@
 	<property name="tests.dir" value="${core.dir}/src/test"/>
 	<property name="tests.java.dir" value="${tests.dir}/java"/>
 	<property name="tests.resources.dir" value="${tests.dir}/resources"/>
-  
-	<property name="tests.framework.dir" value="${core.dir}/src/test-framework"/>
-	<property name="tests.framework.resources.dir" value="${tests.framework.dir}/resources"/>
 
 	<!--
 	  Init the various classpaths
@@ -32,38 +29,24 @@
 
 		<path id="ws.stack.classpath">
 			<pathelement location="${core.dir}/thirdparty/jbossws-common.jar"/>
-         <pathelement location="${core.dir}/thirdparty/jbossws-spi.jar"/>
-         <pathelement location="${core.dir}/output/lib/jboss-jaxrpc.jar"/>
-         <pathelement location="${core.dir}/output/lib/jbossws-embedded.jar"/>
-         <pathelement location="${core.dir}/output/lib/jboss-jaxws.jar"/>
-         <pathelement location="${core.dir}/output/lib/jboss-jaxws-ext.jar"/>
-         <pathelement location="${core.dir}/output/lib/jboss-saaj.jar"/>
+			<pathelement location="${core.dir}/thirdparty/jbossws-spi.jar"/>
+			<pathelement location="${core.dir}/output/lib/jboss-jaxrpc.jar"/>
+			<pathelement location="${core.dir}/output/lib/jboss-jaxws.jar"/>
+			<pathelement location="${core.dir}/output/lib/jboss-saaj.jar"/>
 			<pathelement location="${core.dir}/output/lib/jbossws-core.jar"/>
 			<pathelement location="${core.dir}/output/lib/jbossws-client.jar"/>
 		</path>
 
     <path id="tests.extra.classpath">
-
-       <!-- embedded tests -->
-       <pathelement location="${core.dir}/thirdparty/jboss-kernel.jar"/>
-       <pathelement location="${core.dir}/thirdparty/jboss-dependency.jar"/>
-       <pathelement location="${core.dir}/thirdparty/jboss-reflect.jar"/>
-       <pathelement location="${core.dir}/thirdparty/jboss-mdr.jar"/>
-       <pathelement location="${core.dir}/thirdparty/jboss-common-core.jar"/>
-       <pathelement location="${core.dir}/thirdparty/servlet-api.jar"/>
-       <pathelement location="${core.dir}/thirdparty/webserver.jar"/>
-       <!-- / embedded tests -->
-
-         <pathelement location="${core.dir}/thirdparty/FastInfoset.jar"/>
-			<pathelement location="${core.dir}/thirdparty/jaxws-tools.jar"/>
 			<pathelement location="${core.dir}/thirdparty/jbossws-framework.jar"/>
-			<pathelement location="${core.dir}/thirdparty/jettison.jar"/>
+			<pathelement location="${core.dir}/thirdparty/jaxws-tools.jar"/>
 			<pathelement location="${core.dir}/thirdparty/policy.jar"/>
-         <pathelement location="${core.dir}/thirdparty/qdox.jar"/>
-         <pathelement location="${core.dir}/thirdparty/stax-api.jar"/>
+      <pathelement location="${core.dir}/thirdparty/qdox.jar"/>
+      <pathelement location="${core.dir}/thirdparty/stax-api.jar"/>
 			<pathelement location="${core.dir}/thirdparty/wsdl4j.jar"/>
-         <pathelement location="${core.dir}/thirdparty/wstx.jar"/>
-         <pathelement location="${core.dir}/thirdparty/jboss-jaxb-intros.jar"/>
+      <pathelement location="${core.dir}/thirdparty/wstx.jar"/>
+      <pathelement location="${core.dir}/thirdparty/xmlunit.jar"/>
+      <pathelement location="${core.dir}/thirdparty/jboss-jaxb-intros.jar"/>
     </path>
 
     <!-- The jBPM BPEL classpath -->
@@ -79,6 +62,10 @@
 			<pathelement location="${core.dir}/thirdparty/jaxen.jar"/>
 			<pathelement location="${core.dir}/thirdparty/wsdl4j.jar"/>
 			<pathelement location="${core.dir}/thirdparty/jboss-logging-log4j.jar"/>
+			<!--
+			<pathelement location="${core.dir}/thirdparty/log4j.jar"/>
+			<pathelement location="${tests.etc.dir}"/>
+		  -->
 		</path>
 
 	</target>
@@ -87,23 +74,22 @@
 	<!-- Generating sources                                                 -->
 	<!-- ================================================================== -->
 
-	<target name="wsconsume" depends="tests-init" unless="noconsume" description="Consume JAX-WS contracts">
+	<target name="wsconsume" depends="tests-init" description="Consume JAX-WS contracts">
 
 		<!-- Define the JAX-WS wsconsume task -->
 		<taskdef name="wsconsume" classname="org.jboss.wsf.spi.tools.ant.WSConsumeTask">			
       <classpath refid="tests.client.classpath"/>
     </taskdef>
 
-		<wsconsume wsdl="${tests.resources.dir}/benchmark/jaxws/doclit/WEB-INF/wsdl/BenchmarkWebService.wsdl" package="org.jboss.test.ws.benchmark.jaxws.doclit" sourcedestdir="${tests.output.dir}/wsconsume/java" keep="true" verbose="true" fork="false"/>
+		<wsconsume wsdl="${tests.resources.dir}/benchmark/jaxws/doclit/WEB-INF/wsdl/BenchmarkWebService.wsdl" package="org.jboss.test.ws.benchmark.jaxws.doclit" sourcedestdir="${tests.output.dir}/wsconsume/java" keep="true" verbose="false"/>
 		<wsconsume wsdl="${tests.resources.dir}/interop/soapwsdl/BaseDataTypesDocLitB/WEB-INF/wsdl/service.wsdl" package="org.jboss.test.ws.interop.soapwsdl.basedoclitb" sourcedestdir="${tests.output.dir}/wsconsume/java" keep="true" verbose="false"/>
 		<wsconsume wsdl="${tests.resources.dir}/interop/soapwsdl/BaseDataTypesDocLitW/WEB-INF/wsdl/service.wsdl" package="org.jboss.test.ws.interop.soapwsdl.basedoclitw" sourcedestdir="${tests.output.dir}/wsconsume/java" keep="true" verbose="false"/>
 		<wsconsume wsdl="${tests.resources.dir}/interop/soapwsdl/BaseDataTypesRpcLit/WEB-INF/wsdl/service.wsdl" package="org.jboss.test.ws.interop.soapwsdl.baserpclit" sourcedestdir="${tests.output.dir}/wsconsume/java" keep="true" verbose="false"/>
+		<wsconsume wsdl="${tests.resources.dir}/jaxws/complex/META-INF/wsdl/RegistrationService.wsdl" package="org.jboss.test.ws.jaxws.complex" sourcedestdir="${tests.output.dir}/wsconsume/java" keep="true" verbose="false"/>
+		<wsconsume wsdl="${tests.resources.dir}/jaxws/holder/META-INF/wsdl/HolderService.wsdl" package="org.jboss.test.ws.jaxws.holder" sourcedestdir="${tests.output.dir}/wsconsume/java" keep="true" verbose="false"/>
 		<wsconsume wsdl="${tests.resources.dir}/jaxws/samples/wssecuritypolicy/WEB-INF/wsdl/HelloService.wsdl" package="org.jboss.test.ws.jaxws.samples.wssecuritypolicy" sourcedestdir="${tests.output.dir}/wsconsume/java" keep="true" verbose="false"/>
 		<wsconsume wsdl="${tests.resources.dir}/jaxws/samples/wssecurityAnnotatedpolicy/META-INF/wsdl/HelloService.wsdl" package="org.jboss.test.ws.jaxws.samples.wssecurityAnnotatedpolicy" sourcedestdir="${tests.output.dir}/wsconsume/java" keep="true" verbose="false"/>
 		<wsconsume wsdl="${tests.resources.dir}/jaxws/samples/wssecurity/META-INF/wsdl/HelloService.wsdl" package="org.jboss.test.ws.jaxws.samples.wssecurity" sourcedestdir="${tests.output.dir}/wsconsume/java" keep="true" verbose="false"/>
-    
-		<wsconsume wsdl="${tests.framework.resources.dir}/jaxws/complex/META-INF/wsdl/RegistrationService.wsdl" package="org.jboss.test.ws.jaxws.complex" sourcedestdir="${tests.output.dir}/wsconsume/java" keep="true" verbose="false"/>
-		<wsconsume wsdl="${tests.framework.resources.dir}/jaxws/holder/META-INF/wsdl/HolderService.wsdl" package="org.jboss.test.ws.jaxws.holder" sourcedestdir="${tests.output.dir}/wsconsume/java" keep="true" verbose="false"/>
 	</target>
 
 	<!--
@@ -158,19 +144,11 @@
 		<wstools dest="${tests.output.dir}/wstools/resources/jaxrpc/samples/oneway/WEB-INF" config="${tests.resources.dir}/jaxrpc/samples/oneway/wstools-config.xml"/>
 		<wstools dest="${tests.output.dir}/wstools/resources/jaxrpc/samples/rpcstyle/WEB-INF" config="${tests.resources.dir}/jaxrpc/samples/rpcstyle/wstools-config.xml"/>
 		<wstools dest="${tests.output.dir}/wstools/resources/jaxrpc/samples/secureejb/META-INF" config="${tests.resources.dir}/jaxrpc/samples/secureejb/wstools-config.xml"/>
-    <wstools dest="${tests.output.dir}/wstools/resources/jaxrpc/samples/wsaddr/hello/WEB-INF" config="${tests.resources.dir}/jaxrpc/samples/wsaddr/hello/wstools-config.xml"/>
-    <wstools dest="${tests.output.dir}/wstools/resources/jaxrpc/samples/wsaddr/replyto/WEB-INF" config="${tests.resources.dir}/jaxrpc/samples/wsaddr/replyto/wstools-config.xml"/>
 		<wstools dest="${tests.output.dir}/wstools/resources/jaxrpc/samples/wsbpel/hello/WEB-INF" config="${tests.resources.dir}/jaxrpc/samples/wsbpel/hello/wstools-config.xml"/>
 		<wstools dest="${tests.output.dir}/wstools/resources/jaxrpc/samples/wssecurity/WEB-INF" config="${tests.resources.dir}/jaxrpc/samples/wssecurity/wstools-config.xml"/>
 		<move todir="${tests.output.dir}/wstools/java">
 			<fileset dir="${tests.output.dir}/wstools/resources/jaxrpc/samples/docstyle/wrapped/WEB-INF" includes="org/**"/>
 		</move>
-    <move todir="${tests.output.dir}/wstools/java">
-      <fileset dir="${tests.output.dir}/wstools/resources/jaxrpc/samples/wsaddr/hello/WEB-INF" includes="org/**"/>
-    </move>
-    <move todir="${tests.output.dir}/wstools/java">
-      <fileset dir="${tests.output.dir}/wstools/resources/jaxrpc/samples/wsaddr/replyto/WEB-INF" includes="org/**"/>
-    </move>
 
 		<!-- Copy generated resources -->
 		<copy todir="${tests.output.dir}/resources">
@@ -200,7 +178,7 @@
 			<classpath location="${tests.output.dir}/resources/jaxws/samples/wssecurityAnnotatedpolicy"/>
 		</taskdef>
 
-		<wsprovide resourcedestdir="${tests.output.dir}/wsprovide/resources/jaxws/samples/wssecurity" genwsdl="true" sei="org.jboss.test.ws.jaxws.samples.wssecurity.HelloJavaBean" verbose="true"/>
+		<wsprovide resourcedestdir="${tests.output.dir}/wsprovide/resources/jaxws/samples/wssecurity" genwsdl="true" sei="org.jboss.test.ws.jaxws.samples.wssecurity.HelloJavaBean"/>
 		<wsprovide resourcedestdir="${tests.output.dir}/wsprovide/resources/jaxws/samples/wssecurityAnnotatedpolicy" genwsdl="true" sei="org.jboss.test.ws.jaxws.samples.wssecurityAnnotatedpolicy.HelloJavaBean"/>
 	</target>
 
@@ -229,13 +207,11 @@
 	</target>
 
 	<target name="tests-jars" depends="wsconsume,tests-compile,tests-copy-resources,tests-compile-generated-resources" description="Build the deployments.">
-		<ant antfile="${core.dir}/ant-import-tests/build-jars-interop.xml" target="build-jars-interop"/>
 		<ant antfile="${core.dir}/ant-import-tests/build-jars-jaxrpc.xml" target="build-jars-jaxrpc"/>
 		<ant antfile="${core.dir}/ant-import-tests/build-samples-jaxrpc.xml" target="build-samples-jaxrpc"/>
 		<ant antfile="${core.dir}/ant-import-tests/build-jars-jaxws.xml" target="build-jars-jaxws"/>
 		<ant antfile="${core.dir}/ant-import-tests/build-samples-jaxws.xml" target="build-samples-jaxws"/>
 		<ant antfile="${core.dir}/src/test-framework/ant-import/build-jars-jaxws.xml" target="build-jars-jaxws"/>
-		<ant antfile="${core.dir}/src/test-framework/ant-import/build-samples-jaxws.xml" target="build-samples-jaxws"/>
 	</target>
 
 	<target name="tests-main" depends="tests-jars" description="Build the deployments."/>

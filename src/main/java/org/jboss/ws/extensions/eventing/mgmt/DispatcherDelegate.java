@@ -1,9 +1,10 @@
 package org.jboss.ws.extensions.eventing.mgmt;
 
 import java.net.URI;
-import java.util.Iterator;
 
-import javax.management.*;
+import javax.management.MBeanServerConnection;
+import javax.management.MBeanServerInvocationHandler;
+import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.Reference;
@@ -11,7 +12,6 @@ import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
 
 import org.jboss.ws.WSException;
-import org.jboss.logging.Logger;
 import org.w3c.dom.Element;
 
 /**
@@ -24,8 +24,6 @@ import org.w3c.dom.Element;
  */
 public class DispatcherDelegate implements EventDispatcher, Referenceable
 {
-   private static final Logger log = Logger.getLogger(DispatcherDelegate.class);
-   
    private String hostname;
    public final static String MANAGER_HOSTNAME = "manager.hostname";
    private SubscriptionManagerMBean subscriptionManager = null;
@@ -62,12 +60,8 @@ public class DispatcherDelegate implements EventDispatcher, Referenceable
          try
          {
             ObjectName objectName = SubscriptionManager.OBJECT_NAME;
-            subscriptionManager = (SubscriptionManagerMBean)
-              MBeanServerInvocationHandler.newProxyInstance(
-                getServer(),
-                objectName,
-                SubscriptionManagerMBean.class, false
-              );
+            subscriptionManager = (SubscriptionManagerMBean)MBeanServerInvocationHandler.newProxyInstance(getServer(), objectName, SubscriptionManagerMBean.class,
+                  false);
          }
          catch (Exception e)
          {
@@ -78,47 +72,12 @@ public class DispatcherDelegate implements EventDispatcher, Referenceable
       return subscriptionManager;
    }
 
-   /**
-    * http://wiki.jboss.org/wiki/Wiki.jsp?page=FindMBeanServer
-    * 
-    * @return
-    * @throws NamingException
-    */
    private MBeanServerConnection getServer() throws NamingException
    {
-      // Local
-      MBeanServerConnection server = locateJBoss();
-      
-      if(null==server)
-      {
-         // Remote
-         InitialContext iniCtx = new InitialContext();
-         server = (MBeanServerConnection)iniCtx.lookup("jmx/invoker/RMIAdaptor");
-         log.debug("Using RMI invocation");
-      }
-      else
-      {
-         log.debug("Using in-VM invocation");
-      }
-      
+      // todo: bypass rmi adapter when used locally
+      InitialContext iniCtx = new InitialContext();
+      MBeanServerConnection server = (MBeanServerConnection)iniCtx.lookup("jmx/invoker/RMIAdaptor");
       return server;
-   }
-
-   // avoid dependency on jboss-jmx.jar
-   public MBeanServerConnection locateJBoss()
-   {
-      MBeanServerConnection jboss = null;
-
-      for (Iterator i = MBeanServerFactory.findMBeanServer(null).iterator(); i.hasNext(); )
-      {
-         MBeanServer server = (MBeanServer) i.next();
-         if (server.getDefaultDomain().equals("jboss"))
-         {
-            jboss = server;
-         }
-      }
-
-      return jboss;
    }
 
    void setHostname(String hostname)

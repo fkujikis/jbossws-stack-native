@@ -153,19 +153,28 @@ public class AttachmentPartImpl extends AttachmentPart
       if (dataHandler == null)
          return 0;
 
+      // In order to be accurate this method must be somewhat inefficient
+      // TODO optimize this for specific data sources
+      int count = 0, ret = 0;
+      byte[] buffer = new byte[256];
+
       try
       {
-         // We may need to buffer the stream, otherwise an additional read may fail
-         if((this.dataHandler.getDataSource() instanceof ByteArrayDataSource) == false)
-            this.dataHandler = new DataHandler(new ByteArrayDataSource(dataHandler.getInputStream(), dataHandler.getContentType()));
+         InputStream stream = dataHandler.getInputStream();
 
-         ByteArrayDataSource ds = (ByteArrayDataSource)this.dataHandler.getDataSource();
-         return ds.getSize();
+         do
+         {
+            count += ret;
+            ret = stream.read(buffer);
+         }
+         while (ret != -1);
       }
       catch (IOException e)
       {
          throw new SOAPException(e);
       }
+
+      return count;
    }
 
    public void removeAllMimeHeaders()
@@ -435,7 +444,11 @@ public class AttachmentPartImpl extends AttachmentPart
          this.type = type;
          try {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            IOUtils.copyStream(os, is);            
+            int ch;
+
+            while ((ch = is.read()) != -1)
+               os.write(ch);
+
             data = os.toByteArray();
          } catch (IOException ioex) {
             throw new WSException(ioex);
@@ -472,10 +485,6 @@ public class AttachmentPartImpl extends AttachmentPart
 
       public String getName() {
          return "ByteArrayDataSource";
-      }
-
-      public int getSize() {
-         return this.data.length;
       }
    }
 }

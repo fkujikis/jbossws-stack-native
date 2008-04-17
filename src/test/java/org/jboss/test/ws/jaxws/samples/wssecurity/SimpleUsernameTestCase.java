@@ -21,6 +21,8 @@
  */
 package org.jboss.test.ws.jaxws.samples.wssecurity;
 
+// $Id$
+
 import java.io.File;
 import java.net.URL;
 import java.util.Map;
@@ -44,13 +46,13 @@ import org.jboss.wsf.test.JBossWSTestSetup;
  */
 public class SimpleUsernameTestCase extends JBossWSTest
 {
-   private static UsernameEndpoint port;
-
+   private static UsernameEndpoint port; 
+   
    public static Test suite() throws Exception
    {
       return new JBossWSTestSetup(SimpleUsernameTestCase.class, "jaxws-samples-wssecurity-username.war");
    }
-
+   
    @Override
    protected void setUp() throws Exception
    {
@@ -61,7 +63,7 @@ public class SimpleUsernameTestCase extends JBossWSTest
          QName serviceName = new QName("http://org.jboss.ws/samples/wssecurity", "UsernameService");
 
          Service service = Service.create(wsdlURL, serviceName);
-
+         
          port = (UsernameEndpoint)service.getPort(UsernameEndpoint.class);
          ((StubExt)port).setSecurityConfig(securityURL.toExternalForm());
          ((StubExt)port).setConfigName("Standard WSSecurity Client");
@@ -86,7 +88,7 @@ public class SimpleUsernameTestCase extends JBossWSTest
       Map<String, Object> reqContext = ((BindingProvider)port).getRequestContext();
       reqContext.put(BindingProvider.USERNAME_PROPERTY, "kermit");
       reqContext.put(BindingProvider.PASSWORD_PROPERTY, "thefrog");
-
+      
       String retObj = port.getUsernameToken();
       assertEquals("kermit", retObj);
    }

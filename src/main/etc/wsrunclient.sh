@@ -30,14 +30,6 @@ if $cygwin ; then
         JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
 fi
 
-while [ $# -ge 1 ]; do
-   case $1 in
-       "-classpath") WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$2"; shift;;
-       *) args=$args" $1";;
-   esac
-   shift
-done
-
 # Setup JBOSS_HOME
 if [ "x$JBOSS_HOME" = "x" ]; then
     # get the full path (without any relative bits)
@@ -66,7 +58,6 @@ JBOSS_ENDORSED_DIRS="$JBOSS_HOME/lib/endorsed"
 # Setup the client classpath
 WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$JBOSS_HOME/client/log4j.jar"
 WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$JBOSS_HOME/client/jbossws-client.jar"
-WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$JBOSS_HOME/client/xmlsec.jar"
 
 # JBossAS-5.0 subset of jbossall-client.jar
 WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$JBOSS_HOME/client/jboss-logging-spi.jar"
@@ -74,6 +65,14 @@ WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$JBOSS_HOME/client/jboss-common-co
 
 # JBossAS-4.2 subset of jbossall-client.jar
 WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$JBOSS_HOME/client/jboss-common-client.jar"
+
+while [ $# -ge 1 ]; do
+   case $1 in
+       "-classpath") WSRUNCLIENT_CLASSPATH="$WSRUNCLIENT_CLASSPATH:$2"; shift;;
+       *) args="$args \"$1\"";;
+   esac
+   shift
+done
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
@@ -84,8 +83,8 @@ if $cygwin; then
 fi
 
 # Execute the JVM
-"$JAVA" $JAVA_OPTS \
+eval "$JAVA" $JAVA_OPTS \
    -Djava.endorsed.dirs="$JBOSS_ENDORSED_DIRS" \
    -Dlog4j.configuration=wstools-log4j.xml \
    -classpath "$WSRUNCLIENT_CLASSPATH" \
-   $args
+   "$args"

@@ -134,7 +134,7 @@ public class JAXWSProviderMetaDataBuilder extends JAXWSServerMetaDataBuilder
       processHandlerChain(sepMetaData, sepClass);
 
       // process config
-      processEndpointConfig(dep, sepMetaData, sepClass, linkName);
+      processEndpointConfig(sepClass, linkName, sepMetaData);
 
       // Set the endpoint address
       processWebContext(dep, sepClass, linkName, sepMetaData);

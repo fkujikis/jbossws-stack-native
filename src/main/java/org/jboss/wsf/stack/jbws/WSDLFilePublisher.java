@@ -32,7 +32,6 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.wsdl.Definition;
@@ -60,7 +59,6 @@ import org.w3c.dom.Element;
 
 /** A helper class that publishes the wsdl files and their imports to the server/data/wsdl directory.
  *
- * @author <a href="mailto:mageshbk@jboss.com">Magesh Kumar B</a>
  * @author Thomas.Diesler@jboss.org
  * @since 02-June-2004
  */
@@ -122,12 +120,11 @@ public class WSDLFilePublisher
             Definition wsdl11Definition = wsdlDefinitions.getWsdlOneOneDefinition();
             if (wsdl11Definition != null)
             {
-               List<String> published = new LinkedList<String>();
-               publishWsdlImports(wsdlFile.toURL(), wsdl11Definition, published);
+               publishWsdlImports(wsdlFile.toURL(), wsdl11Definition);
 
                // Publish XMLSchema imports
                Document document = wsdlDefinitions.getWsdlDocument();
-               publishSchemaImports(wsdlFile.toURL(), document.getDocumentElement(), published);
+               publishSchemaImports(wsdlFile.toURL(), document.getDocumentElement());
             }
             else
             {
@@ -147,7 +144,7 @@ public class WSDLFilePublisher
 
    /** Publish the wsdl imports for a given wsdl definition
     */
-   private void publishWsdlImports(URL parentURL, Definition parentDefinition, List<String> published) throws Exception
+   private void publishWsdlImports(URL parentURL, Definition parentDefinition) throws Exception
    {
       String baseURI = parentURL.toExternalForm();
 
@@ -162,16 +159,6 @@ public class WSDLFilePublisher
             // its an external import, don't publish locally
             if (locationURI.startsWith("http://") == false)
             {
-               // infinity loops prevention
-               if (published.contains(locationURI))
-               {
-                  return;
-               }
-               else
-               {
-                  published.add(locationURI);
-               }
-               
                URL targetURL = new URL(baseURI.substring(0, baseURI.lastIndexOf("/") + 1) + locationURI);
                File targetFile = new File(targetURL.getPath());
                targetFile.getParentFile().mkdirs();
@@ -182,14 +169,15 @@ public class WSDLFilePublisher
                wsdlWriter.writeWSDL(subdef, fw);
                fw.close();
 
-               log.debug("WSDL import published to: " + targetURL);
+               if (log.isDebugEnabled())
+                  log.debug("WSDL import published to: " + targetURL);
 
-               // recursively publish imports
-               publishWsdlImports(targetURL, subdef, published);
+               // recursivly publish imports
+               publishWsdlImports(targetURL, subdef);
 
                // Publish XMLSchema imports
                Element subdoc = DOMUtils.parse(targetURL.openStream());
-               publishSchemaImports(targetURL, subdoc, published);
+               publishSchemaImports(targetURL, subdoc);
             }
          }
       }
@@ -197,7 +185,7 @@ public class WSDLFilePublisher
 
    /** Publish the schema imports for a given wsdl definition
     */
-   private void publishSchemaImports(URL parentURL, Element element, List<String> published) throws Exception
+   private void publishSchemaImports(URL parentURL, Element element) throws Exception
    {
       String baseURI = parentURL.toExternalForm();
 
@@ -212,33 +200,20 @@ public class WSDLFilePublisher
             {
                if (schemaLocation.startsWith("http://") == false)
                {
-                  // infinity loops prevention
-                  if (published.contains(schemaLocation))
-                  {
-                     return;
-                  }
-                  else
-                  {
-                     published.add(schemaLocation);
-                  }
-                  
                   URL xsdURL = new URL(baseURI.substring(0, baseURI.lastIndexOf("/") + 1) + schemaLocation);
                   File targetFile = new File(xsdURL.getPath());
                   targetFile.getParentFile().mkdirs();
 
                   String deploymentName = dep.getCanonicalName();
 
-                  // get the resource path including the separator
-                  int index = baseURI.indexOf(deploymentName) + 1;
+                  // get the resource path
+                  int index = baseURI.indexOf(deploymentName);
                   String resourcePath = baseURI.substring(index + deploymentName.length());
-                  //check for sub-directories
-                  resourcePath = resourcePath.substring(0, resourcePath.lastIndexOf("/") + 1);
+                  resourcePath = resourcePath.substring(0, resourcePath.lastIndexOf("/"));
+                  if (resourcePath.length() > 0)
+                     resourcePath = resourcePath + "/";
 
                   resourcePath = expLocation + resourcePath + schemaLocation;
-                  while (resourcePath.indexOf("//") != -1)
-                  {
-                     resourcePath = resourcePath.replace("//", "/");
-                  }
                   URL resourceURL = dep.getMetaDataFileURL(resourcePath);
                   InputStream is = new ResourceURL(resourceURL).openStream();
                   if (is == null)
@@ -249,17 +224,18 @@ public class WSDLFilePublisher
                   fos.close();
                   is.close();
 
-                  log.debug("XMLSchema import published to: " + xsdURL);
+                  if (log.isDebugEnabled())
+                     log.debug("XMLSchema import published to: " + xsdURL);
 
                   // recursivly publish imports
                   Element subdoc = DOMUtils.parse(xsdURL.openStream());
-                  publishSchemaImports(xsdURL, subdoc, published);
+                  publishSchemaImports(xsdURL, subdoc);
                }
             }
          }
          else
          {
-            publishSchemaImports(parentURL, childElement, published);
+            publishSchemaImports(parentURL, childElement);
          }
       }
    }
@@ -314,7 +290,8 @@ public class WSDLFilePublisher
       if (wsdlLocation == null)
          throw new IllegalStateException("Cannot obtain wsdl location for: " + serviceMetaData.getServiceName());
 
-      log.debug("Publish WSDL file: " + wsdlLocation);
+      if (log.isDebugEnabled())
+         log.debug("Publish WSDL file: " + wsdlLocation);
 
       // Only file URLs are supported in <wsdl-publish-location>
       String publishLocation = serviceMetaData.getWsdlPublishLocation();

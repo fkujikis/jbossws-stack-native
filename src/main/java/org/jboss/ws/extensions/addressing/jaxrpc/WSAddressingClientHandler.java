@@ -35,8 +35,11 @@ import javax.xml.ws.addressing.soap.SOAPAddressingBuilder;
 import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
 import org.jboss.ws.extensions.addressing.soap.SOAPAddressingPropertiesImpl;
+import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
+
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * A client side handler that reads/writes the addressing properties
@@ -52,38 +55,35 @@ public class WSAddressingClientHandler extends GenericHandler
 
    private static AddressingBuilder ADDR_BUILDER;
    private static AddressingConstantsImpl ADDR_CONSTANTS;
-   private static QName[] HEADERS = new QName[2];
+	private static QName[] HEADERS = new QName[2];
 
-   static
+	static
    {
       ADDR_CONSTANTS = new AddressingConstantsImpl();
       ADDR_BUILDER = AddressingBuilder.getAddressingBuilder();
 
-      HEADERS[0] = ADDR_CONSTANTS.getActionQName();
-      HEADERS[1] = ADDR_CONSTANTS.getToQName();
-   }
-
-   public QName[] getHeaders()
+		HEADERS[0] = ADDR_CONSTANTS.getActionQName();
+		HEADERS[1] = ADDR_CONSTANTS.getToQName();
+	}
+	
+	public QName[] getHeaders()
    {
       return HEADERS;
    }
 
    public void init(HandlerInfo handlerInfo)
    {
-      super.init(handlerInfo);
+      super.init(handlerInfo);     
    }
 
    public boolean handleRequest(MessageContext msgContext)
    {
-      log.debug("handleRequest");
+      if(log.isDebugEnabled()) log.debug("handleRequest");
 
-      SOAPAddressingProperties addrProps = (SOAPAddressingProperties)msgContext.getProperty(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES);
-      if (addrProps != null)
-         msgContext.setProperty(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND, addrProps);
+      SOAPAddressingProperties addrProps = (SOAPAddressingProperties)msgContext.getProperty(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND);
 
-      addrProps = (SOAPAddressingProperties)msgContext.getProperty(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND);
       if (addrProps != null)
-      {
+      {       
          SOAPMessage soapMessage = ((SOAPMessageContext)msgContext).getMessage();
          addrProps.writeHeaders(soapMessage);
       }
@@ -99,7 +99,7 @@ public class WSAddressingClientHandler extends GenericHandler
 
    public boolean handleResponse(MessageContext msgContext)
    {
-      log.debug("handleResponse");
+      if(log.isDebugEnabled()) log.debug("handleResponse");
 
       try
       {
@@ -109,7 +109,6 @@ public class WSAddressingClientHandler extends GenericHandler
             SOAPAddressingBuilder builder = (SOAPAddressingBuilder)SOAPAddressingBuilder.getAddressingBuilder();
             SOAPAddressingProperties addrProps = (SOAPAddressingProperties)builder.newAddressingProperties();
             addrProps.readHeaders(soapMessage);
-            msgContext.setProperty(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES, addrProps);
             msgContext.setProperty(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_INBOUND, addrProps);
          }
       }

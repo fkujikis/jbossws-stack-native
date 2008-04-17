@@ -31,37 +31,29 @@ import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
 
 /**
- * @author Heiko.Braun@jboss.org
+ * @author Thomas.Diesler@jboss.org
+ * @since 07-August-2006
  */
 public class TestEndpointImpl implements TestEndpoint
 {
    private Logger log = Logger.getLogger(TestEndpointImpl.class);
-   private static final String WEB_INF_TEST_RESOURCE_TXT = "org/jboss/test/ws/jaxrpc/jbws1124/test-resource.txt";
+
 
    public String getResourceString() throws RemoteException
    {
-
-         ClassLoader loader = getClass().getClassLoader();
-         InputStream ins = loader.getResourceAsStream(WEB_INF_TEST_RESOURCE_TXT);
-
-         if(ins!=null)
-         {
-            try
-            {
-               String line = new BufferedReader(new InputStreamReader(ins)).readLine();
-               log.info(line);
-               return line;
-            }
-            catch (IOException ex)
-            {
-               throw new WSException(ex);
-            }
-         }
-         else
-         {
-            throw new WSException("Failed to load '"+WEB_INF_TEST_RESOURCE_TXT+"' with loader " + loader);  
-         }
-
+      try
+      {
+         InputStream ins = getClass().getClassLoader().getResourceAsStream("WEB-INF/test-resource.txt");
+         String line = new BufferedReader(new InputStreamReader(ins)).readLine();
+         
+         log.info(line);
+         
+         return line;
+      }
+      catch (IOException ex)
+      {
+         throw new WSException(ex);
+      }      
    }
 
 }

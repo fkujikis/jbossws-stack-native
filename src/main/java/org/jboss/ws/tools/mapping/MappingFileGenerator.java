@@ -24,11 +24,7 @@ package org.jboss.ws.tools.mapping;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.xml.rpc.encoding.TypeMapping;
 
@@ -46,7 +42,6 @@ import org.jboss.ws.metadata.wsdl.WSDLService;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
 import org.jboss.ws.tools.JavaWriter;
-import org.jboss.ws.tools.NamespacePackageMapping;
 import org.jboss.ws.tools.XSDTypeToJava;
 import org.jboss.ws.tools.XSDTypeToJava.VAR;
 import org.jboss.ws.tools.helpers.MappingFileGeneratorHelper;
@@ -73,19 +68,14 @@ public class MappingFileGenerator
    protected WSDLDefinitions wsdlDefinitions;
 
    /**
-    * Package Names to override
+    * Package Name to override
     */
-   protected Map<String, String> namespacePackageMap = new HashMap<String,String>();
+   protected String packageName;
 
    /**
     * Service Name
     */
    protected String serviceName;
-
-   /**
-    * SEI Package Name to override
-    */
-   protected String packageName;
 
    /**
     * Service Endpoint Interface (if available).
@@ -103,8 +93,6 @@ public class MappingFileGenerator
    public MappingFileGenerator(WSDLDefinitions wsdl, TypeMapping typeM)
    {
       this.wsdlDefinitions = wsdl;
-      String targetNS = wsdl.getTargetNamespace();
-      packageName = NamespacePackageMapping.getJavaPackageName(targetNS);
       this.typeMapping = (LiteralTypeMapping)typeM;
    }
 
@@ -132,17 +120,6 @@ public class MappingFileGenerator
    public void setPackageName(String packageName)
    {
       this.packageName = packageName;
-   }
-
-   public Map<String, String> getNamespacePackageMap()
-   {
-      return namespacePackageMap;
-   }
-
-   
-   public void setNamespacePackageMap(Map<String, String> map)
-   {
-      namespacePackageMap = map;
    }
 
    /**
@@ -179,7 +156,7 @@ public class MappingFileGenerator
     */
    public JavaWsdlMapping generate() throws IOException
    {
-      MappingFileGeneratorHelper helper = new MappingFileGeneratorHelper(this.wsdlDefinitions, this.serviceName, this.namespacePackageMap, this.serviceEndpointInterface,
+      MappingFileGeneratorHelper helper = new MappingFileGeneratorHelper(this.wsdlDefinitions, this.serviceName, this.packageName, this.serviceEndpointInterface,
             this.typeMapping, this.parameterStyle);
       JavaWsdlMapping jwm = new JavaWsdlMapping();
 
@@ -205,44 +182,52 @@ public class MappingFileGenerator
       //Construct package mapping
       //Check if the user has provided a typeNamespace
       if (typeNamespace != null && typeNamespace.equals(targetNS) == false || isServerSideGeneration())
-         jwm.addPackageMapping(helper.constructPackageMapping(jwm, getPackageName(typeNamespace), typeNamespace));
-      jwm.addPackageMapping(helper.constructPackageMapping(jwm, getPackageName(targetNS), targetNS));
-
-      if (namespacePackageMap != null)
-      {
-         Set<String> keys = namespacePackageMap.keySet();
-         Iterator<String> iter = keys.iterator();
-         while (iter != null && iter.hasNext())
-         {
-            String ns = iter.next();
-            if (jwm.getPackageNameForNamespaceURI(ns) == null)
-            {
-               jwm.addPackageMapping(helper.constructPackageMapping(jwm, namespacePackageMap.get(ns), ns));
-            }
-         }
-      }
+         jwm.addPackageMapping(helper.constructPackageMapping(jwm, packageName, typeNamespace));
+      jwm.addPackageMapping(helper.constructPackageMapping(jwm, packageName, targetNS));
 
       return jwm;
+   }
+
+   public void generateJavaSourceFileForRequestResponseStruct(File location, ServiceEndpointInterfaceMapping seim, JBossXSModel xsmodel, String typeNamespace)
+         throws IOException
+   {
+      WSDLUtils utils = WSDLUtils.getInstance();
+      XSDTypeToJava xst = new XSDTypeToJava();
+      xst.setTypeMapping(this.typeMapping);
+      xst.setPackageName(this.packageName);
+      ServiceEndpointMethodMapping[] mapArr = seim.getServiceEndpointMethodMappings();
+      int len = mapArr != null ? mapArr.length : 0;
+      for (int i = 0; i < len; i++)
+      {
+         ServiceEndpointMethodMapping mm = mapArr[i];
+         String opname = mm.getJavaMethodName();
+         String sei = seim.getServiceEndpointInterface();
+         String plainClassName = utils.getJustClassName(sei);
+         String classname = plainClassName + "_" + opname + "_RequestStruct";
+         List<VAR> listInputs = new ArrayList<VAR>();
+         MethodParamPartsMapping[] mppmarr = mm.getMethodParamPartsMappings();
+         int lenmppmarr = mppmarr != null ? mppmarr.length : 0;
+         for (int j = 0; j < lenmppmarr; j++)
+         {
+            listInputs.addAll(xst.getVARList((XSComplexTypeDefinition)xsmodel.getTypeDefinition(opname, typeNamespace), xsmodel, false));
+         }
+         JavaWriter jw = new JavaWriter();
+         jw.createJavaFile(location, classname, packageName, listInputs, null, null, false, null);
+         classname = plainClassName + "_" + opname + "_ResponseStruct";
+         XSTypeDefinition xt = xsmodel.getTypeDefinition(opname + "Response", typeNamespace);
+         List<VAR> listOutputs = new ArrayList<VAR>();
+         if (xt instanceof XSSimpleTypeDefinition)
+         {
+            listOutputs.add(new VAR(Constants.DEFAULT_RPC_RETURN_NAME, xt.getName(), false));
+         }
+         else listOutputs.addAll(xst.getVARList((XSComplexTypeDefinition)xt, xsmodel, false));
+         jw.createJavaFile(location, classname, packageName, listOutputs, null, null, false, null);
+      }
    }
 
    //PRIVATE METHODS
    private boolean isServerSideGeneration()
    {
       return this.serviceEndpointInterface != null;
-   }
-
-   private String getPackageName(String targetNamespace)
-   {
-      //Get it from global config
-      if (namespacePackageMap != null)
-      {
-         String pkg = namespacePackageMap.get(targetNamespace);
-         if (pkg != null)
-         {
-            return pkg;
-         }
-      }
-      //Default behaviour will always generate all classes in the SEI package only
-      return packageName;
    }
 }

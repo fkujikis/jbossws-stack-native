@@ -60,7 +60,7 @@ import org.jboss.xb.binding.sunday.unmarshalling.SchemaBinding;
  * @author Thomas.Diesler@jboss.org
  * @since 12-May-2005
  */
-public class ServiceMetaData implements InitalizableMetaData
+public class ServiceMetaData
 {
    // provide logging
    private static final Logger log = Logger.getLogger(ServiceMetaData.class);
@@ -279,28 +279,6 @@ public class ServiceMetaData implements InitalizableMetaData
     */
    public WSDLDefinitions getWsdlDefinitions()
    {
-      WSDLDefinitions wsdlDefinitions = null;
-      
-      URL wsdlURL = getWsdlFileOrLocation();
-      if (wsdlURL != null)
-      {
-         // The key should not after it is assigned
-         if (wsdlCacheKey == null)
-            wsdlCacheKey = "#" + (wsdlLocation != null ? wsdlLocation : wsdlFile);
-         
-         wsdlDefinitions = (WSDLDefinitions)wsMetaData.getWsdlDefinition(wsdlCacheKey);
-         if (wsdlDefinitions == null)
-         {
-            WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
-            wsdlDefinitions = factory.parse(wsdlURL);
-            wsMetaData.addWsdlDefinition(wsdlCacheKey, wsdlDefinitions);
-         }
-      }
-      return wsdlDefinitions;
-   }
-
-   public URL getWsdlFileOrLocation()
-   {
       URL wsdlURL = wsdlLocation;
       if (wsdlURL == null && wsdlFile != null)
       {
@@ -328,7 +306,23 @@ public class ServiceMetaData implements InitalizableMetaData
             }
          }
       }
-      return wsdlURL;
+      
+      WSDLDefinitions wsdlDefinitions = null;
+      if (wsdlURL != null)
+      {
+         // The key should not after it is assigned
+         if (wsdlCacheKey == null)
+            wsdlCacheKey = "#" + (wsdlLocation != null ? wsdlLocation : wsdlFile);
+         
+         wsdlDefinitions = (WSDLDefinitions)wsMetaData.getWsdlDefinition(wsdlCacheKey);
+         if (wsdlDefinitions == null)
+         {
+            WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
+            wsdlDefinitions = factory.parse(wsdlURL);
+            wsMetaData.addWsdlDefinition(wsdlCacheKey, wsdlDefinitions);
+         }
+      }
+      return wsdlDefinitions;
    }
 
    public TypeMappingImpl getTypeMapping()

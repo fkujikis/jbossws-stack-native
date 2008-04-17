@@ -26,7 +26,6 @@ package org.jboss.wsf.stack.jbws;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
-import org.jboss.wsf.spi.WSFRuntime;
 
 /**
  * A deployer that initializes the UMDM 
@@ -37,7 +36,7 @@ import org.jboss.wsf.spi.WSFRuntime;
 public class EagerInitializeDeploymentAspect extends DeploymentAspect
 {
    @Override
-   public void start(Deployment dep, WSFRuntime runtime)
+   public void create(Deployment dep)
    {
       UnifiedMetaData umd = dep.getAttachment(UnifiedMetaData.class);
       if (umd == null)

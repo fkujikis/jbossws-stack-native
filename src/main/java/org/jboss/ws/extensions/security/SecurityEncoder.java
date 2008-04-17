@@ -21,13 +21,10 @@
 */
 package org.jboss.ws.extensions.security;
 
-//$Id$
-
+import java.lang.reflect.Constructor;
 import java.util.List;
 
 import org.jboss.ws.extensions.security.element.SecurityHeader;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
-import org.jboss.ws.extensions.security.operation.EncodingOperation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -41,11 +38,11 @@ import org.w3c.dom.Element;
  */
 public class SecurityEncoder
 {
-   private List<EncodingOperation> operations;
+   private List<OperationDescription<EncodingOperation>> operations;
 
    private SecurityStore store;
 
-   public SecurityEncoder(List<EncodingOperation> operations, SecurityStore store)
+   public SecurityEncoder(List<OperationDescription<EncodingOperation>> operations, SecurityStore store)
    {
       org.apache.xml.security.Init.init();
       this.operations = operations;
@@ -61,19 +58,28 @@ public class SecurityEncoder
          wsse.setAttributeNS(soapHeader.getNamespaceURI(), soapHeader.getPrefix() + ":mustUnderstand", "1");
          soapHeader.insertBefore(wsse, soapHeader.getFirstChild());
       }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
+      catch (Exception e) {}
 
    }
 
    public void encode(Document message) throws WSSecurityException
    {
       SecurityHeader header = new SecurityHeader(message);
-      for (EncodingOperation operation : operations)
+      for (OperationDescription<EncodingOperation> op : operations)
       {
-         operation.process(message, header, store);
+         EncodingOperation operation;
+
+         try
+         {
+            Constructor<? extends EncodingOperation> constructor = op.getOperation().getConstructor(SecurityHeader.class, SecurityStore.class);
+            operation = constructor.newInstance(header, store);
+         }
+         catch (Exception e)
+         {
+            throw new WSSecurityException("Error constructing operation: " + op.getOperation());
+         }
+
+         operation.process(message, op.getTargets(), op.getCertificateAlias(), op.getCredential(), op.getAlgorithm());
       }
       attachHeader(header, message);
    }
