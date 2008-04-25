@@ -50,7 +50,7 @@ public class ComplexTypeMarshallerTestCase extends WSToolsTest
    /** Get the URL to the defining schema */
    protected XSModel getSchemaModel(QName xmlType, Class javaType) throws Exception
    {
-      File xsdFile = getResourceFile("common/jbossxb/ComplexTypesService_RPC.xsd");
+      File xsdFile = new File("resources/common/jbossxb/ComplexTypesService_RPC.xsd");
       assertTrue(xsdFile.exists());
 
       return parseSchema(xsdFile.toURL());
@@ -178,7 +178,7 @@ public class ComplexTypeMarshallerTestCase extends WSToolsTest
    private JavaWsdlMapping getJavaWSDLMapping() throws Exception
    {
       JavaWsdlMappingFactory factory = JavaWsdlMappingFactory.newInstance();
-      URL mappingURL = getResourceURL("common/jbossxb/ComplexTypesService_RPC.xml");
+      URL mappingURL = new File("resources/common/jbossxb/ComplexTypesService_RPC.xml").toURL();
       JavaWsdlMapping javaWsdlMapping = factory.parse(mappingURL);
       return javaWsdlMapping;
    }

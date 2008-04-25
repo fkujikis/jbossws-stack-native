@@ -46,8 +46,6 @@ public class WSSecurityConfiguration implements Serializable
    private String trustStoreType;
    private String trustStorePassword;
    private HashMap<String, String> keyPasswords = new HashMap<String, String>();
-   private String nonceFactory;
-   private TimestampVerification timestampVerification;
 
    public WSSecurityConfiguration()
    {
@@ -167,25 +165,4 @@ public class WSSecurityConfiguration implements Serializable
    {
       this.keyPasswords = keyPasswords;
    }
-
-   public String getNonceFactory()
-   {
-      return nonceFactory;
-   }
-
-   public void setNonceFactory(String nonceFactory)
-   {
-      this.nonceFactory = nonceFactory;
-   }
-
-   public TimestampVerification getTimestampVerification()
-   {
-      return timestampVerification;
-   }
-
-   public void setTimestampVerification(TimestampVerification timestampVerification)
-   {
-      this.timestampVerification = timestampVerification;
-   }
-
 }

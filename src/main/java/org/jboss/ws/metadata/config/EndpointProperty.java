@@ -28,11 +28,6 @@ import java.net.URI;
  * @version $Id$
  * @since 14.12.2006
  */
-
-/**
- * Refactor this to use features 
- */
-@Deprecated
 public class EndpointProperty
 {
    public final static String MTOM_THRESHOLD = "http://org.jboss.ws/mtom#threshold";

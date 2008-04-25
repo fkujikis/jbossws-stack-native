@@ -30,8 +30,8 @@ import javax.xml.ws.Binding;
  * 
  *  @since JAX-WS 2.0
 **/
-public interface HTTPBinding extends Binding
-{
+public interface HTTPBinding extends Binding {
+
   /**
    * A constant representing the identity of the XML/HTTP binding.
    */

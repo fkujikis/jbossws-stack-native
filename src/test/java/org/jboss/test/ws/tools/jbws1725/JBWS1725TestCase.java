@@ -41,7 +41,7 @@ public class JBWS1725TestCase extends JBossWSTest
 
    public void testExtensionType() throws Exception
    {
-      String resourceDir = getResourceFile("tools/jbws1725").getPath();
+      String resourceDir = "resources/tools/jbws1725";
       String toolsDir = "tools/jbws1725";
       String[] args = new String[] { "-dest", toolsDir, "-config", resourceDir + "/wstools-config.xml" };
       new WSTools().generate(args);

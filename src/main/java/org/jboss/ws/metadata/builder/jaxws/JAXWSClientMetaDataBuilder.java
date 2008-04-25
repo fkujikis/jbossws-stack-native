@@ -36,7 +36,6 @@ import org.jboss.ws.WSException;
 import org.jboss.ws.core.jaxws.client.ServiceObjectFactoryJAXWS;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.extensions.policy.metadata.PolicyMetaDataBuilder;
-import org.jboss.ws.extensions.wsrm.common.RMHelper;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -150,28 +149,23 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
 
       for (WSDLEndpoint wsdlEndpoint : wsdlService.getEndpoints())
       {
-         QName bindingName = wsdlEndpoint.getBinding();
-         WSDLBinding wsdlBinding = wsdlEndpoint.getWsdlService().getWsdlDefinitions().getBinding(bindingName);
-         String bindingType = wsdlBinding.getType();
-         if (Constants.NS_SOAP11.equals(bindingType) || Constants.NS_SOAP12.equals(bindingType))
-         {
-            QName portName = wsdlEndpoint.getName();
-            QName interfaceQName = wsdlEndpoint.getInterface().getName();
-            ClientEndpointMetaData epMetaData = new ClientEndpointMetaData(serviceMetaData, portName, interfaceQName, Type.JAXWS);
-            epMetaData.setEndpointAddress(wsdlEndpoint.getAddress());
-            serviceMetaData.addEndpoint(epMetaData);
+         QName portName = wsdlEndpoint.getName();
+         QName interfaceQName = wsdlEndpoint.getInterface().getName();
+         ClientEndpointMetaData epMetaData = new ClientEndpointMetaData(serviceMetaData, portName, interfaceQName, Type.JAXWS);
+         epMetaData.setEndpointAddress(wsdlEndpoint.getAddress());
+         serviceMetaData.addEndpoint(epMetaData);
 
-            // Init the endpoint binding
-            initEndpointBinding(wsdlEndpoint, epMetaData);
+         // Init the endpoint binding
+         initEndpointBinding(wsdlEndpoint, epMetaData);
 
-            // Init the service encoding style
-            initEndpointEncodingStyle(epMetaData);
+         // Init the service encoding style
+         initEndpointEncodingStyle(epMetaData);
 
-            setupOperationsFromWSDL(epMetaData, wsdlEndpoint);
+         setupOperationsFromWSDL(epMetaData, wsdlEndpoint);
 
-            // service-ref contributions
-            bufferServiceRefContributions(epMetaData);
-         }
+         // service-ref contributions
+         bufferServiceRefContributions(epMetaData);
+
       }
    }
 
@@ -312,12 +306,6 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
 
       // Eager initialization
       epMetaData.eagerInitialize();
-
-      // wsrm initialization
-      if (epMetaData.getConfig().getRMMetaData() != null)
-      {
-         RMHelper.setupRMOperations(epMetaData);
-      }
 
       if(log.isDebugEnabled()) log.debug("END: rebuildMetaData\n" + epMetaData.getServiceMetaData());
    }

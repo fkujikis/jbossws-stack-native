@@ -41,15 +41,15 @@ import org.w3c.dom.Element;
 public abstract class SOAPFactory
 {
    private static SOAPFactory soapFactory;
-
-   /**
-    * Creates a new SOAPFactory object that is an instance of the default implementation (SOAP 1.1),
+   
+   /** 
+    * Creates a new SOAPFactory object that is an instance of the default implementation (SOAP 1.1), 
     * This method uses the following ordered lookup procedure to determine the SOAPFactory implementation class to load:
-    *
+    * 
     *    Use the javax.xml.soap.SOAPFactory system property.
     *    Use the properties file "lib/jaxm.properties" in the JRE directory. This configuration file is in standard java.util.Properties format and contains the fully qualified name of the implementation class with the key being the system property defined above.
     *    Use the Services API (as detailed in the JAR specification), if available, to determine the classname. The Services API will look for a classname in the file META-INF/services/javax.xml.soap.SOAPFactory in jars available to the runtime.
-    *    Use the SAAJMetaFactory instance to locate the SOAPFactory implementation class.
+    *    Use the SAAJMetaFactory instance to locate the SOAPFactory implementation class. 
     *
     * @return a new instance of a SOAPFactory
     * @throws SOAPException if there was an error creating the default SOAPFactory
@@ -67,14 +67,14 @@ public abstract class SOAPFactory
          {
             throw new SOAPException(rte);
          }
-
+         
          // Use the SAAJMetaFactory instance to locate the MessageFactory implementation class.
          if (soapFactory == null)
          {
             SAAJMetaFactory saajFactory = SAAJMetaFactory.getInstance();
             soapFactory = saajFactory.newSOAPFactory(SOAPConstants.DEFAULT_SOAP_PROTOCOL);
          }
-
+         
          if (soapFactory == null)
             throw new SOAPException("Failed to to determine the SOAPFactory implementation class");
       }
@@ -83,10 +83,10 @@ public abstract class SOAPFactory
 
 
    /**
-    * Creates a new SOAPFactory object that is an instance of the specified implementation, this method uses the SAAJMetaFactory
+    * Creates a new SOAPFactory object that is an instance of the specified implementation, this method uses the SAAJMetaFactory 
     * to locate the implementation class and create the SOAPFactory instance.
-    *
-    * @param protocol a string constant representing the class of the specified message factory implementation.
+    * 
+    * @param protocol a string constant representing the class of the specified message factory implementation. 
     *    May be either DYNAMIC_SOAP_PROTOCOL, DEFAULT_SOAP_PROTOCOL (which is the same as) SOAP_1_1_PROTOCOL, or SOAP_1_2_PROTOCOL.
     * @throws SOAPException if there was an error creating the specified SOAPFactory
     * @since SAAJ 1.3
@@ -95,13 +95,13 @@ public abstract class SOAPFactory
    {
       SAAJMetaFactory saajFactory = SAAJMetaFactory.getInstance();
       SOAPFactory factory = saajFactory.newSOAPFactory(protocol);
-
+      
       if (factory == null)
          throw new SOAPException("Failed to to determine the SOAPFactory implementation class");
-
+      
       return factory;
    }
-
+   
    /** Creates a new Detail object which serves as a container for DetailEntry objects.
     *
     *  This factory method creates Detail objects for use in situations where it is not practical to use the SOAPFault abstraction.
@@ -112,19 +112,16 @@ public abstract class SOAPFactory
    public abstract Detail createDetail() throws SOAPException;
 
    /**
-    * Creates a SOAPElement object from an existing DOM Element. If the DOM Element that is passed in as an argument is already a
-    * SOAPElement then this method must return it unmodified without any further work. Otherwise, a new SOAPElement is created and
-    * a deep copy is made of the domElement argument. The concrete type of the return value will depend on the name of the domElement
+    * Creates a SOAPElement object from an existing DOM Element. If the DOM Element that is passed in as an argument is already a 
+    * SOAPElement then this method must return it unmodified without any further work. Otherwise, a new SOAPElement is created and 
+    * a deep copy is made of the domElement argument. The concrete type of the return value will depend on the name of the domElement 
     * argument. If any part of the tree rooted in domElement violates SOAP rules, a SOAPException will be thrown.
     * @param domElement the Element to be copied.
     * @return a new SOAPElement that is a copy of domElement.
     * @throws SOAPException if there is an error in creating the SOAPElement object
     * @since SAAJ 1.3
     */
-   public SOAPElement createElement(Element domElement) throws SOAPException
-   {
-      throw new IllegalStateException("Should be implemented by concrete implementation of this class");
-   }
+   public abstract SOAPElement createElement(Element domElement) throws SOAPException;
 
    /** Create a SOAPElement object initialized with the given local name.
     *
@@ -153,19 +150,16 @@ public abstract class SOAPFactory
    public abstract SOAPElement createElement(Name name) throws SOAPException;
 
    /**
-    * Creates a SOAPElement object initialized with the given QName object.
-    * The concrete type of the return value will depend on the name given to the new SOAPElement.
-    * For instance, a new SOAPElement with the name "{http://www.w3.org/2003/05/soap-envelope}Envelope" would
+    * Creates a SOAPElement object initialized with the given QName object. 
+    * The concrete type of the return value will depend on the name given to the new SOAPElement. 
+    * For instance, a new SOAPElement with the name "{http://www.w3.org/2003/05/soap-envelope}Envelope" would 
     * cause a SOAPEnvelope that supports SOAP 1.2 behavior to be created.
     * @param qname a QName object with the XML name for the new element
     * @return the new SOAPElement object that was created
     * @throws SOAPException if there is an error in creating the SOAPElement object
     * @since SAAJ 1.3
     */
-   public SOAPElement createElement(QName qname) throws SOAPException
-   {
-      throw new IllegalStateException("Should be implemented by concrete implementation of this class");
-   }
+   public abstract SOAPElement createElement(QName qname) throws SOAPException;
 
    /**
     * Creates a new SOAPFault object initialized with the given reasonText  and faultCode

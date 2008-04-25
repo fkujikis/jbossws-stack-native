@@ -41,7 +41,7 @@ public class JBWS958TestCase extends JBossWSTest
    public void testWSDLReader() throws Exception
    {
       WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
-      URL wsdlURL = getResourceURL("jaxrpc/jbws958/WEB-INF/wsdl/IPLSProvisioning.wsdl");
+      URL wsdlURL = new File("resources/jaxrpc/jbws958/WEB-INF/wsdl/IPLSProvisioning.wsdl").toURL();
       WSDLDefinitions wsdlDefs = factory.parse(wsdlURL);
       assertNotNull(wsdlDefs);
    }

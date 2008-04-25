@@ -93,14 +93,12 @@ public class SOAPMessageDispatcher
             if (childNode instanceof SOAPBodyElement)
             {
                soapBodyElement = (SOAPBodyElement)childNode;
-               //soapBodyElement.getValue(); //force transition to DOM-Valid model
             }
          }
 
          if (soapBodyElement == null)
          {
-            boolean wsrmDisabled = epMetaData.getConfig().getRMMetaData() == null; 
-            if ((epMetaData.getStyle() == Style.RPC) && (wsrmDisabled)) // RM hack
+            if (epMetaData.getStyle() == Style.RPC)
                throw new SOAPException("Empty SOAP body with no child element not supported for RPC");
 
             // [JBWS-1125] Support empty soap body elements

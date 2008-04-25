@@ -66,7 +66,7 @@ public class JbpmBpelTestSetup extends JBossWSTestSetup
          String processFileName = processFiles[i];
 
          // check file exists before dispatching to server 
-         File processFile = getArchiveFile(processFileName);
+         File processFile = new File(processFileName);
          if (!processFile.exists())
             throw new FileNotFoundException(processFileName);
 
@@ -88,7 +88,7 @@ public class JbpmBpelTestSetup extends JBossWSTestSetup
       // create target URL
       URL targetUrl = new URL("http", JBossWSTestHelper.getServerHost(), getServerHttpPort(), file);
 
-      // submit process start request
+      // submit process deploy request
       int responseCode = submitRequest(targetUrl);
 
       if (responseCode != HttpURLConnection.HTTP_OK)

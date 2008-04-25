@@ -21,14 +21,7 @@
  */
 package org.jboss.ws.tools.jaxws.impl;
 
-import com.sun.codemodel.JAnnotationUse;
-import com.sun.codemodel.JAnnotationArrayMember;
-import com.sun.codemodel.JCodeModel;
-import com.sun.codemodel.JDefinedClass;
-import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JFieldVar;
-import com.sun.codemodel.JMethod;
-import com.sun.codemodel.JMod;
+import com.sun.codemodel.*;
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.jaxws.AbstractWrapperGenerator;
@@ -37,11 +30,8 @@ import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.WrappedParameter;
 import org.jboss.wsf.common.JavaUtils;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+
+import javax.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +50,7 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
    private static Logger log = Logger.getLogger(SourceWrapperGenerator.class);
    private PrintStream stream;
    private JCodeModel codeModel;
+
    
    public SourceWrapperGenerator(ClassLoader loader, PrintStream stream)
    {
@@ -81,31 +72,29 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
       codeModel.build(directory, stream);
    }
 
-   public void generate(ParameterMetaData parameterMD)
+   public void generate(ParameterMetaData pmd)
    {
-      List<WrappedParameter> wrappedParameters = parameterMD.getWrappedParameters();
-      OperationMetaData operationMetaData = parameterMD.getOperationMetaData();
+      List<WrappedParameter> wrappedParameters = pmd.getWrappedParameters();
+      OperationMetaData operationMetaData = pmd.getOperationMetaData();
 
       if (operationMetaData.isDocumentWrapped() == false)
-      {
          throw new WSException("Operation is not document/literal (wrapped)");
-      }
 
       if (wrappedParameters == null)
-      {
-         throw new WSException("Cannot generate a type when there is no type information");
-      }
+         throw new WSException("Cannot generate a type when their is no type information");
 
-      String wrapperName = parameterMD.getJavaTypeName();
-      log.debug("Generating wrapper: " + wrapperName);
+      String wrapperName = pmd.getJavaTypeName();
+      if (log.isDebugEnabled())
+         if(log.isDebugEnabled()) log.debug("Generating wrapper: " + wrapperName);
 
       try
       {
+
          JDefinedClass clazz = codeModel._class(wrapperName);
-         addClassAnnotations(clazz, parameterMD.getXmlName(), parameterMD.getXmlType(), null);
+         addClassAnnotations(clazz, pmd.getXmlName(), pmd.getXmlType(), null);
          for (WrappedParameter wrapped : wrappedParameters)
          {
-            addProperty(clazz, wrapped.getType(), wrapped.getName(), wrapped.getVariable(), loader);
+            addProperty(clazz, wrapped.getType(), wrapped.getName(), wrapped.getVariable());
          }
       }
       catch (Exception e)
@@ -113,11 +102,10 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
          throw new WSException("Could not generate wrapper type: " + wrapperName, e);
       }
    }
-   
-   public void generate(FaultMetaData faultMD)
+   public void generate(FaultMetaData fmd)
    {
-      String faultBeanName = faultMD.getFaultBeanName();
-      Class<?> exception = faultMD.getJavaType();
+      String faultBeanName = fmd.getFaultBeanName();
+      Class exception = fmd.getJavaType();
 
       try
       {
@@ -125,12 +113,10 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
          String[] propertyOrder = properties.keySet().toArray(new String[0]);
 
          JDefinedClass clazz = codeModel._class(faultBeanName);
-         addClassAnnotations(clazz, faultMD.getXmlName(), faultMD.getXmlType(), propertyOrder);
+         addClassAnnotations(clazz, fmd.getXmlName(), fmd.getXmlType(), propertyOrder);
 
          for (String property : propertyOrder)
-         {
-            addProperty(clazz, properties.get(property).getName(), new QName(property), property, loader);
-         }
+            addProperty(clazz, properties.get(property).getName(), new QName(property), property);
       }
       catch (Exception e)
       {
@@ -138,69 +124,48 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
       }
    }
 
-   private static String getterPrefix(Class<?> type)
+   private static String getterPrefix(Class type)
    {
-      return (Boolean.TYPE == type || Boolean.class == type) ? "is" : "get";
+      return Boolean.TYPE == type || Boolean.class == type ? "is" : "get";
    }
 
-   private static void addProperty(JDefinedClass clazz, String typeName, QName name, String variable, ClassLoader loader)
-   throws ClassNotFoundException
+   private void addProperty(JDefinedClass clazz, String typeName, QName name, String variable)
+         throws ClassNotFoundException
    {
-      // be careful about reserved keywords when generating variable names
-      String realVariableName = JavaUtils.isReservedKeyword(variable) ? "_" + variable : variable; 
-      
-      // define variable
-      Class<?> type = JavaUtils.loadJavaType(typeName, loader);
-      JFieldVar field = clazz.field(JMod.PRIVATE, type, realVariableName);
-      
-      // define XmlElement annotation for variable
+      Class type = JavaUtils.loadJavaType(typeName, loader);
+      JFieldVar field = clazz.field(JMod.PRIVATE, type, variable);
       JAnnotationUse annotation = field.annotate(XmlElement.class);
-      annotation.param("name", name.getLocalPart());
       if (name.getNamespaceURI() != null)
-      {
          annotation.param("namespace", name.getNamespaceURI());
-      }
+      annotation.param("name", name.getLocalPart());
 
-      // generate acessor get method for variable
+      // Add acessor methods
       JMethod method = clazz.method(JMod.PUBLIC, type, getterPrefix(type) + JavaUtils.capitalize(variable));
-      method.body()._return(JExpr._this().ref(realVariableName));
-      
-      // generate acessor set method for variable
+      method.body()._return(JExpr._this().ref(variable));
+
       method = clazz.method(JMod.PUBLIC, void.class, "set" + JavaUtils.capitalize(variable));
-      method.body().assign(JExpr._this().ref(realVariableName), method.param(type, realVariableName));
+      method.body().assign(JExpr._this().ref(variable), method.param(type, variable));
    }
 
    private static void addClassAnnotations(JDefinedClass clazz, QName xmlName, QName xmlType, String[] propertyOrder)
    {
-      // define XmlRootElement class annotation
-      JAnnotationUse xmlRootElementAnnotation = clazz.annotate(XmlRootElement.class);
-      xmlRootElementAnnotation.param("name", xmlName.getLocalPart());
-      String xmlNameNS = xmlName.getNamespaceURI(); 
-      if (xmlNameNS != null && xmlNameNS.length() > 0)
-      {
-         xmlRootElementAnnotation.param("namespace", xmlNameNS);
-      }
+      JAnnotationUse annotation = clazz.annotate(XmlRootElement.class);
+      if (xmlName.getNamespaceURI() != null && xmlName.getNamespaceURI().length() > 0)
+         annotation.param("namespace", xmlName.getNamespaceURI());
+      annotation.param("name", xmlName.getLocalPart());
 
-      // define XmlType class annotation
-      JAnnotationUse xmlTypeAnnotation = clazz.annotate(XmlType.class); 
-      xmlTypeAnnotation.param("name", xmlType.getLocalPart());
-      String xmlTypeNS = xmlType.getNamespaceURI();
-      if (xmlTypeNS != null & xmlTypeNS.length() > 0)
-      {
-         xmlTypeAnnotation.param("namespace", xmlTypeNS);
-      }
+      annotation = clazz.annotate(XmlType.class);
+      if (xmlType.getNamespaceURI() != null & xmlType.getNamespaceURI().length() > 0)
+         annotation.param("namespace", xmlType.getNamespaceURI());
+      annotation.param("name", xmlType.getLocalPart());
       if (propertyOrder != null)
       {
-         JAnnotationArrayMember paramArray = xmlTypeAnnotation.paramArray("propOrder");
+         JAnnotationArrayMember paramArray = annotation.paramArray("propOrder");
          for (String property : propertyOrder)
-         {
             paramArray.param(property);
-         }
       }
 
-      // define XmlAccessorType class annotation
-      JAnnotationUse xmlAccessorTypeAnnotation = clazz.annotate(XmlAccessorType.class);
-      xmlAccessorTypeAnnotation.param("value", XmlAccessType.FIELD);
+      annotation = clazz.annotate(XmlAccessorType.class);
+      annotation.param("value", XmlAccessType.FIELD);
    }
-   
 }

@@ -51,7 +51,7 @@ public class SunInteropTestCase extends JBossWSTest
    /** Test that we can build an envelope from InputStream */
    public void testSunSTRRequest() throws Exception
    {
-      InputStream inputStream = new FileInputStream(getResourceFile("jaxrpc/wsse/interop/sun-xws.xml").getPath());
+      InputStream inputStream = new FileInputStream("resources/jaxrpc/wsse/interop/sun-xws.xml");
 
       MessageFactory factory = new MessageFactoryImpl();
       SOAPMessage soapMsg = factory.createMessage(null, inputStream);
@@ -72,7 +72,7 @@ public class SunInteropTestCase extends JBossWSTest
       cal.set(Calendar.MINUTE, 32);
       cal.set(Calendar.SECOND, 25);
 
-      SecurityDecoder decoder = new SecurityDecoder(new SecurityStore(), cal, null, null);
+      SecurityDecoder decoder = new SecurityDecoder(new SecurityStore(), cal);
       decoder.decode(doc);
       decoder.complete();
 
@@ -85,7 +85,7 @@ public class SunInteropTestCase extends JBossWSTest
    /** Test that we can build an envelope from InputStream */
    public void testSunIssuerSerialSignEncrypt() throws Exception
    {
-      InputStream inputStream = new FileInputStream(getResourceFile("jaxrpc/wsse/interop/sun-xws-issuerserial-sign-encrypt.xml").getPath());
+      InputStream inputStream = new FileInputStream("resources/jaxrpc/wsse/interop/sun-xws-issuerserial-sign-encrypt.xml");
 
       MessageFactory factory = new MessageFactoryImpl();
       SOAPMessage soapMsg = factory.createMessage(null, inputStream);
@@ -107,7 +107,7 @@ public class SunInteropTestCase extends JBossWSTest
       cal.set(Calendar.SECOND, 40);
 
 
-      SecurityDecoder decoder = new SecurityDecoder(new SecurityStore(), cal, null, null);
+      SecurityDecoder decoder = new SecurityDecoder(new SecurityStore(), cal);
       decoder.decode(doc);
       decoder.complete();
 

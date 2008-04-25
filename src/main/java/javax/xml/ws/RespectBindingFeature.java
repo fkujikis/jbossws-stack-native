@@ -52,7 +52,7 @@ import javax.xml.ws.WebServiceFeature;
  *      <li>{@link Service#getPort(EndpointReference,Class,WebServiceFeature...)}
  *      <li>{@link Service#createDispatch(QName,Class, 
  *           Service.Mode mode,WebServiceFeature...)}
- *      <li>{@link Service21#createDispatch(EndpointReference,
+ *      <li>{@link Service#createDispatch(EndpointReference,
  *           Class,Service.Mode, 
  *           WebServiceFeature...)}
  *      <li>{@link Service#createDispatch(QName,
@@ -76,7 +76,7 @@ import javax.xml.ws.WebServiceFeature;
  *  <code>WebServiceException</code> no sooner than when one of the methods
  *  above is invoked but no later than the first invocation of an endpoint
  *  operation. 
- *    <li>throw a WebServiceException and the endpoint MUST fail to start
+ *    <li>throw a WebServiceException and the endpoint MUST fail to deploy
  *  </ul>
  *  <li> DISABLED: In this Mode, an implementation may choose whether
  *  to inspect the <code>wsdl:binding<code> or not and to what degree

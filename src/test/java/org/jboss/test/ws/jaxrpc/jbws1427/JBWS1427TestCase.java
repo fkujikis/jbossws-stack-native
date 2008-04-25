@@ -61,8 +61,8 @@ public class JBWS1427TestCase extends JBossWSTest
       if (port == null)
       {
          ServiceFactoryImpl factory = (ServiceFactoryImpl)ServiceFactory.newInstance();
-         URL wsdlURL = getResourceURL("jaxrpc/jbws1427/META-INF/wsdl/ProcessClaim.wsdl");
-         URL mappingURL = getResourceURL("jaxrpc/jbws1427/META-INF/jaxrpc-mapping.xml");
+         URL wsdlURL = new File("resources/jaxrpc/jbws1427/META-INF/wsdl/ProcessClaim.wsdl").toURL();
+         URL mappingURL = new File("resources/jaxrpc/jbws1427/META-INF/jaxrpc-mapping.xml").toURL();
          QName serviceName = new QName("http://za.co.testws.interfaces", "ProcessClaim");
          Service service = factory.createService(wsdlURL, serviceName , mappingURL);
          port = (RequestService)service.getPort(RequestService.class);
@@ -73,7 +73,7 @@ public class JBWS1427TestCase extends JBossWSTest
    public final void testWsdlParser() throws Exception
    {
       WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
-      File wsdlFile = getResourceFile("jaxrpc/jbws1427/META-INF/wsdl/ProcessClaim.wsdl");
+      File wsdlFile = new File("resources/jaxrpc/jbws1427/META-INF/wsdl/ProcessClaim.wsdl");
       assertTrue("File exists: " + wsdlFile, wsdlFile.exists());
       
       factory.parse(wsdlFile.toURL());

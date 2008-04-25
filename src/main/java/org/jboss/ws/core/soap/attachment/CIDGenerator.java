@@ -27,7 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 import org.jboss.logging.Logger;
-import org.jboss.wsf.common.utils.UUIDGenerator;
+import org.jboss.ws.core.utils.UUIDGenerator;
 
 /**
  * A common CID generator

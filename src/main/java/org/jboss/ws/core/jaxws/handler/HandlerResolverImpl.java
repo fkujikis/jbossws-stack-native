@@ -49,8 +49,6 @@ import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.HandlerMetaData;
 import org.jboss.ws.metadata.umdm.HandlerMetaDataJAXWS;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
-import org.jboss.wsf.common.handler.GenericHandler;
-import org.jboss.wsf.common.handler.GenericSOAPHandler;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 
 /**
@@ -175,17 +173,6 @@ public class HandlerResolverImpl implements HandlerResolver
 
    private void injectResources(Handler handler)
    {
-      ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
-      try
-      {
-         ctxLoader.loadClass("javax.annotation.Resource");
-      }
-      catch (Throwable th)
-      {
-         log.debug("Cannot inject resources: " + th.toString());
-         return;
-      }
-      
       Class<? extends Handler> handlerClass = handler.getClass();
       for (Field field : handlerClass.getFields())
       {
@@ -201,17 +188,6 @@ public class HandlerResolverImpl implements HandlerResolver
 
    private void callPostConstruct(Handler handler) throws Exception
    {
-      ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
-      try
-      {
-         ctxLoader.loadClass("javax.annotation.PostConstruct");
-      }
-      catch (Throwable th)
-      {
-         log.debug("Cannot call post construct: " + th.toString());
-         return;
-      }
-      
       Class<? extends Handler> handlerClass = handler.getClass();
       for (Method method : handlerClass.getMethods())
       {

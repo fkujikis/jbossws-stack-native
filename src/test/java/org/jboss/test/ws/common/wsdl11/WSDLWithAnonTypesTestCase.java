@@ -46,7 +46,7 @@ import org.w3c.dom.Element;
  */
 public class WSDLWithAnonTypesTestCase extends WSToolsTest
 {
-   String wsdlfile = getResourceFile("jaxrpc/anonymous/WEB-INF/wsdl/TestService.wsdl").getPath();
+   String wsdlfile = "resources/jaxrpc/anonymous/WEB-INF/wsdl/TestService.wsdl";
 
    public void testWSDLParse() throws IOException
    {

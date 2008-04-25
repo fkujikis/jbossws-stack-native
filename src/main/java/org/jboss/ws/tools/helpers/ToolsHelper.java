@@ -28,6 +28,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -63,10 +64,9 @@ import org.jboss.ws.tools.client.ServiceCreator;
 import org.jboss.ws.tools.interfaces.WebservicesXMLCreator;
 import org.jboss.ws.tools.mapping.MappingFileGenerator;
 import org.jboss.ws.tools.wsdl.WSDLWriter;
-import org.jboss.wsf.common.DOMUtils;
-import org.jboss.wsf.common.DOMWriter;
-import org.jboss.wsf.common.IOUtils;
 import org.jboss.wsf.common.JavaUtils;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.*;
 
 /**
  *  Helper class used by the cmd line tool "jbossws"
@@ -225,7 +225,7 @@ public class ToolsHelper
       }
 
       JavaWriter writer = new JavaWriter();
-      writer.createJavaFile(new File(outDir), name + ".java", packageName, vars, null, null, false, false, null);
+      writer.createJavaFile(new File(outDir), name + ".java", packageName, vars, null, null, false, null);
 
       JavaXmlTypeMapping type = mappingIndex.get(parameter.getXmlType());
       if (type == null)
@@ -262,7 +262,6 @@ public class ToolsHelper
 
       WSDLToJava wsdlToJava = new WSDLToJava();
       wsdlToJava.setTypeMapping(new LiteralTypeMapping());
-      wsdlToJava.setGenerateSerializableTypes(w2jc.serializableTypes);
 
       WSDLDefinitions wsdl = null;
       try
@@ -309,8 +308,7 @@ public class ToolsHelper
          if (w2jc.mappingFileNeeded)
          {
             MappingFileGenerator mgf = new MappingFileGenerator(wsdl, new LiteralTypeMapping());
-            if (glc != null && glc.packageNamespaceMap != null)
-               mgf.setNamespacePackageMap(glc.packageNamespaceMap);        
+            mgf.setPackageName(getPackageName(wsdl, glc));
             mgf.setServiceName(wsdl.getServices()[0].getName().getLocalPart());
             mgf.setParameterStyle(w2jc.parameterStyle);
 
@@ -399,16 +397,21 @@ public class ToolsHelper
    private String getPackageName(WSDLDefinitions wsdl, GlobalConfig glc)
    {
       String targetNamespace = wsdl.getTargetNamespace();
-      //Get it from global config if it is overriden
+      //Get it from global config
       if (glc != null && glc.packageNamespaceMap != null)
       {
-         String pkg = glc.packageNamespaceMap.get(targetNamespace);
-         if (pkg != null)
+         Map<String, String> map = glc.packageNamespaceMap;
+         Iterator iter = map.keySet().iterator();
+         while (iter.hasNext())
          {
-            return pkg;
+            String pkg = (String)iter.next();
+            String ns = map.get(pkg);
+            if (ns.equals(targetNamespace))
+               return pkg;
          }
       }
-      return NamespacePackageMapping.getJavaPackageName(targetNamespace);
+
+      return NamespacePackageMapping.getJavaPackageName(wsdl.getTargetNamespace());
    }
 
    private void createDir(String path)

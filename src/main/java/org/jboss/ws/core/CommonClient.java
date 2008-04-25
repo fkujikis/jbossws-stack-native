@@ -47,15 +47,13 @@ import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.DirectionHolder.Direction;
 import org.jboss.ws.core.client.EndpointInfo;
-import org.jboss.ws.core.client.RemoteConnection;
-import org.jboss.ws.core.client.RemoteConnectionFactory;
+import org.jboss.ws.core.client.SOAPRemotingConnection;
 import org.jboss.ws.core.jaxrpc.ParameterWrapping;
 import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.core.soap.UnboundHeader;
 import org.jboss.ws.core.utils.HolderUtils;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
-import org.jboss.ws.extensions.wsrm.RMConstant;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -106,7 +104,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
       {
          this.epMetaData = serviceMetaData.getEndpoints().get(0);
       }
-
+      
       // Initialize the binding provider
       this.bindingProvider = getCommonBindingProvider();
    }
@@ -116,7 +114,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
    protected CommonClient(EndpointMetaData epMetaData)
    {
       this.epMetaData = epMetaData;
-
+      
       // Initialize the binding provider
       this.bindingProvider = getCommonBindingProvider();
    }
@@ -145,7 +143,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
       {
          setOperationName(opName);
       }
-
+      
       // Initialize the binding provider
       this.bindingProvider = getCommonBindingProvider();
    }
@@ -335,8 +333,8 @@ public abstract class CommonClient implements StubExt, HeaderSource
             if (shouldMaintainSession())
                addSessionInfo(reqMessage, callProps);
 
-            RemoteConnection remoteConnection = new RemoteConnectionFactory().getRemoteConnection(epInfo);
-            MessageAbstraction resMessage = remoteConnection.invoke(reqMessage, epInfo, oneway);
+            SOAPRemotingConnection remotingConnection = new SOAPRemotingConnection();
+            MessageAbstraction resMessage = remotingConnection.invoke(reqMessage, epInfo, oneway);
 
             if (shouldMaintainSession())
                saveSessionInfo(callProps, getRequestContext());
@@ -355,14 +353,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
 
          // Get the return object
          Object retObj = null;
-         boolean isWsrmMessage = msgContext.get(RMConstant.REQUEST_CONTEXT) != null;
-         boolean wsrmOneWay = false;
-         if (isWsrmMessage)
-         {
-            Boolean temp = (Boolean)((Map<String, Object>)msgContext.get(RMConstant.REQUEST_CONTEXT)).get(RMConstant.ONE_WAY_OPERATION);
-            wsrmOneWay = (temp == null) ? Boolean.FALSE : temp.booleanValue();
-         }
-         if ((oneway == false && handlerPass) || (isWsrmMessage && (wsrmOneWay == false)))
+         if (oneway == false && handlerPass)
          {
             // Verify 
             if (binding instanceof CommonSOAPBinding)
@@ -656,7 +647,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
       EndpointMetaData epMetaData = getEndpointMetaData();
       return epMetaData.getConfigFile();
    }
-
+   
    public String getSecurityConfig()
    {
       return securityConfig;
@@ -665,7 +656,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
    public void setSecurityConfig(String securityConfig)
    {
       this.securityConfig = securityConfig;
-
+      
       if (securityConfig != null)
       {
          EndpointMetaData epMetaData = getEndpointMetaData();

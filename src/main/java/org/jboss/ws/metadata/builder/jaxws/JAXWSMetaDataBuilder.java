@@ -45,22 +45,20 @@ import javax.jws.WebResult;
 import javax.jws.soap.SOAPBinding;
 import javax.jws.soap.SOAPMessageHandlers;
 import javax.jws.soap.SOAPBinding.ParameterStyle;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
 import javax.xml.ws.BindingType;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
 import javax.xml.ws.WebFault;
-import javax.xml.ws.Action;
+import javax.xml.ws.addressing.Action;
 import javax.xml.ws.addressing.AddressingProperties;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.annotation.Documentation;
 import org.jboss.ws.core.jaxws.DynamicWrapperGenerator;
-import org.jboss.ws.core.jaxws.JAXBContextFactory;
 import org.jboss.ws.core.jaxws.WrapperGenerator;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.core.soap.Use;
@@ -70,14 +68,13 @@ import org.jboss.ws.extensions.addressing.AddressingPropertiesImpl;
 import org.jboss.ws.extensions.addressing.metadata.AddressingOpMetaExt;
 import org.jboss.ws.extensions.xop.jaxws.AttachmentScanResult;
 import org.jboss.ws.extensions.xop.jaxws.ReflectiveAttachmentRefScanner;
-import org.jboss.ws.metadata.accessor.JAXBAccessorFactoryCreator;
+import org.jboss.ws.metadata.acessor.JAXBAccessor;
 import org.jboss.ws.metadata.builder.MetaDataBuilder;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.FaultMetaData;
 import org.jboss.ws.metadata.umdm.HandlerMetaDataJAXWS;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
-import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.ws.metadata.umdm.TypeMappingMetaData;
 import org.jboss.ws.metadata.umdm.TypesMetaData;
 import org.jboss.ws.metadata.umdm.WrappedParameter;
@@ -86,14 +83,12 @@ import org.jboss.ws.metadata.wsdl.WSDLBindingMessageReference;
 import org.jboss.ws.metadata.wsdl.WSDLBindingOperation;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLMIMEPart;
-import org.jboss.wsf.common.JavaUtils;
-import org.jboss.wsf.spi.binding.BindingCustomization;
-import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.HandlerChainsObjectFactory;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainsMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+import org.jboss.wsf.common.JavaUtils;
 import org.jboss.xb.binding.ObjectModelFactory;
 import org.jboss.xb.binding.Unmarshaller;
 import org.jboss.xb.binding.UnmarshallerFactory;
@@ -112,7 +107,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
 {
 
    protected static final Logger log = Logger.getLogger(JAXWSWebServiceMetaDataBuilder.class);
-   protected List<Class<?>> javaTypes = new ArrayList<Class<?>>();
+   protected List<Class> javaTypes = new ArrayList<Class>();
    protected JAXBRIContext jaxbCtx;
    protected List<TypeReference> typeRefs = new ArrayList<TypeReference>();
    protected WrapperGenerator wrapperGenerator;
@@ -240,7 +235,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
          throw new WSException("Cannot resolve handler file '" + filename + "' on " + wsClass.getName());
 
       log.debug("Loading handler chain: " + fileURL);
-
+      
       UnifiedHandlerChainsMetaData handlerChainsMetaData = null;
       try
       {
@@ -287,7 +282,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       String namespace = xmlType.getNamespaceURI();
 
       String faultBean = null;
-      Class<?> faultBeanClass = getFaultInfo(exception);
+      Class faultBeanClass = getFaultInfo(exception);
       if (faultBeanClass != null)
          faultBean = faultBeanClass.getName();
 
@@ -301,12 +296,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
             name = anWebFault.name();
 
          if (anWebFault.targetNamespace().length() > 0)
-         {
             namespace = anWebFault.targetNamespace();
-            XmlType anXmlType = exception.getAnnotation(XmlType.class);
-            if (anXmlType != null)
-               xmlType = new QName(anXmlType.namespace(), exception.getSimpleName());
-         }
 
          if (anWebFault.faultBean().length() > 0)
             faultBean = anWebFault.faultBean();
@@ -334,7 +324,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       return JAXBRIContext.mangleNameToVariableName(localName.intern());
    }
 
-   private String[] convertTypeArguments(Class<?> rawType, Type type)
+   private String[] convertTypeArguments(Class rawType, Type type)
    {
       if (!Collection.class.isAssignableFrom(rawType) && !Map.class.isAssignableFrom(rawType))
          return null;
@@ -377,7 +367,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
 
       // JAX-WS p.37 pg.1, the annotation only affects the element name, not the type name
       ParameterMetaData wrapperParameter = new ParameterMetaData(operation, xmlName, xmlType, requestWrapperType);
-      wrapperParameter.setAccessorFactoryCreator(new JAXBAccessorFactoryCreator());
+      wrapperParameter.setAccessorFactoryCreator(JAXBAccessor.FACTORY_CREATOR);
       operation.addParameter(wrapperParameter);
 
       return wrapperParameter;
@@ -409,18 +399,18 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       }
 
       ParameterMetaData retMetaData = new ParameterMetaData(operation, xmlName, xmlType, responseWrapperType);
-      retMetaData.setAccessorFactoryCreator(new JAXBAccessorFactoryCreator());
+      retMetaData.setAccessorFactoryCreator(JAXBAccessor.FACTORY_CREATOR);
       operation.setReturnParameter(retMetaData);
 
       return retMetaData;
    }
 
-   private Class<?> getFaultInfo(Class<?> exception)
+   private Class getFaultInfo(Class exception)
    {
       try
       {
          Method method = exception.getMethod("getFaultInfo");
-         Class<?> returnType = method.getReturnType();
+         Class returnType = method.getReturnType();
          if (returnType == void.class)
             return null;
 
@@ -436,7 +426,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       }
    }
 
-   private ParameterMode getParameterMode(WebParam anWebParam, Class<?> javaType)
+   private ParameterMode getParameterMode(WebParam anWebParam, Class javaType)
    {
       if (anWebParam != null)
       {
@@ -545,13 +535,13 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       else
       // default action values
       {
+         // TODO: figure out a way to assign message name instead of IN and OUT
          String tns = epMetaData.getPortName().getNamespaceURI();
          String portTypeName = epMetaData.getPortName().getLocalPart();
-         String opName = opMetaData.getQName().getLocalPart();
-         addrExt.setInboundAction(tns + "/" + portTypeName + "/" + opName + "Request");
+         addrExt.setInboundAction(tns + "/" + portTypeName + "/IN");
 
          if (!opMetaData.isOneWay())
-            addrExt.setOutboundAction(tns + "/" + portTypeName + "/" + opName + "Response");
+            addrExt.setOutboundAction(tns + "/" + portTypeName + "/OUT");
       }
 
       opMetaData.addExtension(addrExt);
@@ -593,18 +583,13 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
          opMetaData.setParameterStyle(anBinding.parameterStyle());
       }
 
-      if (method.isAnnotationPresent(Documentation.class))
-      {
-         opMetaData.setDocumentation(method.getAnnotation(Documentation.class).content());
-      }
-
       epMetaData.addOperation(opMetaData);
 
       // Build parameter meta data
       // Attachment annotations on SEI parameters
       List<AttachmentScanResult> scanResult = ReflectiveAttachmentRefScanner.scanMethod(method);
 
-      Class<?>[] parameterTypes = method.getParameterTypes();
+      Class[] parameterTypes = method.getParameterTypes();
       Type[] genericTypes = method.getGenericParameterTypes();
       Annotation[][] parameterAnnotations = method.getParameterAnnotations();
       ParameterMetaData wrapperParameter = null, wrapperOutputParameter = null;
@@ -632,7 +617,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
 
       for (int i = 0; i < parameterTypes.length; i++)
       {
-         Class<?> javaType = parameterTypes[i];
+         Class javaType = parameterTypes[i];
          Type genericType = genericTypes[i];
          String javaTypeName = javaType.getName();
          WebParam anWebParam = getWebParamAnnotation(method, i);
@@ -708,7 +693,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       }
 
       // Build result meta data
-      Class<?> returnType = method.getReturnType();
+      Class returnType = method.getReturnType();
       Type genericReturnType = method.getGenericReturnType();
       String returnTypeName = returnType.getName();
       if (!(returnType == void.class))
@@ -773,7 +758,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
          if (wrapperParameter.loadWrapperBean() == null)
             wrapperGenerator.generate(wrapperParameter);
 
-         Class<?> wrapperClass = wrapperParameter.getJavaType();
+         Class wrapperClass = wrapperParameter.getJavaType();
          javaTypes.add(wrapperClass);
 
          // In case there is no @XmlRootElement
@@ -792,7 +777,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       }
 
       // Add faults
-      for (Class<?> exClass : method.getExceptionTypes())
+      for (Class exClass : method.getExceptionTypes())
          if (!RemoteException.class.isAssignableFrom(exClass))
             addFault(opMetaData, exClass);
 
@@ -813,8 +798,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       {
          if (AttachmentScanResult.Type.SWA_REF == asr.getType())
             wrappedParameter.setSwaRef(true);
-         else
-            wrappedParameter.setXOP(true);
+         else wrappedParameter.setXOP(true);
       }
    }
 
@@ -831,8 +815,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       {
          if (AttachmentScanResult.Type.SWA_REF == asr.getType())
             parameter.setSwaRef(true);
-         else
-            parameter.setXOP(true);
+         else parameter.setXOP(true);
       }
    }
 
@@ -876,7 +859,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
 
    }
 
-   protected void processWebMethods(EndpointMetaData epMetaData, Class<?> wsClass)
+   protected void processWebMethods(EndpointMetaData epMetaData, Class wsClass)
    {
       epMetaData.clearOperations();
 
@@ -917,8 +900,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       // Use the dynamic generator by default. Otherwise reset the last
       if (wrapperGenerator == null)
          wrapperGenerator = new DynamicWrapperGenerator(loader);
-      else
-         wrapperGenerator.reset(loader);
+      else wrapperGenerator.reset(loader);
    }
 
    protected void resetMetaDataBuilder(ClassLoader loader)
@@ -936,21 +918,9 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
          String targetNS = epMetaData.getPortTypeName().getNamespaceURI().intern();
          if (log.isDebugEnabled())
             log.debug("JAXBContext [types=" + javaTypes + ",tns=" + targetNS + "]");
-
-         JAXBContextFactory factory = JAXBContextFactory.newInstance();
-
-         // JAXBIntros may mofiy the WSDL being generated
-         // only true for server side invocation, tooling (WSProvide) doesnt support this
-         BindingCustomization bindingCustomization = null;
-         if (epMetaData instanceof ServerEndpointMetaData)
-         {
-            Endpoint endpoint = ((ServerEndpointMetaData)epMetaData).getEndpoint();
-            bindingCustomization = endpoint != null ? endpoint.getAttachment(BindingCustomization.class) : null;
-         }
-
-         jaxbCtx = factory.createContext(javaTypes.toArray(new Class[0]), typeRefs, targetNS, false, bindingCustomization);
+         jaxbCtx = JAXBRIContext.newInstance(javaTypes.toArray(new Class[0]), typeRefs, targetNS, false);
       }
-      catch (WSException ex)
+      catch (JAXBException ex)
       {
          throw new IllegalStateException("Cannot build JAXB context", ex);
       }
@@ -974,7 +944,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
 
       QName xmlName = paramMetaData.getXmlName();
       QName xmlType = paramMetaData.getXmlType();
-      Class<?> javaType = paramMetaData.getJavaType();
+      Class javaType = paramMetaData.getJavaType();
       String javaName = paramMetaData.getJavaTypeName();
 
       if (xmlType == null)

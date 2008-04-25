@@ -21,18 +21,10 @@
  */
 package org.jboss.ws.core.jaxws;
 
-// $Id$
-
-import java.util.Collection;
-
-import javax.xml.bind.JAXBContext;
-
 import org.jboss.ws.WSException;
-import org.jboss.wsf.spi.binding.BindingCustomization;
 import org.jboss.wsf.spi.util.ServiceLoader;
 
-import com.sun.xml.bind.api.JAXBRIContext;
-import com.sun.xml.bind.api.TypeReference;
+import javax.xml.bind.JAXBContext;
 
 /**
  * Creates JAXBContext's.<p>
@@ -40,41 +32,14 @@ import com.sun.xml.bind.api.TypeReference;
  * @author Heiko.Braun@jboss.com
  *         Created: Jun 26, 2007
  */
-public abstract class JAXBContextFactory
-{
-   public final static String DEFAULT_JAXB_CONTEXT_FACTORY = "org.jboss.ws.core.jaxws.CustomizableJAXBContextFactory";
-   
-   private static ThreadLocal threadContextCount = new ThreadLocal(); 
+public abstract class JAXBContextFactory {
 
-   public abstract JAXBContext createContext(Class[] clazzes, BindingCustomization bindingCustomization) throws WSException;
+   public final static String DEFAULT_JAXB_CONTEXT_FACTORY = "org.jboss.ws.core.jaxws.CustomizableJAXBContextFactory";
 
    public abstract JAXBContext createContext(Class[] clazzes) throws WSException;
 
    public abstract JAXBContext createContext(Class clazz) throws WSException;
 
-   public abstract JAXBRIContext createContext(Class[] classes, Collection<TypeReference> typeReferences, String defaultNamespaceRemap, boolean c14nSupport,
-         BindingCustomization bindingCustomization);
-
-   protected void incrementContextCount()
-   {
-      Integer count = getContextCount();
-      threadContextCount.set(new Integer(count + 1));
-   }
-   
-   public static Integer getContextCount()
-   {
-      Integer count = (Integer)threadContextCount.get();
-      if (count == null)
-         count = new Integer(0);
-      
-      return count;
-   }
-   
-   public static void resetContextCount()
-   {
-      threadContextCount.set(new Integer(0));
-   }
-   
    /**
     * Retrieve JAXBContextFactory instance through the {@link org.jboss.wsf.spi.util.ServiceLoader}.
     * Defaults to {@link CustomizableJAXBContextFactory}
@@ -82,6 +47,9 @@ public abstract class JAXBContextFactory
     */
    public static JAXBContextFactory newInstance()
    {
-      return (JAXBContextFactory)ServiceLoader.loadService(JAXBContextFactory.class.getName(), DEFAULT_JAXB_CONTEXT_FACTORY);
+      return (JAXBContextFactory)ServiceLoader.loadService(
+          JAXBContextFactory.class.getName(),
+          DEFAULT_JAXB_CONTEXT_FACTORY
+      );
    }
 }

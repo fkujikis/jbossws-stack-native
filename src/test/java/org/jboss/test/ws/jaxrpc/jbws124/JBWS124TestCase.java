@@ -29,8 +29,8 @@ import junit.framework.Test;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
-/** 
- * [JBWS-124] Redeployment of an unpackaged war causes a NoSuchMethodException at runtime
+/** Test that we can deploy an already modified web.xml
+ *  This also allows for redeployment of an expanded *.war
  *
  * http://jira.jboss.com/jira/browse/JBWS-124
  *

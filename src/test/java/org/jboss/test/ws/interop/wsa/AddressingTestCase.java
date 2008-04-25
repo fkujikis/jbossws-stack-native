@@ -80,7 +80,7 @@ public class AddressingTestCase extends JBossWSTest {
       
       if (echoPort==null || notifyPort==null)
       {
-         this.wsdlLocation = getResourceURL("interop/wsa/WEB-INF/wsdl/service.wsdl");
+         this.wsdlLocation = new File("resources/interop/wsa/WEB-INF/wsdl/service.wsdl").toURL();
 
          Service service = Service.create(wsdlLocation, new QName("http://tempuri.org/", "WSAddressingCR"));
          echoPort = service.getPort(EchoPortType.class);
@@ -144,22 +144,6 @@ public class AddressingTestCase extends JBossWSTest {
      {
         throw new IllegalStateException("Failed to load client scenario");
      } */
-   }
-
-
-   public String getServerHost()
-   {
-      String host = null;
-      if("true".equals( System.getProperty("interop") ) )
-      {
-         host = "jbossws.demo.jboss.com";   // ask heiko about details for this service
-         System.out.println("Using interop host: jbossws.demo.jboss.com" );
-      }
-      else
-      {
-         host = super.getServerHost();
-      }
-      return host;
    }
 
    /**

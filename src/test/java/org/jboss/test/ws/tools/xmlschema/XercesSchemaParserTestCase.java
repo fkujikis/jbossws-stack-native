@@ -90,7 +90,7 @@ public class XercesSchemaParserTestCase extends JBossWSTest
    {
       String typeNS = "http://org.jboss.ws/types";
       XSLoader xsloader = SchemaUtils.getInstance().getXSLoader();
-      XSModel xsmodel = xsloader.loadURI(getResourceFile("tools/wsdlfixture/CustomInterface20.xsd").getPath());
+      XSModel xsmodel = xsloader.loadURI("resources/tools/wsdlfixture/CustomInterface20.xsd");
       assertNotNull("XSModel is null?", xsmodel);
 
       XSNamedMap xsnamedmap = getXSNamedMap(xsmodel, typeNS);
@@ -111,8 +111,8 @@ public class XercesSchemaParserTestCase extends JBossWSTest
       String arrTypeNS = "http://org.jboss/types/arrays/org/jboss/test/ws/tools/jbws_161/custom";
 
       Map map = new HashMap();
-      map.put(typeNS,getResourceURL("/tools/wsdlfixture/customtype/CustomTypeObj.xsd"));
-      map.put(arrTypeNS,getResourceURL("/tools/wsdlfixture/customtype/CustomTypeArrays.xsd"));
+      map.put(typeNS,new File("resources/tools/wsdlfixture/customtype/CustomTypeObj.xsd").toURL());
+      map.put(arrTypeNS,new File("resources/tools/wsdlfixture/customtype/CustomTypeArrays.xsd").toURL());
 
       XSModel xsmodel = new JavaToXSD().parseSchema(map);
       assertNotNull("XSModel is null?", xsmodel);
@@ -137,7 +137,7 @@ public class XercesSchemaParserTestCase extends JBossWSTest
       assertEquals("HelloObj", name);
 
       //Test the case when the schema files are parsed one by one
-      XSModel newxsmodel = utils.parseSchema(getResourceFile("tools/wsdlfixture/customtype/CustomTypeObj.xsd").getPath());
+      XSModel newxsmodel = utils.parseSchema("resources/tools/wsdlfixture/customtype/CustomTypeObj.xsd");
       assertNotNull("XSModel is null?", newxsmodel);
       xsnamedmap = getXSNamedMap(newxsmodel, typeNS);
       assertNotNull("XSNamedMap is null?", xsnamedmap);
@@ -146,7 +146,7 @@ public class XercesSchemaParserTestCase extends JBossWSTest
       assertEquals("HelloObj", xobj.getName());
       assertTrue("HelloObj is a complex type?",xobj instanceof XSComplexTypeDefinition);
 
-      newxsmodel = utils.parseSchema(getResourceFile("tools/wsdlfixture/customtype/CustomTypeArrays.xsd").getPath());
+      newxsmodel = utils.parseSchema("resources/tools/wsdlfixture/customtype/CustomTypeArrays.xsd");
       assertNotNull("XSModel is null?", newxsmodel);
       xsnamedmap = getXSNamedMap(newxsmodel, arrTypeNS);
       assertNotNull("XSNamedMap is null?", xsnamedmap);
@@ -173,12 +173,12 @@ public class XercesSchemaParserTestCase extends JBossWSTest
       SchemaUtils utils = SchemaUtils.getInstance();
       String typeNS = "http://org.jboss/types";
       String arrTypeNS = "http://org.jboss/types/arrays/org/jboss/test/ws/tools/jbws_161/custom";
-      String arr[] = {getResourceFile("tools/wsdlfixture/customtype/CustomTypeObj.xsd").getPath(),
-                      getResourceFile("tools/wsdlfixture/customtype/CustomTypeArrays.xsd").getPath()};
+      String arr[] = {"resources/tools/wsdlfixture/customtype/CustomTypeObj.xsd",
+                      "resources/tools/wsdlfixture/customtype/CustomTypeArrays.xsd"};
       XSLoader xsloader = utils.getXSLoader();
       Map map = new HashMap();
-      map.put(typeNS,getResourceURL("/tools/wsdlfixture/customtype/CustomTypeObj.xsd"));
-      map.put(arrTypeNS,getResourceURL("/tools/wsdlfixture/customtype/CustomTypeArrays.xsd"));
+      map.put(typeNS,new File("resources/tools/wsdlfixture/customtype/CustomTypeObj.xsd").toURL());
+      map.put(arrTypeNS,new File("resources/tools/wsdlfixture/customtype/CustomTypeArrays.xsd").toURL());
 
       ((XMLSchemaLoader)xsloader).setEntityResolver(new JBossXSEntityResolver(new JBossWSEntityResolver(), map));
       //Construct a StringList
@@ -203,7 +203,7 @@ public class XercesSchemaParserTestCase extends JBossWSTest
       XSElementDecl valueElement = (XSElementDecl) ((XSParticleDecl) sequence.getParticles().item(0)).getTerm();
       String name = valueElement.getTypeDefinition().getName();
 
-      //System.out.println("FIXME JBWS-357");
+      //System.out.println("FIXME: JBWS-357");
       assertEquals("HelloObj", name);
 
    }

@@ -23,17 +23,18 @@ package org.jboss.test.ws.tools.validation;
 
 import java.io.File;
 
+import junit.framework.TestCase;
+
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.tools.exceptions.JBossWSToolsException;
 import org.jboss.ws.tools.wsdl.WSDLDefinitionsFactory;
-import org.jboss.wsf.test.JBossWSTest;
 
 /**
  *  Testcase to test the WSDL Validator
  *  @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
  *  @since   Aug 1, 2005
  */
-public class WSDL11ValidationTestCase extends JBossWSTest
+public class WSDL11ValidationTestCase extends TestCase
 {
    /**
     * Test equality of the same wsdl through the wsdlvalidator
@@ -41,60 +42,58 @@ public class WSDL11ValidationTestCase extends JBossWSTest
     */
    public void testSimpleCase() throws Exception
    {
-      //File wsdlFile = getResourceFile("wsdl11/DocLitSimple.wsdl");
-      File wsdlFile = getResourceFile("tools/wsdlfixture/CustomInterfaceService_RPC_11.wsdl");
+      //File wsdlFile = new File("resources/wsdl11/DocLitSimple.wsdl");
+      File wsdlFile = new File("resources/tools/wsdlfixture/CustomInterfaceService_RPC_11.wsdl");  
       assertTrue(wsdlFile.exists());
 
       WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
       WSDLDefinitions wsdlExp = factory.parse(wsdlFile.toURL());
-
+      
       WSDLDefinitions wsdlActual = factory.parse(wsdlFile.toURL());
       WSDLValidator validator = new WSDL11Validator();
       try
       {
-         boolean bool = validator.validate(wsdlExp, wsdlActual);
-         if (bool == false)
-            fail("WSDL do not match");
-      }
-      catch (JBossWSToolsException e)
+        boolean bool = validator.validate(wsdlExp,wsdlActual);
+        if(bool == false)
+           fail("WSDL do not match");
+      }catch(JBossWSToolsException e)
       {
          fail(e.getLocalizedMessage());
       }
-      catch (Exception e)
+      catch(Exception e)
       {
          e.printStackTrace();
-         fail("Unknown exception:" + e.getLocalizedMessage());
+         fail("Unknown exception:"+e.getLocalizedMessage());
       }
    }
-
+   
    /**
     * Test equality of the same wsdl through the wsdlvalidator
     * @throws Exception
     */
    public void testDocLitCase() throws Exception
    {
-      File wsdlFile = getResourceFile("common/wsdl11/DocLitSimple.wsdl");
+      File wsdlFile = new File("resources/common/wsdl11/DocLitSimple.wsdl");
       assertTrue(wsdlFile.exists());
 
       WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
       WSDLDefinitions wsdlExp = factory.parse(wsdlFile.toURL());
-
+      
       WSDLDefinitions wsdlActual = factory.parse(wsdlFile.toURL());
       WSDLValidator validator = new WSDL11Validator();
       try
       {
-         boolean bool = validator.validate(wsdlExp, wsdlActual);
-         if (bool == false)
-            fail("WSDL do not match");
-      }
-      catch (JBossWSToolsException e)
+        boolean bool = validator.validate(wsdlExp,wsdlActual);
+        if(bool == false)
+           fail("WSDL do not match");
+      }catch(JBossWSToolsException e)
       {
          fail(e.getLocalizedMessage());
       }
-      catch (Exception e)
+      catch(Exception e)
       {
          e.printStackTrace();
-         fail("Unknown exception:" + e.getLocalizedMessage());
+         fail("Unknown exception:"+e.getLocalizedMessage());
       }
    }
 }

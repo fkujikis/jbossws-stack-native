@@ -57,9 +57,9 @@ public abstract class JBWS211Test extends WSToolsTest
          return;
       }
       String out_dir = "tools/jbws-211/jbossws/" + getBase();
-      String wsdlFix = getResourceFile("tools/jbws-211/wsdlFixture/" + getBase() + "/" + getWSDLName()).getPath();
+      String wsdlFix = "resources/tools/jbws-211/wsdlFixture/" + getBase() + "/" + getWSDLName();
       String configStr = getBase().replaceAll("/", "");
-      String configloc = getResourceFile("tools/jbws-211/jbosswsConfig/" + getBase() + "/" + configStr + "Config.xml").getPath();
+      String configloc = "resources/tools/jbws-211/jbosswsConfig/" + getBase() + "/" + configStr + "Config.xml";
 
       String[] args = new String[] { "-dest", out_dir, "-config", configloc };
       WSTools tools = new WSTools();

@@ -54,29 +54,17 @@ public class SimpleSignTestCase extends JBossWSTest
    public void testEndpoint() throws Exception
    {
       Hello hello = getPort();
-      performTest(hello, "Kermit");
-   }
-   
-   public void testEndpointWithCRLFs() throws Exception
-   {
-      Hello hello = getPort();
-      performTest(hello, "Kermit\nmy friend");
-      performTest(hello, "Kermit\rmy friend");
-      performTest(hello, "Kermit\r\nmy friend");
-   }
-   
-   private void performTest(Hello hello, String msg) throws Exception
-   {
+
       UserType in0 = new UserType();
-      in0.setMsg(msg);
+      in0.setMsg("Kermit");
       UserType retObj = hello.echoUserType(in0);
-      assertEquals(msg, retObj.getMsg());
+      assertEquals("Kermit", retObj.getMsg());
    }
 
    private Hello getPort() throws Exception
    {
       URL wsdlURL = new File("wsprovide/resources/jaxws/samples/wssecurity/HelloService.wsdl").toURL();
-      URL securityURL = getResourceURL("jaxws/samples/wssecurity/simple-sign/META-INF/jboss-wsse-client.xml");
+      URL securityURL = new File("resources/jaxws/samples/wssecurity/simple-sign/META-INF/jboss-wsse-client.xml").toURL();
       QName serviceName = new QName("http://org.jboss.ws/samples/wssecurity", "HelloService");
 
       Service service = Service.create(wsdlURL, serviceName);

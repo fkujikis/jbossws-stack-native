@@ -35,7 +35,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
 import java.security.cert.CertPathValidatorException;
@@ -51,8 +50,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.extensions.security.exception.FailedAuthenticationException;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
 
 /**
  * <code>SecurityStore</code> holds and loads the keystore and truststore required for encyption and signing.
@@ -334,37 +331,6 @@ public class SecurityStore
 
       return cert;
    }
-   
-   public X509Certificate getCertificateByPublicKey(PublicKey key) throws WSSecurityException
-   {
-      if (key == null)
-         return null;
-      
-      if (keyStore == null)
-      {
-         throw new WSSecurityException("KeyStore not set.");
-      }
-      
-      try
-      {
-         Enumeration<String> i = keyStore.aliases();
-         while (i.hasMoreElements())
-         {
-            String alias = (String)i.nextElement();
-            Certificate cert = keyStore.getCertificate(alias);
-            if (!(cert instanceof X509Certificate))
-               continue;
-
-            if (cert.getPublicKey().equals(key))
-               return (X509Certificate)cert;
-         }
-         return null;
-      }
-      catch (KeyStoreException e)
-      {
-         throw new WSSecurityException("Problems retrieving cert: " + e.getMessage(), e);
-      }
-   }
 
    public X509Certificate getCertificateBySubjectKeyIdentifier(byte[] identifier) throws WSSecurityException
    {
@@ -378,7 +344,7 @@ public class SecurityStore
 
       try
       {
-         Enumeration<String> i = keyStore.aliases();
+         Enumeration i = keyStore.aliases();
 
          while (i.hasMoreElements())
          {

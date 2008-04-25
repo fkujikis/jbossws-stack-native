@@ -28,7 +28,6 @@ package javax.jws.soap;
  * @author thomas.diesler@jboss.org
  * @since 26-Apr-2005
  */
-@Deprecated
 public @interface InitParam
 {
 

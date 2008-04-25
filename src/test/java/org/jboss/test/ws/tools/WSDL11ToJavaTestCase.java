@@ -76,7 +76,7 @@ public class WSDL11ToJavaTestCase extends WSToolsTest
 
    public void testW3CSample() throws Exception
    {
-      File wsdlFile = getResourceFile("tools/wsdlfixture/W3CExample_DOC_11.wsdl");
+      File wsdlFile = new File("resources/tools/wsdlfixture/W3CExample_DOC_11.wsdl");
       assertTrue(wsdlFile.exists());
       WSDLDefinitions wsdlDefinitions = getWSDLDefinitions(wsdlFile);
    }
@@ -99,7 +99,7 @@ public class WSDL11ToJavaTestCase extends WSToolsTest
 
    private WSDLDefinitions getWSDLDefinitions(Class seiClass, String wsdlFileName) throws Exception
    {
-      File wsdlFile = getResourceFile("tools/wsdlfixture/" + wsdlFileName);
+      File wsdlFile = new File("resources/tools/wsdlfixture/" + wsdlFileName);
       assertTrue(wsdlFile.exists());
 
       WSDLDefinitions wsdlDefinitions = getWSDLDefinitions(wsdlFile);
@@ -107,7 +107,7 @@ public class WSDL11ToJavaTestCase extends WSToolsTest
       
       WSDLValidator validator = new WSDL11Validator();
       if (validator.validate(seiClass, wsdlDefinitions) == false)
-         System.err.println("FIXME " + validator.getErrorList().toString());
+         System.err.println("FIXME: " + validator.getErrorList().toString());
 
       return wsdlDefinitions;
    }

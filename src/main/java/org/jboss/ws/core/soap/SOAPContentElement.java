@@ -81,7 +81,7 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
    private ParameterMetaData paramMetaData;
 
    // content soapContent
-   protected SOAPContent soapContent;
+   private SOAPContent soapContent;
 
    // while transitioning DOM expansion needs to be locked
    private boolean lockDOMExpansion = false;
@@ -129,13 +129,12 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
       return getParamMetaData().getJavaType();
    }
 
-   protected State transitionTo(State nextState)
+   private void transitionTo(State nextState)
    {
-      State prevState = soapContent.getState();
-      if (nextState != prevState)
+      if (nextState != soapContent.getState())
       {
          log.debug("-----------------------------------");
-         log.debug("Transitioning from " + prevState + " to " + nextState);
+         log.debug("Transitioning from " + soapContent.getState() + " to " + nextState);
          lockDOMExpansion = true;
 
          soapContent = soapContent.transitionTo(nextState);
@@ -143,7 +142,6 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
          lockDOMExpansion = false;
          log.debug("-----------------------------------");
       }
-      return prevState;
    }
 
    /** Get the payload as source.
@@ -520,22 +518,8 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
       return super.hasAttributes();
    }
 
-   public org.w3c.dom.Node getPreviousSibling()
-   {
-      log.trace("getPreviousSibling");
-      expandToDOM();
-      return super.getPreviousSibling();
-   }
-
-   public org.w3c.dom.Node getNextSibling()
-   {
-      log.trace("getNextSibling");
-      expandToDOM();
-      return super.getNextSibling();
-   }
-
    // END Node interface ***********************************************************************************************
-   
+
    public void writeElement(Writer writer) throws IOException
    {      
       if (soapContent instanceof DOMContent)

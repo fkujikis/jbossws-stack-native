@@ -2,29 +2,40 @@ package org.jboss.test.ws.jaxrpc.xop;
 
 import java.io.File;
 
+import junit.framework.TestCase;
+
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.jboss.ws.core.jaxrpc.handler.SOAPMessageContextJAXRPC;
-import org.jboss.ws.core.soap.MessageContextAssociation;
-import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.extensions.xop.jaxrpc.XOPScanner;
+import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
 import org.jboss.ws.metadata.wsdl.xmlschema.WSSchemaUtils;
 import org.jboss.ws.metadata.wsdl.xsd.SchemaUtils;
-import org.jboss.wsf.test.JBossWSTest;
+import org.jboss.ws.core.jaxrpc.handler.SOAPMessageContextJAXRPC;
+import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.xb.binding.NamespaceRegistry;
 
 /**
  * @author Heiko Braun <heiko.braun@jboss.com>
  * @since Jun 9, 2006
  */
-public class XOPTypeDefTestCase extends JBossWSTest
+public class XOPTypeDefTestCase extends TestCase
 {
+   public XOPTypeDefTestCase(String string)
+   {
+      super(string);
+   }
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+   }
+
    public void testCircularReferences() throws Exception
    {
       SchemaUtils utils = SchemaUtils.getInstance();
-      File f = getResourceFile("jaxrpc/xop/circular.xsd");
+      File f = new File("resources/jaxrpc/xop/circular.xsd");
       assertTrue("Unable to load schema file " + f.getAbsolutePath(), f.exists());
 
       XSModel xsModel = utils.parseSchema(f.toURL());
@@ -49,7 +60,7 @@ public class XOPTypeDefTestCase extends JBossWSTest
    public void testXOPElementScan() throws Exception
    {
       SchemaUtils utils = SchemaUtils.getInstance();
-      File f = getResourceFile("jaxrpc/xop/schema.xsd");
+      File f = new File("resources/jaxrpc/xop/schema.xsd");
       assertTrue("Unable to load schema file " + f.getAbsolutePath(), f.exists());
 
       XSModel xsModel = utils.parseSchema(f.toURL());
@@ -85,10 +96,10 @@ public class XOPTypeDefTestCase extends JBossWSTest
    }
 
    public void testMSFTElementScan() throws Exception
-   {
+   {      
 
       SchemaUtils utils = SchemaUtils.getInstance();
-      File f = getResourceFile("jaxrpc/xop/schema.xsd");
+      File f = new File("resources/jaxrpc/xop/schema.xsd");
       assertTrue("Unable to load schema file " + f.getAbsolutePath(), f.exists());
 
       XSModel xsModel = utils.parseSchema(f.toURL());

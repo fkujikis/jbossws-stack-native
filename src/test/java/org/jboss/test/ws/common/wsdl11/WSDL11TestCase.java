@@ -61,7 +61,7 @@ public class WSDL11TestCase extends JBossWSTest
 
    public void testDocLitSimple() throws Exception
    {
-      File wsdlFile = getResourceFile("common/wsdl11/DocLitSimple.wsdl");
+      File wsdlFile = new File("resources/common/wsdl11/DocLitSimple.wsdl");
       assertTrue(wsdlFile.exists());
 
       WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
@@ -107,12 +107,12 @@ public class WSDL11TestCase extends JBossWSTest
 
    public void testRpcLitSimple() throws Exception
    {
-      verifyRPC(getResourceFile("common/wsdl11/RpcLitSimple.wsdl").getPath());
+      verifyRPC("resources/common/wsdl11/RpcLitSimple.wsdl");
    }
 
    public void testRpcLitImport() throws Exception
    {
-      verifyRPC(getResourceFile("common/wsdl11/RpcLitImport.wsdl").getPath());
+      verifyRPC("resources/common/wsdl11/RpcLitImport.wsdl");
    }
 
    private void verifyRPC(String fileName) throws Exception
@@ -158,7 +158,7 @@ public class WSDL11TestCase extends JBossWSTest
 
    public void testEventSourceBinding() throws Exception
    {
-      File wsdlFile = getResourceFile("common/wsdl11/inherit/wind_inherit.wsdl");
+      File wsdlFile = new File("resources/common/wsdl11/inherit/wind_inherit.wsdl");
       assertTrue(wsdlFile.exists());
 
       WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
@@ -184,7 +184,7 @@ public class WSDL11TestCase extends JBossWSTest
 
    public void testSwaMessages() throws Exception
    {
-      File wsdlFile = getResourceFile("common/wsdl11/SwaTestService.wsdl");
+      File wsdlFile = new File("resources/common/wsdl11/SwaTestService.wsdl");
       assertTrue(wsdlFile.exists());
 
       WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
@@ -198,10 +198,10 @@ public class WSDL11TestCase extends JBossWSTest
    
    public void testPolicyAttachment() throws Exception
    {
-      File wsdlFile = getResourceFile("common/wsdl11/PolicyAttachment.wsdl");
+      File wsdlFile = new File("resources/common/wsdl11/PolicyAttachment.wsdl");
       assertTrue(wsdlFile.exists());
       testPolicyAttachment(wsdlFile);
-      wsdlFile = getResourceFile("common/wsdl11/PolicyAttachmentFragment.wsdl");
+      wsdlFile = new File("resources/common/wsdl11/PolicyAttachmentFragment.wsdl");
       assertTrue(wsdlFile.exists());
       testPolicyAttachment(wsdlFile);
    }
@@ -227,9 +227,9 @@ public class WSDL11TestCase extends JBossWSTest
    
    public void testServicePolicyRef() throws Exception
    {
-      File wsdlFile = getResourceFile("common/wsdl11/PolicyAttachment.wsdl");
+      File wsdlFile = new File("resources/common/wsdl11/PolicyAttachment.wsdl");
       testServicePolicyRef(wsdlFile);
-      wsdlFile = getResourceFile("common/wsdl11/PolicyAttachmentFragment.wsdl");
+      wsdlFile = new File("resources/common/wsdl11/PolicyAttachmentFragment.wsdl");
       testServicePolicyRef(wsdlFile);
    }
    
@@ -247,9 +247,9 @@ public class WSDL11TestCase extends JBossWSTest
    
    public void testEndpointPolicyRef() throws Exception
    {
-      File wsdlFile = getResourceFile("common/wsdl11/PolicyAttachment.wsdl");
+      File wsdlFile = new File("resources/common/wsdl11/PolicyAttachment.wsdl");
       testEndpointPolicyRef(wsdlFile);
-      wsdlFile = getResourceFile("common/wsdl11/PolicyAttachmentFragment.wsdl");
+      wsdlFile = new File("resources/common/wsdl11/PolicyAttachmentFragment.wsdl");
       testEndpointPolicyRef(wsdlFile);
    }
    
@@ -292,7 +292,7 @@ public class WSDL11TestCase extends JBossWSTest
    {
       //Read wsdl containing policies from file and get the wsdl metadata model 
       WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
-      WSDLDefinitions wsdlDefinitions = factory.parse(getResourceURL("/common/wsdl11/PolicyAttachment.wsdl"));
+      WSDLDefinitions wsdlDefinitions = factory.parse(new File("resources/common/wsdl11/PolicyAttachment.wsdl").toURL());
       assertNotNull(wsdlDefinitions);
       //set wsdlOneOne to null to force wsdl generation from metadata model
       wsdlDefinitions.setWsdlOneOneDefinition(null);

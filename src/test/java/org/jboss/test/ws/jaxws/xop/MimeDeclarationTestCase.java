@@ -29,9 +29,8 @@ import org.jboss.ws.extensions.xop.jaxws.ReflectiveAttachmentRefScanner;
 import org.jboss.ws.extensions.xop.jaxws.AttachmentScanResult;
 
 import javax.xml.bind.annotation.XmlMimeType;
-import java.awt.Image;
+import java.awt.*;
 import java.lang.reflect.Method;
-import java.util.List;
 
 /**
  * Test the ReflectiveXOPScanner.
@@ -72,20 +71,20 @@ public class MimeDeclarationTestCase extends TestCase {
    public void testAnnotatedParameter() throws Exception
    {
 
-      /*if(true)
+      if(true)
       {
-         System.out.println("FIXME [JBWS-1460] @XmlMimeType on SEI parameter declarations");
+         System.out.println("FIXME: [JBWS-1460] @XmlMimeType on SEI parameter declarations");
          return;
-      }*/
+      }
 
       Method m = AnnotatedSEI.class.getMethod("foo", new Class[] {byte[].class});
       assertNotNull(m);
 
       System.out.println(m.getParameterAnnotations().length);
 
-      List<AttachmentScanResult> mimeTypes = ReflectiveAttachmentRefScanner.scanMethod( m );
-      assertNotNull("Unable to find xop declaration", mimeTypes.isEmpty());
-      assertEquals("text/xml", mimeTypes.get(0).getMimeType());
+      AttachmentScanResult  mimeType = SCANNER.scanBean( m.getParameterTypes()[0]);
+      assertNotNull("Unable to find xop declaration", mimeType);
+      assertEquals("text/xml", mimeType.getMimeType());
    }
 
    public void testSimpleRecursion() throws Exception
@@ -106,20 +105,6 @@ public class MimeDeclarationTestCase extends TestCase {
       SOAPMessageContextJAXWS msgContext = new SOAPMessageContextJAXWS();
       MessageContextAssociation.pushMessageContext(msgContext);
       assertFalse("MTOM should be disabled", XOPContext.isMTOMEnabled());
-   }
-
-   public void testNestedArray() throws Exception
-   {
-      AttachmentScanResult  mimeType = SCANNER.scanBean(NestedArray.class);
-      assertNotNull("Unable to find xop declaration", mimeType);
-      assertEquals("text/plain", mimeType.getMimeType());
-   }
-
-   public void testNestedList() throws Exception
-   {
-      AttachmentScanResult  mimeType = SCANNER.scanBean(NestedList.class);
-      assertNotNull("Unable to find xop declaration", mimeType);
-      assertEquals("text/plain", mimeType.getMimeType());
    }
 
    class FieldAnnotation
@@ -171,13 +156,5 @@ public class MimeDeclarationTestCase extends TestCase {
    {
       @XmlMimeType("text/plain")
       String data;
-   }
-
-   class NestedArray {
-      Nested[] nested;
-   }
-
-   class NestedList {
-      List<Nested> nested;
    }
 }

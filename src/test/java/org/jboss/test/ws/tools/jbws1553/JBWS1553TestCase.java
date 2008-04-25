@@ -23,15 +23,17 @@ package org.jboss.test.ws.tools.jbws1553;
 
 // $Id$
 
+import java.io.File;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
+
+import junit.framework.TestCase;
 
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
 import org.jboss.ws.metadata.wsdl.WSDLService;
 import org.jboss.ws.tools.wsdl.WSDLDefinitionsFactory;
-import org.jboss.wsf.test.JBossWSTest;
 
 /**
  * [JBWS-1553] fails to read operations for portType from different namespace
@@ -40,13 +42,13 @@ import org.jboss.wsf.test.JBossWSTest;
  * 
  * @author <a href="mailto:alex.guizar@jboss.com">Alejandro Guizar</a>
  */
-public class JBWS1553TestCase extends JBossWSTest
+public class JBWS1553TestCase extends TestCase
 {
    private WSDLDefinitions definitions;
 
    protected void setUp() throws Exception
    {
-      URL wsdlLocation = getResourceURL("tools/jbws1553/atm-service.wsdl");
+      URL wsdlLocation = new File("resources/tools/jbws1553/atm-service.wsdl").toURL();
       definitions = WSDLDefinitionsFactory.newInstance().parse(wsdlLocation);
    }
 

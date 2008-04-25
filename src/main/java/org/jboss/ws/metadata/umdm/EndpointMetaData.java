@@ -23,8 +23,8 @@ package org.jboss.ws.metadata.umdm;
 
 // $Id$
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,14 +34,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-import java.util.Observer;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Observer;
 
 import javax.jws.soap.SOAPBinding.ParameterStyle;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
-import javax.xml.ws.WebServiceFeature;
 import javax.xml.ws.Service.Mode;
 
 import org.jboss.logging.Logger;
@@ -55,18 +54,11 @@ import org.jboss.ws.core.jaxrpc.binding.JBossXBSerializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.SOAPArrayDeserializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.SOAPArraySerializerFactory;
 import org.jboss.ws.core.jaxws.JAXBContextCache;
-import org.jboss.ws.core.jaxws.JAXBContextFactory;
 import org.jboss.ws.core.jaxws.JAXBDeserializerFactory;
 import org.jboss.ws.core.jaxws.JAXBSerializerFactory;
 import org.jboss.ws.core.jaxws.client.DispatchBinding;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.core.soap.Use;
-import org.jboss.ws.extensions.wsrm.config.RMConfig;
-import org.jboss.ws.extensions.wsrm.config.RMPortConfig;
-import org.jboss.ws.feature.FastInfosetFeature;
-import org.jboss.ws.metadata.accessor.AccessorFactory;
-import org.jboss.ws.metadata.accessor.AccessorFactoryCreator;
-import org.jboss.ws.metadata.accessor.JAXBAccessorFactoryCreator;
 import org.jboss.ws.metadata.config.CommonConfig;
 import org.jboss.ws.metadata.config.Configurable;
 import org.jboss.ws.metadata.config.ConfigurationProvider;
@@ -78,15 +70,13 @@ import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 
-import com.sun.xml.bind.api.JAXBRIContext;
-
 /**
  * A Service component describes a set of endpoints.
  *
  * @author Thomas.Diesler@jboss.org
  * @since 12-May-2005
  */
-public abstract class EndpointMetaData extends ExtensibleMetaData implements ConfigurationProvider, InitalizableMetaData
+public abstract class EndpointMetaData extends ExtensibleMetaData implements ConfigurationProvider
 {
    // provide logging
    private static Logger log = Logger.getLogger(EndpointMetaData.class);
@@ -150,10 +140,6 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
    private Map<Method, OperationMetaData> opMetaDataCache = new HashMap<Method, OperationMetaData>();
    // All of the registered types
    private List<Class> registeredTypes = new ArrayList<Class>();
-   // The features defined for this endpoint
-   private FeatureSet features = new FeatureSet();
-   // The documentation edfined through the @Documentation annotation
-   private String documentation;
 
    private ConfigObservable configObservable = new ConfigObservable();
 
@@ -162,7 +148,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
    private JAXBContextCache jaxbCache = new JAXBContextCache();
 
    private List<BindingCustomization> bindingCustomization = new ArrayList<BindingCustomization>();
-   
+
    public EndpointMetaData(ServiceMetaData service, QName portName, QName portTypeName, Type type)
    {
       this.serviceMetaData = service;
@@ -364,36 +350,6 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
       this.properties = properties;
    }
 
-   public <T extends WebServiceFeature> T getFeature(Class<T> key)
-   {
-      return features.getFeature(key);
-   }
-
-   public <T extends WebServiceFeature> boolean isFeatureEnabled(Class<T> key)
-   {
-      return features.isFeatureEnabled(key);
-   }
-   
-   public FeatureSet getFeatures()
-   {
-      return features;
-   }
-
-   public void addFeature(WebServiceFeature feature)
-   {
-      this.features.addFeature(feature);
-   }
-
-   public String getDocumentation()
-   {
-      return documentation;
-   }
-
-   public void setDocumentation(String documentation)
-   {
-      this.documentation = documentation;
-   }
-   
    public List<OperationMetaData> getOperations()
    {
       return new ArrayList<OperationMetaData>(operations);
@@ -498,8 +454,6 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
 
    public void addHandlers(List<HandlerMetaData> configHandlers)
    {
-      for (HandlerMetaData handler : configHandlers)
-         handler.setEndpointMetaData(this);
       handlers.addAll(configHandlers);
    }
 
@@ -564,7 +518,6 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
 
       eagerInitializeOperations();
       eagerInitializeTypes();
-      eagerInitializeAccessors();
    }
 
    private void eagerInitializeOperations()
@@ -651,69 +604,6 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
       }
    }
 
-   private void eagerInitializeAccessors()
-   {
-      // Collect the list of all used types
-      boolean useJAXBAccessorFactory = false;
-      List<Class> types = new ArrayList<Class>();
-      for (OperationMetaData opMetaData : operations)
-      {
-         for (ParameterMetaData paramMetaData : opMetaData.getParameters())
-         {
-            AccessorFactoryCreator factoryCreator = paramMetaData.getAccessorFactoryCreator();
-            if (factoryCreator instanceof JAXBAccessorFactoryCreator)
-               useJAXBAccessorFactory = true;
-            
-            types.add(paramMetaData.getJavaType());
-         }
-         
-         ParameterMetaData retParam = opMetaData.getReturnParameter();
-         if (retParam != null)
-         {
-            AccessorFactoryCreator factoryCreator = retParam.getAccessorFactoryCreator();
-            if (factoryCreator instanceof JAXBAccessorFactoryCreator)
-               useJAXBAccessorFactory = true;
-            
-            types.add(retParam.getJavaType());
-         }
-      }
-      
-      // Create a JAXBContext for those types
-      JAXBRIContext jaxbCtx = null;
-      if (useJAXBAccessorFactory)
-      {
-         Class[] typeArr = new Class[types.size()];
-         jaxbCtx = (JAXBRIContext)JAXBContextFactory.newInstance().createContext(types.toArray(typeArr));
-      }
-      
-      // Create the accessors using a shared JAXBContext 
-      for (OperationMetaData opMetaData : operations)
-      {
-         for (ParameterMetaData paramMetaData : opMetaData.getParameters())
-         {
-            createAccessor(paramMetaData, jaxbCtx);
-         }
-         
-         ParameterMetaData retParam = opMetaData.getReturnParameter();
-         if (retParam != null)
-            createAccessor(retParam, jaxbCtx);
-      }
-   }
-
-   private void createAccessor(ParameterMetaData paramMetaData, JAXBRIContext jaxbCtx)
-   {
-      AccessorFactoryCreator factoryCreator = paramMetaData.getAccessorFactoryCreator();
-      if (factoryCreator instanceof JAXBAccessorFactoryCreator)
-         ((JAXBAccessorFactoryCreator)factoryCreator).setJAXBContext(jaxbCtx);
-      
-      if (paramMetaData.getWrappedParameters() != null)
-      {
-         AccessorFactory factory = factoryCreator.create(paramMetaData);
-         for (WrappedParameter wParam : paramMetaData.getWrappedParameters())
-            wParam.setAccessor(factory.create(wParam));
-      }
-   }
-   
    // ---------------------------------------------------------------
    // Configuration provider impl
 
@@ -811,55 +701,9 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
    {
       log.debug("Create new config [name=" + getConfigName() + ",file=" + getConfigFile() + "]");
       JBossWSConfigFactory factory = JBossWSConfigFactory.newInstance();
-      List<RMPortConfig> rmPortMetaData = backupRMMD();
       config = factory.getConfig(getRootFile(), getConfigName(), getConfigFile());
-      propagateRMMD(rmPortMetaData);
 
       reconfigHandlerMetaData();
-   }
-
-   private List<RMPortConfig> backupRMMD()
-   {
-      if ((config != null) && (config.getRMMetaData() != null))
-         return config.getRMMetaData().getPorts();
-
-      return null;
-   }
-   
-   private void propagateRMMD(List<RMPortConfig> backedUpMD)
-   {
-      if ((backedUpMD != null) && (backedUpMD.size() > 0))
-      {
-         if (config.getRMMetaData() == null)
-         {
-            config.setRMMetaData(new RMConfig());
-            config.getRMMetaData().getPorts().addAll(backedUpMD);
-         }
-         else 
-         {
-            // RM policy specified in config file will be always used
-            List<RMPortConfig> ports = config.getRMMetaData().getPorts();
-            for (RMPortConfig portMD : backedUpMD)
-            {
-               QName portName = portMD.getPortName();
-               if (!contains(ports, portName))
-               {
-                  ports.add(portMD);
-               }
-            }
-         }
-      }
-   }
-   
-   private boolean contains(List<RMPortConfig> ports, QName portName)
-   {
-      for (RMPortConfig pMD : ports)
-      {
-         if (pMD.getPortName().equals(portName))
-            return true;
-      }
-      
-      return false;
    }
 
    private void reconfigHandlerMetaData()

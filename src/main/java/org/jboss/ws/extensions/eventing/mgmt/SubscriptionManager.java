@@ -54,6 +54,7 @@ import org.apache.xml.utils.DefaultErrorHandler;
 import org.jboss.logging.Logger;
 import org.jboss.util.naming.Util;
 import org.jboss.ws.WSException;
+import org.jboss.ws.core.utils.UUIDGenerator;
 import org.jboss.ws.extensions.eventing.EventingConstants;
 import org.jboss.ws.extensions.eventing.deployment.EventingEndpointDeployment;
 import org.jboss.ws.extensions.eventing.jaxws.AttributedURIType;
@@ -61,7 +62,6 @@ import org.jboss.ws.extensions.eventing.jaxws.EndpointReferenceType;
 import org.jboss.ws.extensions.eventing.jaxws.ReferenceParametersType;
 import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.common.DOMWriter;
-import org.jboss.wsf.common.utils.UUIDGenerator;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -303,9 +303,6 @@ public class SubscriptionManager implements SubscriptionManagerMBean, EventDispa
       if (null == eventSource)
          throw new SubscriptionError(EventingConstants.CODE_UNABLE_TO_PROCESS, "EventSource '" + eventSourceNS + "' not registered");
 
-      if (eventSource.getState() != EventSource.State.STARTED)
-         throw new SubscriptionError(EventingConstants.CODE_UNABLE_TO_PROCESS, "EventSource '" + eventSourceNS + "' not started");
-
       // expiry constraints
       if (expires != null)
       {
@@ -460,7 +457,7 @@ public class SubscriptionManager implements SubscriptionManagerMBean, EventDispa
       {
          for (Subscription s : subscriptions)
          {
-            pw.println("<tr><td>" + s.getIdentifier() + "</td><td>" + s.getExpires() + "</td><td>" + (s.getFilter()!=null ? s.getFilter().getExpression() : "") + "</td></tr>");
+            pw.println("<tr><td>" + s.getIdentifier() + "</td><td>" + s.getExpires() + "</td><td>" + s.getFilter().getExpression() + "</td></tr>");
          }
       }
       pw.println("</table>");
