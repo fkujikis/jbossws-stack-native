@@ -12,6 +12,11 @@
     <artifactId>jbossws-native</artifactId>
     <version>3.0.2-SNAPSHOT</version>
   </parent>
+
+  <!-- Modules -->  
+  <modules>
+    <module>jaxws-ext</module>
+  </modules>
   
   <!-- Dependencies -->
   <dependencies>
