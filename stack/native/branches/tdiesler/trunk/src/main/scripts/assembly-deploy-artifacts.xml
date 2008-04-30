@@ -131,7 +131,7 @@
     
     <!-- resources -->
     <fileSet>
-      <directory>modules/client/src/main/resources</directory>
+      <directory>modules/client/src/main/resources/META-INF</directory>
       <outputDirectory>resources</outputDirectory>
       <includes>
         <include>standard-jaxrpc-*-config.xml</include>
