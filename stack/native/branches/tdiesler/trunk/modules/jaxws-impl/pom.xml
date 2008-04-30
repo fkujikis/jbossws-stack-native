@@ -12,11 +12,6 @@
     <artifactId>jbossws-native</artifactId>
     <version>3.0.2-SNAPSHOT</version>
   </parent>
-
-  <!-- Modules -->  
-  <modules>
-    <module>jaxws-ext</module>
-  </modules>
   
   <!-- Dependencies -->
   <dependencies>
@@ -31,4 +26,30 @@
     </dependency>
   </dependencies>
   
+  <!-- Build -->
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>javax/xml/ws/**/*21.class"</exclude>
+            <exclude>javax/xml/ws/Action.class"</exclude>
+            <exclude>javax/xml/ws/EndpointReference.class"</exclude>
+            <exclude>javax/xml/ws/FaultAction.class"</exclude>
+            <exclude>javax/xml/ws/RespectBinding.class"</exclude>
+            <exclude>javax/xml/ws/RespectBindingFeature.class"</exclude>
+            <exclude>javax/xml/ws/WebServiceFeature.class"</exclude>
+            <exclude>javax/xml/ws/addressing/**"</exclude>
+            <exclude>javax/xml/ws/spi/WebServiceFeatureAnnotation.class"</exclude>
+            <exclude>javax/xml/ws/soap/AddressingFeature.class"</exclude>
+            <exclude>javax/xml/ws/soap/Addressing.class"</exclude>
+            <exclude>javax/xml/ws/soap/MTOM.class"</exclude>
+            <exclude>javax/xml/ws/soap/MTOMFeature.class"</exclude>
+            <exclude>javax/xml/ws/wsaddressing/**"</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
