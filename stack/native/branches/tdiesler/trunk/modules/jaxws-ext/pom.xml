@@ -17,12 +17,8 @@
   <dependencies>
     <dependency>
       <groupId>org.jboss.ws</groupId>
-      <artifactId>jbossws-native-saaj</artifactId>
+      <artifactId>jbossws-native-jaxws</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.xml.bind</groupId>
-      <artifactId>jaxb-api</artifactId>
     </dependency>
   </dependencies>
   

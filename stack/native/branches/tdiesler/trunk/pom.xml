@@ -29,12 +29,13 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
   
-  <!-- Modules - ->
+  <!-- Modules -->
   <modules>
-    <module>modules/management</module>
-    <module>modules/server</module>
-    <module>modules/client</module>
-  </modules-->
+    <module>modules/saaj</module>
+    <module>modules/jaxrpc</module>
+    <module>modules/jaxws</module>
+    <module>modules/jaxws-ext</module>
+  </modules>
   
   <!-- Properties -->
   <properties>

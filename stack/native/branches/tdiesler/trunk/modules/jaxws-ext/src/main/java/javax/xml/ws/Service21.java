@@ -24,6 +24,7 @@ package javax.xml.ws;
 // $Id$
 
 import javax.xml.namespace.QName;
+import javax.xml.ws.spi.ServiceDelegate21;
 import javax.xml.bind.JAXBContext;
 import java.net.URL;
 
@@ -144,7 +145,7 @@ public class Service21 extends Service
        **/
       public <T> Dispatch<T> createDispatch(EndpointReference endpointReference, Class<T> type, Service.Mode mode, WebServiceFeature... features)
       {
-         return delegate.createDispatch(endpointReference, type, mode, features);
+         return ((ServiceDelegate21)delegate).createDispatch(endpointReference, type, mode, features);
       }
 
     /**
@@ -221,7 +222,7 @@ public class Service21 extends Service
     **/
    public Dispatch<Object> createDispatch(EndpointReference endpointReference, JAXBContext context, Service.Mode mode, WebServiceFeature... features)
    {
-      return delegate.createDispatch(endpointReference, context, mode, features);
+      return ((ServiceDelegate21)delegate).createDispatch(endpointReference, context, mode, features);
    }
 
    /**
@@ -256,7 +257,7 @@ public class Service21 extends Service
     **/
    public <T> Dispatch<T> createDispatch(QName portName, Class<T> type, Service.Mode mode, WebServiceFeature... features)
    {
-      return delegate.createDispatch(portName, type, mode, features);
+      return ((ServiceDelegate21)delegate).createDispatch(portName, type, mode, features);
    }
 
    /**
@@ -288,7 +289,7 @@ public class Service21 extends Service
     **/
    public Dispatch<Object> createDispatch(QName portName, JAXBContext context, Service.Mode mode, WebServiceFeature... features)
    {
-      return delegate.createDispatch(portName, context, mode, features);
+      return ((ServiceDelegate21)delegate).createDispatch(portName, context, mode, features);
    }
 
 
@@ -326,7 +327,7 @@ public class Service21 extends Service
     **/
    public <T> T getPort(Class<T> serviceEndpointInterface, WebServiceFeature... features)
    {
-      return delegate.getPort(serviceEndpointInterface, features);
+      return ((ServiceDelegate21)delegate).getPort(serviceEndpointInterface, features);
    }
 
    /**
@@ -411,7 +412,7 @@ public class Service21 extends Service
     **/
    public <T> T getPort(EndpointReference endpointReference, Class<T> serviceEndpointInterface, WebServiceFeature... features)
    {
-      return delegate.getPort(endpointReference, serviceEndpointInterface, features);
+      return ((ServiceDelegate21)delegate).getPort(endpointReference, serviceEndpointInterface, features);
    }
 
    /**
@@ -452,6 +453,6 @@ public class Service21 extends Service
     **/
    public <T> T getPort(QName portName, Class<T> serviceEndpointInterface, WebServiceFeature... features)
    {
-      return delegate.getPort(portName, serviceEndpointInterface, features);
+      return ((ServiceDelegate21)delegate).getPort(portName, serviceEndpointInterface, features);
    }
 }
