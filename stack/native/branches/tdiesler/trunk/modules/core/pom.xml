@@ -8,7 +8,7 @@
   
   <!-- Parent -->
   <parent>
-    <groupId>org.jboss.ws</groupId>
+    <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native</artifactId>
     <version>3.0.2-SNAPSHOT</version>
   </parent>
@@ -16,15 +16,116 @@
   <!-- Dependencies -->
   <dependencies>
     <dependency>
-      <groupId>org.jboss.ws</groupId>
+      <groupId>org.jboss.ws.native</groupId>
       <artifactId>jbossws-native-jaxws-ext</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.jboss.ws</groupId>
+      <groupId>org.jboss.ws.native</groupId>
       <artifactId>jbossws-native-jaxrpc</artifactId>
       <version>${project.version}</version>
     </dependency>
+    
+    <!-- provided apis -->
+    <dependency>
+      <groupId>javax.ejb</groupId>
+      <artifactId>ejb-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.jms</groupId>
+      <artifactId>jms</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    
+    <!-- jboss provided -->
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-xjc</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javassist</groupId>
+      <artifactId>javassist</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>jboss.remoting</groupId>
+      <artifactId>jboss-remoting</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.microcontainer</groupId>
+      <artifactId>jboss-kernel</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    
+    <!-- transitve dependencies -->
+    <dependency>
+      <groupId>com.sun.xml.fastinfoset</groupId>
+      <artifactId>FastInfoset</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.ws</groupId>
+      <artifactId>jaxws-tools</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>jboss.jaxbintros</groupId>
+      <artifactId>jboss-jaxb-intros</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>wscommons-policy</groupId>
+      <artifactId>policy</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>woodstox</groupId>
+      <artifactId>wstx-lgpl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xalan</groupId>
+      <artifactId>xalan</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>xml-security</groupId>
+      <artifactId>xmlsec</artifactId>
+    </dependency>
   </dependencies>
   
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <showDeprecation>false</showDeprecation>
+          <showWarnings>false</showWarnings>
+        </configuration>
+      </plugin>
+      
+    </plugins>
+    
+  </build>
 </project>

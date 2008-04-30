@@ -50,7 +50,6 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.xml.utils.DefaultErrorHandler;
 import org.jboss.logging.Logger;
 import org.jboss.util.naming.Util;
 import org.jboss.ws.WSException;
@@ -63,6 +62,7 @@ import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.common.DOMWriter;
 import org.jboss.wsf.common.utils.UUIDGenerator;
 import org.w3c.dom.Element;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -537,7 +537,7 @@ public class SubscriptionManager implements SubscriptionManagerMBean, EventDispa
 
          factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", is);
          DocumentBuilder docBuilder = factory.newDocumentBuilder();
-         DefaultErrorHandler errorHandler = new Validator();
+         ErrorHandler errorHandler = new Validator();
          docBuilder.setErrorHandler(errorHandler);
          docBuilder.parse(new InputSource(new StringReader(msg)));
          log.info("Document validated!");
@@ -672,7 +672,7 @@ public class SubscriptionManager implements SubscriptionManagerMBean, EventDispa
 
    }
 
-   private class Validator extends DefaultErrorHandler
+   private class Validator implements ErrorHandler
    {
       public void error(SAXParseException exception) throws SAXException
       {
