@@ -1,0 +1,13 @@
+#
+# $Id$
+#
+
+# EJB3/Injection excludes
+org/jboss/test/ws/jaxws/samples/webserviceref/**
+org/jboss/test/ws/jaxws/webserviceref/**
+
+# UsernameTokenHTTPSTestCase requires keystore & trustore in jboss-web tomcat configuration
+org/jboss/test/ws/interop/nov2007/wsse/UsernameTokenHTTPSTestCase.*
+
+# [JBWS-1526] Automated testing and availablity checks of public endpoints (interop)
+org/jboss/test/ws/interop/**
