@@ -28,6 +28,12 @@
   
   <!-- Build -->
   <build>
+    <resources>
+      <resource>
+        <targetPath>/</targetPath>
+        <directory>src/main/resources/jboss-jaxws.jar</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
