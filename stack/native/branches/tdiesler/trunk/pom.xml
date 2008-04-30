@@ -36,6 +36,7 @@
     <module>modules/jaxws</module>
     <module>modules/jaxws-ext</module>
     <module>modules/core</module>
+    <module>modules/embedded</module>
   </modules>
   
   <!-- Properties -->

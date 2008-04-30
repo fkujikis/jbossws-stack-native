@@ -3,7 +3,7 @@
 <!--
   A web application that installs the JBossWS servlets
 
-  $Id: web.xml 4016 2007-07-27 06:00:11Z thomas.diesler@jboss.com $
+  $Id$
 -->
 
 <web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
