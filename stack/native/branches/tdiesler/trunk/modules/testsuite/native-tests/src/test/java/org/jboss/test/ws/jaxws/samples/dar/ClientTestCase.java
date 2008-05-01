@@ -30,49 +30,40 @@ import junit.framework.Test;
 
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
+import org.jboss.test.ws.jaxws.samples.dar.generated.DarResponse;
 
 /**
- * DAR addressing client; invokes the DAR addressing endpoint (sync, asynch and oneway)
- * (this is actually a weak test since we can't check if the 
- * reply-to-service actually receives the response)
+ * DAR client; invokes the DAR endpoint (sync, asynch)
  *
- * @author Thomas.Diesler@jboss.org
- * @since 24-Nov-2005
+ * @author alessio.soldano@jboss.org
+ * @since 30-Apr-2008
  */
-public class AddressingClientTestCase extends JBossWSTest
+public class ClientTestCase extends JBossWSTest
 {
    public static Test suite()
    {
-      return new JBossWSTestSetup(AddressingClientTestCase.class, "jaxws-samples-dar-addressing-client.war,jaxws-samples-dar-addressing.jar");
+      return new JBossWSTestSetup(ClientTestCase.class, "jaxws-samples-dar.jar");
    }
 
    public void testSync() throws Exception
    {
       URL wsdlURL = new URL("http://" + getServerHost() + ":8080/dar?wsdl");
-      AddressingClient client = new AddressingClient(wsdlURL, getServerHost());
+      Client client = new Client(wsdlURL);
       Date start = new Date();
-      client.run(false);
+      DarResponse response = client.run(false);
       Date stop = new Date();
       assertTrue(stop.getTime() - start.getTime() > 3000);
+      assertNotNull(response);
    }
    
    public void testAsync() throws Exception
    {
       URL wsdlURL = new URL("http://" + getServerHost() + ":8080/dar?wsdl");
-      AddressingClient client = new AddressingClient(wsdlURL, getServerHost());
+      Client client = new Client(wsdlURL);
       Date start = new Date();
-      client.run(true);
+      DarResponse response = client.run(true);
       Date stop = new Date();
       assertTrue(stop.getTime() - start.getTime() > 3000);
-   }
-   
-   public void testOneWay() throws Exception
-   {
-      URL wsdlURL = new URL("http://" + getServerHost() + ":8080/dar?wsdl");
-      AddressingClient client = new AddressingClient(wsdlURL, getServerHost());
-      Date start = new Date();
-      client.runOneway();
-      Date stop = new Date();
-      assertTrue(stop.getTime() - start.getTime() < 3000);
+      assertNotNull(response);
    }
 }

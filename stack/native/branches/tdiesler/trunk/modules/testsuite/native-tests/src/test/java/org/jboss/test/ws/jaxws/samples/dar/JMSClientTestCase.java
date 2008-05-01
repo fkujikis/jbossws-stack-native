@@ -23,6 +23,9 @@ package org.jboss.test.ws.jaxws.samples.dar;
 
 //$Id$
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
 
@@ -32,46 +35,37 @@ import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
 /**
- * DAR addressing client; invokes the DAR addressing endpoint (sync, asynch and oneway)
- * (this is actually a weak test since we can't check if the 
- * reply-to-service actually receives the response)
+ * Invokes the DAR JMS client
+ * (this is actually a weak test since we don't check if the 
+ * response queue actually receives the response)
  *
- * @author Thomas.Diesler@jboss.org
- * @since 24-Nov-2005
+ * @author alessio.soldano@jboss.org
+ * @since 01-May-2008
  */
-public class AddressingClientTestCase extends JBossWSTest
+public class JMSClientTestCase extends JBossWSTest
 {
    public static Test suite()
    {
-      return new JBossWSTestSetup(AddressingClientTestCase.class, "jaxws-samples-dar-addressing-client.war,jaxws-samples-dar-addressing.jar");
-   }
-
-   public void testSync() throws Exception
-   {
-      URL wsdlURL = new URL("http://" + getServerHost() + ":8080/dar?wsdl");
-      AddressingClient client = new AddressingClient(wsdlURL, getServerHost());
-      Date start = new Date();
-      client.run(false);
-      Date stop = new Date();
-      assertTrue(stop.getTime() - start.getTime() > 3000);
+      return new JBossWSTestSetup(JMSClientTestCase.class, "jaxws-samples-dar-jms-client.sar,jaxws-samples-dar-jms.jar");
    }
    
-   public void testAsync() throws Exception
+   public void test() throws Exception
    {
-      URL wsdlURL = new URL("http://" + getServerHost() + ":8080/dar?wsdl");
-      AddressingClient client = new AddressingClient(wsdlURL, getServerHost());
+      String url = "http://" + getServerHost() + ":8080/dar-jms-client/JMSClient";
       Date start = new Date();
-      client.run(true);
-      Date stop = new Date();
-      assertTrue(stop.getTime() - start.getTime() > 3000);
-   }
-   
-   public void testOneWay() throws Exception
-   {
-      URL wsdlURL = new URL("http://" + getServerHost() + ":8080/dar?wsdl");
-      AddressingClient client = new AddressingClient(wsdlURL, getServerHost());
-      Date start = new Date();
-      client.runOneway();
+      HttpURLConnection connection = (HttpURLConnection)new URL(url).openConnection();
+      int responseCode = connection.getResponseCode();
+      if (responseCode != HttpURLConnection.HTTP_OK)
+      {
+         fail("Cannot access JMSClient servlet, responseCode == " + responseCode);
+      }
+      BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+      StringBuffer buffer = new StringBuffer();
+      String line;
+      while ((line = in.readLine()) != null) {
+        buffer.append(line + "\n");
+      }
+      assertTrue(buffer.toString().contains("Request message sent, doing something interesting in the mean time... ;-) "));
       Date stop = new Date();
       assertTrue(stop.getTime() - start.getTime() < 3000);
    }
