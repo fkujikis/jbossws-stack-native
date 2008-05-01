@@ -34,29 +34,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <testExcludes>
-            
-            <!-- [JBWS-2163] wsconsume for maven build -->
-            <exclude>org/jboss/test/ws/benchmark/**</exclude>
-            <exclude>org/jboss/test/ws/interop/**</exclude>
-            <exclude>org/jboss/test/ws/jaxws/complex/**</exclude>
-            <exclude>org/jboss/test/ws/jaxws/holder/**</exclude>
-            <exclude>org/jboss/test/ws/jaxws/samples/wssecuritypolicy/**</exclude>
-            <exclude>org/jboss/test/ws/jaxws/samples/wssecurityAnnotatedpolicy/**</exclude>
-            <exclude>org/jboss/test/ws/jaxws/samples/wssecurity/**</exclude>
-            
-            <!-- [JBWS-2164] Fix tools tests with maven build -->
-            <exclude>org/jboss/test/ws/jaxws/smoke/tools/**</exclude>
-            
-            <exclude>org/jboss/test/ws/tools/**</exclude>
-            <exclude>org/jboss/test/ws/jaxrpc/**</exclude>
-            
-          </testExcludes>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
   
@@ -73,13 +50,10 @@
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2.SP1</version>
             <configuration>
-              <!--
-              Exlude tests via an external exlude file
-              http://jira.codehaus.org/browse/SUREFIRE-486
-              -->
-              <testExcludes>
-              </testExcludes>
+              <!-- http://jira.codehaus.org/browse/MCOMPILER-72 -->
+              <testExcludeFile>../test-excludes-jboss422.txt</testExcludeFile>
             </configuration>
           </plugin>
         </plugins>
@@ -96,13 +70,10 @@
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2.SP1</version>
             <configuration>
-              <!--
-              Exlude tests via an external exlude file
-              http://jira.codehaus.org/browse/SUREFIRE-486
-              -->
-              <testExcludes>
-              </testExcludes>
+              <!-- http://jira.codehaus.org/browse/MCOMPILER-72 -->
+              <testExcludeFile>../test-excludes-jboss423.txt</testExcludeFile>
             </configuration>
           </plugin>
         </plugins>
@@ -119,13 +90,10 @@
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2.SP1</version>
             <configuration>
-              <!--
-              Exlude tests via an external exlude file
-              http://jira.codehaus.org/browse/SUREFIRE-486
-              -->
-              <testExcludes>
-              </testExcludes>
+              <!-- http://jira.codehaus.org/browse/MCOMPILER-72 -->
+              <testExcludeFile>../test-excludes-jboss500.txt</testExcludeFile>
             </configuration>
           </plugin>
         </plugins>
@@ -142,13 +110,10 @@
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2.SP1</version>
             <configuration>
-              <!--
-              Exlude tests via an external exlude file
-              http://jira.codehaus.org/browse/SUREFIRE-486
-              -->
-              <testExcludes>
-              </testExcludes>
+              <!-- http://jira.codehaus.org/browse/MCOMPILER-72 -->
+              <testExcludeFile>../test-excludes-jboss501.txt</testExcludeFile>
             </configuration>
           </plugin>
         </plugins>

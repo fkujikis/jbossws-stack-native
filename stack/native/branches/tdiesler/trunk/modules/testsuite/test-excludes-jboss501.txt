@@ -55,3 +55,6 @@ org/jboss/test/ws/jaxrpc/jbws331/**
 # [JBAS-5388] JBossXBRuntimeException: Missing value for the required attribute
 org/jboss/test/ws/jaxrpc/jbws720/**
 
+# [JBWS-2163] wsconsume for maven build -->
+org/jboss/test/ws/jaxws/complex/**
+org/jboss/test/ws/jaxws/holder/**

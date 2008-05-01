@@ -11,3 +11,7 @@ org/jboss/test/ws/interop/nov2007/wsse/UsernameTokenHTTPSTestCase.*
 
 # [JBWS-1526] Automated testing and availablity checks of public endpoints (interop)
 org/jboss/test/ws/interop/**
+
+# [JBWS-2163] wsconsume for maven build -->
+org/jboss/test/ws/jaxws/complex/**
+org/jboss/test/ws/jaxws/holder/**

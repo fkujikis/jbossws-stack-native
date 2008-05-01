@@ -87,39 +87,10 @@
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2.SP1</version>
             <configuration>
-              <!--
-              Exlude tests via an external exlude file
-              http://jira.codehaus.org/browse/SUREFIRE-486
-              -->
-              <testExcludes>
-                
-                <!-- EJB3/Injection excludes -->
-                <exclude>org/jboss/test/ws/jaxws/samples/webserviceref/**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/webserviceref/**</exclude>
-                
-                <!-- UsernameTokenHTTPSTestCase requires keystore & trustore in jboss-web tomcat configuration -->
-                <exclude>org/jboss/test/ws/interop/nov2007/wsse/UsernameTokenHTTPSTestCase.*</exclude>
-                
-                <!-- [JBWS-1762] web.xml modified to web.xml.org - Subsequent runs fail -->
-                <!-- This requires changes to the AS web meta data (servlet init params) -->
-                <exclude>org/jboss/test/ws/jaxws/jbws1762/**</exclude>
-                
-                <!-- [JBWS-1797] Setting .NET friendly Endpoint in web.xml -->
-                <exclude>org/jboss/test/ws/jaxws/jbws1797/**</exclude>
-                
-                <!-- [JBWS-1813] context-root from jboss.xml -->
-                <exclude>org/jboss/test/ws/jaxws/jbws1813/**</exclude>
-                
-                <!-- [JBWS-1841] WebServiceRef injection from DD doesn't work -->
-                <exclude>org/jboss/test/ws/jaxws/jbws1841/**</exclude>
-                
-                <!-- [JBWS-1911] Support the JMS transport with JAX-WS -->
-                <exclude>org/jboss/test/ws/jaxws/samples/jmstransport/**</exclude>
-                
-                <!-- [JBWS-1526] Automated testing and availablity checks of public endpoints (interop) -->
-                <exclude>org/jboss/test/ws/interop/**</exclude>
-              </testExcludes>
+              <!-- http://jira.codehaus.org/browse/MCOMPILER-72 -->
+              <testExcludeFile>../test-excludes-jboss422.txt</testExcludeFile>
             </configuration>
           </plugin>
         </plugins>
@@ -136,23 +107,10 @@
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2.SP1</version>
             <configuration>
-              <!--
-              Exlude tests via an external exlude file
-              http://jira.codehaus.org/browse/SUREFIRE-486
-              -->
-              <testExcludes>
-                
-                <!-- EJB3/Injection excludes -->
-                <exclude>org/jboss/test/ws/jaxws/samples/webserviceref/**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/webserviceref/**</exclude>
-                
-                <!-- UsernameTokenHTTPSTestCase requires keystore & trustore in jboss-web tomcat configuration -->
-                <exclude>org/jboss/test/ws/interop/nov2007/wsse/UsernameTokenHTTPSTestCase.*</exclude>
-                
-                <!-- [JBWS-1526] Automated testing and availablity checks of public endpoints (interop) -->
-                <exclude>org/jboss/test/ws/interop/**</exclude>
-              </testExcludes>
+              <!-- http://jira.codehaus.org/browse/MCOMPILER-72 -->
+              <testExcludeFile>../test-excludes-jboss423.txt</testExcludeFile>
             </configuration>
           </plugin>
         </plugins>
@@ -169,32 +127,10 @@
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2.SP1</version>
             <configuration>
-              <!--
-              Exlude tests via an external exlude file
-              http://jira.codehaus.org/browse/SUREFIRE-486
-              -->
-              <testExcludes>
-                
-                <!-- Fix BPEL before AS50 goes final -->
-                <exclude>org/jboss/test/ws/jaxrpc/samples/wsbpel/hello/*TestCase.*</exclude>
-                
-                <!-- UsernameTokenHTTPSTestCase requires keystore & trustore in jboss-web tomcat configuration -->
-                <exclude>org/jboss/test/ws/interop/nov2007/wsse/UsernameTokenHTTPSTestCase.*</exclude>
-                
-                <!-- [EJBTHREE-1152] service-ref in ejb-jar.xml is ignored -->
-                <exclude>org/jboss/test/ws/jaxws/samples/serviceref/ServiceRefEJBTestCase.*</exclude>
-                
-                <!-- [JBAS-5055] Failed to load users/passwords/role files -->
-                <exclude>org/jboss/test/ws/jaxws/webserviceref/StubPropertyTestCase.*</exclude>
-                <exclude>org/jboss/test/ws/jaxws/jbws1840/JBWS1840TestCase.*</exclude>
-                
-                <!-- [JBAS-5114] MessageDriven EJB3 does not create destination automatically -->
-                <exclude>org/jboss/test/ws/jaxws/samples/jmstransport/**</exclude>
-                
-                <!-- [JBAS-5115] Valid jboss-app.xml file not recognized correctly by jbossxb runtime -->
-                <exclude>org/jboss/test/ws/jaxws/jbws1822/JBWS1822TestCase.*</exclude>
-              </testExcludes>
+              <!-- http://jira.codehaus.org/browse/MCOMPILER-72 -->
+              <testExcludeFile>../test-excludes-jboss500.txt</testExcludeFile>
             </configuration>
           </plugin>
         </plugins>
@@ -211,67 +147,10 @@
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2.SP1</version>
             <configuration>
-              <!--
-              Exlude tests via an external exlude file
-              http://jira.codehaus.org/browse/SUREFIRE-486
-              -->
-              <testExcludes>
-                
-                <!-- Fix BPEL before AS50 goes final -->
-                <exclude>org/jboss/test/ws/jaxrpc/samples/wsbpel/hello/*TestCase.*</exclude>
-                
-                <!-- UsernameTokenHTTPSTestCase requires keystore & trustore in jboss-web tomcat configuration -->
-                <exclude>org/jboss/test/ws/interop/nov2007/wsse/UsernameTokenHTTPSTestCase.*</exclude>
-                
-                <!-- [EJBTHREE-1152] service-ref in ejb-jar.xml is ignored -->
-                <exclude>org/jboss/test/ws/jaxws/samples/serviceref/ServiceRefEJBTestCase.*</exclude>
-                
-                <!-- [JBAS-5055] Failed to load users/passwords/role files -->
-                <exclude>org/jboss/test/ws/jaxws/webserviceref/StubPropertyTestCase.*</exclude>
-                <exclude>org/jboss/test/ws/jaxws/jbws1840/JBWS1840TestCase.*</exclude>
-                
-                <!-- [JBAS-5114] MessageDriven EJB3 does not create destination automatically -->
-                <exclude>org/jboss/test/ws/jaxws/samples/jmstransport/**</exclude>
-                
-                <!-- [JBAS-5115] Valid jboss-app.xml file not recognized correctly by jbossxb runtime -->
-                <exclude>org/jboss/test/ws/jaxws/jbws1822/JBWS1822TestCase.*</exclude>
-                
-                <!-- [JBWS-2107] Resolve dependency on @SecurityDomain -->
-                <exclude>org/jboss/test/ws/jaxws/webserviceref/Secure**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/samples/dar/**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/samples/news/**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/jbws1840/**</exclude>
-                
-                <!-- [JBWS-1526] Automated testing and availablity checks of public endpoints (interop) -->
-                <exclude>org/jboss/test/ws/interop/**</exclude>
-                
-                <!-- [EJBTHREE-1150] WebServiceContext injection requires mapped-name -->
-                <exclude>org/jboss/test/ws/jaxws/samples/context/WebServiceContextJSETestCase.*</exclude>
-                
-                <!-- [JBAS-5257] jboss:service=defaultClassLoader is not registered with dynamic webapp deployment -->
-                <exclude>org/jboss/test/ws/jaxws/endpoint/**</exclude>
-                
-                <!-- [JBAS-5359] mapped-name is required for context of deployment -->
-                <exclude>org/jboss/test/ws/jaxws/binding/**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/handlerlifecycle/**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/jbws1611/**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/jbws1733/**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/namespace/**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/samples/wsaddressing/**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/samples/wssecurity/*TestCase.*</exclude>
-                
-                <!-- [JBAS-5386] ClassNotFoundException: org.jboss.deployment.security.WarPolicyConfigurationFacade -->
-                <exclude>org/jboss/test/ws/jaxrpc/jbws1762/**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/jbws1762/**</exclude>
-                
-                <!-- [JBAS-5387] EJB21 name not bound -->
-                <exclude>org/jboss/test/ws/jaxrpc/jbws331/**</exclude>
-                
-                <!-- [JBAS-5388] JBossXBRuntimeException: Missing value for the required attribute -->
-                <exclude>org/jboss/test/ws/jaxrpc/jbws720/**</exclude>
-                
-              </testExcludes>
+              <!-- http://jira.codehaus.org/browse/MCOMPILER-72 -->
+              <testExcludeFile>../test-excludes-jboss501.txt</testExcludeFile>
             </configuration>
           </plugin>
         </plugins>
