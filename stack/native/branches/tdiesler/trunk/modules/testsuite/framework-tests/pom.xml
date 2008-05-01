@@ -93,9 +93,6 @@
               http://jira.codehaus.org/browse/SUREFIRE-486
               -->
               <testExcludes>
-                <!-- [JBWS-2163] wsconsume for maven build -->
-                  <exclude>org/jboss/test/ws/jaxws/complex/**</exclude>
-                  <exclude>org/jboss/test/ws/jaxws/holder/**</exclude>
                 
                 <!-- EJB3/Injection excludes -->
                 <exclude>org/jboss/test/ws/jaxws/samples/webserviceref/**</exclude>
@@ -145,9 +142,6 @@
               http://jira.codehaus.org/browse/SUREFIRE-486
               -->
               <testExcludes>
-                <!-- [JBWS-2163] wsconsume for maven build -->
-                  <exclude>org/jboss/test/ws/jaxws/complex/**</exclude>
-                  <exclude>org/jboss/test/ws/jaxws/holder/**</exclude>
                 
                 <!-- EJB3/Injection excludes -->
                 <exclude>org/jboss/test/ws/jaxws/samples/webserviceref/**</exclude>
@@ -181,9 +175,6 @@
               http://jira.codehaus.org/browse/SUREFIRE-486
               -->
               <testExcludes>
-                <!-- [JBWS-2163] wsconsume for maven build -->
-                  <exclude>org/jboss/test/ws/jaxws/complex/**</exclude>
-                  <exclude>org/jboss/test/ws/jaxws/holder/**</exclude>
                 
                 <!-- Fix BPEL before AS50 goes final -->
                 <exclude>org/jboss/test/ws/jaxrpc/samples/wsbpel/hello/*TestCase.*</exclude>
@@ -226,9 +217,6 @@
               http://jira.codehaus.org/browse/SUREFIRE-486
               -->
               <testExcludes>
-                <!-- [JBWS-2163] wsconsume for maven build -->
-                <exclude>org/jboss/test/ws/jaxws/complex/**</exclude>
-                <exclude>org/jboss/test/ws/jaxws/holder/**</exclude>
                 
                 <!-- Fix BPEL before AS50 goes final -->
                 <exclude>org/jboss/test/ws/jaxrpc/samples/wsbpel/hello/*TestCase.*</exclude>

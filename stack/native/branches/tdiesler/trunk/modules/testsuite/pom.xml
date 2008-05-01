@@ -28,9 +28,11 @@
   <!-- Dependencies -->
   <dependencies>
     <dependency>
-      <groupId>org.jboss.ws</groupId>
-      <artifactId>jbossws-common</artifactId>
+      <groupId>org.jboss.ws.native</groupId>
+      <artifactId>jbossws-native-client</artifactId>
+      <version>${version}</version>
     </dependency>
+    
     <dependency>
       <groupId>org.jboss.ws</groupId>
       <artifactId>jbossws-framework</artifactId>
@@ -42,26 +44,12 @@
       <type>zip</type>
     </dependency>
     <dependency>
-      <groupId>org.jboss.ws</groupId>
-      <artifactId>jbossws-spi</artifactId>
-    </dependency>
-    <dependency>
       <groupId>javax.ejb</groupId>
       <artifactId>ejb-api</artifactId>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.ws.native</groupId>
-      <artifactId>jbossws-native-client</artifactId>
-      <version>${version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.ws.native</groupId>
-      <artifactId>jbossws-native-core</artifactId>
-      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

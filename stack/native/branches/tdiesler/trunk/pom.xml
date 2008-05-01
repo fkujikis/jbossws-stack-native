@@ -51,6 +51,7 @@
     <jbossws.jboss500.version>3.0.0-SNAPSHOT</jbossws.jboss500.version>
     <jbossws.jboss501.version>3.0.0-SNAPSHOT</jbossws.jboss501.version>
     <codehaus.jettison.version>1.0-RC2</codehaus.jettison.version>
+    <commons.logging.version>1.1.1</commons.logging.version>
     <javassist.version>3.6.0.GA</javassist.version>
     <jboss.common.version>1.2.1.GA</jboss.common.version>
     <jboss.jaxbintros.version>1.0.0.beta2</jboss.jaxbintros.version>
@@ -168,25 +169,21 @@
         <groupId>javax.ejb</groupId>
         <artifactId>ejb-api</artifactId>
         <version>3.0</version>
-        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>javax.jms</groupId>
         <artifactId>jms</artifactId>
         <version>1.1</version>
-        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>javax.mail</groupId>
         <artifactId>mail</artifactId>
         <version>1.4</version>
-        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>servlet-api</artifactId>
         <version>2.5</version>
-        <scope>provided</scope>
       </dependency>
       
       <!-- jboss provided -->
@@ -194,28 +191,29 @@
         <groupId>javassist</groupId>
         <artifactId>javassist</artifactId>
         <version>${javassist.version}</version>
-        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>jboss.common</groupId>
         <artifactId>jboss-common</artifactId>
         <version>${jboss.common.version}</version>
-        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>jboss.remoting</groupId>
         <artifactId>jboss-remoting</artifactId>
         <version>${jboss.remoting.version}</version>
-        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.jboss.microcontainer</groupId>
         <artifactId>jboss-kernel</artifactId>
         <version>${jboss.microcontainer.version}</version>
-        <scope>provided</scope>
       </dependency>
       
       <!-- transitve dependencies -->
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>${commons.logging.version}</version>
+      </dependency>
       <dependency>
         <groupId>com.sun.xml.fastinfoset</groupId>
         <artifactId>FastInfoset</artifactId>
