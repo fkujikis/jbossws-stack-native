@@ -13,6 +13,16 @@
     <version>3.0.2-SNAPSHOT</version>
   </parent>
   
+  <!-- Dependencies -->
+  <dependencies>
+    <dependency>
+      <groupId>qdox</groupId>
+      <artifactId>qdox</artifactId>
+      <version>1.4</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
   <!-- Plugins -->
   <build>
     <plugins>
@@ -27,6 +37,9 @@
             <configuration>
               <tasks>
                 <property name="tests.output.dir" value="${project.build.directory}"/>
+                <property name="tests.resources.dir" value="${basedir}/src/test/resources"/>
+                <ant antfile="src/scripts/build-jars-jaxrpc.xml" target="build-jars-jaxrpc"/>
+                <ant antfile="src/scripts/build-samples-jaxrpc.xml" target="build-samples-jaxrpc"/>
                 <ant antfile="src/scripts/build-jars-jaxws.xml" target="build-jars-jaxws"/>
                 <ant antfile="src/scripts/build-samples-jaxws.xml" target="build-samples-jaxws"/>
               </tasks>
