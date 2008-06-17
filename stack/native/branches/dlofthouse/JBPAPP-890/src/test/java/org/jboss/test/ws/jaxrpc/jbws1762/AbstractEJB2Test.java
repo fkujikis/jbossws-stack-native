@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.jaxrpc.jbws1762;
 
+import java.io.File;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
@@ -46,7 +47,7 @@ public abstract class AbstractEJB2Test extends JBossWSTest
    protected void setUp() throws Exception
    {
       URL wsdlURL = new URL("http://" + getServerHost() + ":8080/" + getWSDLLocation());
-      URL mappingURL = getResourceURL("jaxrpc/jbws1762/META-INF/jaxrpc-mapping.xml");
+      URL mappingURL = new File("resources/jaxrpc/jbws1762/META-INF/jaxrpc-mapping.xml").toURL();
       QName serviceName = new QName("http://org.jboss.test.webservice/jbws1762", "EJB2Bean");
       
       ServiceFactoryImpl factory = new ServiceFactoryImpl();

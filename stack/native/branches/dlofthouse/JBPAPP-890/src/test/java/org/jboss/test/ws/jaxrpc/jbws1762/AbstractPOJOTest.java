@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.jaxrpc.jbws1762;
 
+import java.io.File;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
@@ -48,7 +49,7 @@ public abstract class AbstractPOJOTest extends JBossWSTest
    {
       ServiceFactoryImpl factory = (ServiceFactoryImpl)ServiceFactory.newInstance();
       URL wsdlURL = new URL("http://" + getServerHost() + ":8080/" + getWSDLLocation());
-      URL mappingURL = getResourceURL("jaxrpc/jbws1762/WEB-INF/jaxrpc-mapping.xml");
+      URL mappingURL = new File("resources/jaxrpc/jbws1762/WEB-INF/jaxrpc-mapping.xml").toURL();
       QName serviceName = new QName("http://org.jboss.test.ws/jbws1762", "POJOBean");
 
       Service service = factory.createService(wsdlURL, serviceName, mappingURL);
