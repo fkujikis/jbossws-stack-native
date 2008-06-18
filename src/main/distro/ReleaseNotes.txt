@@ -27,23 +27,6 @@ What's new in jbossws-@version.id@
 
 Feature Request
 
-Bug
-
-Task
-
-Errata
-
-    
-Enjoy,
-The JBossWS Team
-
-Previous Releases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-What's new in jbossws-3.0.1-native-2.0.4
-----------------------------------------
-
-Feature Request
-
     * [JBWS-925]  - Provide initial support for FastInfoset
     * [JBWS-1124] - Scoped class loading domains for WS endpoints
     * [JBWS-1165] - Provide initial support JSON data binding
@@ -111,6 +94,11 @@ Errata
     FIXME: [JBWS-981] Virtual host configuration for EJB endpoints
     FIXME: [JBWS-798] Complete EventingTestCase
     FIXME: [JBWS-2044] Rewrite Server side file system based RM store    
+
+Enjoy,
+The JBossWS Team
+
+Previous Releases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 What's new in jbossws-2.0.3.GA
 ------------------------------
