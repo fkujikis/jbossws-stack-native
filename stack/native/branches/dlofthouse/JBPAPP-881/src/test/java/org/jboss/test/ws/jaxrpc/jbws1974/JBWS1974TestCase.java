@@ -11,8 +11,8 @@ import org.jboss.wsf.test.JBossWSTestSetup;
 public class JBWS1974TestCase extends JBossWSTest
 {
 
-   private static TestEndpoint port;
-
+   private static TestEndpoint port;    
+   
    public static Test suite() throws Exception
    {
       return new JBossWSTestSetup(JBWS1974TestCase.class, "jaxrpc-jbws1974.war, jaxrpc-jbws1974-client.jar");
@@ -25,14 +25,15 @@ public class JBWS1974TestCase extends JBossWSTest
       {
          InitialContext iniCtx = getInitialContext();
          Service service = (Service)iniCtx.lookup("java:comp/env/service/TestService");
-         port = (TestEndpoint)service.getPort(TestEndpoint.class);
+         port = (TestEndpoint)service.getPort(TestEndpoint.class);      
       }
+         
    }
 
    public void testCall() throws Exception
    {
-
-      EchoType toEcho = new EchoType("A", "b", "3");
+      // It is the null value that is required to trigger the failure.
+      EchoType toEcho = new EchoType("A", "b", null);
 
       EchoType response = port.echo(toEcho);
 
