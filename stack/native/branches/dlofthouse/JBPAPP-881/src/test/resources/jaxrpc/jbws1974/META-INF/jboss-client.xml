@@ -9,6 +9,7 @@
 
   <service-ref>
     <service-ref-name>service/TestService</service-ref-name>
+    <config-name>Standard WSSecurity Client</config-name>
     <wsdl-override>http://@jboss.bind.address@:8080/jaxrpc-jbws1974/TestEndpoint?wsdl</wsdl-override>
   </service-ref>
 

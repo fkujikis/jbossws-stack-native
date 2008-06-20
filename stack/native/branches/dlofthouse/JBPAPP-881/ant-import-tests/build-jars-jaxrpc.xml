@@ -2686,6 +2686,11 @@
         <include name="webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
+      	<include name="jboss-wsse-server.xml"/>
+      </webinf>
+      <webinf dir="${tests.output.dir}/resources/jaxrpc/jbws1974">
+        <include name="wsse.keystore"/>
+        <include name="wsse.truststore"/>
       </webinf>
     </war>	  
     <jar destfile="${tests.output.dir}/libs/jaxrpc-jbws1974-client.jar">
@@ -2695,6 +2700,7 @@
       <metainf dir="${tests.output.dir}/resources/jaxrpc/jbws1974/META-INF">
         <include name="application-client.xml"/>
         <include name="jboss-client.xml"/>
+      	<include name="jboss-wsse-client.xml"/>
       </metainf>
       <metainf dir="${tests.output.dir}/resources/jaxrpc/jbws1974/WEB-INF">
         <include name="jaxrpc-mapping.xml"/>
