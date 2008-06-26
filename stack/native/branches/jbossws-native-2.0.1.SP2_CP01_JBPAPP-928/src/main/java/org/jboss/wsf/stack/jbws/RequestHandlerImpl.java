@@ -155,7 +155,7 @@ public class RequestHandlerImpl implements RequestHandler
             }
             catch (IOException ioex)
             {
-               log.error("Cannot close output stream");
+               log.error("Cannot close output stream", ioex);
             }
          }
       }
@@ -203,7 +203,7 @@ public class RequestHandlerImpl implements RequestHandler
          }
          catch (IOException ioex)
          {
-            log.error("Cannot close output stream");
+            log.error("Cannot close output stream", ioex);
          }
       }
    }
