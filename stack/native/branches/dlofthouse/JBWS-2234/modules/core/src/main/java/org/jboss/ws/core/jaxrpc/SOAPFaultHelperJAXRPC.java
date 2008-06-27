@@ -47,6 +47,7 @@ import org.jboss.logging.Logger;
 import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonMessageContext;
+import org.jboss.ws.core.CommonSOAPBinding;
 import org.jboss.ws.core.CommonSOAPFaultException;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.AbstractDeserializerFactory;
@@ -172,7 +173,7 @@ public class SOAPFaultHelperJAXRPC
 
    /** Translate the request exception into a SOAPFault message.
     */
-   public static SOAPMessageImpl exceptionToFaultMessage(Exception reqEx)
+   public static SOAPMessageImpl exceptionToFaultMessage(Exception reqEx, CommonSOAPBinding binding)
    {
       // Get or create the SOAPFaultException
       SOAPFaultException faultEx;
@@ -202,7 +203,7 @@ public class SOAPFaultHelperJAXRPC
 
       try
       {
-         SOAPMessageImpl faultMessage = toSOAPMessage(faultEx);
+         SOAPMessageImpl faultMessage = toSOAPMessage(faultEx, binding);
          return faultMessage;
       }
       catch (RuntimeException rte)
@@ -216,7 +217,7 @@ public class SOAPFaultHelperJAXRPC
       }
    }
 
-   private static SOAPMessageImpl toSOAPMessage(SOAPFaultException faultEx) throws SOAPException
+   private static SOAPMessageImpl toSOAPMessage(SOAPFaultException faultEx, CommonSOAPBinding binding) throws SOAPException
    {
       assertFaultCode(faultEx.getFaultCode());
 
@@ -224,8 +225,7 @@ public class SOAPFaultHelperJAXRPC
       SerializationContext serContext = (msgContext != null ? msgContext.getSerializationContext() : new SerializationContextJAXRPC());
       NamespaceRegistry nsRegistry = serContext.getNamespaceRegistry();
 
-      MessageFactory factory = new MessageFactoryImpl();
-      SOAPMessageImpl soapMessage = (SOAPMessageImpl)factory.createMessage();
+      SOAPMessageImpl soapMessage = (SOAPMessageImpl)binding.getMessageFactory().createMessage();
 
       SOAPEnvelopeImpl soapEnvelope = (SOAPEnvelopeImpl)soapMessage.getSOAPPart().getEnvelope();
       SOAPBody soapBody = soapEnvelope.getBody();

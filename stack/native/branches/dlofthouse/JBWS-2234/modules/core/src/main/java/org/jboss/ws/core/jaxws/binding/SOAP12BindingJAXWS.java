@@ -109,7 +109,7 @@ public class SOAP12BindingJAXWS extends CommonSOAP12Binding implements BindingEx
    
    public SOAPMessage createFaultMessageFromException(Exception ex)
    {
-      return SOAPFaultHelperJAXWS.exceptionToFaultMessage(ex);
+      return SOAPFaultHelperJAXWS.exceptionToFaultMessage(ex, this);
    }
    
    protected void throwFaultException(SOAPFaultImpl fault) throws Exception

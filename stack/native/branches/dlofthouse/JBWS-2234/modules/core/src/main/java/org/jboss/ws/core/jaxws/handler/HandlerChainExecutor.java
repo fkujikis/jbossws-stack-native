@@ -167,7 +167,7 @@ public class HandlerChainExecutor
       return doNext;
    }
 
-   public boolean handleFault(MessageContext msgContext, Exception ex)
+   private boolean handleFault(MessageContext msgContext, Exception ex)
    {
       isOutbound = (Boolean)msgContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
       if (isOutbound == null)
@@ -189,7 +189,7 @@ public class HandlerChainExecutor
             {
                if (soapMessage == null || soapMessage.getSOAPBody().getFault() == null)
                {
-                  soapMessage = SOAPFaultHelperJAXWS.exceptionToFaultMessage(ex);
+                  soapMessage = SOAPFaultHelperJAXWS.exceptionToFaultMessage(ex, null);
                   soapContext.setMessage(soapMessage);
                }
             }
@@ -200,7 +200,7 @@ public class HandlerChainExecutor
          }
 
          int index = getFirstHandler();
-         
+
          Handler currHandler = null;
          try
          {

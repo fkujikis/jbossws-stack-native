@@ -60,7 +60,7 @@ public class SOAP11BindingJAXRPC extends CommonSOAP11Binding
 
    public SOAPMessage createFaultMessageFromException(Exception ex)
    {
-      return SOAPFaultHelperJAXRPC.exceptionToFaultMessage(ex);
+      return SOAPFaultHelperJAXRPC.exceptionToFaultMessage(ex, this);
    }
 
    protected void throwFaultException(SOAPFaultImpl fault) throws Exception

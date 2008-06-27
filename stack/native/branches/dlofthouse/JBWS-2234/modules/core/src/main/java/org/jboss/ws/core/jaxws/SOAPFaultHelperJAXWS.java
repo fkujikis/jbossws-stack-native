@@ -35,6 +35,7 @@ import javax.xml.ws.soap.SOAPFaultException;
 import org.jboss.logging.Logger;
 import org.jboss.ws.Constants;
 import org.jboss.ws.core.CommonMessageContext;
+import org.jboss.ws.core.CommonSOAPBinding;
 import org.jboss.ws.core.CommonSOAPFaultException;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.AbstractDeserializerFactory;
@@ -144,7 +145,7 @@ public class SOAPFaultHelperJAXWS
    }
 
    /** Translate the request exception into a SOAPFault message. */
-   public static SOAPMessageImpl exceptionToFaultMessage(Exception reqEx)
+   public static SOAPMessageImpl exceptionToFaultMessage(Exception reqEx, CommonSOAPBinding binding)
    {
       log.error("SOAP request exception", reqEx);
 
@@ -167,7 +168,7 @@ public class SOAPFaultHelperJAXWS
          }
          else if (reqEx instanceof CommonSOAPFaultException)
          {
-            faultMessage = SOAPFaultHelperJAXRPC.exceptionToFaultMessage(reqEx);
+            faultMessage = SOAPFaultHelperJAXRPC.exceptionToFaultMessage(reqEx, binding);
          }
          else
          {
@@ -183,10 +184,9 @@ public class SOAPFaultHelperJAXWS
       }
    }
 
-   private static SOAPMessageImpl toSOAPMessage(SOAPFaultException faultEx) throws SOAPException
-   {
-      MessageFactory factory = MessageFactory.newInstance();
-      SOAPMessageImpl soapMessage = (SOAPMessageImpl)factory.createMessage();
+   private static SOAPMessageImpl toSOAPMessage(SOAPFaultException faultEx, CommonSOAPBinding binding) throws SOAPException
+   {      
+      SOAPMessageImpl soapMessage = (SOAPMessageImpl)binding.getMessageFactory().createMessage();
 
       SOAPBody soapBody = soapMessage.getSOAPBody();
       populateSOAPFault(soapBody, faultEx);

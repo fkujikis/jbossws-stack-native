@@ -124,7 +124,7 @@ public class MessageBinding implements CommonBinding, BindingExt
 
    public MessageAbstraction bindFaultMessage(Exception ex)
    {
-      SOAPMessageImpl faultMessage = SOAPFaultHelperJAXWS.exceptionToFaultMessage(ex);
+      SOAPMessageImpl faultMessage = SOAPFaultHelperJAXWS.exceptionToFaultMessage(ex, null);
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext != null)
       {

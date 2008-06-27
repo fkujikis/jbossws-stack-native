@@ -51,7 +51,7 @@ public abstract class CommonSOAP12Binding extends CommonSOAPBinding
       msgFactory.setEnvNamespace(Constants.NS_SOAP12_ENV);
    }
 
-   /** Create the SOAP-1.1 message */
+   /** Create the SOAP-1.2 message */
    protected MessageAbstraction createMessage(OperationMetaData opMetaData) throws SOAPException
    {
       return (MessageAbstraction)msgFactory.createMessage();
