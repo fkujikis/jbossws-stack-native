@@ -655,7 +655,7 @@ public class WSDLToJava implements WSDLToJavaIntf
 
    private void createSEIFile(WSDLInterface intf, File loc) throws IOException
    {
-      String seiName = getServiceEndpointInterfaceName(intf);
+      String seiName = ToolsUtils.convertInvalidCharacters(getServiceEndpointInterfaceName(intf));
 
       StringBuilder buf = new StringBuilder();
       utils.writeJbossHeader(buf);
