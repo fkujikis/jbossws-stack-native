@@ -48,29 +48,65 @@ public class JBWS2187TestCase extends JBossWSTest
       return new JBossWSTestSetup(JBWS2187TestCase.class, "jaxws-jbws2187.war");
    }
 
-   public void testGetPort() throws Exception
+   public void testSetBothPorts() throws Exception
    {
       Service service = getService();
+      TestEndpoint original = service.getPort(TestEndpoint.class);
 
-      TestEndpoint port = service.getPort(TestEndpoint.class);
+      setConfigName(original);
+      performTest(original, 1);
 
+      TestEndpoint subsequent = service.getPort(TestEndpoint.class);
+
+      setConfigName(subsequent);
+      performTest(subsequent, 1);
+
+      performTest(original, 1);
+   }
+
+   public void testSetFirstPort() throws Exception
+   {
+      Service service = getService();
+      TestEndpoint original = service.getPort(TestEndpoint.class);
+
+      setConfigName(original);
+      performTest(original, 1);
+
+      TestEndpoint subsequent = service.getPort(TestEndpoint.class);
+
+      //setConfigName(subsequent);
+      performTest(subsequent, 0);
+
+      performTest(original, 1);
+   }
+
+   public void testSetSecondPort() throws Exception
+   {
+      Service service = getService();
+      TestEndpoint original = service.getPort(TestEndpoint.class);
+
+      //setConfigName(original);
+      performTest(original, 0);
+
+      TestEndpoint subsequent = service.getPort(TestEndpoint.class);
+
+      setConfigName(subsequent);
+      performTest(subsequent, 1);
+
+      performTest(original, 0);
+   }
+
+   void performTest(TestEndpoint port, int expected) throws Exception
+   {
+      TestHandler.clear();
+      assertEquals("Av it", port.echo("Av it"));
+      assertEquals("Call Count", expected, TestHandler.getCallCount());
+   }
+
+   void setConfigName(TestEndpoint port)
+   {
       File config = getResourceFile("jaxws/jbws2187/META-INF/jbws2187-client-config.xml");
       ((StubExt)port).setConfigName("JBWS2187 Config", config.getAbsolutePath());
-
-      TestHandler.clear();
-      assertEquals("Av it", port.echo("Av it"));
-      assertEquals("Call Count", 1, TestHandler.getCallCount());
-
-      TestHandler.clear();
-      port = service.getPort(TestEndpoint.class);
-      ((StubExt)port).setConfigName("JBWS2187 Config", config.getAbsolutePath());
-      assertEquals("Av it", port.echo("Av it"));
-      assertEquals("Call Count", 1, TestHandler.getCallCount());
-
-      TestHandler.clear();
-      port = service.getPort(TestEndpoint.class);
-      assertEquals("Av it", port.echo("Av it"));
-      assertEquals("Call Count", 0, TestHandler.getCallCount());
    }
 
    Service getService() throws Exception
