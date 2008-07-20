@@ -798,6 +798,13 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
       }
    }
 
+   /**
+    * The factory method to create and initialise a new EndpointConfigMetaData, the current 
+    * EndpointConfigMetaData will be used as the base to backup the RMMD.
+    * 
+    * This method does not set the EndpointConfigMetaData as it can be used by clients to create 
+    * a local configuration not stored in the EndpointMetaData.
+    */
    protected EndpointConfigMetaData createEndpointConfigMetaData(String configName, String configFile)
    {
       EndpointConfigMetaData ecmd = new EndpointConfigMetaData(this);
