@@ -77,7 +77,6 @@ import org.jboss.ws.extensions.wsrm.protocol.spi.RMCreateSequenceResponse;
 import org.jboss.ws.extensions.wsrm.protocol.spi.RMSequence;
 import org.jboss.ws.extensions.wsrm.protocol.spi.RMSequenceAcknowledgement;
 import org.jboss.ws.extensions.wsrm.protocol.spi.RMSerializable;
-import org.jboss.ws.metadata.config.ConfigurationProvider;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointConfigMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
@@ -526,7 +525,7 @@ public class ClientImpl extends CommonClient implements org.jboss.ws.extensions.
       try
       {
          // set up addressing data
-         RMClientSequence candidateSequence = new RMClientSequence(getEndpointMetaData().getConfig().getRMMetaData());
+         RMClientSequence candidateSequence = new RMClientSequence(this.epConfigMetaData.getConfig().getRMMetaData());
          String address = getEndpointMetaData().getEndpointAddress();
          String action = RMAddressingConstants.CREATE_SEQUENCE_WSA_ACTION;
          AddressingProperties addressingProps = null;
