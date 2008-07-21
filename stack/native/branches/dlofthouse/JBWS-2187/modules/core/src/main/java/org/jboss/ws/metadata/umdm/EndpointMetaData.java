@@ -818,8 +818,10 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
 
    public void initEndpointConfig()
    {
-      // No base configuration. 
-      initEndpointConfigMetaData(getEndpointConfigMetaData(), null);
+      EndpointConfigMetaData ecmd = getEndpointConfigMetaData();
+      // At the time this method is called initialisation may have already happened
+      // always take the current ECMD as a base in case there is anything to backup. 
+      initEndpointConfigMetaData(ecmd, ecmd);
    }
 
    /**
