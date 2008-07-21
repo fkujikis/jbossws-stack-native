@@ -464,6 +464,11 @@ public class ClientImpl extends CommonClient implements org.jboss.ws.extensions.
       throw new NotImplementedException();
    }
 
+   public EndpointConfigMetaData getEndpointConfigMetaData()
+   {
+      return epConfigMetaData;
+   }
+
    public void setConfigName(String configName, String configFile)
    {
       if (configName == null)
