@@ -145,7 +145,7 @@ public class ClientProxy implements InvocationHandler
                Object handler = args[args.length - 1];
                retObj = invokeAsync(opName, args, retType, (AsyncHandler)handler);
             }
-            // Invoke synchronouslyepConfigMetaData
+            // Invoke synchronously
             else
             {
                Map<String, Object> resContext = client.getBindingProvider().getResponseContext();
