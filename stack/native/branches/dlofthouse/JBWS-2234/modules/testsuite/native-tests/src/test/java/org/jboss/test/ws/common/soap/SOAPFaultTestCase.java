@@ -69,7 +69,7 @@ public class SOAPFaultTestCase extends JBossWSTest
    {
       Detail detail = createDetailElement();
       SOAPFaultException faultEx = new SOAPFaultException(Constants.SOAP11_FAULT_CODE_CLIENT, "Some fault message", "Some fault actor", detail);
-      SOAPEnvelope soapEnv = SOAPFaultHelperJAXRPC.exceptionToFaultMessage(faultEx).getSOAPPart().getEnvelope();
+      SOAPEnvelope soapEnv = SOAPFaultHelperJAXRPC.exceptionToFaultMessage(faultEx, null).getSOAPPart().getEnvelope();
       assertEquals(DOMUtils.parse(envStr), soapEnv);
    }
 
