@@ -20,10 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.ws.jaxrpc.jbws2234;
+package org.jboss.test.ws.jaxws.jbws2234;
 
-import javax.naming.InitialContext;
-import javax.xml.rpc.Service;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.Service;
+import javax.xml.ws.handler.Handler;
 
 import junit.framework.Test;
 
@@ -39,22 +45,27 @@ import org.jboss.wsf.test.JBossWSTestSetup;
  */
 public class JBWS2234TestCase extends JBossWSTest
 {
+
    private static TestEndpoint port;
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS2234TestCase.class, "jaxrpc-jbws2234.war, jaxrpc-jbws2234-client.jar");
+      return new JBossWSTestSetup(JBWS2234TestCase.class, "jaxws-jbws2234.war");
    }
 
    public void setUp() throws Exception
    {
       super.setUp();
-      if (port == null)
-      {
-         InitialContext iniCtx = getInitialContext();
-         Service service = (Service)iniCtx.lookup("java:comp/env/service/TestService");
-         port = (TestEndpoint)service.getPort(TestEndpoint.class);
-      }
+      URL wsdlURL = new URL("http://" + getServerHost() + ":8080/jaxws-jbws2234?wsdl");
+      QName serviceName = new QName("http://org.jboss.test.ws/jbws2234", "TestService");
+
+      Service service = Service.create(wsdlURL, serviceName);
+      port = service.getPort(TestEndpoint.class);
+
+      BindingProvider bindingProvider = (BindingProvider)port;
+      List<Handler> handlerChain = new ArrayList<Handler>();
+      handlerChain.add(new TestHandler());
+      bindingProvider.getBinding().setHandlerChain(handlerChain);
    }
 
    public void testCall() throws Exception
@@ -72,7 +83,7 @@ public class JBWS2234TestCase extends JBossWSTest
          port.echo(TestEndpointImpl.TEST_EXCEPTION);
          fail("Excpected TestException not thrown.");
       }
-      catch (TestException te)
+      catch (TestException_Exception te)
       {
       }
    }
@@ -86,7 +97,8 @@ public class JBWS2234TestCase extends JBossWSTest
       }
       catch (Exception e)
       {
-         assertEquals("Simulated failure", e.getCause().getMessage());
+         assertEquals("Simulated failure", e.getMessage());
       }
    }
+
 }

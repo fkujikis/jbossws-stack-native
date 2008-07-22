@@ -23,6 +23,7 @@ import javax.xml.soap.DetailEntry;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.Name;
 import javax.xml.soap.SOAPBody;
+import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPFault;
@@ -54,6 +55,8 @@ import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.FaultMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.w3c.dom.Element;
+
+import com.ibm.wsdl.extensions.soap12.SOAP12Constants;
 
 /**
  * Helper methods to translate between SOAPFault and SOAPFaultException
@@ -278,6 +281,16 @@ public class SOAPFaultHelperJAXWS
    {
       MessageFactoryImpl factory = (MessageFactoryImpl)MessageFactory.newInstance();
 
+      if (isSOAP12() == true)
+      {
+         factory.setEnvNamespace(Constants.NS_SOAP12_ENV);
+      }
+
+      return (SOAPMessageImpl)factory.createMessage();
+   }
+
+   private static boolean isSOAP12()
+   {
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext != null)
       {
@@ -285,12 +298,11 @@ public class SOAPFaultHelperJAXWS
          String bindingId = emd.getBindingId();
          if (SOAPBinding.SOAP12HTTP_BINDING.equals(bindingId) || SOAPBinding.SOAP12HTTP_MTOM_BINDING.equals(bindingId))
          {
-            factory.setEnvNamespace(Constants.NS_SOAP12_ENV);
+            return true;
          }
-
       }
 
-      return (SOAPMessageImpl)factory.createMessage();
+      return false;
    }
 
    private static Name getFallbackFaultCode()
@@ -298,7 +310,14 @@ public class SOAPFaultHelperJAXWS
       /* faultcode
        * X. SOAPFaultException.getFault().getFaultCodeAsQName()
        * 2. env:Server (Subcode omitted for SOAP 1.2) */
-      return new NameImpl(Constants.SOAP11_FAULT_CODE_SERVER);
+      if (isSOAP12() == false)
+      {
+         return new NameImpl(Constants.SOAP11_FAULT_CODE_SERVER);
+      }
+      else
+      {
+         return new NameImpl(SOAPConstants.SOAP_RECEIVER_FAULT);
+      }
    }
 
    private static String getFallbackFaultString(Exception ex)
