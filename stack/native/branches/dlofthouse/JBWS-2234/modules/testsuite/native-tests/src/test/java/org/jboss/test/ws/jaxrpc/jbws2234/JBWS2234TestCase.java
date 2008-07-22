@@ -83,7 +83,7 @@ public class JBWS2234TestCase extends JBossWSTest
       }
       catch (Exception e)
       {
-         assertEquals(TestEndpointImpl.RUNTIME_EXCEPTION, e.getMessage());
+         assertEquals("Simulated failure", e.getCause().getMessage());
       }
    }
 }

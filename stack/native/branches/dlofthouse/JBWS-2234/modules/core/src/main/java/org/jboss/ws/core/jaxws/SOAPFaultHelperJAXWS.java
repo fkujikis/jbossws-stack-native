@@ -30,6 +30,7 @@ import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.ws.WebServiceException;
+import javax.xml.ws.soap.SOAPBinding;
 import javax.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
@@ -44,10 +45,12 @@ import org.jboss.ws.core.binding.AbstractSerializerFactory;
 import org.jboss.ws.core.binding.SerializerSupport;
 import org.jboss.ws.core.jaxrpc.SOAPFaultHelperJAXRPC;
 import org.jboss.ws.core.soap.MessageContextAssociation;
+import org.jboss.ws.core.soap.MessageFactoryImpl;
 import org.jboss.ws.core.soap.NameImpl;
 import org.jboss.ws.core.soap.SOAPFactoryImpl;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.core.soap.XMLFragment;
+import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.FaultMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.w3c.dom.Element;
@@ -136,7 +139,8 @@ public class SOAPFaultHelperJAXWS
                   throw new WebServiceException(e);
                }
             }
-            else log.debug("Cannot find fault meta data for: " + xmlName);
+            else
+               log.debug("Cannot find fault meta data for: " + xmlName);
          }
       }
 
@@ -185,8 +189,7 @@ public class SOAPFaultHelperJAXWS
 
    private static SOAPMessageImpl toSOAPMessage(SOAPFaultException faultEx) throws SOAPException
    {
-      MessageFactory factory = MessageFactory.newInstance();
-      SOAPMessageImpl soapMessage = (SOAPMessageImpl)factory.createMessage();
+      SOAPMessageImpl soapMessage = createSOAPMessage();
 
       SOAPBody soapBody = soapMessage.getSOAPBody();
       populateSOAPFault(soapBody, faultEx);
@@ -241,8 +244,7 @@ public class SOAPFaultHelperJAXWS
 
    private static SOAPMessageImpl toSOAPMessage(Exception ex) throws SOAPException
    {
-      MessageFactory factory = MessageFactory.newInstance();
-      SOAPMessageImpl soapMessage = (SOAPMessageImpl)factory.createMessage();
+      SOAPMessageImpl soapMessage = createSOAPMessage();
 
       SOAPBody soapBody = soapMessage.getSOAPBody();
 
@@ -266,9 +268,29 @@ public class SOAPFaultHelperJAXWS
          SOAPElement detailEntry = toDetailEntry(faultBean, serContext, faultMetaData);
          detail.addChildElement(detailEntry);
       }
-      else log.debug("Cannot obtain fault meta data for: " + exClass);
+      else
+         log.debug("Cannot obtain fault meta data for: " + exClass);
 
       return soapMessage;
+   }
+
+   private static SOAPMessageImpl createSOAPMessage() throws SOAPException
+   {
+      MessageFactoryImpl factory = (MessageFactoryImpl)MessageFactory.newInstance();
+
+      CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
+      if (msgContext != null)
+      {
+         EndpointMetaData emd = msgContext.getEndpointMetaData();
+         String bindingId = emd.getBindingId();
+         if (SOAPBinding.SOAP12HTTP_BINDING.equals(bindingId) || SOAPBinding.SOAP12HTTP_MTOM_BINDING.equals(bindingId))
+         {
+            factory.setEnvNamespace(Constants.NS_SOAP12_ENV);
+         }
+
+      }
+
+      return (SOAPMessageImpl)factory.createMessage();
    }
 
    private static Name getFallbackFaultCode()
