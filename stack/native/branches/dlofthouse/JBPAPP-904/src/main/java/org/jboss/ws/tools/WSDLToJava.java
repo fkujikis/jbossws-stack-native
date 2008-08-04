@@ -326,7 +326,6 @@ public class WSDLToJava implements WSDLToJavaIntf
             JBossXSModel xsmodel = WSDLUtils.getSchemaModel(wsdl.getWsdlTypes());
             QName faultXMLName = intfFault.getElement();
             QName faultXMLType = intfFault.getXmlType();
-
             XSElementDeclaration xe = xsmodel.getElementDeclaration(faultXMLName.getLocalPart(), faultXMLName.getNamespaceURI());
             XSTypeDefinition xt = xe.getTypeDefinition();
             if (!xt.getAnonymous())
@@ -535,7 +534,6 @@ public class WSDLToJava implements WSDLToJavaIntf
       if (unwrappedElement)
       {
          buf.append(tempBuf);
-
          // We need a wrapper class generated
          generateJavaSource(wrapper, WSDLUtils.getSchemaModel(wsdl.getWsdlTypes()), containingElement);
 
@@ -822,7 +820,7 @@ public class WSDLToJava implements WSDLToJavaIntf
 
    private void generateJavaSource(XSComplexTypeDefinition xt, JBossXSModel xsmodel, String containingElement, boolean exception) throws IOException
    {
-      XSDTypeToJava xtj = new XSDTypeToJava(generateSerializableTypes);
+      XSDTypeToJava xtj = new XSDTypeToJava(namespacePackageMap, generateSerializableTypes);
 
       xtj.setTypeMapping(this.typeMapping);
       String targetNS = wsdl.getTargetNamespace();
@@ -832,7 +830,7 @@ public class WSDLToJava implements WSDLToJavaIntf
       {
           File dir = utils.createPackage(this.directoryToGenerate, packName);
       }
-      xtj.createJavaFile((XSComplexTypeDefinition)xt, containingElement, getLocationForJavaGeneration(packName), packName, xsmodel, exception);
+      xtj.createJavaFile((XSComplexTypeDefinition)xt, containingElement, this.directoryToGenerate, packName, xsmodel, exception);
    }
 
    public void setParameterStyle(String paramStyle)
@@ -851,7 +849,6 @@ public class WSDLToJava implements WSDLToJavaIntf
             return pkg;
          }
       }
-
      //return NamespacePackageMapping.getJavaPackageName(targetNamespace);
      //Default behaviour will always generate all classes in the SEI package only
      return seiPkgName;
