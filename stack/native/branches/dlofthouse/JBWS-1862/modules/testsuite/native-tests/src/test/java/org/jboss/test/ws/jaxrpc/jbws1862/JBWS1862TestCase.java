@@ -21,7 +21,6 @@
  */
 package org.jboss.test.ws.jaxrpc.jbws1862;
 
-import java.io.File;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
@@ -54,7 +53,7 @@ public class JBWS1862TestCase extends JBossWSTest
       return new JBossWSTestSetup(JBWS1862TestCase.class, "jaxrpc-jbws1862.war");
    }
 
-   public void testUnconfiguredCall() throws Exception
+   public void testUnconfiguredCall_SetReturnType() throws Exception
    {
       QName serviceName = new QName(NAMESPACE, "TestService");
       QName operationName = new QName(NAMESPACE, "echo");
@@ -73,7 +72,7 @@ public class JBWS1862TestCase extends JBossWSTest
       assertEquals(message, response);
    }
 
-   public void testUnconfiguredCall_2() throws Exception
+   public void testUnconfiguredCall_AddOutParam() throws Exception
    {
       QName serviceName = new QName(NAMESPACE, "TestService");
       QName operationName = new QName(NAMESPACE, "echo");
@@ -86,7 +85,6 @@ public class JBWS1862TestCase extends JBossWSTest
       call.addParameter("String_1", Constants.TYPE_LITERAL_STRING, ParameterMode.IN);
       call.addParameter("String_2", Constants.TYPE_LITERAL_STRING, ParameterMode.OUT);
       call.setTargetEndpointAddress(TARGET_ENDPOINT_ADDRESS);
-      call.setReturnType(Constants.TYPE_LITERAL_STRING, String.class);
 
       String message = "Hello World!!";
       String response = (String)call.invoke(new Object[] { message });
@@ -106,7 +104,6 @@ public class JBWS1862TestCase extends JBossWSTest
       Call call = (Call)service.createCall();
       call.setOperationName(operationName);
       call.setTargetEndpointAddress(TARGET_ENDPOINT_ADDRESS);
-      call.setReturnType(Constants.TYPE_LITERAL_STRING, String.class);
 
       String message = "Hello World!!";
       String response = (String)call.invoke(new Object[] { message });
@@ -126,7 +123,6 @@ public class JBWS1862TestCase extends JBossWSTest
       Call call = (Call)service.createCall();
       call.setOperationName(operationName);
       call.setTargetEndpointAddress(TARGET_ENDPOINT_ADDRESS);
-      call.setReturnType(Constants.TYPE_LITERAL_STRING, String.class);
 
       String message = "Hello World!!";
       String response = (String)call.invoke(new Object[] { message });
