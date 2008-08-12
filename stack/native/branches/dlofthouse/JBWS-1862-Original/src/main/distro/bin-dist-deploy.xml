@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ====================================================================== -->
+<!--                                                                        -->
+<!--  JBoss, the OpenSource J2EE webOS                                      -->
+<!--                                                                        -->
+<!--  Distributable under LGPL license.                                     -->
+<!--  See terms of license at http://www.gnu.org.                           -->
+<!--                                                                        -->
+<!-- ====================================================================== -->
+
+<!-- $Id: bin-dist-deploy.xml 3576 2007-06-14 09:23:52Z thomas.diesler@jboss.com $ -->
+
+<project>
+  
+  <!-- Deploy jbossws/native to jboss405 -->
+  <target name="deploy-jboss405" depends="deploy-jboss405-no-ejb3" description="Deploy jbossws/native to jboss405"/>
+  
+  <target name="deploy-jboss405-ejb3" depends="undeploy-jboss405">
+    <macro-deploy-native405 stacklibs="${lib.dir}" thirdpartylibs="${lib.dir}"/>
+    
+    <macro-deploy-framework thirdpartylibs="${lib.dir}" jbosshome="${jboss405.home}"/>
+  </target>
+  
+  <target name="deploy-jboss405-no-ejb3" depends="deploy-jboss405-ejb3" unless="jboss405.ejb3.available">
+    <macro-setup-native40-no-ejb3/>
+    <echo>*********************************</echo>
+    <echo>* JBossWS EJB3 support disabled *</echo>
+    <echo>* All EJB3 tests will fail. *</echo>
+    <echo>*********************************</echo>
+  </target>
+  
+  <target name="undeploy-jboss405" depends="prepare" description="Remove jbossws/native from jboss405">
+    <macro-undeploy-native405/>
+    <macro-undeploy-framework jbosshome="${jboss405.home}"/>
+  </target>
+  
+  <!-- Deploy jbossws/native to jboss421 -->
+  <target name="deploy-jboss421" depends="undeploy-jboss421,deploy-jboss421-endorsed" description="Deploy jbossws/native to jboss421">
+    <macro-deploy-native421 stacklibs="${lib.dir}" thirdpartylibs="${lib.dir}"/>
+    <macro-deploy-framework thirdpartylibs="${lib.dir}" jbosshome="${jboss421.home}"/>
+  </target>
+  <target name="deploy-jboss421-endorsed" depends="prepare" if="HAVE_JDK_1.6">
+    <macro-deploy-endorsed jbosshome="${jboss421.home}" stacklibs="${lib.dir}" thirdpartylibs="${lib.dir}"/>
+  </target>
+  
+  <target name="undeploy-jboss421" depends="prepare,undeploy-jboss421-endorsed" description="Remove jbossws/native from jboss421">
+    <macro-undeploy-native421/>
+    <macro-undeploy-framework jbosshome="${jboss421.home}"/>
+  </target>
+  <target name="undeploy-jboss421-endorsed" depends="prepare" if="HAVE_JDK_1.6">
+    <macro-undeploy-endorsed jbosshome="${jboss421.home}"/>
+  </target>
+  
+  <!-- Deploy jbossws/native to jboss422 -->
+  <target name="deploy-jboss422" depends="undeploy-jboss422,deploy-jboss422-endorsed" description="Deploy jbossws/native to jboss422">
+    <macro-deploy-native422 stacklibs="${lib.dir}" thirdpartylibs="${lib.dir}"/>
+    <macro-deploy-framework thirdpartylibs="${lib.dir}" jbosshome="${jboss422.home}"/>
+  </target>
+  <target name="deploy-jboss422-endorsed" depends="prepare" if="HAVE_JDK_1.6">
+    <macro-deploy-endorsed jbosshome="${jboss422.home}" stacklibs="${lib.dir}" thirdpartylibs="${lib.dir}"/>
+  </target>
+  
+  <target name="undeploy-jboss422" depends="prepare,undeploy-jboss422-endorsed" description="Remove jbossws/native from jboss422">
+    <macro-undeploy-native422/>
+    <macro-undeploy-framework jbosshome="${jboss422.home}"/>
+  </target>
+  <target name="undeploy-jboss422-endorsed" depends="prepare" if="HAVE_JDK_1.6">
+    <macro-undeploy-endorsed jbosshome="${jboss422.home}"/>
+  </target>
+  
+  <!-- Deploy jbossws/native to jboss50 -->
+  <target name="deploy-jboss500" depends="undeploy-jboss500,deploy-jboss500-endorsed" description="Deploy jbossws/native to jboss500">
+    <macro-deploy-native500 stacklibs="${lib.dir}" thirdpartylibs="${lib.dir}"/>
+    <macro-deploy-framework thirdpartylibs="${lib.dir}" jbosshome="${jboss500.home}"/>
+  </target>
+  <target name="deploy-jboss500-endorsed" depends="prepare" if="HAVE_JDK_1.6">
+    <macro-deploy-endorsed jbosshome="${jboss500.home}" stacklibs="${lib.dir}" thirdpartylibs="${lib.dir}"/>
+  </target>
+  
+  <target name="undeploy-jboss500" depends="prepare" description="Remove jbossws/native from jboss500">
+    <macro-undeploy-native500/>
+    <macro-undeploy-framework jbosshome="${jboss500.home}"/>
+  </target>
+  
+</project>
