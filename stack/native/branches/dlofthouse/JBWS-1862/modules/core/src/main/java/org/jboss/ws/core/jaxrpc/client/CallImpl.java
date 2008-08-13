@@ -212,14 +212,8 @@ public class CallImpl extends CommonClient implements Call, RoleSource
       ParameterMetaData paramMetaData = new ParameterMetaData(opMetaData, xmlName, xmlType, javaType.getName());
       paramMetaData.setMode(mode);
       paramMetaData.setInHeader(inHeader);
-      if (mode == ParameterMode.IN || mode == ParameterMode.INOUT)
-      {
-         paramMetaData.setIndex(opMetaData.getInputParameters().size());
-      }
-      else
-      {
-         paramMetaData.setIndex(-1);
-      }
+      paramMetaData.setIndex(opMetaData.getParameters().size());
+
       opMetaData.addParameter(paramMetaData);
 
       registerParameterType(xmlType, javaType);

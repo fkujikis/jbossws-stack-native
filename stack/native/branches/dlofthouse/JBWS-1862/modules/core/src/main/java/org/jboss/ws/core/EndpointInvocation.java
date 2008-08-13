@@ -277,7 +277,8 @@ public class EndpointInvocation
          int index = paramMetaData.getIndex();
 
          // doc/lit wrapped return headers are OUT, so skip
-         if (index < 0)
+         // Also skip other OUT params that should not be considered for inputParams
+         if (index < 0 || paramMetaData.getMode() == ParameterMode.OUT)
             continue;
 
          QName xmlName = paramMetaData.getXmlName();

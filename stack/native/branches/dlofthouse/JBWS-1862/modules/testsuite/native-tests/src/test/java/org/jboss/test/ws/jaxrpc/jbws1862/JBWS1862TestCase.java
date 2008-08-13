@@ -28,6 +28,7 @@ import javax.xml.rpc.Call;
 import javax.xml.rpc.ParameterMode;
 import javax.xml.rpc.Service;
 import javax.xml.rpc.ServiceFactory;
+import javax.xml.rpc.holders.StringHolder;
 
 import junit.framework.Test;
 
@@ -87,8 +88,10 @@ public class JBWS1862TestCase extends JBossWSTest
       call.setTargetEndpointAddress(TARGET_ENDPOINT_ADDRESS);
 
       String message = "Hello World!!";
-      String response = (String)call.invoke(new Object[] { message });
-      assertEquals(message, response);
+      StringHolder holder = new StringHolder();
+      String response = (String)call.invoke(new Object[] { message, holder });
+      assertNull(response);
+      assertEquals(message, holder.value);
    }
 
    public void testConfiguredCall() throws Exception
