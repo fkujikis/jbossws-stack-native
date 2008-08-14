@@ -27,30 +27,6 @@ What's new in jbossws-native-${project.version}
 
 Feature Request
 
-    TODO: enumerate
-
-Bug
-
-    TODO: enumerate
-
-Task
-
-    TODO: enumerate
-
-Errata
-
-    See: TODO: reference to associated JIRA issue
-    
-Enjoy,
-The JBossWS Team
-
-Previous Releases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-What's new in jbossws-native-3.0.3.GA
-----------------------------------------
-
-Feature Request
-
     * [JBWS-981]  - Virtual host configuration for EJB endpoints
     * [JBWS-2191] - Provide junit tests for the record management tools
     * [JBWS-2207] - Allow to fully initialize the WS stack
@@ -84,6 +60,11 @@ Errata
 
     See: TODO: http://jira.jboss.org/jira/browse/JBWS-2281
     
+Enjoy,
+The JBossWS Team
+
+Previous Releases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 What's new in jbossws-native-3.0.2.GA
 ----------------------------------------
 
