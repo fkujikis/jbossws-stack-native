@@ -10,14 +10,25 @@
     <import componentref="jboss/jbossws">
       <compatible version="@repository.id@"/>
     </import>
+
     <import componentref="jboss/jbossxb">
-      <compatible version="@jboss-jbossxb-jboss42@"/>
-      <compatible version="@jboss-jbossxb-jboss42@-brew"/>
+      <compatible version="1.0.0.SP1"/>
+      <compatible version="1.0.0.SP1-brew"/>
+      <compatible version="1.0.0.SP3-brew"/>
     </import>
     <import componentref="jboss/remoting">
-      <compatible version="@jboss-remoting-jboss42@"/>
-      <compatible version="@jboss-remoting-jboss42@-brew"/>
+      <compatible version="2.2.2.GA_CP01-brew"/>
+      <compatible version="2.2.2.GA_CP02-brew"/>
+      <compatible version="2.2.2.SP1"/>
+      <compatible version="2.2.2.SP1-brew"/>
+      <compatible version="2.2.2.SP1.patch01-brew"/>
+      <compatible version="2.2.2.SP4-brew"/>
+      <compatible version="2.2.2.SP5-brew"/>
+      <compatible version="2.2.2.SP7-brew"/>
+      <compatible version="2.2.2.SP8-brew"/>
+      <compatible version="2.2.2.SP9-brew"/>
     </import>
+
     
     <export>
     </export>
