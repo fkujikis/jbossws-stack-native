@@ -7,8 +7,8 @@
   
 	<handler-chain>
 		<handler>
-			<handler-name> LogicalServerHandler </handler-name>
-			<handler-class> org.jboss.test.ws.jaxws.jbws2319.LogicalHandler </handler-class>
+			<handler-name> SOAPServerHandler </handler-name>
+			<handler-class> org.jboss.test.ws.jaxws.jbws2319.SOAPHandler </handler-class>
 		</handler>
 	</handler-chain>
     

@@ -24,19 +24,23 @@ package org.jboss.test.ws.jaxws.jbws2319;
 import javax.jws.HandlerChain;
 import javax.jws.WebService;
 
+import org.jboss.logging.Logger;
+
 /**
  * Test Endpoint implementation.
  * 
  * @author darran.lofthouse@jboss.com
  * @since 23rd September 2008
  */
-@WebService(name = "Endpoint", targetNamespace = "http://ws.jboss.org/jbws2285", endpointInterface = "org.jboss.test.ws.jaxws.jbws2319.Endpoint")
+@WebService(name = "Endpoint", targetNamespace = "http://ws.jboss.org/jbws2319", endpointInterface = "org.jboss.test.ws.jaxws.jbws2319.Endpoint")
 @HandlerChain(file = "server-handlers.xml")
 public class EndpointImpl implements Endpoint
 {
+   private static final Logger log = Logger.getLogger(EndpointImpl.class);
 
    public String echo(final String message)
    {
+      log.info("Value to echo '" + message + "'");
       return message;
    }
 

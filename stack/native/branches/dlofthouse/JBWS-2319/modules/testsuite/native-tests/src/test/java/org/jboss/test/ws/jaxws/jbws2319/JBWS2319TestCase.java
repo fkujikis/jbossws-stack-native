@@ -51,23 +51,23 @@ import org.w3c.dom.NodeList;
  * @since 23rd September 2008
  * @see https://jira.jboss.org/jira/browse/JBWS-2319
  */
-public class JBWS2285TestCase extends JBossWSTest
+public class JBWS2319TestCase extends JBossWSTest
 {
 
-   public final String TARGET_ENDPOINT_ADDRESS = "http://" + getServerHost() + ":8080/jaxws-jbws2285/";
+   public final String TARGET_ENDPOINT_ADDRESS = "http://" + getServerHost() + ":8080/jaxws-jbws2319/";
 
    private static Endpoint port;
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS2285TestCase.class, "jaxws-jbws2285.war");
+      return new JBossWSTestSetup(JBWS2319TestCase.class, "jaxws-jbws2319.war");
    }
 
    public void setUp() throws Exception
    {
       super.setUp();
       URL wsdlURL = new URL(TARGET_ENDPOINT_ADDRESS + "?wsdl");
-      QName serviceName = new QName("http://ws.jboss.org/jbws2285", "EndpointImplService");
+      QName serviceName = new QName("http://ws.jboss.org/jbws2319", "EndpointImplService");
 
       Service service = Service.create(wsdlURL, serviceName);
       port = service.getPort(Endpoint.class);
@@ -93,7 +93,7 @@ public class JBWS2285TestCase extends JBossWSTest
       String response = "";
 
       SOAPBody body = resEnv.getBody();
-      Iterator it = body.getChildElements(new QName("http://ws.jboss.org/jbws2285", "echoResponse"));
+      Iterator it = body.getChildElements(new QName("http://ws.jboss.org/jbws2319", "echoResponse"));
       Node node = (Node)it.next();
       NodeList nodes = node.getChildNodes();
       for (int i = 0; i < nodes.getLength(); i++)
@@ -111,7 +111,7 @@ public class JBWS2285TestCase extends JBossWSTest
 
    private SOAPMessage getRequestMessage() throws SOAPException, IOException
    {
-      URL reqMessage = getResourceFile("jaxws/jbws2285/request-message.xml").toURL();
+      URL reqMessage = getResourceFile("jaxws/jbws2319/request-message.xml").toURL();
       MessageFactory msgFactory = MessageFactory.newInstance();
 
       SOAPMessage reqMsg = msgFactory.createMessage(null, reqMessage.openStream());
