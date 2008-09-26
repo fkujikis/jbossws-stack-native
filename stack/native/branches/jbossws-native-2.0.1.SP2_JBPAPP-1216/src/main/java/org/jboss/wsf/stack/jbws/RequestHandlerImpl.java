@@ -317,7 +317,6 @@ public class RequestHandlerImpl implements RequestHandler
 
          // clear thread local storage
          ThreadLocalAssociation.clear();
-         DOMUtils.clearThreadLocals();
       }
    }
 
