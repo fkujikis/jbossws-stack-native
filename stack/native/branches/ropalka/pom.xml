@@ -156,12 +156,6 @@
         <groupId>org.jboss.ws</groupId>
         <artifactId>jbossws-jboss500CR2</artifactId>
         <version>${jbossws.jboss500.version}</version>
-        <classifier>container</classifier>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.ws</groupId>
-        <artifactId>jbossws-jboss500CR2</artifactId>
-        <version>${jbossws.jboss500.version}</version>
         <classifier>resources</classifier>
         <type>zip</type>
       </dependency>
@@ -169,12 +163,6 @@
         <groupId>org.jboss.ws</groupId>
         <artifactId>jbossws-jboss500x</artifactId>
         <version>${jbossws.jboss501.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.ws</groupId>
-        <artifactId>jbossws-jboss500x</artifactId>
-        <version>${jbossws.jboss501.version}</version>
-        <classifier>container</classifier>
       </dependency>
       <dependency>
         <groupId>org.jboss.ws</groupId>
