@@ -61,7 +61,7 @@ import org.jboss.ws.metadata.umdm.OperationMetaData;
  * @author Thomas.Diesler@jboss.org
  * @author <a href="mailto:jason@stacksmash.com">Jason T. Greene</a>
  */
-public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstraction
+public class SOAPMessageImpl extends AbstractSOAPMessage implements SOAPMessageAbstraction
 {
    private boolean saveRequired = true;
    private MimeHeaders mimeHeaders = new MimeHeaders();
