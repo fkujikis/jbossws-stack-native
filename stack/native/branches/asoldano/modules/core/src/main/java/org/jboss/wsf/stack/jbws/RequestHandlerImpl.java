@@ -116,7 +116,7 @@ public class RequestHandlerImpl implements RequestHandler
    private ServerConfig serverConfig;
    private MessageFactoryImpl msgFactory;
 
-   RequestHandlerImpl()
+   public RequestHandlerImpl()
    {
       SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
       serverConfig = spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();
