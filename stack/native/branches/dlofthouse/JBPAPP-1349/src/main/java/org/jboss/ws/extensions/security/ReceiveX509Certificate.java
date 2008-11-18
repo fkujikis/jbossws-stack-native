@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.ws.extensions.security.operation;
+package org.jboss.ws.extensions.security;
 
 import java.security.Principal;
 import java.security.cert.X509Certificate;
@@ -30,7 +30,7 @@ import org.jboss.security.auth.certs.SubjectCNMapping;
 import org.jboss.security.auth.certs.SubjectDNMapping;
 import org.jboss.ws.extensions.security.element.Token;
 import org.jboss.ws.extensions.security.element.X509Token;
-import org.jboss.ws.extensions.security.exception.WSSecurityException;
+import org.jboss.ws.extensions.security.WSSecurityException;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.invocation.SecurityAdaptor;
