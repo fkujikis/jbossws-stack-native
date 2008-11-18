@@ -219,7 +219,8 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 	{
 		try
 		{
-			SOAPFactoryImpl factory = (SOAPFactoryImpl)SOAPFactory.newInstance();
+//			SOAPFactoryImpl factory = (SOAPFactoryImpl)SOAPFactory.newInstance();
+         SOAPFactory factory = SOAPFactory.newInstance();
 			SOAPHeader soapHeader = message.getSOAPHeader();					
 			
 			// Add the xmlns:wsa declaration
