@@ -264,7 +264,7 @@ public class WSSecurityOMFactory implements ObjectModelFactory
          Boolean include = new Boolean(true);
          String timestamp = attrs.getValue("", "includeTimestamp");
          if (timestamp != null)
-            include = (Boolean)SimpleTypeBindings.unmarshal(timestamp, SimpleTypeBindings.XS_BOOLEAN_NAME, null);
+            include = (Boolean)SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, timestamp, null);
 
          return new Sign(attrs.getValue("", "type"), attrs.getValue("", "alias"), include.booleanValue());
       }
