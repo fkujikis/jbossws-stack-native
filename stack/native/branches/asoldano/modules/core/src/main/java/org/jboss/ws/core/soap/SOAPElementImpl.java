@@ -492,7 +492,20 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
     */
    public Iterator getChildElements(Name name)
    {
-      return getChildElements(((NameImpl)name).toQName());
+      if (name instanceof NameImpl)
+      {
+         return getChildElements(((NameImpl)name).toQName());
+      }
+      else
+      {
+         QName qname;
+         if (name.getPrefix() != null)
+            qname = new QName(name.getURI(), name.getLocalName(), name.getPrefix());
+         else
+            qname = new QName(name.getURI(), name.getLocalName());
+         return getChildElements(qname);
+      }
+//      return getChildElements(((NameImpl)name).toQName());
    }
 
    public Iterator getChildElements(QName qname)
