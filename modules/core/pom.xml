@@ -10,7 +10,7 @@
   <parent>
     <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native</artifactId>
-    <version>3.0.5-SNAPSHOT</version>
+    <version>3.0.4.GA</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -148,7 +148,7 @@
       <artifactId>policy</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.woodstox</groupId>
+      <groupId>woodstox</groupId>
       <artifactId>wstx-lgpl</artifactId>
     </dependency>
     <dependency>
@@ -179,6 +179,7 @@
         <executions>
           <execution>
             <id>copy-dependencies</id>
+            <phase>package</phase>
             <goals>
               <goal>unpack</goal>
             </goals>

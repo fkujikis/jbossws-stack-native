@@ -96,7 +96,7 @@ public abstract class MetaDataBuilder
       WSDLBinding wsdlBinding = wsdlDefinitions.getBindingByInterfaceName(wsdlInterface.getName());
       initEndpointBinding(wsdlBinding, epMetaData);
    }
-
+   
    protected void initEndpointBinding(WSDLBinding wsdlBinding, EndpointMetaData epMetaData)
    {
       String bindingType = wsdlBinding.getType();
@@ -229,26 +229,11 @@ public abstract class MetaDataBuilder
       ServerConfig config = spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();
 
       String host = config.getWebServiceHost();
-      String port = "";
+      int port = config.getWebServicePort();
       if ("https".equals(uriScheme))
-      {
-         int portNo = config.getWebServiceSecurePort();
-         if (portNo != 443)
-         {
-            port = ":" + portNo;
-         }
+         port = config.getWebServiceSecurePort();
 
-      }
-      else
-      {
-         int portNo = config.getWebServicePort();
-         if (portNo != 80)
-         {
-            port = ":" + portNo;
-         }
-      }
-
-      String urlStr = uriScheme + "://" + host + port + servicePath;
+      String urlStr = uriScheme + "://" + host + ":" + port + servicePath;
       try
       {
          return new URL(urlStr).toExternalForm();
@@ -323,7 +308,7 @@ public abstract class MetaDataBuilder
                String serviceEndpointURL = getServiceEndpointAddress(uriScheme, servicePath);
 
                SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-               ServerConfig config = spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();
+               ServerConfig config = spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();               
                boolean alwaysModify = config.isModifySOAPAddress();
 
                if (alwaysModify || uriScheme == null || orgAddress.indexOf("REPLACE_WITH_ACTUAL_URL") >= 0)

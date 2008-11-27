@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.util.xml;
+package org.jboss.ws.core.binding;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,16 +34,13 @@ import org.jboss.ws.WSException;
 import org.jboss.wsf.common.IOUtils;
 
 /**
- * Buffered StreamResult Utility class
- * @author Richard.Opalka@jboss.org
  * @author Heiko.Braun@jboss.org
  * @author Thomas.Diesler@jboss.org
  * @since 06.02.2007
  */
-public final class BufferedStreamResult extends StreamResult
+public class BufferedStreamResult extends StreamResult
 {
-   
-   private final ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+   ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
 
    public BufferedStreamResult()
    {
@@ -62,42 +59,41 @@ public final class BufferedStreamResult extends StreamResult
    }
 
    @Override
-   public final OutputStream getOutputStream()
+   public Writer getWriter()
+   {
+      return null;
+   }
+
+   @Override
+   public OutputStream getOutputStream()
    {
       return baos;
    }
 
    @Override
-   public final String toString()
+   public void setWriter(Writer writer)
    {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public void setOutputStream(OutputStream outputStream)
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public String toString()
+   {
+      String result = null;
       try
       {
-         return baos.toString("UTF-8");
+         result = baos.toString("UTF-8");
       }
       catch (UnsupportedEncodingException e)
       {
          WSException.rethrow(e);
       }
 
-      return null;
+      return result;
    }
-
-   @Override
-   public final Writer getWriter()
-   {
-      return null;
-   }
-
-   @Override
-   public final void setWriter(Writer writer)
-   {
-      throw new UnsupportedOperationException();
-   }
-
-   @Override
-   public final void setOutputStream(OutputStream outputStream)
-   {
-      throw new UnsupportedOperationException();
-   }
-
 }

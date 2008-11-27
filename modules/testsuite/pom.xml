@@ -10,7 +10,7 @@
   <parent>
     <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native</artifactId>
-    <version>3.0.5-SNAPSHOT</version>
+    <version>3.0.4.GA</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
   
@@ -76,13 +76,13 @@
     <dependency>
       <groupId>apache-scout</groupId>
       <artifactId>scout</artifactId>
-      <version>${apache.scout.version}</version>
+      <version>0.7rc2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>juddi</groupId>
       <artifactId>juddi</artifactId>
-      <version>${juddi.version}</version>
+      <version>0.9RC4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -522,7 +522,7 @@
               <!-- TODO: replace with maven dependencies -->
               <additionalClasspathElements>
                 <additionalClasspathElement>${jboss.home}/client/jbossall-client.jar</additionalClasspathElement>
-                <additionalClasspathElement>${jboss.home}/common/lib/jboss-ejb3-core.jar</additionalClasspathElement>
+                <additionalClasspathElement>${jboss.home}/server/default/lib/jboss-ejb3-core.jar</additionalClasspathElement>
               </additionalClasspathElements>
             </configuration>
           </plugin>

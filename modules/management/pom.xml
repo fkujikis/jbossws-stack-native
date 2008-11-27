@@ -9,7 +9,7 @@
   <parent>
     <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native</artifactId>
-    <version>3.0.5-SNAPSHOT</version>
+    <version>3.0.4.GA</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
   
@@ -54,7 +54,19 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ws</groupId>
+      <artifactId>jbossws-jboss500CR2</artifactId>
+      <classifier>container</classifier>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.ws</groupId>
       <artifactId>jbossws-jboss500x</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.ws</groupId>
+      <artifactId>jbossws-jboss500x</artifactId>
+      <classifier>container</classifier>
       <scope>runtime</scope>
     </dependency>
     <!-- END -->

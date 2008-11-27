@@ -50,7 +50,7 @@ public class JBWS1607TestCase extends JBossWSTest
    public void testGenerate() throws Exception
    {
       File resourceDir = createResourceFile("tools/jbws1607");
-      String toolsDir = "target/wstools/jbws1607/output";
+      String toolsDir = resourceDir.getAbsolutePath();
 
       String[] args = new String[] { "-dest", toolsDir, "-config", resourceDir.getAbsolutePath() + "/wstools-config.xml" };
       new WSTools().generate(args);

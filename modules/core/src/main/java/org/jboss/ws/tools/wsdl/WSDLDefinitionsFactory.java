@@ -107,7 +107,7 @@ public class WSDLDefinitionsFactory
          String defaultNamespace = getDefaultNamespace(wsdlDoc);
          if (Constants.NS_WSDL11.equals(defaultNamespace))
          {
-            WSDLFactory wsdlFactory = WSDLFactory.newInstance(JBossWSDLFactoryImpl.class.getName(), this.getClass().getClassLoader());
+            WSDLFactory wsdlFactory = WSDLFactory.newInstance(JBossWSDLFactoryImpl.class.getName());
             WSDLReader wsdlReader = wsdlFactory.newWSDLReader();
             wsdlReader.setFeature("javax.wsdl.verbose", false);
 

@@ -236,12 +236,6 @@
           <include name="**/juddi-service.sar"/>
         </fileset>
       </unzip>
-      <copy todir="@{targetdir}" flatten="true" overwrite="true">
-        <fileset dir="@{thirdpartydir}">
-          <include name="**/juddi.jar"/>
-          <include name="**/scout.jar"/>
-        </fileset>
-      </copy>
     </sequential>
   </macrodef>
   
@@ -345,14 +339,42 @@
       <!-- END -->
     </sequential>
   </macrodef>
-
+  
+  <!-- ================================================================== -->
+  <!-- Deploy Deploy                                                   -->
+  <!-- ================================================================== -->
+  
+  <!-- [JBWS-2263] -->
+  <!-- START -->
+  <macrodef name="macro-deploy-jbossws-deploy50">
+    <attribute name="thirdpartydir"/>
+    <attribute name="targetdir"/>
+    <attribute name="jbossid"/>
+    <sequential>
+      <copy todir="@{targetdir}" flatten="true" overwrite="true">
+        <fileset dir="@{thirdpartydir}">
+          <include name="**/jbossws-@{jbossid}-container.jar"/>
+        </fileset>
+      </copy>
+      <unzip dest="@{targetdir}" src="@{targetdir}/jbossws-@{jbossid}-container.jar">
+        <patternset>
+          <include name="META-INF/jbossws-container-jboss-beans.xml"/>
+        </patternset>
+      </unzip>
+      <move file="@{targetdir}/META-INF/jbossws-container-jboss-beans.xml" tofile="@{targetdir}/jbossws-container-jboss-beans.xml"/>
+      <delete file="@{targetdir}/jbossws-@{jbossid}-container.jar"/>
+      <delete dir="@{targetdir}/META-INF"/>
+    </sequential>
+  </macrodef>
+  <!-- END -->
+  
   <!-- ================================================================== -->
   <!-- Deploy JBossWS                                                     -->
   <!-- ================================================================== -->
-
+  
   <!-- JDK Detection -->
   <available classname="java.io.Console" property="HAVE_JDK_1.6"/>
-
+  
   <target name="deploy-jbossws-native42" depends="check-parameters,deploy-jbossws-endorsed">
     <macro-deploy-jbossws-bin targetdir="${installserver}/../../bin" artifactsdir="${artifactsdir}"/>
     <macro-deploy-jbossws-client42 targetdir="${installserver}/../../client" thirdpartydir="${thirdpartydir}" jbossid="${jbossid}"/>
@@ -362,23 +384,17 @@
     <macro-deploy-juddi-sar targetdir="${installserver}/deploy/juddi-service.sar" thirdpartydir="${thirdpartydir}"/>
   </target>
   
-  <target name="deploy-jbossws-native500" depends="check-parameters,deploy-jbossws-endorsed">
+  <target name="deploy-jbossws-native50" depends="check-parameters,deploy-jbossws-endorsed">
     <macro-deploy-jbossws-bin targetdir="${installserver}/../../bin" artifactsdir="${artifactsdir}"/>
     <macro-deploy-jbossws-client50 targetdir="${installserver}/../../client" thirdpartydir="${thirdpartydir}" jbossid="${jbossid}"/>
     <macro-deploy-jbossws-lib50 targetdir="${installserver}/../../lib" thirdpartydir="${thirdpartydir}"/>
     <macro-deploy-jbossws-server-lib50 targetdir="${installserver}/lib" thirdpartydir="${thirdpartydir}" jbossid="${jbossid}"/>
     <macro-deploy-jbossws-sar50 targetdir="${installserver}/deploy/jbossws.sar" artifactsdir="${artifactsdir}" thirdpartydir="${thirdpartydir}" jbossid="${jbossid}"/>
     <macro-deploy-jbossws-deployers50 targetdir="${installserver}/deployers/jbossws.deployer/" artifactsdir="${artifactsdir}" thirdpartydir="${thirdpartydir}" jbossid="${jbossid}"/>
-    <macro-deploy-juddi-sar targetdir="${installserver}/deploy/juddi-service.sar" thirdpartydir="${thirdpartydir}"/>
-  </target>
-  
-  <target name="deploy-jbossws-native501" depends="check-parameters,deploy-jbossws-endorsed">
-    <macro-deploy-jbossws-bin targetdir="${installserver}/../../bin" artifactsdir="${artifactsdir}"/>
-    <macro-deploy-jbossws-client50 targetdir="${installserver}/../../client" thirdpartydir="${thirdpartydir}" jbossid="${jbossid}"/>
-    <macro-deploy-jbossws-lib50 targetdir="${installserver}/../../lib" thirdpartydir="${thirdpartydir}"/>
-    <macro-deploy-jbossws-server-lib50 targetdir="${installserver}/../../common/lib" thirdpartydir="${thirdpartydir}" jbossid="${jbossid}"/> <!-- Please note the "../../common" to use common server lib! -->
-    <macro-deploy-jbossws-sar50 targetdir="${installserver}/deploy/jbossws.sar" artifactsdir="${artifactsdir}" thirdpartydir="${thirdpartydir}" jbossid="${jbossid}"/>
-    <macro-deploy-jbossws-deployers50 targetdir="${installserver}/deployers/jbossws.deployer/" artifactsdir="${artifactsdir}" thirdpartydir="${thirdpartydir}" jbossid="${jbossid}"/>
+    <!-- [JBWS-2263] -->
+    <!-- START -->
+    <macro-deploy-jbossws-deploy50 targetdir="${installserver}/deployers/jbossws.deployer/META-INF" thirdpartydir="${thirdpartydir}" jbossid="${jbossid}"/>
+    <!-- END -->
     <macro-deploy-juddi-sar targetdir="${installserver}/deploy/juddi-service.sar" thirdpartydir="${thirdpartydir}"/>
   </target>
   
@@ -438,12 +454,12 @@
     <sequential>
       <loadfile property="jbossws.deploy.conf" srcfile="@{targetdir}/jbossws-deploy.conf" failonerror="false"/>
       <loadfile property="jbossws.deploy.conf" srcfile="@{defaultconf}" failonerror="false"/>
-
+      
       <property name="jboss.server.home" value="@{targetdir}/../.."/>
       <property name="jboss.home" value="${jboss.server.home}/../.."/>
       <available property="jboss.undeploy.client" file="${jboss.home}/client"/>
       <fail message="Cannot find ${jboss.home}/client" unless="jboss.undeploy.client"/>
-
+      
       <!-- [JBWS-2263] -->
       <!-- START -->
       <!-- delete stale container integration jars -->
@@ -461,14 +477,15 @@
       <delete>
         <fileset dir="${jboss.home}" includes="${jbossws.deploy.conf}"/>
       </delete>
-
+      
       <!-- delete jbossws.sar -->
       <delete dir="@{targetdir}"/>
-
+      
       <!-- delete juddi-service.sar -->
       <delete dir="@{targetdir}/../juddi-service.sar"/>
-
+      
     </sequential>
   </macrodef>
-
+  
+  
 </project>

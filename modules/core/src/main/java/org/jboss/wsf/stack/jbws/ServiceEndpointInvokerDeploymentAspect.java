@@ -27,6 +27,7 @@ import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
+import org.jboss.wsf.spi.WSFRuntime;
 
 /**
  * A deployer that associates the ServiceEndpointInvoker with the endpoint 
@@ -37,7 +38,7 @@ import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 public class ServiceEndpointInvokerDeploymentAspect extends DeploymentAspect
 {
    @Override
-   public void start(Deployment dep)
+   public void start(Deployment dep, WSFRuntime runtime)
    {
       for (Endpoint ep : dep.getService().getEndpoints())
       {
