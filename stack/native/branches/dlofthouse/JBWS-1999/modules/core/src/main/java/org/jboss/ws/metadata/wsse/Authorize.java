@@ -47,6 +47,10 @@ public class Authorize implements Serializable
 
    public void addRole(final Role role)
    {
+      if (isUnchecked())
+      {
+         throw new IllegalStateException("Can not add role after setting 'Unchecked'");
+      }
       roles.add(role);
    }
 
@@ -57,6 +61,10 @@ public class Authorize implements Serializable
 
    void setUnchecked(Unchecked unchecked)
    {
+      if (roles.isEmpty() == false)
+      {
+         throw new IllegalStateException("Can not set 'Unchecked' with role(s) defined.");
+      }
       this.unchecked = unchecked;
    }
 

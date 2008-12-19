@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.jboss.ws.metadata.wsse.Authorize;
 import org.jboss.ws.metadata.wsse.Config;
+import org.jboss.ws.metadata.wsse.Port;
 import org.jboss.ws.metadata.wsse.Role;
 import org.jboss.ws.metadata.wsse.WSSecurityConfiguration;
 import org.jboss.ws.metadata.wsse.WSSecurityOMFactory;
@@ -60,6 +61,7 @@ public class JBWS1999ConfigurationTestCase extends JBossWSTest
 
       Config config = wsConfig.getDefaultConfig();
       Authorize authorize = config.getAuthorize();
+      assertFalse("Unchecked", authorize.isUnchecked());
       List<Role> roles = authorize.getRoles();
 
       assertEquals("Expected 2 roles", 2, roles.size());
@@ -71,6 +73,139 @@ public class JBWS1999ConfigurationTestCase extends JBossWSTest
       }
       assertTrue("Expected 'Trader' role.", roleNames.contains("Trader"));
       assertTrue("Expected 'Banker' role.", roleNames.contains("Banker"));
+   }
+
+   /**
+    * Test loading a configuration with a port 'authorize' definition
+    * which contains two roles.
+    */
+   public void testPortRoles() throws Exception
+   {
+      WSSecurityConfiguration wsConfig = load("jboss-wsse-port-roles.xml");
+
+      Port port = wsConfig.getPorts().get("TestPort");
+      Config config = port.getDefaultConfig();
+      Authorize authorize = config.getAuthorize();
+      assertFalse("Unchecked", authorize.isUnchecked());
+      List<Role> roles = authorize.getRoles();
+
+      assertEquals("Expected 2 roles", 2, roles.size());
+
+      List<String> roleNames = new ArrayList<String>(roles.size());
+      for (Role current : roles)
+      {
+         roleNames.add(current.getName());
+      }
+      assertTrue("Expected 'Trader' role.", roleNames.contains("Trader"));
+      assertTrue("Expected 'Banker' role.", roleNames.contains("Banker"));
+   }
+
+   /**
+    * Test loading a configuration with a default 'authorize' definition
+    * which contains one role.
+    */
+   public void testDefaultRole() throws Exception
+   {
+      WSSecurityConfiguration wsConfig = load("jboss-wsse-default-role.xml");
+
+      Config config = wsConfig.getDefaultConfig();
+      Authorize authorize = config.getAuthorize();
+      assertFalse("Unchecked", authorize.isUnchecked());
+      List<Role> roles = authorize.getRoles();
+
+      assertEquals("Expected 1 roles", 1, roles.size());
+
+      Role role = roles.get(0);
+      assertEquals("Expected 'Trader' role.", "Trader", role.getName());
+   }
+
+   /**
+    * Test loading a configuration with a port 'authorize' definition
+    * which contains one role.
+    */
+   public void testPortRole() throws Exception
+   {
+      WSSecurityConfiguration wsConfig = load("jboss-wsse-port-role.xml");
+
+      Port port = wsConfig.getPorts().get("TestPort");
+      Config config = port.getDefaultConfig();
+      Authorize authorize = config.getAuthorize();
+      assertFalse("Unchecked", authorize.isUnchecked());
+      List<Role> roles = authorize.getRoles();
+
+      assertEquals("Expected 1 roles", 1, roles.size());
+
+      Role role = roles.get(0);
+      assertEquals("Expected 'Trader' role.", "Trader", role.getName());
+   }
+
+   /**
+    * Test loading a configuration with a default 'authorize' definition
+    * with unchecked.
+    */
+   public void testDefaultUnchecked() throws Exception
+   {
+      WSSecurityConfiguration wsConfig = load("jboss-wsse-default-unchecked.xml");
+
+      Config config = wsConfig.getDefaultConfig();
+      Authorize authorize = config.getAuthorize();
+      assertTrue("Unchecked", authorize.isUnchecked());
+      List<Role> roles = authorize.getRoles();
+
+      assertEquals("Expected 0 roles", 0, roles.size());
+   }
+
+   /**
+    * Test loading a configuration with a port 'authorize' definition
+    * with unchecked.
+    */
+   public void testPortUnchecked() throws Exception
+   {
+      WSSecurityConfiguration wsConfig = load("jboss-wsse-port-unchecked.xml");
+
+      Port port = wsConfig.getPorts().get("TestPort");
+      Config config = port.getDefaultConfig();
+      Authorize authorize = config.getAuthorize();
+      assertTrue("Unchecked", authorize.isUnchecked());
+      List<Role> roles = authorize.getRoles();
+
+      assertEquals("Expected 0 roles", 0, roles.size());
+   }
+
+   /**
+    * Test loading a configuration with a default 'authorize' definition
+    * with unchecked and a role defined, parsing should fail.
+    */
+   public void testDefaultRoleUnchecked() throws Exception
+   {
+      try
+      {
+         WSSecurityConfiguration wsConfig = load("jboss-wsse-default-role-unchecked.xml");
+         fail("Expected exception not thrown.");
+      }
+      catch (IOException expected)
+      {
+         Throwable cause = expected.getCause();
+         assertEquals(IllegalStateException.class, cause.getClass());
+      }
+   }
+
+   /**
+    * Test loading a configuration with a port 'authorize' definition
+    * with unchecked and a role defined, parsing should fail.
+    */
+   public void testPortRoleUnchecked() throws Exception
+   {
+      try
+      {
+         WSSecurityConfiguration wsConfig = load("jboss-wsse-port-role-unchecked.xml");
+         fail("Expected exception not thrown.");
+      }
+      catch (IOException expected)
+      {
+         Throwable cause = expected.getCause();
+         assertEquals(IllegalStateException.class, cause.getClass());
+      }
    }
 
 }
