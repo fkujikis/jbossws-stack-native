@@ -50,6 +50,8 @@ import org.jboss.ws.extensions.security.operation.SignatureOperation;
 import org.jboss.ws.extensions.security.operation.TimestampOperation;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
+import org.jboss.ws.metadata.wsse.Authenticate;
+import org.jboss.ws.metadata.wsse.Authorize;
 import org.jboss.ws.metadata.wsse.Config;
 import org.jboss.ws.metadata.wsse.Encrypt;
 import org.jboss.ws.metadata.wsse.Operation;
@@ -98,7 +100,16 @@ public class WSSecurityDispatcher implements WSSecurityAPI
          SecurityStore securityStore = new SecurityStore(configuration.getKeyStoreURL(), configuration.getKeyStoreType(), configuration.getKeyStorePassword(),
                configuration.getKeyPasswords(), configuration.getTrustStoreURL(), configuration.getTrustStoreType(), configuration.getTrustStorePassword());
          NonceFactory factory = Util.loadFactory(NonceFactory.class, configuration.getNonceFactory(), DefaultNonceFactory.class);
-         SecurityDecoder decoder = new SecurityDecoder(securityStore, factory, configuration.getTimestampVerification(), config == null ? null : config.getAuthenticate());
+         
+         Authenticate authenticate = null;
+         Authorize authorize = null;
+         if (config != null)
+         {
+            authenticate = config.getAuthenticate();
+            authorize = config.getAuthorize();
+         }
+
+         SecurityDecoder decoder = new SecurityDecoder(securityStore, factory, configuration.getTimestampVerification(), authenticate, authorize);
 
          decoder.decode(message.getSOAPPart(), secHeaderElement);
          

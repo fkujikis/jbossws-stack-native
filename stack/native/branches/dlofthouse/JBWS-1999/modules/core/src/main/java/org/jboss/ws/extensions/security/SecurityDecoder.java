@@ -35,6 +35,7 @@ import org.jboss.ws.extensions.security.element.Token;
 import org.jboss.ws.extensions.security.element.UsernameToken;
 import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.jboss.ws.extensions.security.nonce.NonceFactory;
+import org.jboss.ws.extensions.security.operation.AuthorizeOperation;
 import org.jboss.ws.extensions.security.operation.DecryptionOperation;
 import org.jboss.ws.extensions.security.operation.ReceiveUsernameOperation;
 import org.jboss.ws.extensions.security.operation.ReceiveX509Certificate;
@@ -44,6 +45,7 @@ import org.jboss.ws.extensions.security.operation.RequireSignatureOperation;
 import org.jboss.ws.extensions.security.operation.SignatureVerificationOperation;
 import org.jboss.ws.extensions.security.operation.TimestampVerificationOperation;
 import org.jboss.ws.metadata.wsse.Authenticate;
+import org.jboss.ws.metadata.wsse.Authorize;
 import org.jboss.ws.metadata.wsse.TimestampVerification;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -68,18 +70,21 @@ public class SecurityDecoder
    private TimestampVerification timestampVerification;
    
    private Authenticate authenticate;
+   
+   private Authorize authorize;
 
    private HashSet<String> signedIds = new HashSet<String>();
 
    private HashSet<String> encryptedIds = new HashSet<String>();
 
-   public SecurityDecoder(SecurityStore store, NonceFactory nonceFactory, TimestampVerification timestampVerification, Authenticate authenticate)
+   public SecurityDecoder(SecurityStore store, NonceFactory nonceFactory, TimestampVerification timestampVerification, Authenticate authenticate, Authorize authorize)
    {
       org.apache.xml.security.Init.init();
       this.store = store;
       this.nonceFactory = nonceFactory;
       this.timestampVerification = timestampVerification;
       this.authenticate = authenticate;
+      this.authorize = authorize;
    }
 
    /**
@@ -89,9 +94,9 @@ public class SecurityDecoder
     * @param SecurityStore the security store that contains key and trust information
     * @param now The timestamp to use as the current time when validating a message expiration
     */
-   public SecurityDecoder(SecurityStore store, Calendar now, NonceFactory nonceFactory, TimestampVerification timestampVerification, Authenticate authenticate)
+   public SecurityDecoder(SecurityStore store, Calendar now, NonceFactory nonceFactory, TimestampVerification timestampVerification, Authenticate authenticate, Authorize authorize)
    {
-      this(store, nonceFactory, timestampVerification, authenticate);
+      this(store, nonceFactory, timestampVerification, authenticate, authorize);
       this.now = now;
    }
 
@@ -157,6 +162,11 @@ public class SecurityDecoder
          }
       }
       
+      if (authorize != null)
+      {
+         AuthorizeOperation authorizeOp = new AuthorizeOperation(authorize);
+         authorizeOp.process();
+      }
       
    }
 
