@@ -21,15 +21,33 @@
 */
 package org.jboss.ws.extensions.security.operation;
 
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.security.auth.Subject;
+import javax.xml.soap.SOAPException;
+import javax.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
+import org.jboss.security.SecurityContext;
+import org.jboss.security.SecurityContextAssociation;
+import org.jboss.security.SimplePrincipal;
 import org.jboss.ws.WSException;
 import org.jboss.ws.metadata.wsse.Authorize;
+import org.jboss.ws.metadata.wsse.Role;
+import org.jboss.wsf.spi.SPIProvider;
+import org.jboss.wsf.spi.SPIProviderResolver;
+import org.jboss.wsf.spi.invocation.SecurityAdaptor;
+import org.jboss.wsf.spi.invocation.SecurityAdaptorFactory;
 
 /**
  * Operation to authenticate and check the authorisation of the
@@ -49,6 +67,8 @@ public class AuthorizeOperation
 
    private RealmMapping rm;
 
+   private SecurityAdaptorFactory secAdapterfactory;
+
    public AuthorizeOperation(Authorize authorize)
    {
       this.authorize = authorize;
@@ -65,17 +85,83 @@ public class AuthorizeOperation
          throw new WSException("Unable to lookup AuthenticationManager", ne);
       }
 
+      SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+      secAdapterfactory = spiProvider.getSPI(SecurityAdaptorFactory.class);
    }
 
    public void process()
    {
       log.trace("About to check authorization, using security domain '" + am.getSecurityDomain() + "'");
       // Step 1 - Authenticate using currently associated principals.
+      SecurityAdaptor securityAdaptor = secAdapterfactory.newSecurityAdapter();
+      Principal principal = securityAdaptor.getPrincipal();
+      Object credential = securityAdaptor.getCredential();
 
+      Subject subject = new Subject();
+      boolean authorized = am.isValid(principal, credential, subject);
+
+      if (authorized == false)
+      {
+         throw new WSException("Authentication failed.");
+      }
+
+      pushSubjectContext(principal, credential, subject);
       // Step 2 - If unchecked all ok so return.
+      if (authorize.isUnchecked())
+      {
+         return;
+      }
 
       // Step 3 - If roles specified check user in role. 
-
+      Set<Principal> expectedRoles = expectedRoles();
+      System.out.println(subject.getPrincipals());
+      if (rm.doesUserHaveRole(principal, expectedRoles) == false)
+      {
+         throw new WSException("User does not have required roles");
+      }
    }
+
+   private Set<Principal> expectedRoles()
+   {
+      List<Role> roles = authorize.getRoles();
+      int rolesCount = (roles != null) ? roles.size() : 0;
+      log.info(rolesCount);
+      Set<Principal> expectedRoles = new HashSet<Principal>(rolesCount);
+
+      if (roles != null)
+      {
+         for (Role current : roles)
+         {
+            expectedRoles.add(new SimplePrincipal(current.getName()));
+         }
+      }
+
+      return expectedRoles;
+   }
+   
+   static SecurityContext getSecurityContext()
+   { 
+      return (SecurityContext)AccessController.doPrivileged(new PrivilegedAction(){
+         public Object run()
+         {
+            return SecurityContextAssociation.getSecurityContext();
+         }
+      });
+   }
+   
+   static void pushSubjectContext(final Principal p, final Object cred, final Subject s)
+   {
+      AccessController.doPrivileged(new PrivilegedAction(){
+
+         public Object run()
+         {
+            SecurityContext sc = getSecurityContext(); 
+            if(sc == null)
+               throw new IllegalStateException("Security Context is null");
+            sc.getUtil().createSubjectInfo(p, cred, s); 
+            return null;
+         }}
+      );
+   } 
 
 }
