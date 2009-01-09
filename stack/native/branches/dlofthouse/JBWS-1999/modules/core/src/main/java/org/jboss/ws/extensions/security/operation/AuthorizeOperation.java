@@ -32,8 +32,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.Subject;
-import javax.xml.soap.SOAPException;
-import javax.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
 import org.jboss.security.AuthenticationManager;
@@ -42,6 +40,8 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.ws.WSException;
+import org.jboss.ws.extensions.security.exception.FailedAuthenticationException;
+import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.jboss.ws.metadata.wsse.Authorize;
 import org.jboss.ws.metadata.wsse.Role;
 import org.jboss.wsf.spi.SPIProvider;
@@ -89,36 +89,56 @@ public class AuthorizeOperation
       secAdapterfactory = spiProvider.getSPI(SecurityAdaptorFactory.class);
    }
 
-   public void process()
+   public void process() throws WSSecurityException
    {
-      log.trace("About to check authorization, using security domain '" + am.getSecurityDomain() + "'");
+      boolean TRACE = log.isTraceEnabled();
+
+      if (TRACE)
+         log.trace("About to check authorization, using security domain '" + am.getSecurityDomain() + "'");
+
       // Step 1 - Authenticate using currently associated principals.
       SecurityAdaptor securityAdaptor = secAdapterfactory.newSecurityAdapter();
       Principal principal = securityAdaptor.getPrincipal();
       Object credential = securityAdaptor.getCredential();
 
       Subject subject = new Subject();
-      boolean authorized = am.isValid(principal, credential, subject);
 
-      if (authorized == false)
+      if (am.isValid(principal, credential, subject) == false)
       {
-         throw new WSException("Authentication failed.");
+         String msg = "Authentication failed, principal=" + principal;
+         log.error(msg);
+         SecurityException e = new SecurityException(msg);
+         throw new FailedAuthenticationException(e);
       }
-
       pushSubjectContext(principal, credential, subject);
+      if (TRACE)
+         log.trace("Authenticated, principal=" + principal);
+
       // Step 2 - If unchecked all ok so return.
       if (authorize.isUnchecked())
       {
+         if (TRACE)
+            log.trace("authorize.isUnchecked()==true skipping roles check.");
+
          return;
       }
 
       // Step 3 - If roles specified check user in role. 
       Set<Principal> expectedRoles = expectedRoles();
-      System.out.println(subject.getPrincipals());
+      if (TRACE)
+         log.trace("expectedRoles=" + expectedRoles);
+
       if (rm.doesUserHaveRole(principal, expectedRoles) == false)
       {
-         throw new WSException("User does not have required roles");
+         Set<Principal> userRoles = rm.getUserRoles(principal);
+         String msg = "Insufficient method permissions, principal=" + principal + ", requiredRoles=" + expectedRoles + ", principalRoles=" + userRoles;
+         log.error(msg);
+         SecurityException e = new SecurityException(msg);
+         throw new FailedAuthenticationException(e);
       }
+
+      if (TRACE)
+         log.trace("Roles check complete, principal=" + principal + ", requiredRoles=" + expectedRoles);
    }
 
    private Set<Principal> expectedRoles()
@@ -138,30 +158,30 @@ public class AuthorizeOperation
 
       return expectedRoles;
    }
-   
-   static SecurityContext getSecurityContext()
-   { 
-      return (SecurityContext)AccessController.doPrivileged(new PrivilegedAction(){
+
+   private static SecurityContext getSecurityContext()
+   {
+      return (SecurityContext)AccessController.doPrivileged(new PrivilegedAction() {
          public Object run()
          {
             return SecurityContextAssociation.getSecurityContext();
          }
       });
    }
-   
-   static void pushSubjectContext(final Principal p, final Object cred, final Subject s)
+
+   private static void pushSubjectContext(final Principal p, final Object cred, final Subject s)
    {
-      AccessController.doPrivileged(new PrivilegedAction(){
+      AccessController.doPrivileged(new PrivilegedAction() {
 
          public Object run()
          {
-            SecurityContext sc = getSecurityContext(); 
-            if(sc == null)
+            SecurityContext sc = getSecurityContext();
+            if (sc == null)
                throw new IllegalStateException("Security Context is null");
-            sc.getUtil().createSubjectInfo(p, cred, s); 
+            sc.getUtil().createSubjectInfo(p, cred, s);
             return null;
-         }}
-      );
-   } 
+         }
+      });
+   }
 
 }
