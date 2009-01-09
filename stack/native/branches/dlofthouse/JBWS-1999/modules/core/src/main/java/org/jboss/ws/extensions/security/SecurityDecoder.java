@@ -69,22 +69,19 @@ public class SecurityDecoder
    
    private TimestampVerification timestampVerification;
    
-   private Authenticate authenticate;
-   
-   private Authorize authorize;
+   private Authenticate authenticate;   
 
    private HashSet<String> signedIds = new HashSet<String>();
 
    private HashSet<String> encryptedIds = new HashSet<String>();
 
-   public SecurityDecoder(SecurityStore store, NonceFactory nonceFactory, TimestampVerification timestampVerification, Authenticate authenticate, Authorize authorize)
+   public SecurityDecoder(SecurityStore store, NonceFactory nonceFactory, TimestampVerification timestampVerification, Authenticate authenticate)
    {
       org.apache.xml.security.Init.init();
       this.store = store;
       this.nonceFactory = nonceFactory;
       this.timestampVerification = timestampVerification;
       this.authenticate = authenticate;
-      this.authorize = authorize;
    }
 
    /**
@@ -94,9 +91,9 @@ public class SecurityDecoder
     * @param SecurityStore the security store that contains key and trust information
     * @param now The timestamp to use as the current time when validating a message expiration
     */
-   public SecurityDecoder(SecurityStore store, Calendar now, NonceFactory nonceFactory, TimestampVerification timestampVerification, Authenticate authenticate, Authorize authorize)
+   public SecurityDecoder(SecurityStore store, Calendar now, NonceFactory nonceFactory, TimestampVerification timestampVerification, Authenticate authenticate)
    {
-      this(store, nonceFactory, timestampVerification, authenticate, authorize);
+      this(store, nonceFactory, timestampVerification, authenticate);
       this.now = now;
    }
 
@@ -160,13 +157,7 @@ public class SecurityDecoder
             if (ids != null)
                encryptedIds.addAll(ids);
          }
-      }
-      
-      if (authorize != null)
-      {
-         AuthorizeOperation authorizeOp = new AuthorizeOperation(authorize);
-         authorizeOp.process();
-      }
+      }      
       
    }
 

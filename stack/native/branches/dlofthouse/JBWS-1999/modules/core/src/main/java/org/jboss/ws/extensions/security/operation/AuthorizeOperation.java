@@ -145,7 +145,6 @@ public class AuthorizeOperation
    {
       List<Role> roles = authorize.getRoles();
       int rolesCount = (roles != null) ? roles.size() : 0;
-      log.info(rolesCount);
       Set<Principal> expectedRoles = new HashSet<Principal>(rolesCount);
 
       if (roles != null)
