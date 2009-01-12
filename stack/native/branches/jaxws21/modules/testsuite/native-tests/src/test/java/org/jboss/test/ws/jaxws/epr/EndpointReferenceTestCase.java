@@ -25,7 +25,6 @@ import java.net.URL;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
-import javax.xml.ws.Service21;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 import javax.xml.ws.wsaddressing.W3CEndpointReferenceBuilder;
 
@@ -75,7 +74,7 @@ public class EndpointReferenceTestCase extends JBossWSTest
       builder.referenceParameter(DOMUtils.parse("<fabrikam:ShoppingCart xmlns:fabrikam='http://example.com/fabrikam'>ABCDEFG</fabrikam:ShoppingCart>"));
       W3CEndpointReference epr = builder.build();
 
-      Service21 service = Service21.create(wsdlURL, serviceName);
+      Service service = Service.create(wsdlURL, serviceName);
       TestEndpoint port = service.getPort(epr, TestEndpoint.class);
       ((StubExt)port).setConfigName("Standard WSAddressing Client");
       String retStr = port.echo("hello");

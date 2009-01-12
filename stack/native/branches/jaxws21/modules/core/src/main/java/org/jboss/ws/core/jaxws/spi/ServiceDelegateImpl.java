@@ -49,7 +49,7 @@ import javax.xml.ws.addressing.AddressingProperties;
 import javax.xml.ws.addressing.JAXWSAConstants;
 import javax.xml.ws.addressing.ReferenceParameters;
 import javax.xml.ws.handler.HandlerResolver;
-import javax.xml.ws.spi.ServiceDelegate21;
+import javax.xml.ws.spi.ServiceDelegate;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
 import org.jboss.logging.Logger;
@@ -89,7 +89,7 @@ import org.w3c.dom.Element;
  * @author Thomas.Diesler@jboss.com
  * @since 03-May-2006
  */
-public class ServiceDelegateImpl extends ServiceDelegate21
+public class ServiceDelegateImpl extends ServiceDelegate
 {
    // provide logging
    private final Logger log = Logger.getLogger(ServiceDelegateImpl.class);

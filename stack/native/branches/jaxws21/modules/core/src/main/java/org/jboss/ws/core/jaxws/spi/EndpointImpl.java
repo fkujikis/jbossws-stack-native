@@ -34,7 +34,7 @@ import org.w3c.dom.Element;
 import javax.xml.transform.Source;
 import javax.xml.ws.Binding;
 import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Endpoint21;
+import javax.xml.ws.Endpoint;
 import javax.xml.ws.EndpointReference;
 import javax.xml.ws.WebServicePermission;
 import java.net.URI;
@@ -51,7 +51,7 @@ import java.util.concurrent.Executor;
  * @author Thomas.Diesler@jboss.com
  * @since 07-Jul-2006
  */
-public class EndpointImpl extends Endpoint21
+public class EndpointImpl extends Endpoint
 {
    // provide logging
    private final Logger log = Logger.getLogger(EndpointImpl.class);

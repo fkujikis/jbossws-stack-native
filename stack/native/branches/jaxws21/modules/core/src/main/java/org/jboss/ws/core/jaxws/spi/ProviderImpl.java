@@ -32,9 +32,8 @@ import javax.xml.ws.EndpointReference;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceFeature;
 import javax.xml.ws.soap.SOAPBinding;
-import javax.xml.ws.spi.Provider21;
+import javax.xml.ws.spi.Provider;
 import javax.xml.ws.spi.ServiceDelegate;
-import javax.xml.ws.spi.ServiceDelegate21;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 import javax.xml.ws.wsaddressing.W3CEndpointReferenceBuilder;
 
@@ -48,7 +47,7 @@ import org.w3c.dom.Element;
  * @author Thomas.Diesler@jboss.com
  * @since 03-May-2006
  */
-public class ProviderImpl extends Provider21
+public class ProviderImpl extends Provider
 {
    // 6.2 Conformance (Concrete javax.xml.ws.spi.Provider required): An implementation MUST provide
    // a concrete class that extends javax.xml.ws.spi.Provider. Such a class MUST have a public constructor
@@ -110,13 +109,6 @@ public class ProviderImpl extends Provider21
    }
 
    @Override
-   public <T extends EndpointReference> T createEndpointReference(Class<T> clazz, QName serviceName, QName portName, Source wsdlDocumentLocation,
-         Element... referenceParameters)
-   {
-      throw new NotImplementedException();
-   }
-
-   @Override
    public W3CEndpointReference createW3CEndpointReference(String address, QName serviceName, QName portName, List<Element> metadata, String wsdlDocumentLocation,
          List<Element> referenceParameters)
    {
@@ -140,7 +132,7 @@ public class ProviderImpl extends Provider21
          wsdlLocation = w3c.getWsdlLocation();
          serviceName = w3c.getServiceName();
       }
-      ServiceDelegate21 delegate = (ServiceDelegate21)createServiceDelegate(wsdlLocation, serviceName, Service.class);
+      ServiceDelegate delegate = createServiceDelegate(wsdlLocation, serviceName, Service.class);
       return delegate.getPort(epr, sei, features);
    }
 
