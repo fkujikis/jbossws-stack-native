@@ -25,13 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.ws.Binding;
-import javax.xml.ws.EndpointReference;
-import javax.xml.ws.WebServiceException;
 import javax.xml.ws.BindingProvider;
+import javax.xml.ws.WebServiceException;
 import javax.xml.ws.Service.Mode;
 import javax.xml.ws.http.HTTPBinding;
 
-import org.jboss.util.NotImplementedException;
 import org.jboss.ws.core.CommonBindingProvider;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
@@ -93,15 +91,5 @@ public class BindingProviderImpl extends CommonBindingProvider implements Bindin
    public Binding getBinding()
    {
       return (Binding)binding;
-   }
-
-   public EndpointReference getEndpointReference()
-   {
-      throw new NotImplementedException();
-   }
-
-   public <T extends EndpointReference> T getEndpointReference(Class<T> clazz)
-   {
-      throw new NotImplementedException();
    }
 }

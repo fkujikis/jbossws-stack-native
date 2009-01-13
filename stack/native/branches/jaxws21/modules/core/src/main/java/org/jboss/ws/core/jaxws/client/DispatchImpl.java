@@ -534,12 +534,12 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
 
    public EndpointReference getEndpointReference()
    {
-      throw new NotImplementedException();
+      return bindingProvider.getEndpointReference();
    }
 
    public <T extends EndpointReference> T getEndpointReference(Class<T> clazz)
    {
-      throw new NotImplementedException();
+      return bindingProvider.getEndpointReference(clazz);
    }
 
    public String getConfigFile()
