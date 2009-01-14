@@ -25,16 +25,25 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 
+import javax.xml.ws.soap.Addressing;
+import javax.xml.ws.soap.AddressingFeature;
+
 import org.jboss.ws.WSException;
 import org.jboss.ws.annotation.FastInfoset;
 import org.jboss.ws.annotation.JsonEncoding;
 import org.jboss.ws.annotation.SchemaValidation;
+import org.jboss.ws.extensions.addressing.jaxws.WSAddressingClientHandler;
+import org.jboss.ws.extensions.addressing.jaxws.WSAddressingServerHandler;
 import org.jboss.ws.feature.FastInfosetFeature;
 import org.jboss.ws.feature.JsonEncodingFeature;
 import org.jboss.ws.feature.SchemaValidationFeature;
+import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
+import org.jboss.ws.metadata.umdm.EndpointMetaData;
+import org.jboss.ws.metadata.umdm.HandlerMetaDataJAXWS;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 import org.xml.sax.ErrorHandler;
 
 /**
@@ -49,7 +58,13 @@ public class EndpointFeatureProcessor
    {
       for (Annotation an : sepClass.getAnnotations())
       {
-         if (an.annotationType() == SchemaValidation.class)
+         if (an.annotationType() == Addressing.class)
+         {
+            Addressing anFeature = sepClass.getAnnotation(Addressing.class);
+            AddressingFeature feature = new AddressingFeature(anFeature.enabled(), anFeature.required());
+            sepMetaData.addFeature(feature);
+         }
+         else if (an.annotationType() == SchemaValidation.class)
          {
             processSchemaValidation(dep, sepMetaData, sepClass);
          }
@@ -65,6 +80,25 @@ public class EndpointFeatureProcessor
             JsonEncodingFeature feature = new JsonEncodingFeature(anFeature.enabled());
             sepMetaData.addFeature(feature);
          }
+      }
+   }
+   
+   protected void setupEndpointFeatures(ServerEndpointMetaData sepMetaData)
+   {
+      setupAddressingFeature(sepMetaData);
+   }
+   
+   private static void setupAddressingFeature(ServerEndpointMetaData sepMetaData)
+   {
+      AddressingFeature addressingFeature = sepMetaData.getFeature(AddressingFeature.class);
+      if (addressingFeature != null && addressingFeature.isEnabled())
+      {
+         HandlerMetaDataJAXWS hmd = new HandlerMetaDataJAXWS(HandlerType.POST);
+         hmd.setEndpointMetaData(sepMetaData);
+         hmd.setHandlerClassName(WSAddressingServerHandler.class.getName());
+         hmd.setHandlerName("WSAddressing Handler");
+         hmd.setProtocolBindings("##SOAP11_HTTP ##SOAP12_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP_MTOM");
+         sepMetaData.addHandler(hmd);
       }
    }
 

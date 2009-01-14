@@ -54,6 +54,7 @@ import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.core.StubExt;
+import org.jboss.ws.core.jaxws.client.ClientFeatureProcessor;
 import org.jboss.ws.core.jaxws.client.ClientImpl;
 import org.jboss.ws.core.jaxws.client.ClientProxy;
 import org.jboss.ws.core.jaxws.client.DispatchImpl;
@@ -559,7 +560,7 @@ public class ServiceDelegateImpl extends ServiceDelegate
          EndpointMetaData epMetaData = ((StubExt)stub).getEndpointMetaData();
          for (WebServiceFeature feature : features)
          {
-            epMetaData.addFeature(feature);
+            ClientFeatureProcessor.processFeature(feature, epMetaData, stub);
          }
       }
    }
