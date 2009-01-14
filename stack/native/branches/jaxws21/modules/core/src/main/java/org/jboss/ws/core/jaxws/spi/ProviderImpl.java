@@ -30,6 +30,7 @@ import javax.xml.transform.Source;
 import javax.xml.ws.Endpoint;
 import javax.xml.ws.EndpointReference;
 import javax.xml.ws.Service;
+import javax.xml.ws.WebServiceException;
 import javax.xml.ws.WebServiceFeature;
 import javax.xml.ws.soap.SOAPBinding;
 import javax.xml.ws.spi.Provider;
@@ -37,7 +38,6 @@ import javax.xml.ws.spi.ServiceDelegate;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 import javax.xml.ws.wsaddressing.W3CEndpointReferenceBuilder;
 
-import org.jboss.util.NotImplementedException;
 import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Element;
 
@@ -139,6 +139,16 @@ public class ProviderImpl extends Provider
    @Override
    public EndpointReference readEndpointReference(Source eprInfoset)
    {
-      throw new NotImplementedException();
+      if (eprInfoset == null)
+         throw new NullPointerException("Provided eprInfoset cannot be null");
+      try
+      {
+         //we currently support W3CEndpointReference only
+         return new W3CEndpointReference(eprInfoset);
+      }
+      catch (Exception e)
+      {
+         throw new WebServiceException(e);
+      }
    }
 }
