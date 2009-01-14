@@ -462,9 +462,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    @Override
    public <T> Dispatch<T> createDispatch(QName portName, Class<T> type, Mode mode, WebServiceFeature... features)
    {
-      if (features != null)
-         log.warn("WebServiceFeature not implemented");
-
       Dispatch<T> dispatch = createDispatch(portName, type, mode);
       initWebserviceFeatures(dispatch, features);
       return dispatch;
@@ -473,9 +470,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    @Override
    public <T> Dispatch<T> createDispatch(EndpointReference epr, Class<T> type, Mode mode, WebServiceFeature... features)
    {
-      if (features != null)
-         log.warn("WebServiceFeature not implemented");
-
       QName portName = null;
       if (epr instanceof W3CEndpointReference)
       {
@@ -492,9 +486,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    @Override
    public Dispatch<Object> createDispatch(QName portName, JAXBContext context, Mode mode, WebServiceFeature... features)
    {
-      if (features != null)
-         log.warn("WebServiceFeature not implemented");
-
       Dispatch<Object> dispatch = createDispatch(portName, context, mode);
       initWebserviceFeatures(dispatch, features);
       return dispatch;
@@ -503,9 +494,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    @Override
    public Dispatch<Object> createDispatch(EndpointReference epr, JAXBContext context, Mode mode, WebServiceFeature... features)
    {
-      if (features != null)
-         log.warn("WebServiceFeature not implemented");
-
       QName portName = null;
       if (epr instanceof W3CEndpointReference)
       {
@@ -522,9 +510,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    @Override
    public <T> T getPort(QName portName, Class<T> sei, WebServiceFeature... features)
    {
-      if (features != null)
-         log.warn("WebServiceFeature not implemented");
-
       T port = getPort(portName, sei);
       initWebserviceFeatures(port, features);
       return port;
@@ -533,9 +518,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    @Override
    public <T> T getPort(EndpointReference epr, Class<T> sei, WebServiceFeature... features)
    {
-      if (features != null)
-         log.warn("WebServiceFeature not implemented");
-
       T port = getPort(sei);
       initAddressingProperties((BindingProvider)port, epr);
       initWebserviceFeatures(port, features);
@@ -545,9 +527,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    @Override
    public <T> T getPort(Class<T> sei, WebServiceFeature... features)
    {
-      if (features != null)
-         log.warn("WebServiceFeature not implemented");
-
       T port = getPort(sei);
       initWebserviceFeatures(port, features);
       return port;
