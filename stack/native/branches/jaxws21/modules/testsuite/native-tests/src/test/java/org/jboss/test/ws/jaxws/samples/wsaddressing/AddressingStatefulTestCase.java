@@ -76,7 +76,6 @@ public class AddressingStatefulTestCase extends JBossWSTest
          bindingProvider = (BindingProvider)port2;
          List<Handler> customHandlerChain2 = new ArrayList<Handler>();
          customHandlerChain2.add(new ClientHandler());
-//         customHandlerChain2.add(new WSAddressingClientHandler());
          bindingProvider.getBinding().setHandlerChain(customHandlerChain2);
 
       }
