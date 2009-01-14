@@ -27,6 +27,8 @@ import javax.xml.ws.BindingProvider;
 import javax.xml.ws.WebServiceFeature;
 import javax.xml.ws.handler.Handler;
 import javax.xml.ws.soap.AddressingFeature;
+import javax.xml.ws.soap.MTOMFeature;
+import javax.xml.ws.soap.SOAPBinding;
 
 import org.jboss.ws.core.jaxws.binding.BindingExt;
 import org.jboss.ws.extensions.addressing.jaxws.WSAddressingClientHandler;
@@ -45,11 +47,12 @@ public class ClientFeatureProcessor
    public static <T> void processFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
    {
       epMetaData.addFeature(feature);
-      processWSAddressingFeature(feature, epMetaData, stub);
+      processAddressingFeature(feature, epMetaData, stub);
+      processMTOMFeature(feature, epMetaData, stub);
    }
    
    @SuppressWarnings("unchecked")
-   private static <T> void processWSAddressingFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
+   private static <T> void processAddressingFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
    {
       if (feature instanceof AddressingFeature && feature.isEnabled())
       {
@@ -57,6 +60,15 @@ public class ClientFeatureProcessor
          List<Handler> handlers = bindingExt.getHandlerChain(HandlerType.POST);
          handlers.add(new WSAddressingClientHandler());
          bindingExt.setHandlerChain(handlers, HandlerType.POST);
+      }
+   }
+   
+   private static <T> void processMTOMFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
+   {
+      if (feature instanceof MTOMFeature)
+      {
+         SOAPBinding binding = (SOAPBinding)((BindingProvider)stub).getBinding();
+         binding.setMTOMEnabled(feature.isEnabled());
       }
    }
 

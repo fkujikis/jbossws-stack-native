@@ -27,7 +27,11 @@ import java.net.URL;
 
 import javax.xml.ws.soap.Addressing;
 import javax.xml.ws.soap.AddressingFeature;
+import javax.xml.ws.soap.MTOM;
+import javax.xml.ws.soap.MTOMFeature;
+import javax.xml.ws.soap.SOAPBinding;
 
+import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
 import org.jboss.ws.annotation.FastInfoset;
 import org.jboss.ws.annotation.JsonEncoding;
@@ -51,6 +55,8 @@ import org.xml.sax.ErrorHandler;
  */
 public class EndpointFeatureProcessor
 {
+   private static final Logger log = Logger.getLogger(EndpointFeatureProcessor.class);
+   
    protected void processEndpointFeatures(Deployment dep, ServerEndpointMetaData sepMetaData, Class<?> sepClass)
    {
       for (Annotation an : sepClass.getAnnotations())
@@ -59,6 +65,12 @@ public class EndpointFeatureProcessor
          {
             Addressing anFeature = sepClass.getAnnotation(Addressing.class);
             AddressingFeature feature = new AddressingFeature(anFeature.enabled(), anFeature.required());
+            sepMetaData.addFeature(feature);
+         }
+         else if (an.annotationType() == MTOM.class)
+         {
+            MTOM anFeature = sepClass.getAnnotation(MTOM.class);
+            MTOMFeature feature = new MTOMFeature(anFeature.enabled(), anFeature.threshold());
             sepMetaData.addFeature(feature);
          }
          else if (an.annotationType() == SchemaValidation.class)
@@ -83,6 +95,7 @@ public class EndpointFeatureProcessor
    protected void setupEndpointFeatures(ServerEndpointMetaData sepMetaData)
    {
       setupAddressingFeature(sepMetaData);
+      setupMTOMFeature(sepMetaData);
    }
    
    private static void setupAddressingFeature(ServerEndpointMetaData sepMetaData)
@@ -90,12 +103,32 @@ public class EndpointFeatureProcessor
       AddressingFeature addressingFeature = sepMetaData.getFeature(AddressingFeature.class);
       if (addressingFeature != null && addressingFeature.isEnabled())
       {
+         log.debug("AddressingFeature found, installing WS-Addressing post-handler");
          HandlerMetaDataJAXWS hmd = new HandlerMetaDataJAXWS(HandlerType.POST);
          hmd.setEndpointMetaData(sepMetaData);
          hmd.setHandlerClassName(WSAddressingServerHandler.class.getName());
          hmd.setHandlerName("WSAddressing Handler");
          hmd.setProtocolBindings("##SOAP11_HTTP ##SOAP12_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP_MTOM");
          sepMetaData.addHandler(hmd);
+      }
+   }
+   
+   private static void setupMTOMFeature(ServerEndpointMetaData sepMetaData)
+   {
+      MTOMFeature mtomFeature = sepMetaData.getFeature(MTOMFeature.class);
+      if (mtomFeature != null && mtomFeature.isEnabled())
+      {
+         String bindingId = sepMetaData.getBindingId();
+         if (SOAPBinding.SOAP11HTTP_BINDING.equals(bindingId))
+         {
+            log.debug("MTOMFeature found, setting binding to " + SOAPBinding.SOAP11HTTP_MTOM_BINDING);
+            sepMetaData.setBindingId(SOAPBinding.SOAP11HTTP_MTOM_BINDING);
+         }
+         else if (SOAPBinding.SOAP12HTTP_BINDING.equals(bindingId))
+         {
+            log.debug("MTOMFeature found, setting binding to " + SOAPBinding.SOAP12HTTP_MTOM_BINDING);
+            sepMetaData.setBindingId(SOAPBinding.SOAP12HTTP_MTOM_BINDING);
+         }
       }
    }
 
