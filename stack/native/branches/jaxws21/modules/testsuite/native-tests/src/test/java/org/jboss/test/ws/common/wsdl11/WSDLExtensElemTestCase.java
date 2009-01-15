@@ -60,7 +60,7 @@ public class WSDLExtensElemTestCase extends JBossWSTest
       assertNotNull(extPortList);
       assertEquals(extPortList.size(),1);
       assertPolicyRef(extPortList.get(0),"uselessPortPolicy");
-      List<WSDLExtensibilityElement> portNotUnderstoodList = wsdlEndpoint.getNotUnderstoodExtElement();
+      List<WSDLExtensibilityElement> portNotUnderstoodList = wsdlEndpoint.getNotUnderstoodExtElements();
       assertNotNull(portNotUnderstoodList);
       assertEquals(0, portNotUnderstoodList.size());
       
@@ -71,7 +71,7 @@ public class WSDLExtensElemTestCase extends JBossWSTest
       assertEquals(extBinding.size(),2);
       assertPolicyRef(extBinding.get(0),"RmPolicy");
       assertPolicyRef(extBinding.get(1),"X509EndpointPolicy");
-      List<WSDLExtensibilityElement> bindingNotUnderstoodList = wsdlBinding.getNotUnderstoodExtElement();
+      List<WSDLExtensibilityElement> bindingNotUnderstoodList = wsdlBinding.getNotUnderstoodExtElements();
       assertNotNull(bindingNotUnderstoodList);
       assertEquals(0, bindingNotUnderstoodList.size());
    }
@@ -91,7 +91,7 @@ public class WSDLExtensElemTestCase extends JBossWSTest
       assertNotNull(extPortList);
       assertEquals(extPortList.size(),1);
       assertPolicyRef(extPortList.get(0),"uselessPortPolicy");
-      List<WSDLExtensibilityElement> portNotUnderstoodList = wsdlEndpoint.getNotUnderstoodExtElement();
+      List<WSDLExtensibilityElement> portNotUnderstoodList = wsdlEndpoint.getNotUnderstoodExtElements();
       assertNotNull(portNotUnderstoodList);
       assertEquals(1, portNotUnderstoodList.size());
       assertUnknownExtElem(portNotUnderstoodList.get(0), "foo1", "http://foo.org/foo1", "bar", true);
@@ -103,7 +103,7 @@ public class WSDLExtensElemTestCase extends JBossWSTest
       assertEquals(extBinding.size(),2);
       assertPolicyRef(extBinding.get(0),"RmPolicy");
       assertPolicyRef(extBinding.get(1),"X509EndpointPolicy");
-      List<WSDLExtensibilityElement> bindingNotUnderstoodList = wsdlBinding.getNotUnderstoodExtElement();
+      List<WSDLExtensibilityElement> bindingNotUnderstoodList = wsdlBinding.getNotUnderstoodExtElements();
       assertNotNull(bindingNotUnderstoodList);
       assertEquals(2, bindingNotUnderstoodList.size());
       assertUnknownExtElem(bindingNotUnderstoodList.get(0), "foo1", "http://foo.org/foo1", "bar", false);
@@ -124,5 +124,6 @@ public class WSDLExtensElemTestCase extends JBossWSTest
       QName qName = new QName(el.getNamespaceURI(),el.getLocalName(),el.getPrefix());
       assertEquals(qName, new QName(namespaceURI, localName, prefix));
       assertEquals(required, "true".equals(el.getAttributeNS(Constants.NS_WSDL11, "required")));
+      assertEquals(required, extEl.isRequired());
    }
 }

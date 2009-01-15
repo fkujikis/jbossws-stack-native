@@ -24,7 +24,11 @@ package org.jboss.ws.metadata.builder.jaxws;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
+import java.util.List;
 
+import javax.xml.ws.RespectBinding;
+import javax.xml.ws.RespectBindingFeature;
+import javax.xml.ws.WebServiceException;
 import javax.xml.ws.soap.Addressing;
 import javax.xml.ws.soap.AddressingFeature;
 import javax.xml.ws.soap.MTOM;
@@ -42,6 +46,15 @@ import org.jboss.ws.feature.JsonEncodingFeature;
 import org.jboss.ws.feature.SchemaValidationFeature;
 import org.jboss.ws.metadata.umdm.HandlerMetaDataJAXWS;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
+import org.jboss.ws.metadata.umdm.ServiceMetaData;
+import org.jboss.ws.metadata.wsdl.Extendable;
+import org.jboss.ws.metadata.wsdl.WSDLBinding;
+import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
+import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
+import org.jboss.ws.metadata.wsdl.WSDLExtensibilityElement;
+import org.jboss.ws.metadata.wsdl.WSDLService;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
@@ -89,6 +102,12 @@ public class EndpointFeatureProcessor
             JsonEncodingFeature feature = new JsonEncodingFeature(anFeature.enabled());
             sepMetaData.addFeature(feature);
          }
+         else if (an.annotationType() == RespectBinding.class)
+         {
+            RespectBinding anFeature = sepClass.getAnnotation(RespectBinding.class);
+            RespectBindingFeature feature = new RespectBindingFeature(anFeature.enabled());
+            sepMetaData.addFeature(feature);
+         }
       }
    }
    
@@ -96,6 +115,7 @@ public class EndpointFeatureProcessor
    {
       setupAddressingFeature(sepMetaData);
       setupMTOMFeature(sepMetaData);
+      setupRespectBindingFeature(sepMetaData); //this need to be processed last
    }
    
    private static void setupAddressingFeature(ServerEndpointMetaData sepMetaData)
@@ -128,6 +148,47 @@ public class EndpointFeatureProcessor
          {
             log.debug("MTOMFeature found, setting binding to " + SOAPBinding.SOAP12HTTP_MTOM_BINDING);
             sepMetaData.setBindingId(SOAPBinding.SOAP12HTTP_MTOM_BINDING);
+         }
+      }
+   }
+   
+   private static void setupRespectBindingFeature(ServerEndpointMetaData sepMetaData)
+   {
+      RespectBindingFeature respectBindingFeature = sepMetaData.getFeature(RespectBindingFeature.class);
+      if (respectBindingFeature != null && respectBindingFeature.isEnabled())
+      {
+         log.debug("RespectBindingFeature found, looking for required not understood extensibility elements...");
+         ServiceMetaData serviceMetaData = sepMetaData.getServiceMetaData();
+         WSDLDefinitions wsdlDefinitions = serviceMetaData.getWsdlDefinitions();
+         
+         WSDLService wsdlService = wsdlDefinitions.getService(serviceMetaData.getServiceName());
+         if (wsdlService != null)
+         {
+            WSDLEndpoint wsdlEndpoint = wsdlService.getEndpoint(sepMetaData.getPortName());
+            if (wsdlEndpoint != null)
+            {
+               checkNotUnderstoodExtElements(wsdlEndpoint, sepMetaData);
+               WSDLBinding wsdlBinding = wsdlDefinitions.getBinding(wsdlEndpoint.getBinding());
+               checkNotUnderstoodExtElements(wsdlBinding, sepMetaData);
+            }
+            else
+            {
+               log.warn("Cannot find port " + sepMetaData.getPortName());
+            }
+         }
+      }
+   }
+   
+   private static void checkNotUnderstoodExtElements(Extendable extendable, ServerEndpointMetaData sepMetaData)
+   {
+      List<WSDLExtensibilityElement> notUnderstoodList = extendable.getNotUnderstoodExtElements();
+      for (WSDLExtensibilityElement el : notUnderstoodList)
+      {
+         boolean disabledByFeature = false; //TODO
+         if (el.isRequired() && !disabledByFeature)
+         {
+            String s = DOMWriter.printNode(el.getElement(), true);
+            throw new WebServiceException("RespectBindingFeature enabled and a required not understood element was found: " + s);
          }
       }
    }
