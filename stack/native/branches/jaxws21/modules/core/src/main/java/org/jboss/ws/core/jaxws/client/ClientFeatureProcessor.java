@@ -116,7 +116,7 @@ public class ClientFeatureProcessor
       List<WSDLExtensibilityElement> notUnderstoodList = extendable.getNotUnderstoodExtElements();
       for (WSDLExtensibilityElement el : notUnderstoodList)
       {
-         boolean disabledByFeature = false; //TODO
+         boolean disabledByFeature = false; //TODO [JBWS-2459]
          if (el.isRequired() && !disabledByFeature)
          {
             String s = DOMWriter.printNode(el.getElement(), true);
