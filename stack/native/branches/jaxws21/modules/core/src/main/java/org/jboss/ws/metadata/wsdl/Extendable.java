@@ -44,6 +44,7 @@ public abstract class Extendable implements Serializable
    private Map features = new LinkedHashMap();
    private Map properties = new LinkedHashMap();
    private Map<String,List<WSDLExtensibilityElement>> extElements = new LinkedHashMap<String,List<WSDLExtensibilityElement>>();
+   private List<WSDLExtensibilityElement> notUnderstoodExtElement = new LinkedList<WSDLExtensibilityElement>();
 
    public WSDLFeature[] getFeatures()
    {
@@ -112,5 +113,20 @@ public abstract class Extendable implements Serializable
          list.addAll(extElements.get(k));
       }
       return list;
+   }
+
+   public List<WSDLExtensibilityElement> getNotUnderstoodExtElement()
+   {
+      return notUnderstoodExtElement;
+   }
+
+   public void setNotUnderstoodExtElement(List<WSDLExtensibilityElement> notUnderstoodExtElement)
+   {
+      this.notUnderstoodExtElement = notUnderstoodExtElement;
+   }
+   
+   public void addNotUnderstoodExtElement(WSDLExtensibilityElement element)
+   {
+      notUnderstoodExtElement.add(element);
    }
 }
