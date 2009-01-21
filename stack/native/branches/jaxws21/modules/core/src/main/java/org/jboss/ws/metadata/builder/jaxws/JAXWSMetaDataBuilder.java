@@ -45,6 +45,7 @@ import javax.jws.soap.SOAPMessageHandlers;
 import javax.jws.soap.SOAPBinding.ParameterStyle;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
 import javax.xml.ws.BindingType;
@@ -448,21 +449,16 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       return HolderUtils.isHolderType(javaType) ? ParameterMode.INOUT : ParameterMode.IN;
    }
 
-   private WebParam getWebParamAnnotation(Method method, int pos)
+   @SuppressWarnings("unchecked")
+   private <T extends Annotation> T getAnnotation(Class<T> annotation, Method method, int pos)
    {
-      for (Annotation annotation : method.getParameterAnnotations()[pos])
-         if (annotation instanceof WebParam)
-            return (WebParam)annotation;
-
-      return null;
-   }
-   
-   private XmlList getXmlListAnnotation(Method method, int pos)
-   {
-      for (Annotation annotation : method.getParameterAnnotations()[pos])
-         if (annotation instanceof XmlList)
-            return (XmlList)annotation;
-
+      for (Annotation an : method.getParameterAnnotations()[pos])
+      {
+         if (annotation.isAssignableFrom(an.annotationType()))
+         {
+            return (T)an;
+         }
+      }
       return null;
    }
 
@@ -643,7 +639,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
          Class<?> javaType = parameterTypes[i];
          Type genericType = genericTypes[i];
          String javaTypeName = javaType.getName();
-         WebParam anWebParam = getWebParamAnnotation(method, i);
+         WebParam anWebParam = getAnnotation(WebParam.class, method, i);
          boolean isHeader = anWebParam != null && anWebParam.header();
          boolean isWrapped = opMetaData.isDocumentWrapped() && !isHeader;
          ParameterMode mode = getParameterMode(anWebParam, javaType);
@@ -666,7 +662,13 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
 
             WrappedParameter wrappedParameter = new WrappedParameter(wrappedElementName, javaTypeName, variable, i);
             wrappedParameter.setTypeArguments(convertTypeArguments(javaType, genericType));
-            wrappedParameter.setXmlList(getXmlListAnnotation(method, i) != null);
+            wrappedParameter.setXmlList(getAnnotation(XmlList.class, method, i) != null);
+            XmlJavaTypeAdapter xmlJavaTypeAdapter = getAnnotation(XmlJavaTypeAdapter.class, method, i);
+            if (xmlJavaTypeAdapter != null)
+            {
+               //XmlJavaTypeAdapter.type() is for package only
+               wrappedParameter.setAdapter(xmlJavaTypeAdapter.value().getName());
+            }
 
             if (mode != ParameterMode.OUT)
                wrappedParameters.add(wrappedParameter);
@@ -735,6 +737,12 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
             WrappedParameter wrapped = new WrappedParameter(xmlName, returnTypeName, convertToVariable(xmlName.getLocalPart()), -1);
             wrapped.setTypeArguments(convertTypeArguments(returnType, genericReturnType));
             wrapped.setXmlList(method.getAnnotation(XmlList.class) != null);
+            XmlJavaTypeAdapter xmlJavaTypeAdapter = method.getAnnotation(XmlJavaTypeAdapter.class);
+            if (xmlJavaTypeAdapter != null)
+            {
+               //XmlJavaTypeAdapter.type() is for package only
+               wrapped.setAdapter(xmlJavaTypeAdapter.value().getName());
+            }
 
             // insert at the beginning just for prettiness
             wrappedOutputParameters.add(0, wrapped);

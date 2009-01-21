@@ -46,6 +46,7 @@ import javax.xml.bind.annotation.XmlMimeType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
@@ -123,8 +124,7 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
                   parameter.getName(), parameter.getVariable(),
                   parameter.getTypeArguments(),
                   new boolean[] {parameter.isSwaRef(), parameter.isXop()},
-                  false,
-                  parameter.isXmlList()
+                  false, parameter.isXmlList(), parameter.getAdapter()
             );
          }
          clazz.stopPruning(!prune);
@@ -161,7 +161,7 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
             addProperty(
                   clazz, prop.getReturnType().getName(),
                   new QName(prop.getName()), prop.getName(), null,
-                  new boolean[] {false, false}, prop.isTransientAnnotated(), false
+                  new boolean[] {false, false}, prop.isTransientAnnotated(), false, null
             );
 
          clazz.stopPruning(!prune);
@@ -218,7 +218,7 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
 
    private void addProperty(CtClass clazz, String typeName,
                             QName name, String variable, String[] typeArguments,
-                            boolean[] attachments, boolean xmlTransient, boolean xmlList)
+                            boolean[] attachments, boolean xmlTransient, boolean xmlList, String adapter)
          throws CannotCompileException, NotFoundException
    {
       ConstPool constPool = clazz.getClassFile().getConstPool();
@@ -267,6 +267,13 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
       if(xmlList)
       {
          annotation = JavassistUtils.createAnnotation(XmlList.class, constPool);
+         annotation.markField(field);
+      }
+      //@XmlJavaTypeAdapter
+      if (adapter != null)
+      {
+         annotation = JavassistUtils.createAnnotation(XmlJavaTypeAdapter.class, constPool);
+         annotation.addClassParameter("value", adapter);
          annotation.markField(field);
       }
       clazz.addField(field);
