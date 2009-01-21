@@ -31,6 +31,7 @@ import java.util.SortedMap;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
@@ -110,7 +111,7 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
          addClassAnnotations(clazz, parameterMD.getXmlName(), parameterMD.getXmlType(), null);
          for (WrappedParameter wrapped : wrappedParameters)
          {
-            addProperty(clazz, wrapped.getType(), wrapped.getName(), wrapped.getVariable(), wrapped.getTypeArguments(), false, loader);
+            addProperty(clazz, wrapped.getType(), wrapped.getName(), wrapped.getVariable(), wrapped.getTypeArguments(), false, wrapped.isXmlList(), loader);
          }
       }
       catch (Exception e)
@@ -135,7 +136,7 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
          for (String property : propertyOrder)
          {
             ExceptionProperty p = properties.get(property);
-            addProperty(clazz, p.getReturnType().getName(), new QName(property), property, null, p.isTransientAnnotated(), loader);
+            addProperty(clazz, p.getReturnType().getName(), new QName(property), property, null, p.isTransientAnnotated(), false, loader);
          }
       }
       catch (Exception e)
@@ -149,7 +150,7 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
       return (Boolean.TYPE == type || Boolean.class == type) ? "is" : "get";
    }
    
-   private void addProperty(JDefinedClass clazz, String typeName, QName name, String variable, String[] typeArguments, boolean xmlTransient, ClassLoader loader)
+   private void addProperty(JDefinedClass clazz, String typeName, QName name, String variable, String[] typeArguments, boolean xmlTransient, boolean xmlList, ClassLoader loader)
    throws Exception
    {
       // define variable
@@ -160,11 +161,11 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
       }
       else
       {
-         addProperty(clazz, javaType, name, variable, typeArguments, xmlTransient, codeModel);
+         addProperty(clazz, javaType, name, variable, typeArguments, xmlTransient, xmlList, codeModel);
       }
    }
 
-   private static void addProperty(JDefinedClass clazz, Class<?> javaType, QName name, String variable, String[] typeArguments, boolean xmlTransient, JCodeModel codeModel)
+   private static void addProperty(JDefinedClass clazz, Class<?> javaType, QName name, String variable, String[] typeArguments, boolean xmlTransient, boolean xmlList, JCodeModel codeModel)
    throws Exception
    {
       // be careful about reserved keywords when generating variable names
@@ -197,6 +198,11 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
       {
          //XmlTransient
          field.annotate(XmlTransient.class);
+      }
+      
+      if (xmlList)
+      {
+         field.annotate(XmlList.class);
       }
 
       // generate acessor get method for variable

@@ -43,6 +43,7 @@ public class WrappedParameter
    private Accessor accessor;
    private boolean swaRef;
    private boolean xop;
+   private boolean xmlList;
 
    public WrappedParameter(WrappedParameter wrapped)
    {
@@ -151,6 +152,16 @@ public class WrappedParameter
    public void setXOP(boolean xop)
    {
       this.xop = xop;
+   }
+
+   public boolean isXmlList()
+   {
+      return xmlList;
+   }
+
+   public void setXmlList(boolean xmlList)
+   {
+      this.xmlList = xmlList;
    }
 
    public String toString()

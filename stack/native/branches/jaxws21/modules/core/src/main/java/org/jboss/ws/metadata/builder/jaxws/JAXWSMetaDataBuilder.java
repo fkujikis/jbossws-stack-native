@@ -43,6 +43,7 @@ import javax.jws.WebResult;
 import javax.jws.soap.SOAPBinding;
 import javax.jws.soap.SOAPMessageHandlers;
 import javax.jws.soap.SOAPBinding.ParameterStyle;
+import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
@@ -455,6 +456,15 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
 
       return null;
    }
+   
+   private XmlList getXmlListAnnotation(Method method, int pos)
+   {
+      for (Annotation annotation : method.getParameterAnnotations()[pos])
+         if (annotation instanceof XmlList)
+            return (XmlList)annotation;
+
+      return null;
+   }
 
    private QName getWebParamName(OperationMetaData opMetaData, int index, WebParam webParam)
    {
@@ -656,6 +666,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
 
             WrappedParameter wrappedParameter = new WrappedParameter(wrappedElementName, javaTypeName, variable, i);
             wrappedParameter.setTypeArguments(convertTypeArguments(javaType, genericType));
+            wrappedParameter.setXmlList(getXmlListAnnotation(method, i) != null);
 
             if (mode != ParameterMode.OUT)
                wrappedParameters.add(wrappedParameter);
@@ -723,6 +734,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
          {
             WrappedParameter wrapped = new WrappedParameter(xmlName, returnTypeName, convertToVariable(xmlName.getLocalPart()), -1);
             wrapped.setTypeArguments(convertTypeArguments(returnType, genericReturnType));
+            wrapped.setXmlList(method.getAnnotation(XmlList.class) != null);
 
             // insert at the beginning just for prettiness
             wrappedOutputParameters.add(0, wrapped);

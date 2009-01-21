@@ -41,6 +41,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttachmentRef;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlMimeType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -122,7 +123,8 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
                   parameter.getName(), parameter.getVariable(),
                   parameter.getTypeArguments(),
                   new boolean[] {parameter.isSwaRef(), parameter.isXop()},
-                  false
+                  false,
+                  parameter.isXmlList()
             );
          }
          clazz.stopPruning(!prune);
@@ -159,7 +161,7 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
             addProperty(
                   clazz, prop.getReturnType().getName(),
                   new QName(prop.getName()), prop.getName(), null,
-                  new boolean[] {false, false}, prop.isTransientAnnotated()
+                  new boolean[] {false, false}, prop.isTransientAnnotated(), false
             );
 
          clazz.stopPruning(!prune);
@@ -216,7 +218,7 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
 
    private void addProperty(CtClass clazz, String typeName,
                             QName name, String variable, String[] typeArguments,
-                            boolean[] attachments, boolean xmlTransient)
+                            boolean[] attachments, boolean xmlTransient, boolean xmlList)
          throws CannotCompileException, NotFoundException
    {
       ConstPool constPool = clazz.getClassFile().getConstPool();
@@ -259,6 +261,12 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
       if(xmlTransient)
       {
          annotation = JavassistUtils.createAnnotation(XmlTransient.class, constPool);
+         annotation.markField(field);
+      }
+      //@XmlList
+      if(xmlList)
+      {
+         annotation = JavassistUtils.createAnnotation(XmlList.class, constPool);
          annotation.markField(field);
       }
       clazz.addField(field);
