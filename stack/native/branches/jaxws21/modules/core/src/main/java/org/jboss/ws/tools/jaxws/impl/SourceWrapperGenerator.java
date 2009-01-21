@@ -21,14 +21,21 @@
  */
 package org.jboss.ws.tools.jaxws.impl;
 
-import com.sun.codemodel.JAnnotationUse;
-import com.sun.codemodel.JAnnotationArrayMember;
-import com.sun.codemodel.JCodeModel;
-import com.sun.codemodel.JDefinedClass;
-import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JFieldVar;
-import com.sun.codemodel.JMethod;
-import com.sun.codemodel.JMod;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.SortedMap;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
+
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.jaxws.AbstractWrapperGenerator;
@@ -37,18 +44,16 @@ import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.WrappedParameter;
 import org.jboss.wsf.common.JavaUtils;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.namespace.QName;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.List;
-import java.util.SortedMap;
+
+import com.sun.codemodel.JAnnotationArrayMember;
+import com.sun.codemodel.JAnnotationUse;
+import com.sun.codemodel.JClass;
+import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JExpr;
+import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JMethod;
+import com.sun.codemodel.JMod;
 
 /**
  * Generates source for wrapper beans
@@ -105,7 +110,7 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
          addClassAnnotations(clazz, parameterMD.getXmlName(), parameterMD.getXmlType(), null);
          for (WrappedParameter wrapped : wrappedParameters)
          {
-            addProperty(clazz, wrapped.getType(), wrapped.getName(), wrapped.getVariable(), false, loader);
+            addProperty(clazz, wrapped.getType(), wrapped.getName(), wrapped.getVariable(), wrapped.getTypeArguments(), false, loader);
          }
       }
       catch (Exception e)
@@ -130,7 +135,7 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
          for (String property : propertyOrder)
          {
             ExceptionProperty p = properties.get(property);
-            addProperty(clazz, p.getReturnType().getName(), new QName(property), property, p.isTransientAnnotated(), loader);
+            addProperty(clazz, p.getReturnType().getName(), new QName(property), property, null, p.isTransientAnnotated(), loader);
          }
       }
       catch (Exception e)
@@ -143,15 +148,39 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
    {
       return (Boolean.TYPE == type || Boolean.class == type) ? "is" : "get";
    }
+   
+   private void addProperty(JDefinedClass clazz, String typeName, QName name, String variable, String[] typeArguments, boolean xmlTransient, ClassLoader loader)
+   throws Exception
+   {
+      // define variable
+      Class<?> javaType = JavaUtils.loadJavaType(typeName, loader);
+      if (JavaUtils.isPrimitive(javaType))
+      {
+         addPrimitiveProperty(clazz, javaType, name, variable, xmlTransient);
+      }
+      else
+      {
+         addProperty(clazz, javaType, name, variable, typeArguments, xmlTransient, codeModel);
+      }
+   }
 
-   private static void addProperty(JDefinedClass clazz, String typeName, QName name, String variable, boolean xmlTransient, ClassLoader loader)
-   throws ClassNotFoundException
+   private static void addProperty(JDefinedClass clazz, Class<?> javaType, QName name, String variable, String[] typeArguments, boolean xmlTransient, JCodeModel codeModel)
+   throws Exception
    {
       // be careful about reserved keywords when generating variable names
       String realVariableName = JavaUtils.isReservedKeyword(variable) ? "_" + variable : variable; 
       
-      // define variable
-      Class<?> type = JavaUtils.loadJavaType(typeName, loader);
+      //use narrow() for generics: http://forums.java.net/jive/thread.jspa?messageID=209333&#209333
+      JClass type = codeModel.ref(javaType);
+      if (typeArguments != null)
+      {
+         LinkedList<JClass> jclasses = new LinkedList<JClass>();
+         for (String tp : typeArguments)
+         {
+            jclasses.add(codeModel.ref(tp));
+         }
+         type = type.narrow(jclasses);
+      }
       JFieldVar field = clazz.field(JMod.PRIVATE, type, realVariableName);
       
       if (xmlTransient == false)
@@ -171,12 +200,44 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
       }
 
       // generate acessor get method for variable
-      JMethod method = clazz.method(JMod.PUBLIC, type, getterPrefix(type) + JavaUtils.capitalize(variable));
+      JMethod method = clazz.method(JMod.PUBLIC, type, getterPrefix(javaType) + JavaUtils.capitalize(variable));
       method.body()._return(JExpr._this().ref(realVariableName));
       
       // generate acessor set method for variable
       method = clazz.method(JMod.PUBLIC, void.class, "set" + JavaUtils.capitalize(variable));
       method.body().assign(JExpr._this().ref(realVariableName), method.param(type, realVariableName));
+   }
+   
+   private static void addPrimitiveProperty(JDefinedClass clazz, Class<?> javaType, QName name, String variable, boolean xmlTransient)
+   {
+      // be careful about reserved keywords when generating variable names
+      String realVariableName = JavaUtils.isReservedKeyword(variable) ? "_" + variable : variable; 
+      
+      JFieldVar field = clazz.field(JMod.PRIVATE, javaType, realVariableName);
+      
+      if (xmlTransient == false)
+      {
+         // define XmlElement annotation for variable
+         JAnnotationUse annotation = field.annotate(XmlElement.class);
+         annotation.param("name", name.getLocalPart());
+         if (name.getNamespaceURI() != null)
+         {
+            annotation.param("namespace", name.getNamespaceURI());
+         }
+      }
+      else
+      {
+         //XmlTransient
+         field.annotate(XmlTransient.class);
+      }
+
+      // generate acessor get method for variable
+      JMethod method = clazz.method(JMod.PUBLIC, javaType, getterPrefix(javaType) + JavaUtils.capitalize(variable));
+      method.body()._return(JExpr._this().ref(realVariableName));
+      
+      // generate acessor set method for variable
+      method = clazz.method(JMod.PUBLIC, void.class, "set" + JavaUtils.capitalize(variable));
+      method.body().assign(JExpr._this().ref(realVariableName), method.param(javaType, realVariableName));
    }
 
    private static void addClassAnnotations(JDefinedClass clazz, QName xmlName, QName xmlType, String[] propertyOrder)
