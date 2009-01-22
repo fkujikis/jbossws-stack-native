@@ -234,6 +234,12 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
          JavassistUtils.addSignature(field, typeSignature);
       }
 
+      
+      // Conformance 3.14 (use of JAXB annotations): An implementation MUST honor any JAXB annotation that
+      // exists on an SEI method or parameter to assure that the proper XML infoset is used when marshalling/
+      // unmarshalling the the return value or parameters of the method. The set of JAXB annotations that MUST be
+      // supported are: javax.xml.bind.annotation.XmlAttachementRef,javax.xml.bind.annotation.XmlList,
+      // javax.xml.bind.XmlMimeType and javax.xml.bind.annotation.adapters.Xml.JavaTypeAdapter
       JavassistUtils.Annotation annotation;
       // Add @XmlElement
       if (!xmlTransient)
