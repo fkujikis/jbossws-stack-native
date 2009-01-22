@@ -811,8 +811,15 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
 
       // Add faults
       for (Class<?> exClass : method.getExceptionTypes())
-         if (!RemoteException.class.isAssignableFrom(exClass))
+      {
+         // Conformance 3.25 (java.lang.RuntimeExceptions and java.rmi.RemoteExceptions):
+         // java.lang.RuntimeException and java.rmi.RemoteException and their subclasses
+         // MUST NOT be treated as service specific exceptions and MUST NOT be mapped to WSDL.
+         if (!RemoteException.class.isAssignableFrom(exClass) && !RuntimeException.class.isAssignableFrom(exClass))
+         {
             addFault(opMetaData, exClass);
+         }
+      }
 
       // process operation meta data extension
       processMetaExtensions(method, epMetaData, opMetaData);
