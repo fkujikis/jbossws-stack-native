@@ -26,6 +26,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.xml.ws.spi.WebServiceFeatureAnnotation;
+
 import org.jboss.ws.feature.FastInfosetFeature;
 
 /**
@@ -37,6 +39,7 @@ import org.jboss.ws.feature.FastInfosetFeature;
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.TYPE })
 @EndpointFeature( id = FastInfosetFeature.ID)
+@WebServiceFeatureAnnotation(id = FastInfosetFeature.ID, bean = FastInfosetFeature.class)
 public @interface FastInfoset {
    
    /**

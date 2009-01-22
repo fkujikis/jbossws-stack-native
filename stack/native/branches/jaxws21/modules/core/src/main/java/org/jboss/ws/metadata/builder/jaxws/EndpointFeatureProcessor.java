@@ -34,6 +34,7 @@ import javax.xml.ws.soap.AddressingFeature;
 import javax.xml.ws.soap.MTOM;
 import javax.xml.ws.soap.MTOMFeature;
 import javax.xml.ws.soap.SOAPBinding;
+import javax.xml.ws.spi.WebServiceFeatureAnnotation;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
@@ -74,39 +75,47 @@ public class EndpointFeatureProcessor
    {
       for (Annotation an : sepClass.getAnnotations())
       {
-         if (an.annotationType() == Addressing.class)
+         WebServiceFeatureAnnotation wsfa = an.annotationType().getAnnotation(WebServiceFeatureAnnotation.class);
+         if (wsfa != null)
          {
-            Addressing anFeature = sepClass.getAnnotation(Addressing.class);
-            AddressingFeature feature = new AddressingFeature(anFeature.enabled(), anFeature.required());
-            sepMetaData.addFeature(feature);
-         }
-         else if (an.annotationType() == MTOM.class)
-         {
-            MTOM anFeature = sepClass.getAnnotation(MTOM.class);
-            MTOMFeature feature = new MTOMFeature(anFeature.enabled(), anFeature.threshold());
-            sepMetaData.addFeature(feature);
-         }
-         else if (an.annotationType() == SchemaValidation.class)
-         {
-            processSchemaValidation(dep, sepMetaData, sepClass);
-         }
-         else if (an.annotationType() == FastInfoset.class)
-         {
-            FastInfoset anFeature = sepClass.getAnnotation(FastInfoset.class);
-            FastInfosetFeature feature = new FastInfosetFeature(anFeature.enabled());
-            sepMetaData.addFeature(feature);
-         }
-         else if (an.annotationType() == JsonEncoding.class)
-         {
-            JsonEncoding anFeature = sepClass.getAnnotation(JsonEncoding.class);
-            JsonEncodingFeature feature = new JsonEncodingFeature(anFeature.enabled());
-            sepMetaData.addFeature(feature);
-         }
-         else if (an.annotationType() == RespectBinding.class)
-         {
-            RespectBinding anFeature = sepClass.getAnnotation(RespectBinding.class);
-            RespectBindingFeature feature = new RespectBindingFeature(anFeature.enabled());
-            sepMetaData.addFeature(feature);
+            if (an.annotationType() == Addressing.class)
+            {
+               Addressing anFeature = sepClass.getAnnotation(Addressing.class);
+               AddressingFeature feature = new AddressingFeature(anFeature.enabled(), anFeature.required());
+               sepMetaData.addFeature(feature);
+            }
+            else if (an.annotationType() == MTOM.class)
+            {
+               MTOM anFeature = sepClass.getAnnotation(MTOM.class);
+               MTOMFeature feature = new MTOMFeature(anFeature.enabled(), anFeature.threshold());
+               sepMetaData.addFeature(feature);
+            }
+            else if (an.annotationType() == SchemaValidation.class)
+            {
+               processSchemaValidation(dep, sepMetaData, sepClass);
+            }
+            else if (an.annotationType() == FastInfoset.class)
+            {
+               FastInfoset anFeature = sepClass.getAnnotation(FastInfoset.class);
+               FastInfosetFeature feature = new FastInfosetFeature(anFeature.enabled());
+               sepMetaData.addFeature(feature);
+            }
+            else if (an.annotationType() == JsonEncoding.class)
+            {
+               JsonEncoding anFeature = sepClass.getAnnotation(JsonEncoding.class);
+               JsonEncodingFeature feature = new JsonEncodingFeature(anFeature.enabled());
+               sepMetaData.addFeature(feature);
+            }
+            else if (an.annotationType() == RespectBinding.class)
+            {
+               RespectBinding anFeature = sepClass.getAnnotation(RespectBinding.class);
+               RespectBindingFeature feature = new RespectBindingFeature(anFeature.enabled());
+               sepMetaData.addFeature(feature);
+            }
+            else
+            {
+               throw new WebServiceException("Unsupported feature: " + wsfa.bean());
+            }
          }
       }
    }

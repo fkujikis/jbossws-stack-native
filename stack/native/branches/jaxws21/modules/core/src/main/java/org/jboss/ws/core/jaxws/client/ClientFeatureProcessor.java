@@ -35,6 +35,8 @@ import javax.xml.ws.soap.SOAPBinding;
 import org.jboss.logging.Logger;
 import org.jboss.ws.core.jaxws.binding.BindingExt;
 import org.jboss.ws.extensions.addressing.jaxws.WSAddressingClientHandler;
+import org.jboss.ws.feature.FastInfosetFeature;
+import org.jboss.ws.feature.JsonEncodingFeature;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.wsdl.Extendable;
@@ -59,14 +61,31 @@ public class ClientFeatureProcessor
    
    public static <T> void processFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
    {
+      boolean supportedFeature = false;
+      if (feature instanceof FastInfosetFeature || feature instanceof JsonEncodingFeature)
+         supportedFeature = true;
+      supportedFeature = supportedFeature || processAddressingFeature(feature, epMetaData, stub);
+      supportedFeature = supportedFeature || processMTOMFeature(feature, epMetaData, stub);
+      supportedFeature = supportedFeature || processRespectBindingFeature(feature, epMetaData, stub);
+      if (!supportedFeature)
+      {
+         throw new IllegalArgumentException("Unsupported feature: " + feature);
+      }
       epMetaData.addFeature(feature);
-      processAddressingFeature(feature, epMetaData, stub);
-      processMTOMFeature(feature, epMetaData, stub);
-      processRespectBindingFeature(feature, epMetaData, stub);
    }
    
+   /**
+    * Returns true or false depending on the provided WebServiceFeature being an AddressingFeature or not.
+    * In the former case, addressing is setup.
+    * 
+    * @param <T>
+    * @param feature
+    * @param epMetaData
+    * @param stub
+    * @return
+    */
    @SuppressWarnings("unchecked")
-   private static <T> void processAddressingFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
+   private static <T> boolean processAddressingFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
    {
       if (feature instanceof AddressingFeature && feature.isEnabled())
       {
@@ -74,19 +93,43 @@ public class ClientFeatureProcessor
          List<Handler> handlers = bindingExt.getHandlerChain(HandlerType.POST);
          handlers.add(new WSAddressingClientHandler());
          bindingExt.setHandlerChain(handlers, HandlerType.POST);
+         return true;
       }
+      return false;
    }
    
-   private static <T> void processMTOMFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
+   /**
+    * Returns true or false depending on the provided WebServiceFeature being an MTOMFeature or not.
+    * In the former case, mtom is setup.
+    * 
+    * @param <T>
+    * @param feature
+    * @param epMetaData
+    * @param stub
+    * @return
+    */
+   private static <T> boolean processMTOMFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
    {
       if (feature instanceof MTOMFeature)
       {
          SOAPBinding binding = (SOAPBinding)((BindingProvider)stub).getBinding();
          binding.setMTOMEnabled(feature.isEnabled());
+         return true;
       }
+      return false;
    }
    
-   private static <T> void processRespectBindingFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
+   /**
+    * Returns true or false depending on the provided WebServiceFeature being an RespectBindingFeature or not.
+    * In the former case, the respect binding checks are performed.
+    * 
+    * @param <T>
+    * @param feature
+    * @param epMetaData
+    * @param stub
+    * @return
+    */
+   private static <T> boolean processRespectBindingFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
    {
       if (feature instanceof RespectBindingFeature && feature.isEnabled())
       {
@@ -113,7 +156,9 @@ public class ClientFeatureProcessor
                log.warn("Cannot find port " + epMetaData.getPortName());
             }
          }
+         return true;
       }
+      return false;
    }
    
    private static void checkNotUnderstoodExtElements(Extendable extendable, EndpointMetaData epMetaData)
