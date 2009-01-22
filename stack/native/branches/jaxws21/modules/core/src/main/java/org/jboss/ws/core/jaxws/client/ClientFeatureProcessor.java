@@ -99,6 +99,11 @@ public class ClientFeatureProcessor
             WSDLEndpoint wsdlEndpoint = wsdlService.getEndpoint(epMetaData.getPortName());
             if (wsdlEndpoint != null)
             {
+               // Conformance 6.11 (javax.xml.ws.RespectBindingFeature): When the javax.xml.ws.RespectBindingFeature
+               // is enabled, a JAX-WS implementation MUST inspect the wsdl:binding at runtime to determine
+               // result and parameter bindings as well as any wsdl:extensions that have the required=true attribute.
+               // All required wsdl:extensions MUST be supported and honored by a JAX-WS implementation unless a
+               // specific wsdl:extension has be explicitly disabled via a WebServiceFeature.
                checkNotUnderstoodExtElements(wsdlEndpoint, epMetaData);
                WSDLBinding wsdlBinding = wsdlDefinitions.getBinding(wsdlEndpoint.getBinding());
                checkNotUnderstoodExtElements(wsdlBinding, epMetaData);
