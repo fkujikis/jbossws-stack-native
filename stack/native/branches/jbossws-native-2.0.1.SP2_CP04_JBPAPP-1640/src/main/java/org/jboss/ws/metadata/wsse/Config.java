@@ -38,6 +38,7 @@ public class Config implements Serializable
    private Sign sign;
    private Encrypt encrypt;
    private Requires requires;
+   private Authorize authorize;
 
    public Encrypt getEncrypt()
    {
@@ -87,5 +88,15 @@ public class Config implements Serializable
    public void setRequires(Requires requires)
    {
       this.requires = requires;
+   }
+   
+   public Authorize getAuthorize()
+   {
+      return this.authorize;
+   }
+   
+   public void setAuthorize(Authorize authorize)
+   {
+      this.authorize = authorize;
    }
 }

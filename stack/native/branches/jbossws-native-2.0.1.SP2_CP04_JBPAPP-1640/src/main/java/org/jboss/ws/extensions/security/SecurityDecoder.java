@@ -38,6 +38,8 @@ import org.jboss.ws.metadata.wsse.TimestampVerification;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+
+
 /**
  * @author <a href="mailto:jason.greene@jboss.com">Jason T. Greene</a>
  * @version $Revision$
@@ -54,7 +56,7 @@ public class SecurityDecoder
 
    private SecurityStore store;
    
-   private TimestampVerification timestampVerification;
+   private TimestampVerification timestampVerification;        
 
    private HashSet<String> signedIds = new HashSet<String>();
 
@@ -136,7 +138,8 @@ public class SecurityDecoder
             if (ids != null)
                encryptedIds.addAll(ids);
          }
-      }
+      }      
+
    }
 
    public void verify(List<OperationDescription<RequireOperation>> requireOperations) throws WSSecurityException
