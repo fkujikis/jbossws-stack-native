@@ -118,6 +118,12 @@ public class CommonBindingProvider implements Configurable
 
    public <T extends EndpointReference> T getEndpointReference(Class<T> clazz)
    {
+      // Conformance 4.5 (javax.xml.ws.BindingProvider.getEndpointReference): An implementation
+      // MUST be able to return an javax.xml.ws.EndpointReference for the target endpoint if a SOAP binding
+      // is being used. If the BindingProvider instance has a binding that is either SOAP 1.1/HTTP or
+      // SOAP 1.2/HTTP, then a W3CEndpointReference MUST be returned. If the binding is XML/HTTP an
+      // java.lang.UnsupportedOperationExceptionMUST be thrown.
+
       if (binding instanceof HTTPBinding )
       {
          throw new UnsupportedOperationException("Cannot get epr for BindingProvider instances using the XML/HTTP binding");
