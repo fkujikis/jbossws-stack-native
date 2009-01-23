@@ -37,7 +37,9 @@ import org.jboss.ws.core.jaxws.binding.BindingExt;
 import org.jboss.ws.extensions.addressing.jaxws.WSAddressingClientHandler;
 import org.jboss.ws.feature.FastInfosetFeature;
 import org.jboss.ws.feature.JsonEncodingFeature;
+import org.jboss.ws.feature.SchemaValidationFeature;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
+import org.jboss.ws.metadata.umdm.FeatureSet;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.wsdl.Extendable;
 import org.jboss.ws.metadata.wsdl.WSDLBinding;
@@ -59,18 +61,26 @@ public class ClientFeatureProcessor
 {
    private static Logger log = Logger.getLogger(ClientFeatureProcessor.class);
    
+   private static FeatureSet supportedFeatures = new FeatureSet();
+   static
+   {
+      supportedFeatures.addFeature(new FastInfosetFeature());
+      supportedFeatures.addFeature(new JsonEncodingFeature());
+      supportedFeatures.addFeature(new SchemaValidationFeature());
+      supportedFeatures.addFeature(new AddressingFeature());
+      supportedFeatures.addFeature(new MTOMFeature());
+      supportedFeatures.addFeature(new RespectBindingFeature());
+   }
+   
    public static <T> void processFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
    {
-      boolean supportedFeature = false;
-      if (feature instanceof FastInfosetFeature || feature instanceof JsonEncodingFeature)
-         supportedFeature = true;
-      supportedFeature = supportedFeature || processAddressingFeature(feature, epMetaData, stub);
-      supportedFeature = supportedFeature || processMTOMFeature(feature, epMetaData, stub);
-      supportedFeature = supportedFeature || processRespectBindingFeature(feature, epMetaData, stub);
-      if (!supportedFeature)
+      if (!supportedFeatures.hasFeature(feature.getClass()))
       {
          throw new IllegalArgumentException("Unsupported feature: " + feature);
       }
+      processAddressingFeature(feature, epMetaData, stub);
+      processMTOMFeature(feature, epMetaData, stub);
+      processRespectBindingFeature(feature, epMetaData, stub);
       epMetaData.addFeature(feature);
    }
    
@@ -85,7 +95,7 @@ public class ClientFeatureProcessor
     * @return
     */
    @SuppressWarnings("unchecked")
-   private static <T> boolean processAddressingFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
+   private static <T> void processAddressingFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
    {
       if (feature instanceof AddressingFeature && feature.isEnabled())
       {
@@ -93,9 +103,7 @@ public class ClientFeatureProcessor
          List<Handler> handlers = bindingExt.getHandlerChain(HandlerType.POST);
          handlers.add(new WSAddressingClientHandler());
          bindingExt.setHandlerChain(handlers, HandlerType.POST);
-         return true;
       }
-      return false;
    }
    
    /**
@@ -108,15 +116,13 @@ public class ClientFeatureProcessor
     * @param stub
     * @return
     */
-   private static <T> boolean processMTOMFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
+   private static <T> void processMTOMFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
    {
       if (feature instanceof MTOMFeature)
       {
          SOAPBinding binding = (SOAPBinding)((BindingProvider)stub).getBinding();
          binding.setMTOMEnabled(feature.isEnabled());
-         return true;
       }
-      return false;
    }
    
    /**
@@ -129,7 +135,7 @@ public class ClientFeatureProcessor
     * @param stub
     * @return
     */
-   private static <T> boolean processRespectBindingFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
+   private static <T> void processRespectBindingFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
    {
       if (feature instanceof RespectBindingFeature && feature.isEnabled())
       {
@@ -156,9 +162,7 @@ public class ClientFeatureProcessor
                log.warn("Cannot find port " + epMetaData.getPortName());
             }
          }
-         return true;
       }
-      return false;
    }
    
    private static void checkNotUnderstoodExtElements(Extendable extendable, EndpointMetaData epMetaData)
