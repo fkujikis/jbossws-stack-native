@@ -330,17 +330,6 @@ public class RequestHandlerImpl implements RequestHandler
 
          // clear thread local storage
          ThreadLocalAssociation.clear();
-         try
-         {
-            if (outStream != null)
-            {
-               outStream.close();
-            }
-         }
-         catch (IOException ex)
-         {
-            WSException.rethrow(ex);
-         }
       }
    }
 
@@ -365,14 +354,7 @@ public class RequestHandlerImpl implements RequestHandler
       }
       else
       {
-         try
-         {
-            resMessage.writeTo(outputStream);
-         }
-         finally
-         {
-            outputStream.close();
-         }
+         resMessage.writeTo(outputStream);
       }
    }
 
@@ -581,17 +563,6 @@ public class RequestHandlerImpl implements RequestHandler
       catch (IOException ex)
       {
          throw new WSException(ex);
-      }
-      finally
-      {
-         try
-         {
-            outputStream.close();
-         }
-         catch (IOException ioe)
-         {
-            throw new WSException(ioe);
-         }
       }
    }
 
