@@ -582,6 +582,17 @@ public class RequestHandlerImpl implements RequestHandler
       {
          throw new WSException(ex);
       }
+      finally
+      {
+         try
+         {
+            outputStream.close();
+         }
+         catch (IOException ioe)
+         {
+            throw new WSException(ioe);
+         }
+      }
    }
 
    private void handleException(Exception ex) throws ServletException

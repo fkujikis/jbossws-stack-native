@@ -261,14 +261,7 @@ public class WSDLFilePublisher
                   }
                   finally
                   {
-                     try
-                     {
-                        if (fos != null) fos.close();
-                     }
-                     finally
-                     {
-                        is.close();
-                     }
+                     if (fos != null) fos.close();
                   }
 
                   if (log.isDebugEnabled())
