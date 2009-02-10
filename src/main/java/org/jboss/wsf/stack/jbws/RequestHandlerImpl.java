@@ -187,7 +187,7 @@ public class RequestHandlerImpl implements RequestHandler
       ClassLoader classLoader = endpoint.getService().getDeployment().getRuntimeClassLoader();
       if (classLoader == null)
          throw new IllegalStateException("Deployment has no classloader associated");
-      
+
       // Set the thread context class loader
       ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
       Thread.currentThread().setContextClassLoader(classLoader);
@@ -204,7 +204,7 @@ public class RequestHandlerImpl implements RequestHandler
       {
          // Reset the thread context class loader
          Thread.currentThread().setContextClassLoader(ctxClassLoader);
-         
+
          try
          {
             out.close();
@@ -232,7 +232,7 @@ public class RequestHandlerImpl implements RequestHandler
          throw new IllegalStateException("Cannot obtain endpoint meta data");
 
       Type type = sepMetaData.getType();
-      
+
       // Build the message context
       CommonMessageContext msgContext;
       if (type == EndpointMetaData.Type.JAXRPC)
@@ -254,12 +254,12 @@ public class RequestHandlerImpl implements RequestHandler
       if (invContext instanceof ServletRequestContext)
       {
          ServletRequestContext reqContext = (ServletRequestContext)invContext;
-         
+
          ServletContext servletContext = reqContext.getServletContext();
          HttpServletRequest httpRequest = reqContext.getHttpServletRequest();
          httpResponse = reqContext.getHttpServletResponse();
          headerSource = new ServletHeaderSource(httpRequest, httpResponse);
-         
+
          if (type == EndpointMetaData.Type.JAXRPC)
          {
             msgContext.put(MessageContextJAXRPC.SERVLET_CONTEXT, servletContext);
@@ -363,8 +363,7 @@ public class RequestHandlerImpl implements RequestHandler
    /**
     * Handle a request to this web service endpoint
     */
-   private MessageAbstraction processRequest(Endpoint ep, MimeHeaderSource headerSource, InvocationContext reqContext, InputStream inputStream)
-         throws BindingException
+   private MessageAbstraction processRequest(Endpoint ep, MimeHeaderSource headerSource, InvocationContext reqContext, InputStream inputStream) throws BindingException
    {
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
 
@@ -482,11 +481,11 @@ public class RequestHandlerImpl implements RequestHandler
    private long initRequestMetrics(Endpoint endpoint)
    {
       long beginTime = 0;
-      
+
       EndpointMetrics metrics = endpoint.getEndpointMetrics();
       if (metrics != null)
          beginTime = metrics.processRequestMessage();
-      
+
       return beginTime;
    }
 
@@ -550,7 +549,7 @@ public class RequestHandlerImpl implements RequestHandler
 
          if (ServerConfig.UNDEFINED_HOSTNAME.equals(serverConfig.getWebServiceHost()) == false)
             wsdlHost = serverConfig.getWebServiceHost();
-         
+
          log.debug("WSDL request, using host: " + wsdlHost);
 
          WSDLRequestHandler wsdlRequestHandler = new WSDLRequestHandler(epMetaData);
