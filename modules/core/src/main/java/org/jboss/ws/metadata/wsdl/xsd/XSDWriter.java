@@ -91,14 +91,9 @@ public class XSDWriter
       // Write updated xsd file
       File xsdFile = SchemaUtils.getSchemaTempFile(ns);
       FileWriter writer = new FileWriter(xsdFile);
-      try
-      {
-         writer.write(xsdString);
-      }
-      finally
-      {
-         writer.close();
-      }
+      writer.write(xsdString);
+      writer.close();
+      
       return xsdFile.toURL(); 
    }
    
