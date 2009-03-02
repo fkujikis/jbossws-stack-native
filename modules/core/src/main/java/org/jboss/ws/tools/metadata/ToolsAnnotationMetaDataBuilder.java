@@ -57,7 +57,7 @@ public class ToolsAnnotationMetaDataBuilder
 
    private Class endpoint = null;
 
-   public ToolsAnnotationMetaDataBuilder(ToolsEndpointMetaData tmd, String targetNamespace, String typeNamespace)
+   public ToolsAnnotationMetaDataBuilder(ToolsEndpointMetaData tmd, String targetNamespace, String typeNamespace2)
    {
       this.tmd = tmd;
       this.targetNamespace = targetNamespace;

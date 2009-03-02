@@ -21,8 +21,6 @@
  */
 package org.jboss.ws.metadata.umdm;
 
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -677,9 +675,9 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
          if (retParam != null)
             createAccessor(retParam, jaxbCtx);
       }
-
+      
    }
-
+   
    private void eagerInitializeJAXBContextCache()
    {
       //initialize jaxb context cache
@@ -687,7 +685,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
       {
          log.debug("Initializing JAXBContext cache...");
          BindingCustomization bindingCustomization = null;
-         if (this instanceof ServerEndpointMetaData)
+         if(this instanceof ServerEndpointMetaData)
          {
             bindingCustomization = ((ServerEndpointMetaData)this).getEndpoint().getAttachment(BindingCustomization.class);
          }
@@ -930,7 +928,6 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
    class ConfigObservable extends Observable
    {
 
-      private ReferenceQueue<WeakReference<Observer>> queue = new ReferenceQueue<WeakReference<Observer>>();
       private List<WeakReference<Observer>> observer = new ArrayList<WeakReference<Observer>>();
 
       public void doNotify(Object object)
@@ -941,17 +938,15 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
 
       public synchronized void addObserver(Observer o)
       {
-         clearCollected();
-         observer.add(new WeakReference(o, queue));
+         observer.add(new WeakReference(o));
       }
 
       public synchronized void deleteObserver(Observer o)
       {
-         clearCollected();
          for (WeakReference<Observer> w : observer)
          {
             Observer tmp = w.get();
-            if (tmp != null && tmp.equals(o))
+            if (tmp.equals(o))
             {
                observer.remove(o);
                break;
@@ -967,28 +962,15 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
 
       public void notifyObservers(Object arg)
       {
-         clearCollected();
          if (hasChanged())
          {
             for (WeakReference<Observer> w : observer)
             {
                Observer tmp = w.get();
-               if (tmp != null)
-               {
-                  tmp.update(this, arg);
-               }
+               tmp.update(this, arg);
+
             }
          }
-      }
-
-      private void clearCollected()
-      {
-         Reference ref;
-         while ((ref = queue.poll()) != null)
-         {
-            observer.remove(ref);
-         }
-
       }
    }
 

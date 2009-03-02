@@ -103,12 +103,9 @@ public class SOAPMessageContextJAXWS extends MessageContextJAXWS implements SOAP
                   {
                      actor = new URI(hElement.getActor());
                   }
-                  if (actor != null)
+                  if (roles.contains(actor) || allRoles)
                   {
-                     if (roles.contains(actor.toString()) || allRoles)
-                     {
-                        headers.add(hElement);
-                     }
+                     headers.add(hElement);
                   }
                }
             }
