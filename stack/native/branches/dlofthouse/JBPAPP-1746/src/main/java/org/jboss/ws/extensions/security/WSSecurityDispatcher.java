@@ -167,8 +167,13 @@ public class WSSecurityDispatcher
             opMetaData = soapMessage.getOperationMetaData(epMetaData);
          }
 
-         String operation = opMetaData.getQName().toString();
-         String port = opMetaData.getEndpointMetaData().getPortName().getLocalPart();
+         String operation = null;
+         String port = null;
+         if (opMetaData != null)
+         {
+            operation = opMetaData.getQName().toString();
+            port = opMetaData.getEndpointMetaData().getPortName().getLocalPart();
+         }
 
          List<OperationDescription<RequireOperation>> operations = buildRequireOperations(config, operation, port);
 

@@ -233,6 +233,9 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
          if (handlerPass)
          {
             Map<String, Object> callProps = new HashMap<String, Object>(getRequestContext());
+            if (callProps.containsKey(BindingProvider.ENDPOINT_ADDRESS_PROPERTY)) {
+               targetAddress = (String) callProps.get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY);
+            }
             EndpointInfo epInfo = new EndpointInfo(epMetaData, targetAddress, callProps);
             resMsg = getRemotingConnection().invoke(reqMsg, epInfo, false);
 
@@ -281,6 +284,10 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
    {
       MessageAbstraction reqMsg = getRequestMessage(obj);
       String targetAddress = epMetaData.getEndpointAddress();
+      Map<String, Object> callProps = new HashMap<String, Object>(getRequestContext());
+      if (callProps.containsKey(BindingProvider.ENDPOINT_ADDRESS_PROPERTY)) {
+         targetAddress = (String) callProps.get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY);
+      }
       MessageAbstraction resMsg = getRemotingConnection().invoke(reqMsg, targetAddress, false);
       Object retObj = getReturnObject(resMsg);
       return retObj;
