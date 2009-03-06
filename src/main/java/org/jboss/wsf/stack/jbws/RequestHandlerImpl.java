@@ -433,7 +433,7 @@ public class RequestHandlerImpl implements RequestHandler
       }
       catch (Exception ex)
       {
-         MessageAbstraction resMessage = msgContext.getMessageAbstraction();
+         MessageAbstraction resMessage = MessageContextAssociation.peekMessageContext().getMessageAbstraction();
 
          // In case we have an exception before the invoker is called
          // we create the fault message here.
@@ -453,7 +453,7 @@ public class RequestHandlerImpl implements RequestHandler
       {
          try
          {
-            MessageAbstraction resMessage = msgContext.getMessageAbstraction();
+            MessageAbstraction resMessage = MessageContextAssociation.peekMessageContext().getMessageAbstraction();
             if (resMessage != null)
             {
                if (resMessage.isFaultMessage())
