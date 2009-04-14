@@ -27,30 +27,6 @@ What's new in jbossws-native-${project.version}
 
 Feature Request
 
-    TODO: enumerate
-
-Bug
-
-    TODO: enumerate
-
-Task
-
-    TODO: enumerate
-
-Errata
-
-    See: TODO: reference to associated JIRA issue
-    
-Enjoy,
-The JBossWS Team
-
-Previous Releases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-What's new in jbossws-native-3.1.1.GA
--------------------------------------
-
-Feature Request
-
     * [JBWS-2405] - MTOM/XOP Interoperability - cid href URLEncode/URLDecode
     * [JBWS-2579] - Implement property file driven JBossWS entities resolving
 
@@ -87,7 +63,11 @@ Task
 Errata
 
     See: https://jira.jboss.org/jira/browse/JBWS-2608
+    
+Enjoy,
+The JBossWS Team
 
+Previous Releases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 What's new in jbossws-native-3.1.0.GA
 -------------------------------------
