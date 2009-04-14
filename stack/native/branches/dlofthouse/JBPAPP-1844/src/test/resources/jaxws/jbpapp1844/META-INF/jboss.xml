@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+
+<!DOCTYPE jboss PUBLIC
+    "-//JBoss//DTD JBOSS 4.2//EN"
+    "http://www.jboss.org/j2ee/dtd/jboss_4_2.dtd">
+    
+<jboss>
+
+  <webservices>
+    <webservice-description>
+      <webservice-description-name>JBPAPP-1844 - WS</webservice-description-name>    
+      <config-name>Custom Server Config</config-name>
+      <config-file>META-INF/jaxws-endpoint-config.xml</config-file>
+    </webservice-description>
+  </webservices>
+  
+</jboss>

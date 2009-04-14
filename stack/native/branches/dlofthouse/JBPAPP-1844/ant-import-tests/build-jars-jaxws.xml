@@ -130,7 +130,20 @@
         <include name="**/*.wsdl"/>
       </webinf>
     </war>
-    
+
+    <!-- jaxws-jbpapp1844 -->
+    <jar destfile="${tests.output.dir}/libs/jaxws-jbpapp1844.jar">
+      <fileset dir="${tests.output.dir}/classes">
+        <include name="org/jboss/test/ws/jaxws/jbpapp1844/*.class"/>
+        <exclude name="org/jboss/test/ws/jaxws/jbpapp1844/*TestCase.class"/>
+      </fileset>
+      
+      <metainf dir="${tests.output.dir}/resources/jaxws/jbpapp1844/META-INF">
+        <include name="jboss.xml"/>
+        <include name="jaxws-endpoint-config.xml"/>
+      </metainf>
+    </jar>
+      
     <!-- jaxws-jbws771 -->
     <jar destfile="${tests.output.dir}/libs/jaxws-jbws771.jar">
       <fileset dir="${tests.output.dir}/classes">
