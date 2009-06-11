@@ -60,6 +60,7 @@ import org.jboss.ws.core.soap.SOAPBodyElementRpc;
 import org.jboss.ws.core.soap.SOAPBodyImpl;
 import org.jboss.ws.core.soap.SOAPContentElement;
 import org.jboss.ws.core.soap.SOAPElementImpl;
+import org.jboss.ws.core.soap.SOAPElementInternal;
 import org.jboss.ws.core.soap.SOAPFactoryImpl;
 import org.jboss.ws.core.soap.SOAPFaultImpl;
 import org.jboss.ws.core.soap.SOAPHeaderElementImpl;
@@ -841,7 +842,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
          Object childNode = childElements.next();
          if (childNode instanceof SOAPElement)
          {
-            SOAPElementImpl childElement = (SOAPElementImpl)childNode;
+            SOAPElementInternal childElement = (SOAPElementInternal)childNode;
             // If this message was manipulated by a handler the child may not be a content element
             if (!(childElement instanceof SOAPContentElement))
                childElement = (SOAPContentElement)soapElement.replaceChild(new SOAPContentElement(childElement), childElement);
@@ -891,7 +892,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
          TypesMetaData typesMetaData = opMetaData.getEndpointMetaData().getServiceMetaData().getTypesMetaData();
          if (childElements.hasNext() && opMetaData.getStyle() == Style.DOCUMENT)
          {
-            SOAPElementImpl childElement = (SOAPElementImpl)childElements.next();
+            SOAPElementInternal childElement = (SOAPElementInternal)childElements.next();
 
             // The parameters are expected to be lazy
             SOAPContentElement aux = (SOAPContentElement)childElement;

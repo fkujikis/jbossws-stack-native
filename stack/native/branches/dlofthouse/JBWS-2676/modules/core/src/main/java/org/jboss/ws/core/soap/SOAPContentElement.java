@@ -68,7 +68,7 @@ import org.w3c.dom.TypeInfo;
  * @author Heiko.Braun@jboss.org
  * @since 13-Dec-2004
  */
-public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAccess
+public class SOAPContentElement extends SOAPElementWrapper implements SOAPContentAccess
 {
    // provide logging
    private static Logger log = Logger.getLogger(SOAPContentElement.class);
@@ -89,17 +89,17 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
     */
    public SOAPContentElement(Name name)
    {
-      super(name);
+      super(new SOAPElementImpl(name));
       this.soapContent = new DOMContent(this);
    }
 
    public SOAPContentElement(QName qname)
    {
-      super(qname);
+      super(new SOAPElementImpl(qname));
       this.soapContent = new DOMContent(this);
    }
 
-   public SOAPContentElement(SOAPElementImpl element)
+   public SOAPContentElement(SOAPElementInternal element)
    {
       super(element);
       this.soapContent = new DOMContent(this);

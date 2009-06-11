@@ -236,14 +236,14 @@ public class SOAPBodyImpl extends SOAPElementImpl implements SOAPBody
 
       Iterator childElements = getChildElements();
 
-      SOAPElementImpl childElement = null;
+      SOAPElementInternal childElement = null;
 
       while (childElements.hasNext() == true)
       {
          Object current = childElements.next();
-         if (current instanceof SOAPElementImpl)
+         if (current instanceof SOAPElementInternal)
          {
-            childElement = (SOAPElementImpl)current;
+            childElement = (SOAPElementInternal)current;
             break;
          }
       }
@@ -256,7 +256,7 @@ public class SOAPBodyImpl extends SOAPElementImpl implements SOAPBody
       while (childElements.hasNext() == true)
       {
          Object current = childElements.next();
-         if (current instanceof SOAPElementImpl)
+         if (current instanceof SOAPElementInternal)
             throw new SOAPException("Multiple SOAPBodyElement");
       }
 
@@ -274,7 +274,7 @@ public class SOAPBodyImpl extends SOAPElementImpl implements SOAPBody
       // child element's owner document might be shared with other elements;
       // we have to create a separate document for returning to our caller
       Document newDocument = DOMUtils.getDocumentBuilder().newDocument();
-      Node adoptedElement = newDocument.adoptNode(childElement.domNode);
+      Node adoptedElement = newDocument.adoptNode(childElement.getDomNode());
       newDocument.appendChild(adoptedElement);
 
       return newDocument;

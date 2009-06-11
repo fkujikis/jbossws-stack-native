@@ -67,7 +67,7 @@ public class NodeImpl implements javax.xml.soap.Node
    // This org.w3c.dom.Node
    protected org.w3c.dom.Node domNode;
    // A list of soap children
-   private List<NodeImpl> soapChildren = new ArrayList<NodeImpl>();
+   private List<Node> soapChildren = new ArrayList<Node>();
    // A hash with the user data
    private Map<String, Object> userData;
 
@@ -284,14 +284,25 @@ public class NodeImpl implements javax.xml.soap.Node
 
    public org.w3c.dom.Node getFirstChild()
    {
-      NodeImpl child = null;
+      Node child = null;
       org.w3c.dom.Node domChild = domNode.getFirstChild();
       if (domChild != null)
       {
          if (!soapChildren.isEmpty()) //see JBWS-2186
          {
-            child = (NodeImpl)soapChildren.get(0);
-            if (domChild != child.domNode)
+            child = (Node)soapChildren.get(0);
+
+            Node childDomNode = null;
+            if (child instanceof NodeImpl)
+            {
+               childDomNode = ((NodeImpl)child).domNode;
+            }
+            else if (child instanceof SOAPElementInternal)
+            {
+               childDomNode = ((SOAPElementInternal)child).getDomNode();
+            }
+
+            if (domChild != childDomNode)
                throw new WSException("Inconsistent node, child lists not synchronized");
          }
       }
@@ -340,21 +351,31 @@ public class NodeImpl implements javax.xml.soap.Node
    {
       assertSOAPParent();
 
-      NodeImpl sibling = null;
+      Node sibling = null;
       if (soapParent != null)
       {
          List children = ((NodeImpl)soapParent).soapChildren;
          for (int i = 0; i < children.size(); i++)
          {
-            NodeImpl node = (NodeImpl)children.get(i);
+            Node node = (Node)children.get(i);
             if (node == this && (i + 1) < children.size())
             {
-               sibling = (NodeImpl)children.get(i + 1);
+               sibling = (Node)children.get(i + 1);
                break;
             }
          }
 
-         if (sibling != null && sibling.domNode != domNode.getNextSibling())
+         Node siblingDomNode = null;
+         if (sibling instanceof NodeImpl)
+         {
+            siblingDomNode = ((NodeImpl)sibling).domNode;
+         }
+         else if (sibling instanceof SOAPElementInternal)
+         {
+            siblingDomNode = ((SOAPElementInternal)sibling).getDomNode();
+         }
+
+         if (sibling != null && siblingDomNode != domNode.getNextSibling())
             throw new WSException("Inconsistent node, child lists not synchronized");
       }
 
@@ -475,17 +496,24 @@ public class NodeImpl implements javax.xml.soap.Node
          return newChild;
       }
 
-      if ((this instanceof SOAPElementImpl) == false)
+      if ((this instanceof SOAPElementInternal) == false)
          throw new DOMException(DOMException.INVALID_ACCESS_ERR, "Cannot append child to this node: " + this);
 
-      NodeImpl soapNode = (NodeImpl)newChild;
-      soapNode.detachNode();
-
-      domNode.appendChild(soapNode.domNode);
-      soapNode.soapParent = (SOAPElementImpl)this;
-
-      soapChildren.add(soapNode);
-
+      if (newChild instanceof SOAPElementInternal)
+      {
+         SOAPElementInternal soapNode = (SOAPElementInternal)newChild;
+         soapNode.detachNode();
+         domNode.appendChild(soapNode.getDomNode());
+         soapNode.setSoapParent((SOAPElementImpl)this);
+         soapChildren.add(soapNode);
+      } else {
+         NodeImpl soapNode = (NodeImpl)newChild;
+         soapNode.detachNode();
+         domNode.appendChild(soapNode.domNode);
+         soapNode.soapParent = (SOAPElementImpl)this;
+         soapChildren.add(soapNode);
+      }            
+     
       return newChild;
    }
 
