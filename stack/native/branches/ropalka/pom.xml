@@ -47,12 +47,12 @@
 
   <!-- Properties -->
   <properties>
-    <jbossws.common.version>1.2.0-SNAPSHOT</jbossws.common.version>
-    <jbossws.framework.version>3.2.0-SNAPSHOT</jbossws.framework.version>
-    <jbossws.spi.version>1.2.0-SNAPSHOT</jbossws.spi.version>
+    <jbossws.common.version>ropalka-1.2.0-SNAPSHOT</jbossws.common.version>
+    <jbossws.framework.version>ropalka-3.2.0-SNAPSHOT</jbossws.framework.version>
+    <jbossws.spi.version>ropalka-1.2.0-SNAPSHOT</jbossws.spi.version>
     <jbossws.jboss500.version>3.2.0-SNAPSHOT</jbossws.jboss500.version>
     <jbossws.jboss501.version>3.2.0-SNAPSHOT</jbossws.jboss501.version>
-    <jbossws.jboss510.version>3.2.0-SNAPSHOT</jbossws.jboss510.version>
+    <jbossws.jboss510.version>ropalka-3.2.0-SNAPSHOT</jbossws.jboss510.version>
     <!-- [JBWS-2505] -->
     <!-- START -->
     <!--
