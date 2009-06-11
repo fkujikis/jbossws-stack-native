@@ -28,13 +28,14 @@ import java.util.Iterator;
 import org.jboss.ws.core.soap.SAAJVisitor;
 import org.jboss.ws.core.soap.SOAPContentElement;
 import org.jboss.ws.core.soap.SOAPElementImpl;
+import org.jboss.ws.core.soap.SOAPElementInternal;
 
 /**
  * @author Heiko Braun <heiko.braun@jboss.com>
  * @since Nov 7, 2006
  */
 public class CreateAttachmentVisitor implements SAAJVisitor {
-    public void visitXOPElements(SOAPElementImpl root)
+    public void visitXOPElements(SOAPElementInternal root)
    {
       boolean isSCE = (root instanceof SOAPContentElement);
 

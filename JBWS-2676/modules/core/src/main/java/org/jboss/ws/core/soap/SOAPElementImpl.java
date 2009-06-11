@@ -58,7 +58,7 @@ import org.w3c.dom.TypeInfo;
  *
  * @author Thomas.Diesler@jboss.org
  */
-public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisitable
+public class SOAPElementImpl extends NodeImpl implements SOAPElementInternal, SAAJVisitable
 {
    // provide logging
    private static Logger log = Logger.getLogger(SOAPElementImpl.class);
@@ -854,4 +854,18 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
             out.write(value);
       }
    }
+   
+   // SOAPElementInternal
+   
+   public org.w3c.dom.Node getDomNode()
+   {
+      return domNode;
+   }
+
+   public void setSoapParent(SOAPElementImpl soapParent)
+   {
+      this.soapParent = soapParent;
+   }
+      
+   
 }

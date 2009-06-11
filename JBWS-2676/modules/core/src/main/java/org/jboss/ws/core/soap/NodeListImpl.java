@@ -38,16 +38,16 @@ import org.w3c.dom.NodeList;
  */
 class NodeListImpl implements NodeList
 {
-   private List<NodeImpl> nodeList = new ArrayList<NodeImpl>();
+   private List<Node> nodeList = new ArrayList<Node>();
 
-   NodeListImpl(List<NodeImpl> nodes)
+   NodeListImpl(List<Node> nodes)
    {
-      nodeList = new ArrayList<NodeImpl>(nodes);
+      nodeList = new ArrayList<Node>(nodes);
    }
 
    NodeListImpl(Iterator<NodeImpl> nodes)
    {
-      nodeList = new ArrayList<NodeImpl>();
+      nodeList = new ArrayList<Node>();
       while (nodes.hasNext())
          nodeList.add(nodes.next());
    }
