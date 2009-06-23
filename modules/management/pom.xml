@@ -8,7 +8,7 @@
   <parent>
     <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native</artifactId>
-    <version>3.2.0-SNAPSHOT</version>
+    <version>3.1.2-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -39,17 +39,12 @@
       <artifactId>jbossws-jboss501</artifactId>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.jboss.ws</groupId>
-      <artifactId>jbossws-jboss510</artifactId>
-      <scope>provided</scope>
-    </dependency>
     <!-- [JBWS-2505] -->
     <!-- START -->
     <!--
     <dependency>
       <groupId>org.jboss.ws</groupId>
-      <artifactId>jbossws-jboss520x</artifactId>
+      <artifactId>jbossws-jboss510x</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

@@ -9,7 +9,7 @@
   <parent>
     <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native</artifactId>
-    <version>3.2.0-SNAPSHOT</version>
+    <version>3.1.2-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -433,73 +433,12 @@
         <jbossws.integration.target>jboss510</jbossws.integration.target>
       </properties>
       <dependencies>
-        <dependency>
-          <groupId>org.jboss.ws</groupId>
-          <artifactId>jbossws-jboss510</artifactId>
-          <exclusions>
-            <exclusion>
-              <groupId>jboss.jbossws</groupId>
-              <artifactId>jboss-jaxws</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate</artifactId>
-          <version>${hibernate.version}</version>
-        </dependency>
-        <dependency>
-          <groupId>org.jboss.jbossas</groupId>
-          <artifactId>jboss-as-ejb3</artifactId>
-          <version>${jboss.version}</version>
-        </dependency>
-        <dependency>
-          <groupId>org.jboss.jbossas</groupId>
-          <artifactId>jboss-as-security</artifactId>
-          <version>${jboss.version}</version>
-        </dependency>
-      </dependencies>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <!-- http://jira.codehaus.org/browse/MCOMPILER-72 -->
-              <testExcludeFile>../test-excludes-jboss510.txt</testExcludeFile>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <argLine>${surefire.jvm.args} -Djava.endorsed.dirs=${jboss510.home}/lib/endorsed</argLine>
-              <!-- TODO: replace with maven dependencies -->
-              <additionalClasspathElements>
-                <additionalClasspathElement>${jboss.home}/client/jbossall-client.jar</additionalClasspathElement>
-                <additionalClasspathElement>${jboss.home}/common/lib/jboss-ejb3-core.jar</additionalClasspathElement>
-              </additionalClasspathElements>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!--
-    Name:  jboss520
-    Descr: JBoss-5.2.0 specific options
-    -->
-    <profile>
-      <id>jboss520</id>
-      <properties>
-        <jboss.version>5.2.0-SNAPSHOT</jboss.version>
-        <jbossws.integration.target>jboss520</jbossws.integration.target>
-      </properties>
-      <dependencies>
         <!-- [JBWS-2505] -->
         <!-- START -->
         <!--
         <dependency>
           <groupId>org.jboss.ws</groupId>
-          <artifactId>jbossws-jboss520x</artifactId>
+          <artifactId>jbossws-jboss510x</artifactId>
           <exclusions>
             <exclusion>
               <groupId>jboss.jbossws</groupId>
@@ -536,13 +475,13 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
               <!-- http://jira.codehaus.org/browse/MCOMPILER-72 -->
-              <testExcludeFile>../test-excludes-jboss520.txt</testExcludeFile>
+              <testExcludeFile>../test-excludes-jboss510.txt</testExcludeFile>
             </configuration>
           </plugin>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <argLine>${surefire.jvm.args} -Djava.endorsed.dirs=${jboss520.home}/lib/endorsed</argLine>
+              <argLine>${surefire.jvm.args} -Djava.endorsed.dirs=${jboss510.home}/lib/endorsed</argLine>
               <!-- TODO: replace with maven dependencies -->
               <additionalClasspathElements>
                 <additionalClasspathElement>${jboss.home}/client/jbossall-client.jar</additionalClasspathElement>
