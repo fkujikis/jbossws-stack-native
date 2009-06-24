@@ -48,6 +48,7 @@ import javax.xml.ws.handler.Handler;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.PortInfo;
 import javax.xml.ws.http.HTTPBinding;
+import javax.xml.ws.soap.SOAPBinding;
 import javax.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
@@ -210,6 +211,13 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
       // Associate a message context with the current thread
       CommonMessageContext msgContext = new SOAPMessageContextJAXWS();
       MessageContextAssociation.pushMessageContext(msgContext);
+      
+      BindingExt binding = (BindingExt)bindingProvider.getBinding();
+      if (binding instanceof SOAPBinding)
+      {
+         XOPContext.setMTOMEnabled(((SOAPBinding)binding).isMTOMEnabled());
+      }
+      
       try
       {
          msgContext.setEndpointMetaData(epMetaData);
