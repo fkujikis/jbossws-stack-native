@@ -24,9 +24,8 @@ package org.jboss.ws.core.client;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Date;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -231,19 +230,19 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
          {
 //            System.out.println(new Date() + " Inizio connection attempt...");
             //Start the connection attempt
-            URI target;
+            URL target;
             try
             {
                System.out.println("targetAddress: "+targetAddress);
-               target = new URI(targetAddress);
+               target = new URL(targetAddress);
                System.out.println("target.getHost: "+target.getHost());
                System.out.println("target.getPort: "+target.getPort());
             }
-            catch (URISyntaxException e)
+            catch (MalformedURLException e)
             {
                throw new RuntimeException("Invalid address: " + targetAddress, e);
             }
-            ChannelFuture future = bootstrap.connect(new InetSocketAddress(target.getHost(), target.getPort()));
+            ChannelFuture future = bootstrap.connect(getSocketAddress(target));
 
             //Wait until the connection attempt succeeds or fails
             awaitUninterruptibly(future, timeout);
@@ -260,7 +259,7 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
             MessageTrace.traceMessage("Outgoing Request Message", reqMessage);
 
             //Send the HTTP request
-            HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, reqMessage != null ? HttpMethod.POST : HttpMethod.GET, target.toASCIIString());
+            HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, reqMessage != null ? HttpMethod.POST : HttpMethod.GET, targetAddress);
             request.addHeader(HttpHeaders.Names.HOST, target.getHost());
             request.addHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
             Map<String, Object> additionalHeaders = new HashMap<String, Object>();
@@ -332,6 +331,25 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
 //            System.out.println("Rilasciato");
          }
       }
+   }
+   
+   private InetSocketAddress getSocketAddress(URL target)
+   {
+      int port = target.getPort();
+      if (port < 0)
+      {
+         //use default port
+         String protocol = target.getProtocol();
+         if ("http".equalsIgnoreCase(protocol))
+         {
+            port = 80;
+         }
+         else if ("https".equalsIgnoreCase(protocol))
+         {
+            port = 443;
+         }
+      }
+      return new InetSocketAddress(target.getHost(), port);
    }
    
    private void writeRequest(Channel channel, HttpRequest request, MessageAbstraction reqMessage) throws IOException

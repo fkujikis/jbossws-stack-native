@@ -114,7 +114,6 @@ public class SubscriptionManagerTestCase extends JBossWSTest
       assertNotNull(subscriptionTicket.getExpires());
       assertTrue(subscriptionTicket.getExpires().getTime() > System.currentTimeMillis());
       assertNotNull(subscriptionTicket.getSubscriptionManager());
-      zzzz();
    }
 
    /**
@@ -136,7 +135,6 @@ public class SubscriptionManagerTestCase extends JBossWSTest
       {
          // ignore expected exception
       }
-      zzzz();
    }
 
    public void testExceedsMaxLeaseTime() throws Exception
@@ -151,7 +149,6 @@ public class SubscriptionManagerTestCase extends JBossWSTest
       {
          // ignore expected exception
       }
-      zzzz();
    }
 
    /**
@@ -178,7 +175,6 @@ public class SubscriptionManagerTestCase extends JBossWSTest
       {
          // ignore expected exception
       }
-      zzzz();
    }
 
    public void testDispatch() throws Exception
@@ -191,7 +187,6 @@ public class SubscriptionManagerTestCase extends JBossWSTest
 
       Element payload = DOMUtils.parse(eventString);
       subscriptionManager.dispatch(eventSourceNS, payload);
-      zzzz();
    }
 
    public void testXPathFilter() throws Exception
@@ -203,14 +198,5 @@ public class SubscriptionManagerTestCase extends JBossWSTest
 
       Element event = DOMUtils.parse(eventString);
       subscriptionManager.dispatch(eventSourceNS, event);
-      zzzz();
-   }
-   
-   private void zzzz() {
-      try
-      {
-         Thread.currentThread().sleep(30000);
-      }
-      catch (Exception e) {}
    }
 }
