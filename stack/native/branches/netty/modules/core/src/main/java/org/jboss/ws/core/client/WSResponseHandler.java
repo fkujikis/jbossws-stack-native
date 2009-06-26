@@ -21,7 +21,6 @@
  */
 package org.jboss.ws.core.client;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,7 +60,6 @@ public class WSResponseHandler extends SimpleChannelUpstreamHandler
    {
       try
       {
-//         System.out.println(new Date() + " Message received");
          reset();
          HttpResponse response = (HttpResponse)e.getMessage();
 
@@ -74,9 +72,7 @@ public class WSResponseHandler extends SimpleChannelUpstreamHandler
          }
 
          ChannelBuffer content = response.getContent();
-//         System.out.println(new Date() + " Unmarshall...");
          this.responseMessage = (MessageAbstraction)unmarshaller.read(content.readable() ? new ChannelBufferInputStream(content) : null, responseHeaders);
-//         System.out.println(new Date() + " Esco da message received...");
       }
       catch (Throwable t)
       {

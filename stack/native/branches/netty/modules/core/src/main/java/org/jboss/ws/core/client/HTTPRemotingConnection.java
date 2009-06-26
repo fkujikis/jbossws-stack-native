@@ -120,10 +120,7 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
 
    public HTTPRemotingConnection()
    {
-      //      // HTTPClientInvoker connect sends gratuitous POST
-      //      // http://jira.jboss.com/jira/browse/JBWS-711
-      //      clientConfig.put(Client.ENABLE_LEASE, false);
-      //      clientConfig.put(HTTPClientInvoker.UNMARSHAL_NULL_STREAM, "true");
+      
    }
 
    public boolean isClosed()
@@ -158,7 +155,6 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
     */
    public MessageAbstraction invoke(MessageAbstraction reqMessage, Object endpoint, boolean oneway, boolean maintainSession) throws IOException
    {
-//      System.out.println("Entro...");
       if (endpoint == null)
          throw new IllegalArgumentException("Given endpoint cannot be null");
 
@@ -192,7 +188,6 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
       }
 
       //Netty client
-      //      Map<String, Object> metadata = getMetadata(reqMessage, callProps);
       UnMarshaller unmarshaller = getUnmarshaller();
 
       ChannelFactory factory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
@@ -228,15 +223,11 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
          Channel channel = null;
          try
          {
-//            System.out.println(new Date() + " Inizio connection attempt...");
             //Start the connection attempt
             URL target;
             try
             {
-               System.out.println("targetAddress: "+targetAddress);
                target = new URL(targetAddress);
-               System.out.println("target.getHost: "+target.getHost());
-               System.out.println("target.getPort: "+target.getPort());
             }
             catch (MalformedURLException e)
             {
@@ -270,7 +261,6 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
 
             writeRequest(channel, request, reqMessage);
 
-//            System.out.println("oneway=" + oneway + " maintainSession=" + maintainSession);
             if (oneway && !maintainSession)
             {
                //No need to wait for the connection to be closed
@@ -300,12 +290,10 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
 
             //Trace the incoming response message
             MessageTrace.traceMessage("Incoming Response Message", resMessage);
-//            System.out.println(new Date() + " Fatto.");
             return resMessage;
          }
          catch (IOException ioe)
          {
-            ioe.printStackTrace();
             throw ioe;
          }
          catch (WSTimeoutException toe)
@@ -314,21 +302,18 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
          }
          catch (Throwable t)
          {
-            t.printStackTrace();
             IOException io = new IOException("Could not transmit message");
             io.initCause(t);
             throw io;
          }
          finally
          {
-//            System.out.println("Mi preparo a rilasciare...");
             if (channel != null)
             {
                channel.close();
             }
             //Shut down executor threads to exit
             factory.releaseExternalResources();
-//            System.out.println("Rilasciato");
          }
       }
    }
@@ -391,7 +376,6 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
     */
    private static void awaitUninterruptibly(ChannelFuture future, Long timeout) throws WSTimeoutException
    {
-//      System.out.println(new Date() + " Inizio attesa...");
       if (timeout != null && timeout.longValue() > 0)
       {
          boolean bool = future.awaitUninterruptibly(timeout);
@@ -404,7 +388,6 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
       {
          future.awaitUninterruptibly();
       }
-//      System.out.println(new Date() + " Fine attesa.");
    }
 
    protected void setActualChunkedLength(HttpRequest message)
@@ -476,99 +459,6 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
          }
       }
    }
-
-   //   private Map<String, Object> createRemotingMetaData(MessageAbstraction reqMessage, Map callProps)
-   //   {
-   //      CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
-   //
-   //      Map<String, Object> metadata = new HashMap<String, Object>();
-   //
-   //      // We need to unmarshall faults (HTTP 500)
-   //      // metadata.put(HTTPMetadataConstants.NO_THROW_ON_ERROR, "true"); // since 2.0.0.GA
-   //      metadata.put("NoThrowOnError", "true");
-   //
-   //      if (reqMessage != null)
-   //      {
-   //         populateHeaders(reqMessage, metadata);
-   //
-   //         // Enable chunked encoding. This is the default size. 
-   //         int chunkSizeValue = (chunkedLength != null ? chunkedLength : 1024);
-   //
-   //         // Overwrite, through endpoint config
-   //         if (msgContext != null)
-   //         {
-   //            EndpointMetaData epMetaData = msgContext.getEndpointMetaData();
-   //            CommonConfig config = epMetaData.getConfig();
-   //
-   //            String sizeValue = config.getProperty(EndpointProperty.CHUNKED_ENCODING_SIZE);
-   //            if (sizeValue != null)
-   //               chunkSizeValue = Integer.valueOf(sizeValue);
-   //
-   //            if (epMetaData.isFeatureEnabled(FastInfosetFeature.class))
-   //               chunkSizeValue = 0;
-   //         }
-   //
-   //         if (chunkSizeValue > 0)
-   //         {
-   //            clientConfig.put("chunkedLength", String.valueOf(chunkSizeValue));
-   //         }
-   //         else
-   //         {
-   //            clientConfig.remove("chunkedLength");
-   //         }
-   //      }
-   //      else
-   //      {
-   //         metadata.put("TYPE", "GET");
-   //      }
-   //
-   //      if (callProps != null)
-   //      {
-   //         Iterator it = callProps.entrySet().iterator();
-   //
-   //         // Get authentication type, default to BASIC authetication
-   //         String authType = (String)callProps.get(StubExt.PROPERTY_AUTH_TYPE);
-   //         if (authType == null)
-   //            authType = StubExt.PROPERTY_AUTH_TYPE_BASIC;
-   //
-   //         while (it.hasNext())
-   //         {
-   //            Map.Entry entry = (Map.Entry)it.next();
-   //            String key = (String)entry.getKey();
-   //            Object val = entry.getValue();
-   //
-   //            // pass properties to remoting meta data
-   //            if (metadataMap.containsKey(key))
-   //            {
-   //               String remotingKey = metadataMap.get(key);
-   //               if ("http.basic.username".equals(remotingKey) || "http.basic.password".equals(remotingKey))
-   //               {
-   //                  if (authType.equals(StubExt.PROPERTY_AUTH_TYPE_BASIC))
-   //                  {
-   //                     metadata.put(remotingKey, val);
-   //                  }
-   //                  else
-   //                  {
-   //                     log.warn("Ignore '" + key + "' with auth typy: " + authType);
-   //                  }
-   //               }
-   //               else
-   //               {
-   //                  metadata.put(remotingKey, val);
-   //               }
-   //            }
-   //
-   //            // pass properties to remoting client config
-   //            if (configMap.containsKey(key))
-   //            {
-   //               String remotingKey = configMap.get(key);
-   //               clientConfig.put(remotingKey, val);
-   //            }
-   //         }
-   //      }
-   //
-   //      return metadata;
-   //   }
 
    protected void populateHeaders(MessageAbstraction reqMessage, Map<String, Object> metadata)
    {
