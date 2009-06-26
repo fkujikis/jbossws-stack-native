@@ -85,6 +85,8 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
 {
    // provide logging
    private static Logger log = Logger.getLogger(HTTPRemotingConnection.class);
+   
+   private static final int DEFAULT_CHUNK_SIZE = 1024;
 
    //   private Map<String, Object> clientConfig = new HashMap<String, Object>();
 
@@ -114,7 +116,7 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
    //   }
 
    private boolean closed;
-   private Integer chunkedLength;
+   private Integer chunkSize = new Integer(DEFAULT_CHUNK_SIZE);
 
    private static final RMChannel RM_CHANNEL = RMChannel.getInstance();
 
@@ -133,14 +135,14 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
       this.closed = closed;
    }
 
-   public Integer getChunkedLength()
+   public Integer getChunkSize()
    {
-      return chunkedLength;
+      return chunkSize;
    }
 
-   public void setChunkedLength(Integer chunkedLength)
+   public void setChunkSize(Integer chunkSize)
    {
-      this.chunkedLength = chunkedLength;
+      this.chunkSize = chunkSize;
    }
 
    public MessageAbstraction invoke(MessageAbstraction reqMessage, Object endpoint, boolean oneway) throws IOException
@@ -348,19 +350,29 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
          ChannelBuffer content = ChannelBuffers.dynamicBuffer();
          OutputStream os = new ChannelBufferOutputStream(content);
          getMarshaller().write(reqMessage, os);
-         if (request.isChunked())
+         
+         int cs = chunkSize;
+         if (cs > 0) //chunked encoding
          {
-            //TODO!! handle chunks here...
+            request.addHeader(HttpHeaders.Names.TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
+            //write headers
             channel.write(request);
-      
-            HttpChunk chunk = new DefaultHttpChunk(content);
-            channel.write(chunk);
-      
+            //write content chunks
+            int size = content.readableBytes();
+            int cur = 0;
+            while (cur < size)
+            {
+               int to = Math.min(cur + cs, size);
+               HttpChunk chunk = new DefaultHttpChunk(content.slice(cur, to - cur));
+               channel.write(chunk);
+               cur = to;
+            }
+            //write last chunk
             channel.write(HttpChunk.LAST_CHUNK);
          }
          else
          {
-            request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(content.writerIndex()));
+            request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(content.readableBytes()));
             request.setContent(content);
             channel.write(request);
          }
@@ -396,7 +408,7 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
       {
          CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
          //We always use chunked transfer encoding 
-         int chunkSizeValue = (chunkedLength != null ? chunkedLength : 1024);
+//         int chunkSizeValue = (chunkSize != null ? chunkSize : 1024);
          // Overwrite, through endpoint config
          if (msgContext != null)
          {
@@ -405,13 +417,9 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
    
             String sizeValue = config.getProperty(EndpointProperty.CHUNKED_ENCODING_SIZE);
             if (sizeValue != null)
-               chunkSizeValue = Integer.valueOf(sizeValue);
+               chunkSize = Integer.valueOf(sizeValue);
             if (epMetaData.isFeatureEnabled(FastInfosetFeature.class))
-               chunkSizeValue = 0;
-         }
-         if (chunkSizeValue > 0)
-         {
-            message.addHeader(HttpHeaders.Names.TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
+               chunkSize = 0;
          }
       }
    }
