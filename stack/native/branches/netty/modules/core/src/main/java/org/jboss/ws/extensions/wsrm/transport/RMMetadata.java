@@ -23,8 +23,9 @@ package org.jboss.ws.extensions.wsrm.transport;
 
 import java.util.Map;
 import java.util.HashMap;
-import org.jboss.remoting.marshal.Marshaller;
-import org.jboss.remoting.marshal.UnMarshaller;
+
+import org.jboss.ws.core.client.Marshaller;
+import org.jboss.ws.core.client.UnMarshaller;
 
 /**
  * RM metadata heavily used by this RM transport
