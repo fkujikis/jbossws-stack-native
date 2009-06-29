@@ -31,7 +31,6 @@ import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.ws.core.MessageAbstraction;
 
 /**
  * A Netty channel upstream handler that receives MessageEvent
@@ -45,7 +44,7 @@ import org.jboss.ws.core.MessageAbstraction;
 public class WSResponseHandler extends SimpleChannelUpstreamHandler
 {
    private UnMarshaller unmarshaller;
-   private MessageAbstraction responseMessage;
+   private Object responseMessage;
    private Map<String, Object> responseHeaders;
    private Throwable error;
 
@@ -72,7 +71,7 @@ public class WSResponseHandler extends SimpleChannelUpstreamHandler
          }
 
          ChannelBuffer content = response.getContent();
-         this.responseMessage = (MessageAbstraction)unmarshaller.read(content.readable() ? new ChannelBufferInputStream(content) : null, responseHeaders);
+         this.responseMessage = unmarshaller.read(content.readable() ? new ChannelBufferInputStream(content) : null, responseHeaders);
       }
       catch (Throwable t)
       {
@@ -91,7 +90,7 @@ public class WSResponseHandler extends SimpleChannelUpstreamHandler
       this.responseHeaders = new HashMap<String, Object>();
    }
 
-   public MessageAbstraction getResponseMessage()
+   public Object getResponseMessage()
    {
       return this.responseMessage;
    }
