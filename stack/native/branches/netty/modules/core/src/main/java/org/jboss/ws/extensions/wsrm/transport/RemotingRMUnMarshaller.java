@@ -26,16 +26,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.jboss.ws.core.client.UnMarshaller;
+import org.jboss.remoting.marshal.UnMarshaller;
+
 
 /**
  * Unmarshalls byte array from the input stream
  * 
  * @author richard.opalka@jboss.com
  */
-public final class RMUnMarshaller implements UnMarshaller
+public final class RemotingRMUnMarshaller implements UnMarshaller
 {
-   private static final UnMarshaller instance = new RMUnMarshaller();
+   private static final UnMarshaller instance = new RemotingRMUnMarshaller();
 
    public UnMarshaller cloneUnMarshaller() throws CloneNotSupportedException
    {
@@ -62,6 +63,12 @@ public final class RMUnMarshaller implements UnMarshaller
          count = is.read(buffer);
       }
       return RMMessageFactory.newMessage(baos.toByteArray(), new RMMetadata(metadata));
+   }
+
+   public void setClassLoader(ClassLoader classloader)
+   {
+      // TODO Auto-generated method stub
+      
    }
 
 }

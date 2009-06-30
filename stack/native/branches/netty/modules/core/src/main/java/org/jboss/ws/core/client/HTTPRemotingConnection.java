@@ -34,6 +34,7 @@ import org.jboss.logging.Logger;
 import org.jboss.ws.core.MessageAbstraction;
 import org.jboss.ws.core.MessageTrace;
 import org.jboss.ws.extensions.wsrm.transport.RMChannel;
+import org.jboss.ws.extensions.wsrm.transport.RMMetadata;
 import org.jboss.ws.extensions.wsrm.transport.RMTransportHelper;
 
 /**
@@ -153,18 +154,19 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
 
       if (RMTransportHelper.isRMMessage(callProps))
       {
-//                  try
-//                  {
-//                  RMMetadata rmMetadata = new RMMetadata(null, targetAddress, marshaller, unmarshaller, callProps, metadata, null); //TODO!! remoting version, client config, etc.
-//                  return RM_CHANNEL.send(reqMessage, rmMetadata);
-//                  }
-//                  catch (Throwable t)
-//                  {
-//                     IOException io = new IOException();
-//                     io.initCause(t);
-//                     throw io;
-//                  }
-         return null; //TODO!!!
+         try
+         {
+            Map<String, Object> additionalHeaders = new HashMap<String, Object>();
+            populateHeaders(reqMessage, additionalHeaders);
+            RMMetadata rmMetadata = new RMMetadata(targetAddress, getMarshaller(), getUnmarshaller(), callProps, additionalHeaders);
+            return RM_CHANNEL.send(reqMessage, rmMetadata);
+         }
+         catch (Throwable t)
+         {
+            IOException io = new IOException();
+            io.initCause(t);
+            throw io;
+         }
       }
       else
       {
