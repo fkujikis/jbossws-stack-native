@@ -415,7 +415,6 @@ public class RequestHandlerImpl implements RequestHandler
          throw new IllegalStateException("Cannot obtain endpoint meta data");
 
       long beginProcessing = 0;
-      ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
       try
       {
          EndpointState state = ep.getState();
@@ -460,10 +459,6 @@ public class RequestHandlerImpl implements RequestHandler
 
          // debug the incomming message
          MessageTrace.traceMessage("Incoming Request Message", reqMessage);
-
-         // Set the thread context class loader
-         ClassLoader classLoader = sepMetaData.getClassLoader();
-         Thread.currentThread().setContextClassLoader(classLoader);
 
          // Get the Invoker
          ServiceEndpointInvoker epInvoker = ep.getAttachment(ServiceEndpointInvoker.class);
@@ -523,8 +518,6 @@ public class RequestHandlerImpl implements RequestHandler
             log.error("Cannot process metrics", ex);
          }
 
-         // Reset the thread context class loader
-         Thread.currentThread().setContextClassLoader(ctxClassLoader);
          log.debug("END handleRequest: " + ep.getName());
       }
    }

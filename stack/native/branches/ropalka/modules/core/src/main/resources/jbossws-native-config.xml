@@ -78,22 +78,12 @@
 
   <!-- Deployment aspect installers -->
   <!-- Phase 1 -->
-  <bean name="WSNativePhaseOneDeploymentAspectInstaller" class="org.jboss.wsf.framework.deployment.DeploymentAspectInstaller">
-    <property name="manager"><inject bean="WSPhaseOneDeploymentAspectManager"/></property>
+  <bean name="WSNativeDeploymentAspectInstaller" class="org.jboss.wsf.framework.deployment.DeploymentAspectInstaller">
+    <property name="manager"><inject bean="WSDeploymentAspectManager"/></property>
     <property name="sortAspectsOnCreate">true</property>
     <property name="aspects">
       <set class="java.util.HashSet" elementClass="org.jboss.wsf.spi.deployment.DeploymentAspect">
         <inject bean="WSNativeContextPropertiesDeploymentAspect"/>
-      </set>
-    </property>
-    <depends>WSPhaseOneDeploymentAspectInstaller</depends>
-  </bean>
-  <!-- Phase 2 -->
-  <bean name="WSNativePhaseTwoDeploymentAspectInstaller" class="org.jboss.wsf.framework.deployment.DeploymentAspectInstaller">
-    <property name="manager"><inject bean="WSPhaseTwoDeploymentAspectManager"/></property>
-    <property name="sortAspectsOnCreate">true</property>
-    <property name="aspects">
-      <set class="java.util.HashSet" elementClass="org.jboss.wsf.spi.deployment.DeploymentAspect">        
         <inject bean="WSNativeEndpointHandlerDeploymentAspect"/>
         <inject bean="WSNativeEndpointRecordProcessorDeploymentAspect"/>
         <inject bean="WSNativeEventingDeploymentAspect"/>
@@ -105,6 +95,5 @@
         <inject bean="WSJAXBIntroDeploymentAspect"/>
       </set>
     </property>
-    <depends>WSPhaseTwoDeploymentAspectInstaller</depends>
+    <depends>WSDeploymentAspectInstaller</depends>
   </bean>
-
