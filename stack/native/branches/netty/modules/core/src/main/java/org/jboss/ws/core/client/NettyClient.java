@@ -68,6 +68,9 @@ import org.jboss.ws.metadata.umdm.EndpointMetaData;
  */
 public class NettyClient
 {
+   public static final String RESPONSE_CODE = "ResponseCode";
+   public static final String RESPONSE_CODE_MESSAGE = "ResponseCodeMessage";
+   
    private Marshaller marshaller;
    private UnMarshaller unmarshaller;
    private Long timeout;

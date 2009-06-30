@@ -62,9 +62,8 @@ public class WSResponseHandler extends SimpleChannelUpstreamHandler
          reset();
          HttpResponse response = (HttpResponse)e.getMessage();
 
-         //TODO!! fix constants
-         responseHeaders.put("ResponseCode", response.getStatus().getCode());
-         responseHeaders.put("ResponseCodeMessage", response.getStatus().getReasonPhrase());
+         responseHeaders.put(NettyClient.RESPONSE_CODE, response.getStatus().getCode());
+         responseHeaders.put(NettyClient.RESPONSE_CODE_MESSAGE, response.getStatus().getReasonPhrase());
          for (String headerName : response.getHeaderNames())
          {
             responseHeaders.put(headerName, response.getHeaders(headerName));

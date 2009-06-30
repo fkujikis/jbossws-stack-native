@@ -34,6 +34,7 @@ import javax.xml.soap.SOAPMessage;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
+import org.jboss.ws.core.client.NettyClient;
 import org.jboss.ws.core.client.UnMarshaller;
 
 /**
@@ -62,8 +63,7 @@ public class SOAPMessageUnMarshallerHTTP implements UnMarshaller
 
       try
       {
-         //TODO!!!! fix constants
-         Integer resCode = (Integer)metadata.get("ResponseCode");
+         Integer resCode = (Integer)metadata.get(NettyClient.RESPONSE_CODE);
          if (resCode == null)
          {
             log.warn("No HTTP resonse code, assuming: SC_OK");
