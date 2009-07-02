@@ -1,3 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+
   <!-- The registry for web service endpoints -->
   <bean name="WSEndpointRegistry" class="org.jboss.wsf.framework.management.ManagedEndpointRegistry">
     <property name="mbeanServer"><inject bean="WSMBeanServerLocator" property="mbeanServer"/></property>
@@ -166,3 +170,5 @@
     </constructor>
     <property name="relativeOrder">21</property> <!-- [JBDEPLOY-201] workaround -->
   </bean>
+
+</deployment>
