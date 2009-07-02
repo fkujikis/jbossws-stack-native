@@ -22,7 +22,7 @@
 
   <!-- The stack specific deployment aspects wrapped in deployers -->
   <bean name="WSNativeContextPropertiesDeploymentAspect" class="org.jboss.wsf.framework.deployment.ContextPropertiesDeploymentAspect">
-    <property name="provides">ContextProperties, StackDescriptor, StackSpecificMetaData</property>
+    <property name="provides">ContextProperties, StackDescriptor</property>
     <property name="contextProperties">
       <map keyClass="java.lang.String" valueClass="java.lang.String">
         <entry><key>org.jboss.ws.webapp.ServletClass</key><value>org.jboss.wsf.stack.jbws.EndpointServlet</value></entry>
@@ -41,7 +41,7 @@
 
   <bean name="WSNativeEagerInitializeDeploymentAspect" class="org.jboss.wsf.stack.jbws.EagerInitializeDeploymentAspect">
     <property name="requires">UnifiedMetaDataModel</property>
-    <property name="provides">InitializedMetaDataModel, StackSpecificMetaData</property>
+    <property name="provides">InitializedMetaDataModel</property>
   </bean>
 
   <bean name="WSNativeEagerInitializeDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
@@ -55,7 +55,7 @@
 
   <bean name="WSNativeEndpointHandlerDeploymentAspect" class="org.jboss.wsf.framework.deployment.EndpointHandlerDeploymentAspect">
     <property name="requires">ContainerMetaData</property>
-    <property name="provides">StackEndpointHandler, StackSpecificMetaData</property>
+    <property name="provides">StackEndpointHandler</property>
   </bean>
 
   <bean name="WSNativeEndpointHandlerDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
@@ -70,7 +70,7 @@
   <bean name="WSNativeEndpointRecordProcessorDeploymentAspect" class="org.jboss.wsf.framework.deployment.EndpointRecordProcessorDeploymentAspect">
     <property name="mbeanServer"><inject bean="WSMBeanServerLocator" property="mbeanServer"/></property>
     <property name="requires">RegisteredEndpoint</property>
-    <property name="provides">EndpointRecordProcessors, StackSpecificMetaData</property>
+    <property name="provides">EndpointRecordProcessors</property>
     <property name="processors">
       <list class="java.util.ArrayList" elementClass="org.jboss.wsf.spi.management.recording.RecordProcessor">
         <inject bean="WSMemoryBufferRecorder"/>
@@ -90,7 +90,6 @@
 
   <bean name="WSNativeEventingDeploymentAspect" class="org.jboss.wsf.stack.jbws.EventingDeploymentAspect">
     <property name="requires">UnifiedMetaDataModel</property>
-    <property name="provides">StackSpecificMetaData</property>
   </bean>
 
   <bean name="WSNativeEventingDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
@@ -104,7 +103,7 @@
 
   <bean name="WSNativePublishContractDeploymentAspect" class="org.jboss.wsf.stack.jbws.PublishContractDeploymentAspect">
     <property name="requires">UnifiedMetaDataModel, JAXBIntros</property>
-    <property name="provides">PublishedContract, StackSpecificMetaData</property>
+    <property name="provides">PublishedContract</property>
   </bean>
 
   <bean name="WSNativePublishContractDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
@@ -118,7 +117,6 @@
 
   <bean name="WSNativeServiceEndpointInvokerDeploymentAspect" class="org.jboss.wsf.stack.jbws.ServiceEndpointInvokerDeploymentAspect">
     <property name="requires">UnifiedMetaDataModel</property>
-    <property name="provides">StackSpecificMetaData</property>
   </bean>
 
   <bean name="WSNativeServiceEndpointInvokerDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
@@ -132,7 +130,6 @@
 
   <bean name="WSNativeRMDeploymentAspect" class="org.jboss.ws.extensions.wsrm.server.RMDeploymentAspect">
     <property name="requires">StackEndpointHandler, UnifiedMetaDataModel</property>
-    <property name="provides">StackSpecificMetaData</property>
   </bean>
 
   <bean name="WSNativeRMDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
@@ -145,8 +142,8 @@
   </bean>
 
   <bean name="WSNativeUnifiedMetaDataDeploymentAspect" class="org.jboss.wsf.stack.jbws.UnifiedMetaDataDeploymentAspect">
-    <property name="requires">RuntimeLoader, ContainerMetaData, URLPattern, VFSRoot, JAXBIntros</property>
-    <property name="provides">UnifiedMetaDataModel, StackSpecificMetaData</property>
+    <property name="requires">ContainerMetaData, URLPattern, VFSRoot, JAXBIntros</property>
+    <property name="provides">UnifiedMetaDataModel</property>
   </bean>
 
   <bean name="WSNativeUnifiedMetaDataDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
@@ -159,7 +156,7 @@
   </bean>
 
   <bean name="WSJAXBIntroDeploymentAspect" class="org.jboss.wsf.stack.jbws.JAXBIntroDeploymentAspect">
-    <property name="provides">JAXBIntros, StackSpecificMetaData</property>
+    <property name="provides">JAXBIntros</property>
   </bean>
 
   <bean name="WSJAXBIntroDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
