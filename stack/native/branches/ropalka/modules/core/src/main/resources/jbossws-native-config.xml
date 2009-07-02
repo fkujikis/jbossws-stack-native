@@ -30,7 +30,7 @@
     </property>
   </bean>
 
-  <bean name="WSNativeContextPropertiesDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
+  <bean name="WSNativeContextPropertiesDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
     <constructor>
       <parameter>
         <inject bean="WSNativeContextPropertiesDeploymentAspect"/>
@@ -44,7 +44,7 @@
     <property name="provides">InitializedMetaDataModel</property>
   </bean>
 
-  <bean name="WSNativeEagerInitializeDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
+  <bean name="WSNativeEagerInitializeDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
     <constructor>
       <parameter>
         <inject bean="WSNativeEagerInitializeDeploymentAspect"/>
@@ -58,7 +58,7 @@
     <property name="provides">StackEndpointHandler</property>
   </bean>
 
-  <bean name="WSNativeEndpointHandlerDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
+  <bean name="WSNativeEndpointHandlerDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
     <constructor>
       <parameter>
         <inject bean="WSNativeEndpointHandlerDeploymentAspect"/>
@@ -79,7 +79,7 @@
     </property>
   </bean>
 
-  <bean name="WSNativeEndpointRecordProcessorDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
+  <bean name="WSNativeEndpointRecordProcessorDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
     <constructor>
       <parameter>
         <inject bean="WSNativeEndpointRecordProcessorDeploymentAspect"/>
@@ -92,7 +92,7 @@
     <property name="requires">UnifiedMetaDataModel</property>
   </bean>
 
-  <bean name="WSNativeEventingDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
+  <bean name="WSNativeEventingDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
     <constructor>
       <parameter>
         <inject bean="WSNativeEventingDeploymentAspect"/>
@@ -106,7 +106,7 @@
     <property name="provides">PublishedContract</property>
   </bean>
 
-  <bean name="WSNativePublishContractDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
+  <bean name="WSNativePublishContractDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
     <constructor>
       <parameter>
         <inject bean="WSNativePublishContractDeploymentAspect"/>
@@ -119,7 +119,7 @@
     <property name="requires">UnifiedMetaDataModel</property>
   </bean>
 
-  <bean name="WSNativeServiceEndpointInvokerDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
+  <bean name="WSNativeServiceEndpointInvokerDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
     <constructor>
       <parameter>
         <inject bean="WSNativeServiceEndpointInvokerDeploymentAspect"/>
@@ -132,7 +132,7 @@
     <property name="requires">StackEndpointHandler, UnifiedMetaDataModel</property>
   </bean>
 
-  <bean name="WSNativeRMDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
+  <bean name="WSNativeRMDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
     <constructor>
       <parameter>
         <inject bean="WSNativeRMDeploymentAspect"/>
@@ -146,7 +146,7 @@
     <property name="provides">UnifiedMetaDataModel</property>
   </bean>
 
-  <bean name="WSNativeUnifiedMetaDataDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
+  <bean name="WSNativeUnifiedMetaDataDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
     <constructor>
       <parameter>
         <inject bean="WSNativeUnifiedMetaDataDeploymentAspect"/>
@@ -159,7 +159,7 @@
     <property name="provides">JAXBIntros</property>
   </bean>
 
-  <bean name="WSJAXBIntroDeployer" class="org.jboss.wsf.container.jboss50.deployer.WSDeploymentAspectDeployer">
+  <bean name="WSJAXBIntroDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
     <constructor>
       <parameter>
         <inject bean="WSJAXBIntroDeploymentAspect"/>
