@@ -20,7 +20,7 @@
     <property name="recording">false</property>
   </bean>
 
-  <!-- The stack specific deployment aspects wrapped in deployers -->
+  <!-- The stack specific deployment aspects -->
   <bean name="WSNativeContextPropertiesDeploymentAspect" class="org.jboss.wsf.framework.deployment.ContextPropertiesDeploymentAspect">
     <property name="provides">ContextProperties, StackDescriptor</property>
     <property name="contextProperties">
