@@ -28,42 +28,18 @@
         <entry><key>org.jboss.ws.webapp.ServletClass</key><value>org.jboss.wsf.stack.jbws.EndpointServlet</value></entry>
       </map>
     </property>
-  </bean>
-
-  <bean name="WSNativeContextPropertiesDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
-    <constructor>
-      <parameter>
-        <inject bean="WSNativeContextPropertiesDeploymentAspect"/>
-      </parameter>
-    </constructor>
     <property name="relativeOrder">31</property> <!-- [JBDEPLOY-201] workaround -->
   </bean>
 
   <bean name="WSNativeEagerInitializeDeploymentAspect" class="org.jboss.wsf.stack.jbws.EagerInitializeDeploymentAspect">
     <property name="requires">UnifiedMetaDataModel</property>
     <property name="provides">InitializedMetaDataModel</property>
-  </bean>
-
-  <bean name="WSNativeEagerInitializeDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
-    <constructor>
-      <parameter>
-        <inject bean="WSNativeEagerInitializeDeploymentAspect"/>
-      </parameter>
-    </constructor>
     <property name="relativeOrder">25</property> <!-- [JBDEPLOY-201] workaround -->
   </bean>
 
   <bean name="WSNativeEndpointHandlerDeploymentAspect" class="org.jboss.wsf.framework.deployment.EndpointHandlerDeploymentAspect">
     <property name="requires">ContainerMetaData</property>
     <property name="provides">StackEndpointHandler</property>
-  </bean>
-
-  <bean name="WSNativeEndpointHandlerDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
-    <constructor>
-      <parameter>
-        <inject bean="WSNativeEndpointHandlerDeploymentAspect"/>
-      </parameter>
-    </constructor>
     <property name="relativeOrder">13</property> <!-- [JBDEPLOY-201] workaround -->
   </bean>
 
@@ -77,94 +53,38 @@
         <inject bean="WSLogRecorder"/>
       </list>
     </property>
-  </bean>
-
-  <bean name="WSNativeEndpointRecordProcessorDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
-    <constructor>
-      <parameter>
-        <inject bean="WSNativeEndpointRecordProcessorDeploymentAspect"/>
-      </parameter>
-    </constructor>
     <property name="relativeOrder">36</property> <!-- [JBDEPLOY-201] workaround -->
   </bean>
 
   <bean name="WSNativeEventingDeploymentAspect" class="org.jboss.wsf.stack.jbws.EventingDeploymentAspect">
     <property name="requires">UnifiedMetaDataModel</property>
-  </bean>
-
-  <bean name="WSNativeEventingDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
-    <constructor>
-      <parameter>
-        <inject bean="WSNativeEventingDeploymentAspect"/>
-      </parameter>
-    </constructor>
     <property name="relativeOrder">26</property> <!-- [JBDEPLOY-201] workaround -->
   </bean>
 
   <bean name="WSNativePublishContractDeploymentAspect" class="org.jboss.wsf.stack.jbws.PublishContractDeploymentAspect">
     <property name="requires">UnifiedMetaDataModel, JAXBIntros</property>
     <property name="provides">PublishedContract</property>
-  </bean>
-
-  <bean name="WSNativePublishContractDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
-    <constructor>
-      <parameter>
-        <inject bean="WSNativePublishContractDeploymentAspect"/>
-      </parameter>
-    </constructor>
     <property name="relativeOrder">24</property> <!-- [JBDEPLOY-201] workaround -->
   </bean>
 
   <bean name="WSNativeServiceEndpointInvokerDeploymentAspect" class="org.jboss.wsf.stack.jbws.ServiceEndpointInvokerDeploymentAspect">
     <property name="requires">UnifiedMetaDataModel</property>
-  </bean>
-
-  <bean name="WSNativeServiceEndpointInvokerDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
-    <constructor>
-      <parameter>
-        <inject bean="WSNativeServiceEndpointInvokerDeploymentAspect"/>
-      </parameter>
-    </constructor>
     <property name="relativeOrder">23</property> <!-- [JBDEPLOY-201] workaround -->
   </bean>
 
   <bean name="WSNativeRMDeploymentAspect" class="org.jboss.ws.extensions.wsrm.server.RMDeploymentAspect">
     <property name="requires">StackEndpointHandler, UnifiedMetaDataModel</property>
-  </bean>
-
-  <bean name="WSNativeRMDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
-    <constructor>
-      <parameter>
-        <inject bean="WSNativeRMDeploymentAspect"/>
-      </parameter>
-    </constructor>
     <property name="relativeOrder">27</property> <!-- [JBDEPLOY-201] workaround -->
   </bean>
 
   <bean name="WSNativeUnifiedMetaDataDeploymentAspect" class="org.jboss.wsf.stack.jbws.UnifiedMetaDataDeploymentAspect">
     <property name="requires">ContainerMetaData, URLPattern, VFSRoot, JAXBIntros</property>
     <property name="provides">UnifiedMetaDataModel</property>
-  </bean>
-
-  <bean name="WSNativeUnifiedMetaDataDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
-    <constructor>
-      <parameter>
-        <inject bean="WSNativeUnifiedMetaDataDeploymentAspect"/>
-      </parameter>
-    </constructor>
     <property name="relativeOrder">22</property> <!-- [JBDEPLOY-201] workaround -->
   </bean>
 
   <bean name="WSJAXBIntroDeploymentAspect" class="org.jboss.wsf.stack.jbws.JAXBIntroDeploymentAspect">
     <property name="provides">JAXBIntros</property>
-  </bean>
-
-  <bean name="WSJAXBIntroDeployer" class="org.jboss.webservices.integration.deployers.WSDeploymentAspectDeployer">
-    <constructor>
-      <parameter>
-        <inject bean="WSJAXBIntroDeploymentAspect"/>
-      </parameter>
-    </constructor>
     <property name="relativeOrder">21</property> <!-- [JBDEPLOY-201] workaround -->
   </bean>
 
