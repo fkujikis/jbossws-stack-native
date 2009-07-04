@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import javax.net.ssl.SSLEngine;
 import javax.xml.rpc.Stub;
 import javax.xml.ws.BindingProvider;
 
@@ -49,10 +50,12 @@ import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.security.Base64Encoder;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.core.WSTimeoutException;
+import org.jboss.ws.core.client.ssl.SSLContextFactory;
 import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.feature.FastInfosetFeature;
 import org.jboss.ws.metadata.config.CommonConfig;
@@ -125,6 +128,16 @@ public class NettyClient
    public Object invoke(Object reqMessage, String targetAddress, boolean waitForResponse, Map<String, Object> additionalHeaders, Map<String, Object> callProps)
          throws IOException
    {
+      URL target;
+      try
+      {
+         target = new URL(targetAddress);
+      }
+      catch (MalformedURLException e)
+      {
+         throw new RuntimeException("Invalid address: " + targetAddress, e);
+      }
+      
       ChannelFactory factory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor);
 
       ClientBootstrap bootstrap = new ClientBootstrap(factory);
@@ -135,6 +148,14 @@ public class NettyClient
          responseHandler = new WSResponseHandler(unmarshaller);
          channelPipelineFactory.setResponseHandler(responseHandler);
       }
+      if ("https".equalsIgnoreCase(target.getProtocol()))
+      {
+         SSLContextFactory sslContextFactory = new SSLContextFactory(callProps);
+         SSLEngine engine = sslContextFactory.getSSLContext().createSSLEngine();
+         engine.setUseClientMode(true);
+         channelPipelineFactory.setSslHandler(new SslHandler(engine));
+      }
+      
       bootstrap.setPipelineFactory(channelPipelineFactory);
 
       Channel channel = null;
@@ -142,15 +163,6 @@ public class NettyClient
       {
          setActualTimeout(callProps);
          //Start the connection attempt
-         URL target;
-         try
-         {
-            target = new URL(targetAddress);
-         }
-         catch (MalformedURLException e)
-         {
-            throw new RuntimeException("Invalid address: " + targetAddress, e);
-         }
          ChannelFuture future = bootstrap.connect(getSocketAddress(target));
 
          //Wait until the connection attempt succeeds or fails

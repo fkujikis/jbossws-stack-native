@@ -40,12 +40,17 @@ public class WSClientPipelineFactory implements ChannelPipelineFactory
 {
    private static final int MAX_CONTENT_SIZE = 1073741824;
    private ChannelHandler responseHandler;
-   private ChannelHandler sshHandler;
+   private ChannelHandler sslHandler;
    
    public ChannelPipeline getPipeline() throws Exception
    {
       // Create a default pipeline implementation.
       ChannelPipeline pipeline = pipeline();
+      
+      if (sslHandler != null)
+      {
+         pipeline.addLast("ssl", sslHandler);
+      }
       pipeline.addLast("decoder", new HttpResponseDecoder());
       // Uncomment the following line if you don't want to handle HttpChunks.
       pipeline.addLast("aggregator", new HttpChunkAggregator(MAX_CONTENT_SIZE));
@@ -67,14 +72,14 @@ public class WSClientPipelineFactory implements ChannelPipelineFactory
       this.responseHandler = responseHandler;
    }
 
-   public ChannelHandler getSshHandler()
+   public ChannelHandler getSslHandler()
    {
-      return sshHandler;
+      return sslHandler;
    }
 
-   public void setSshHandler(ChannelHandler sshHandler)
+   public void setSslHandler(ChannelHandler sslHandler)
    {
-      this.sshHandler = sshHandler;
+      this.sslHandler = sslHandler;
    }
    
    

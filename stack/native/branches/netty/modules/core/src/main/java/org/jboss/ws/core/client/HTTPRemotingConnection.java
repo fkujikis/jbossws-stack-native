@@ -56,35 +56,6 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
    // provide logging
    private static Logger log = Logger.getLogger(HTTPRemotingConnection.class);
    
-//   private static final int DEFAULT_CHUNK_SIZE = 1024;
-
-   //   private Map<String, Object> clientConfig = new HashMap<String, Object>();
-
-   //   private static Map<String, String> metadataMap = new HashMap<String, String>();
-   //   static
-   //   {
-   //      metadataMap.put(Stub.USERNAME_PROPERTY, "http.basic.username");
-   //      metadataMap.put(Stub.PASSWORD_PROPERTY, "http.basic.password");
-   //      metadataMap.put(BindingProvider.USERNAME_PROPERTY, "http.basic.username");
-   //      metadataMap.put(BindingProvider.PASSWORD_PROPERTY, "http.basic.password");
-   //   }
-   //   private static Map<String, String> configMap = new HashMap<String, String>();
-   //   static
-   //   {
-   //      configMap.put(StubExt.PROPERTY_KEY_ALIAS, "org.jboss.remoting.keyAlias");
-   //      configMap.put(StubExt.PROPERTY_KEY_STORE, "org.jboss.remoting.keyStore");
-   //      configMap.put(StubExt.PROPERTY_KEY_STORE_ALGORITHM, "org.jboss.remoting.keyStoreAlgorithm");
-   //      configMap.put(StubExt.PROPERTY_KEY_STORE_PASSWORD, "org.jboss.remoting.keyStorePassword");
-   //      configMap.put(StubExt.PROPERTY_KEY_STORE_TYPE, "org.jboss.remoting.keyStoreType");
-   //      configMap.put(StubExt.PROPERTY_SOCKET_FACTORY, "socketFactoryClassName");
-   //      configMap.put(StubExt.PROPERTY_SSL_PROTOCOL, "org.jboss.remoting.sslProtocol");
-   //      configMap.put(StubExt.PROPERTY_SSL_PROVIDER_NAME, "org.jboss.remoting.sslProviderName");
-   //      configMap.put(StubExt.PROPERTY_TRUST_STORE, "org.jboss.remoting.trustStore");
-   //      configMap.put(StubExt.PROPERTY_TRUST_STORE_ALGORITHM, "org.jboss.remoting.truststoreAlgorithm");
-   //      configMap.put(StubExt.PROPERTY_TRUST_STORE_PASSWORD, "org.jboss.remoting.trustStorePassword");
-   //      configMap.put(StubExt.PROPERTY_TRUST_STORE_TYPE, "org.jboss.remoting.trustStoreType");
-   //   }
-
    private boolean closed;
    private Integer chunkSize;
 
