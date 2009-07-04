@@ -33,6 +33,7 @@ import javax.xml.soap.MimeHeaders;
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.HTTPMessageImpl;
+import org.jboss.ws.core.client.NettyClient;
 import org.jboss.ws.core.client.UnMarshaller;
 
 /**
@@ -59,9 +60,8 @@ public class HTTPMessageUnMarshaller implements UnMarshaller
          log.trace("Read input stream with metadata=" + metadata);
       }
 
-      //TODO!!! fix constants
-      Integer resCode = (Integer)metadata.get("ResponseCode");
-      String resMessage = (String)metadata.get("ResponseCodeMessage");
+      Integer resCode = (Integer)metadata.get(NettyClient.RESPONSE_CODE);
+      String resMessage = (String)metadata.get(NettyClient.RESPONSE_CODE_MESSAGE);
       if (resCode != null && validResponseCodes.contains(resCode) == false)
          throw new WSException("Invalid HTTP server response [" + resCode + "] - " + resMessage);
 
