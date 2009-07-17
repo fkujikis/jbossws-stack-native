@@ -738,6 +738,11 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
 
    public NodeList getElementsByTagName(String name)
    {
+      if ("*".equals(name))
+      {
+         
+      }
+      
       return new NodeListImpl(DOMUtils.getChildElements(this, name, true));
    }
 

@@ -123,6 +123,26 @@ public class SOAPElementTestCase extends JBossWSTest
       }
       assertEquals("Strawberry Apple Banana Orange Raspberry ", sb.toString());
    }
+   
+   // JBWS-2703
+   public void testGetElementByTagName() throws Exception
+   {
+      InputStream is = getResourceURL("common/soap/jbws2703.xml").openStream();
+      MessageFactory messageFactory = MessageFactory.newInstance();
+      SOAPMessage soapMessage = messageFactory.createMessage(null, is);
+      SOAPEnvelope envelope = soapMessage.getSOAPPart().getEnvelope();
+      
+      NodeList nodeList = envelope.getElementsByTagName("soapenv:Envelope");
+      assertEquals("soapenv:Envelope nodes.", 1, nodeList.getLength());
+      nodeList = envelope.getElementsByTagName("soapenv:Header");
+      assertEquals("soapenv:Header nodes.", 1, nodeList.getLength());
+      nodeList = envelope.getElementsByTagName("soapenv:Body");
+      assertEquals("soapenv:Body nodes.", 1, nodeList.getLength());
+      nodeList = envelope.getElementsByTagName("jbw:echo");
+      assertEquals("jbw:echo nodes.", 1, nodeList.getLength());
+      nodeList = envelope.getElementsByTagName("arg0");
+      assertEquals("arg0 nodes.", 1, nodeList.getLength());
+   }
 
    // http://jira.jboss.com/jira/browse/JBWS-773
    public void testGetNamespaceURI() throws Exception
