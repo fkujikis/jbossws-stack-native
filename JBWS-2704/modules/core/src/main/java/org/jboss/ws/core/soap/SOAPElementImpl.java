@@ -769,14 +769,11 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
 
       List filtered = new LinkedList();
 
-      System.out.println(namespaceURI + ", " + localName);
-      System.out.println("filtering " + nodes.size() + " nodes");
       for (Element current : nodes)
       {
          boolean namespaceMatch = false;
          boolean localNameMatch = false;
 
-         System.out.println("Checking " + current.getNamespaceURI() + ", " + current.getLocalName());
          if ("*".equals(namespaceURI) || ((namespaceURI != null) && namespaceURI.equals(current.getNamespaceURI())))
          {
             namespaceMatch = true;
@@ -789,7 +786,6 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
 
          if (namespaceMatch == true && localNameMatch == true)
          {
-            System.out.println("Adding " + current.getNamespaceURI() + ", " + current.getLocalName());
             filtered.add(current);
          }
       }
