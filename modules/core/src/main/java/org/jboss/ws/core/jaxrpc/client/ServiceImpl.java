@@ -104,7 +104,7 @@ public class ServiceImpl implements ServiceExt
       this.wsdlLocation = wsdlURL;
       JAXRPCClientMetaDataBuilder builder = new JAXRPCClientMetaDataBuilder();
 
-      ClassLoader ctxClassLoader = SecurityActions.getContextClassLoader();
+      ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
 
       serviceMetaData = builder.buildMetaData(serviceName, wsdlURL, mappingURL, securityURL, null, ctxClassLoader);
       handlerRegistry = new HandlerRegistryImpl(serviceMetaData);
@@ -119,7 +119,7 @@ public class ServiceImpl implements ServiceExt
       this.usrMetaData = usrMetaData;
 
       JAXRPCClientMetaDataBuilder builder = new JAXRPCClientMetaDataBuilder();
-      ClassLoader ctxClassLoader = SecurityActions.getContextClassLoader();
+      ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
 
       serviceMetaData = builder.buildMetaData(serviceName, wsdlURL, mappingURL, securityConfig, usrMetaData, ctxClassLoader);
       handlerRegistry = new HandlerRegistryImpl(serviceMetaData);

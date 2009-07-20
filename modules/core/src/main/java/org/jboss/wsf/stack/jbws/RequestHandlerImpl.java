@@ -79,7 +79,6 @@ import org.jboss.ws.core.utils.ThreadLocalAssociation;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
 import org.jboss.ws.extensions.json.BadgerFishDOMDocumentParser;
 import org.jboss.ws.extensions.json.BadgerFishDOMDocumentSerializer;
-import org.jboss.ws.extensions.wsrm.RMConstant;
 import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.feature.FastInfosetFeature;
 import org.jboss.ws.feature.JsonEncodingFeature;
@@ -196,8 +195,8 @@ public class RequestHandlerImpl implements RequestHandler
          throw new IllegalStateException("Deployment has no classloader associated");
 
       // Set the thread context class loader
-      ClassLoader ctxClassLoader = SecurityActions.getContextClassLoader();
-      SecurityActions.setContextClassLoader(classLoader);
+      ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(classLoader);
       try
       {
          ServletRequestContext reqContext = new ServletRequestContext(context, req, res);
@@ -210,7 +209,7 @@ public class RequestHandlerImpl implements RequestHandler
       finally
       {
          // Reset the thread context class loader
-         SecurityActions.setContextClassLoader(ctxClassLoader);
+         Thread.currentThread().setContextClassLoader(ctxClassLoader);
 
          try
          {
@@ -324,11 +323,7 @@ public class RequestHandlerImpl implements RequestHandler
             }
          }
 
-         Map<String, Object> rmResCtx = (Map<String, Object>)msgContext.get(RMConstant.RESPONSE_CONTEXT);
-         boolean isWsrmMessage = rmResCtx != null;
-         boolean isWsrmOneWay = isWsrmMessage && (Boolean)rmResCtx.get(RMConstant.ONE_WAY_OPERATION);
-         if ((outStream != null) && (isWsrmOneWay == false)) // RM hack
-            sendResponse(endpoint, outStream, isFault);
+         sendResponse(endpoint, outStream, isFault);
       }
       catch (Exception ex)
       {
@@ -414,7 +409,7 @@ public class RequestHandlerImpl implements RequestHandler
          throw new IllegalStateException("Cannot obtain endpoint meta data");
 
       long beginProcessing = 0;
-      ClassLoader ctxClassLoader = SecurityActions.getContextClassLoader();
+      ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
       try
       {
          EndpointState state = ep.getState();
@@ -462,7 +457,7 @@ public class RequestHandlerImpl implements RequestHandler
 
          // Set the thread context class loader
          ClassLoader classLoader = sepMetaData.getClassLoader();
-         SecurityActions.setContextClassLoader(classLoader);
+         Thread.currentThread().setContextClassLoader(classLoader);
 
          // Get the Invoker
          ServiceEndpointInvoker epInvoker = ep.getAttachment(ServiceEndpointInvoker.class);
@@ -523,7 +518,7 @@ public class RequestHandlerImpl implements RequestHandler
          }
 
          // Reset the thread context class loader
-         SecurityActions.setContextClassLoader(ctxClassLoader);
+         Thread.currentThread().setContextClassLoader(ctxClassLoader);
          log.debug("END handleRequest: " + ep.getName());
       }
    }
