@@ -25,7 +25,10 @@
     <property name="provides">ContextProperties, StackDescriptor</property>
     <property name="contextProperties">
       <map keyClass="java.lang.String" valueClass="java.lang.String">
-        <entry><key>org.jboss.ws.webapp.ServletClass</key><value>org.jboss.wsf.stack.jbws.EndpointServlet</value></entry>
+        <entry>
+          <key>org.jboss.wsf.common.integration.Constants.StackTransportClass</key>
+          <value>org.jboss.wsf.stack.jbws.EndpointServlet</value>
+        </entry>
       </map>
     </property>
     <property name="relativeOrder">31</property> <!-- [JBDEPLOY-201] workaround -->
