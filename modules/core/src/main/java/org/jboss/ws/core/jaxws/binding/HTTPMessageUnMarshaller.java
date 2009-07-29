@@ -24,6 +24,7 @@ package org.jboss.ws.core.jaxws.binding;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -31,10 +32,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.soap.MimeHeaders;
 
 import org.jboss.logging.Logger;
+import org.jboss.remoting.marshal.UnMarshaller;
+import org.jboss.remoting.transport.http.HTTPMetadataConstants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.HTTPMessageImpl;
-import org.jboss.ws.core.client.NettyClient;
-import org.jboss.ws.core.client.UnMarshaller;
 
 /**
  * @author Thomas.Diesler@jboss.org
@@ -45,7 +46,7 @@ public class HTTPMessageUnMarshaller implements UnMarshaller
    // Provide logging
    private static Logger log = Logger.getLogger(HTTPMessageUnMarshaller.class);
 
-   private static List<Integer> validResponseCodes = new ArrayList<Integer>();
+   private static List validResponseCodes = new ArrayList();
    static
    {
       validResponseCodes.add(HttpServletResponse.SC_OK);
@@ -53,15 +54,15 @@ public class HTTPMessageUnMarshaller implements UnMarshaller
       validResponseCodes.add(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
    }
 
-   public Object read(InputStream inputStream, Map<String, Object> metadata) throws IOException
+   public Object read(InputStream inputStream, Map metadata) throws IOException, ClassNotFoundException
    {
       if (log.isTraceEnabled())
       {
          log.trace("Read input stream with metadata=" + metadata);
       }
 
-      Integer resCode = (Integer)metadata.get(NettyClient.RESPONSE_CODE);
-      String resMessage = (String)metadata.get(NettyClient.RESPONSE_CODE_MESSAGE);
+      Integer resCode = (Integer)metadata.get(HTTPMetadataConstants.RESPONSE_CODE);
+      String resMessage = (String)metadata.get(HTTPMetadataConstants.RESPONSE_CODE_MESSAGE);
       if (resCode != null && validResponseCodes.contains(resCode) == false)
          throw new WSException("Invalid HTTP server response [" + resCode + "] - " + resMessage);
 
@@ -70,17 +71,37 @@ public class HTTPMessageUnMarshaller implements UnMarshaller
       return soapMsg;
    }
 
-   private MimeHeaders getMimeHeaders(Map<String, Object> metadata)
+   /**
+    * Set the class loader to use for unmarhsalling.  This may
+    * be needed when need to have access to class definitions that
+    * are not part of this unmarshaller's parent classloader (especially
+    * when doing remote classloading).
+    *
+    * @param classloader
+    */
+   public void setClassLoader(ClassLoader classloader)
+   {
+      //NO OP
+   }
+
+   public UnMarshaller cloneUnMarshaller() throws CloneNotSupportedException
+   {
+      return new HTTPMessageUnMarshaller();
+   }
+
+   private MimeHeaders getMimeHeaders(Map metadata)
    {
       log.debug("getMimeHeaders from: " + metadata);
 
       MimeHeaders headers = new MimeHeaders();
-      for (String key : metadata.keySet())
+      Iterator i = metadata.keySet().iterator();
+      while (i.hasNext())
       {
+         String key = (String)i.next();
          Object value = metadata.get(key);
          if (key != null && value instanceof List)
          {
-            for (Object listValue : (List<?>)value)
+            for (Object listValue : (List)value)
             {
                headers.addHeader(key, listValue.toString());
             }

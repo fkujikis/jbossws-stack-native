@@ -61,7 +61,6 @@ import org.jboss.ws.core.jaxws.client.ServiceObjectFactoryJAXWS;
 import org.jboss.ws.core.jaxws.handler.HandlerResolverImpl;
 import org.jboss.ws.core.jaxws.wsaddressing.EndpointReferenceUtil;
 import org.jboss.ws.core.jaxws.wsaddressing.NativeEndpointReference;
-import org.jboss.ws.extensions.wsrm.api.RMProvider;
 import org.jboss.ws.metadata.builder.jaxws.JAXWSClientMetaDataBuilder;
 import org.jboss.ws.metadata.builder.jaxws.JAXWSMetaDataBuilder;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
@@ -182,7 +181,7 @@ public class ServiceDelegateImpl extends ServiceDelegate
 
       // com/sun/ts/tests/jaxws/api/javax_xml_ws/Service#GetPort1NegTest1WithWsdl
       EndpointMetaData epMetaData = serviceMetaData.getEndpoint(portName);
-      if (epMetaData == null && serviceMetaData.getEndpoints().size() > 0)
+      if (serviceMetaData.getEndpoints().size() > 0 && epMetaData == null)
          throw new WebServiceException("Cannot get port meta data for: " + portName);
 
       // This is the case when the service could not be created from wsdl
@@ -265,15 +264,9 @@ public class ServiceDelegateImpl extends ServiceDelegate
       // Adjust the endpoint meta data according to the annotations
       if (annotatedPorts.contains(portName) == false)
       {
-         synchronized (epMetaData)
-         {
-            if (annotatedPorts.contains(portName) == false)
-            {
-               JAXWSClientMetaDataBuilder metaDataBuilder = new JAXWSClientMetaDataBuilder();
-               metaDataBuilder.rebuildEndpointMetaData(epMetaData, seiClass);
-               annotatedPorts.add(portName);
-            }
-         }
+         JAXWSClientMetaDataBuilder metaDataBuilder = new JAXWSClientMetaDataBuilder();
+         metaDataBuilder.rebuildEndpointMetaData(epMetaData, seiClass);
+         annotatedPorts.add(portName);
       }
 
       return (T)createProxy(seiClass, epMetaData);
@@ -403,7 +396,7 @@ public class ServiceDelegateImpl extends ServiceDelegate
          T proxy;
          try
          {
-            proxy = (T)Proxy.newProxyInstance(cl, new Class[] { seiClass, RMProvider.class, BindingProvider.class, StubExt.class }, handler);
+            proxy = (T)Proxy.newProxyInstance(cl, new Class[] { seiClass, BindingProvider.class, StubExt.class }, handler);
          }
          catch (RuntimeException rte)
          {

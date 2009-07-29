@@ -561,7 +561,7 @@ public class NodeImpl implements javax.xml.soap.Node
       }
       else if (node instanceof org.w3c.dom.Comment)
       {
-         retNode = new CommentImpl(node);
+         retNode = new TextImpl(node);
       }
       else if (node instanceof org.w3c.dom.Element)
       {

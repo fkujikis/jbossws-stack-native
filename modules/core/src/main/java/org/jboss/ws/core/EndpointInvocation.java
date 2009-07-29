@@ -21,7 +21,6 @@
  */
 package org.jboss.ws.core;
 
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +41,6 @@ import org.jboss.ws.core.jaxrpc.ParameterWrapping;
 import org.jboss.ws.core.soap.SOAPContentElement;
 import org.jboss.ws.core.utils.HolderUtils;
 import org.jboss.ws.core.utils.MimeUtils;
-import org.jboss.ws.core.utils.MimeUtils.ByteArrayConverter;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.WrappedParameter;
@@ -247,17 +245,7 @@ public class EndpointInvocation
             {
                Class valueType = retValue.getClass();
                if (JavaUtils.isAssignableFrom(javaType, valueType) == false)
-               {
-                  if (retValue instanceof InputStream)
-                  {
-                     ByteArrayConverter converter = MimeUtils.getConverterForJavaType(javaType);
-                     retValue = converter.readFrom((InputStream)retValue);
-                  }
-                  else
-                  {
-                     throw new SOAPException("javaType [" + javaType.getName() + "] is not assignable from attachment content: " + valueType.getName());
-                  }
-               }
+                  throw new SOAPException("javaType [" + javaType.getName() + "] is not assignable from attachment content: " + valueType.getName());
             }
          }
       }
