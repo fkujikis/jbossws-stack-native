@@ -180,6 +180,10 @@
               <value>${jbossws.integration.target}</value>
             </property>
             <property>
+              <name>test.disable.deployment</name>
+              <value>false</value>
+            </property>
+            <property>
               <name>log4j.output.dir</name>
               <value>${project.build.directory}</value>
             </property>
