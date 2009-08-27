@@ -26,32 +26,6 @@ http://jira.jboss.com/jira/browse/JBWS?report=com.atlassian.jira.plugin.system.p
 What's new in jbossws-native-${project.version}
 ----------------------------------
 
-Feature Request
-
-    TODO: enumerate
-
-Bug
-
-    TODO: enumerate
-
-Task
-
-    TODO: enumerate
-
-Errata
-
-    See: TODO: reference to associated JIRA issue
-    
-Enjoy,
-The JBossWS Team
-
-
-Previous Releases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
------------------------
-jbossws-native-3.2.0.GA
------------------------
-
 Bug
 
     * [JBWS-2526] - org.jboss.ws.core.soap.TextImpl does not implement org.w3c.dom.Comment
@@ -104,6 +78,12 @@ Task
 Errata
 
     See: https://jira.jboss.org/jira/browse/JBWS-2738
+
+Enjoy,
+The JBossWS Team
+
+
+Previous Releases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -----------------------
 jbossws-native-3.1.2.GA
