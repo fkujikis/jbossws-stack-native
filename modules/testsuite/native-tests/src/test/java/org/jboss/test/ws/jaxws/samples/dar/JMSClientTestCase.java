@@ -77,9 +77,7 @@ public class JMSClientTestCase extends JBossWSTest
    private int getMessageCount(String queue) throws Exception
    {
       ObjectName oname = ObjectNameFactory.create("jboss.mq.destination:service=Queue,name=" + queue);
-      Integer retVal = (Integer)getServer().getAttribute(oname, "MessageCount");
-      System.out.println("MessageCount=" + retVal);
-      return retVal;
+      return (Integer)getServer().getAttribute(oname, "MessageCount");
    }
    
 }

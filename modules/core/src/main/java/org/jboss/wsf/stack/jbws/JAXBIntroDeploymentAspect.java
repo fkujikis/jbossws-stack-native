@@ -48,8 +48,7 @@ public class JAXBIntroDeploymentAspect extends DeploymentAspect
       // assert ArchiveDeployment
       if(! (deployment instanceof ArchiveDeployment) )
       {
-         if (log.isDebugEnabled())
-            log.debug("JAXBIntroDeploymentAspect doesn't work on " + deployment.getClass());
+         log.debug("JAXBIntroDeploymentAspect doesn't work on " + deployment.getClass());
          return;
       }
 

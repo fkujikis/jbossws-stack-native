@@ -96,19 +96,17 @@ public class ServiceObjectFactoryJAXWS extends ServiceObjectFactory
          if (Service.class.getName().equals(targetClassName))
             targetClassName = serviceImplClass;
          
-         if (log.isDebugEnabled())
-            log.debug("[name=" + serviceRefName + ",service=" + serviceImplClass + ",target=" + targetClassName + "]");
+         log.debug("[name=" + serviceRefName + ",service=" + serviceImplClass + ",target=" + targetClassName + "]");
 
          // Load the service class
-         ClassLoader ctxLoader = SecurityActions.getContextClassLoader();
-         Class serviceClass = SecurityActions.loadClass(ctxLoader, serviceImplClass);
+         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
+         Class serviceClass = ctxLoader.loadClass(serviceImplClass);
          Class targetClass = (targetClassName != null ? ctxLoader.loadClass(targetClassName) : null);
 
          if (Service.class.isAssignableFrom(serviceClass) == false)
             throw new IllegalArgumentException("WebServiceRef type '" + serviceClass + "' is not assignable to javax.xml.ws.Service");
          
-         if (log.isDebugEnabled())
-            log.debug("Loaded Service '" + serviceClass.getName() + "' from: " + serviceClass.getProtectionDomain().getCodeSource());
+         log.debug("Loaded Service '" + serviceClass.getName() + "' from: " + serviceClass.getProtectionDomain().getCodeSource());
 
          // Receives either a javax.xml.ws.Service or a dynamic proxy
          Object target;

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -33,7 +33,7 @@ import org.jboss.wsf.test.JBossWSTestSetup;
 import org.jboss.wsf.common.IOUtils;
 
 /**
- * [JBWS-1666] Simplify JBossWS jar dependencies
+ * [JBWS-1666] Simplify jbosws jar dependencies
  * 
  * http://jira.jboss.org/jira/browse/JBWS-1666
  *
@@ -74,12 +74,6 @@ public class JBWS1666TestCase extends JBossWSTest
       cp.append(PS + jbc + FS + "jbossws-native-client.jar");
       cp.append(PS + jbc + FS + "jboss-common-core.jar");
       cp.append(PS + jbc + FS + "jboss-logging-spi.jar");
-      cp.append(PS + jbc + FS + "jboss-logging-log4j.jar");
-      cp.append(PS + jbc + FS + "jcl-over-slf4j.jar");
-      cp.append(PS + jbc + FS + "slf4j-api.jar");
-      cp.append(PS + jbc + FS + "slf4j-jboss-logging.jar");
-      cp.append(PS + jbc + FS + "jbosssx-client.jar");
-      cp.append(PS + jbc + FS + "jboss-javaee.jar");
 
       Runtime rt = Runtime.getRuntime();
 

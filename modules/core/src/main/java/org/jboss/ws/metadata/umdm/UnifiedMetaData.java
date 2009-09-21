@@ -82,7 +82,7 @@ public class UnifiedMetaData implements InitalizableMetaData
          throw new IllegalArgumentException("VFS root cannot be null");
 
       this.vfsRoot = vfsRoot;
-      this.classLoader = SecurityActions.getContextClassLoader();
+      this.classLoader = Thread.currentThread().getContextClassLoader();
    }
 
    public ClassLoader getClassLoader()

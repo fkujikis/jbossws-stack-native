@@ -121,8 +121,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
    {
       if (wsClass.isAnnotationPresent(BindingType.class))
       {
-         if (log.isDebugEnabled())
-            log.debug("processBindingType on: " + wsClass.getName());
+         log.debug("processBindingType on: " + wsClass.getName());
          BindingType anBindingType = (BindingType)wsClass.getAnnotation(BindingType.class);
          epMetaData.setBindingId(anBindingType.value());
       }
@@ -132,8 +131,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
    {
       if (wsClass.isAnnotationPresent(SOAPBinding.class))
       {
-         if (log.isDebugEnabled())
-            log.debug("processSOAPBinding on: " + wsClass.getName());
+         log.debug("processSOAPBinding on: " + wsClass.getName());
          SOAPBinding anSoapBinding = wsClass.getAnnotation(SOAPBinding.class);
 
          SOAPBinding.Style attrStyle = anSoapBinding.style();
@@ -188,9 +186,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
    public static UnifiedHandlerChainsMetaData getHandlerChainsMetaData(Class<?> wsClass, String filename)
    {
       URL fileURL = null;
-      boolean debugEnabled = log.isDebugEnabled();
-      if (debugEnabled)
-         log.debug("processHandlerChain [" + filename + "] on: " + wsClass.getName());
+      log.debug("processHandlerChain [" + filename + "] on: " + wsClass.getName());
 
       // Try the filename as URL
       try
@@ -220,11 +216,8 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       // Try the filename as Resource
       if (fileURL == null)
       {
-         if (debugEnabled)
-         {
-            log.debug(wsClass.getProtectionDomain().getCodeSource());
-            log.debug(wsClass.getClassLoader());
-         }
+         log.debug(wsClass.getProtectionDomain().getCodeSource());
+         log.debug(wsClass.getClassLoader());
          fileURL = wsClass.getClassLoader().getResource(filename);
       }
 
@@ -246,8 +239,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       if (fileURL == null)
          throw new WSException("Cannot resolve handler file '" + filename + "' on " + wsClass.getName());
 
-      if (debugEnabled)
-         log.debug("Loading handler chain: " + fileURL);
+      log.debug("Loading handler chain: " + fileURL);
 
       UnifiedHandlerChainsMetaData handlerChainsMetaData = null;
       try
@@ -899,8 +891,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
                         String partName = mimePart.getPartName();
                         if (paramMetaData.getPartName().equals(partName))
                         {
-                           if (log.isDebugEnabled())
-                              log.debug("Identified 'mime:content' binding: " + partName + ", mimeTypes=" + mimePart.getMimeTypes());
+                           log.debug("Identified 'mime:content' binding: " + partName + ", mimeTypes=" + mimePart.getMimeTypes());
                            paramMetaData.setSwA(true);
                            paramMetaData.setMimeTypes(mimePart.getMimeTypes());
                            break;
