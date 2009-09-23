@@ -31,14 +31,7 @@ if [%1] == [] goto endloop
       goto loop
 :endloop
 
-if "x%JAVA_HOME%" == "x" (
-  set  JAVA=java
-  echo JAVA_HOME is not set. Unexpected results may occur.
-  echo Set JAVA_HOME to the directory of your local JDK to avoid this message.
-) else (
-  set "JAVA=%JAVA_HOME%\bin\java"
-)
-
+set JAVA=%JAVA_HOME%\bin\java
 set JBOSS_HOME=%DIRNAME%\..
 set JBOSS_ENDORSED_DIRS=%JBOSS_HOME%\lib\endorsed
 
