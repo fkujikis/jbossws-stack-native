@@ -21,14 +21,28 @@
  */
 package org.jboss.ws.core.jaxws.spi.http;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import javax.xml.ws.Endpoint;
 
+import org.jboss.wsf.common.ResourceLoaderAdapter;
+import org.jboss.wsf.framework.deployment.DeploymentAspectManagerImpl;
+import org.jboss.wsf.framework.deployment.EndpointHandlerDeploymentAspect;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.AbstractExtensible;
+import org.jboss.wsf.spi.deployment.ArchiveDeployment;
+import org.jboss.wsf.spi.deployment.DeploymentAspect;
+import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
+import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 import org.jboss.wsf.spi.http.HttpContext;
 import org.jboss.wsf.spi.http.HttpContextFactory;
 import org.jboss.wsf.spi.http.HttpServer;
+import org.jboss.wsf.stack.jbws.EagerInitializeDeploymentAspect;
+import org.jboss.wsf.stack.jbws.PublishContractDeploymentAspect;
+import org.jboss.wsf.stack.jbws.ServiceEndpointInvokerDeploymentAspect;
+import org.jboss.wsf.stack.jbws.UnifiedMetaDataDeploymentAspect;
 
 /**
  * TODO: javadoc
@@ -43,6 +57,17 @@ final class NettyHttpServer extends AbstractExtensible implements HttpServer
    private static final SPIProvider SPI_PROVIDER = SPIProviderResolver.getInstance().getProvider();
    /** JBossWS Http Context factory. */
    private static final HttpContextFactory HTTP_CONTEXT_FACTORY = NettyHttpServer.SPI_PROVIDER.getSPI(HttpContextFactory.class);
+   /** Deployment model factory. */
+   private final DeploymentModelFactory deploymentModelFactory;
+   
+   public NettyHttpServer()
+   {
+      super();
+
+      // deployment factory
+      final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+      this.deploymentModelFactory = spiProvider.getSPI(DeploymentModelFactory.class);
+   }
 
    public HttpContext createContext(final String contextRoot)
    {
@@ -54,14 +79,56 @@ final class NettyHttpServer extends AbstractExtensible implements HttpServer
       throw new UnsupportedOperationException();
    }
 
-   public void publish(HttpContext context, Endpoint endpoint)
+   public void publish(HttpContext context, Endpoint ep)
    {
-      throw new UnsupportedOperationException();
+      Class<?> endpointClass = this.getEndpointClass(ep);
+      String contextRoot = context.getContextRoot();
+      ClassLoader loader = endpointClass.getClassLoader();
+      // TODO: should we use archive deployment - see META-INF/services ???
+      final ArchiveDeployment dep = (ArchiveDeployment) this.deploymentModelFactory.newDeployment(contextRoot, loader);
+      final org.jboss.wsf.spi.deployment.Endpoint endpoint = this.deploymentModelFactory.newEndpoint(endpointClass.getName());
+      endpoint.setShortName("jaxws-dynamic-endpoint");
+      dep.getService().addEndpoint(endpoint);
+      dep.setRootFile(new ResourceLoaderAdapter(loader));
+      dep.setRuntimeClassLoader(loader);
+      dep.setType(DeploymentType.JAXWS_JSE);
+      dep.getService().setContextRoot(contextRoot);
+      
+      DeploymentAspectManagerImpl daManager = new DeploymentAspectManagerImpl(); 
+      daManager.setDeploymentAspects(getDeploymentAspects());
+      daManager.deploy(dep);
+
+      throw new UnsupportedOperationException("TODO: continue in implementation");
+   }
+   
+   private List<DeploymentAspect> getDeploymentAspects()
+   {
+      List<DeploymentAspect> retVal = new LinkedList<DeploymentAspect>();
+      
+      retVal.add(new EndpointHandlerDeploymentAspect());
+      retVal.add(new UnifiedMetaDataDeploymentAspect());
+      retVal.add(new ServiceEndpointInvokerDeploymentAspect());
+      retVal.add(new PublishContractDeploymentAspect());
+      retVal.add(new EagerInitializeDeploymentAspect());
+      
+      return retVal;
    }
 
    public void start()
    {
       // does nothing
+   }
+
+   /**
+    * Returns implementor class associated with endpoint.
+    *
+    * @param endpoint to get implementor class from
+    * @return implementor class
+    */
+   private Class<?> getEndpointClass(final Endpoint endpoint)
+   {
+      final Object implementor = endpoint.getImplementor();
+      return implementor instanceof Class<?> ? (Class<?>) implementor : implementor.getClass();
    }
 
 }

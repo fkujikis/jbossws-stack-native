@@ -92,7 +92,7 @@ final class NettyHttpServerConfig implements ServerConfig
 
    public boolean isModifySOAPAddress()
    {
-      throw new UnsupportedOperationException();
+      return true;
    }
 
    public void setModifySOAPAddress(boolean flag)
