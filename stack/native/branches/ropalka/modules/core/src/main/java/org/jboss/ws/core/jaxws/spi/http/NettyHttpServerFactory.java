@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.core.jaxws.spi;
+package org.jboss.ws.core.jaxws.spi.http;
 
 import org.jboss.wsf.spi.http.HttpServer;
 import org.jboss.wsf.spi.http.HttpServerFactory;
@@ -32,6 +32,8 @@ import org.jboss.wsf.spi.http.HttpServerFactory;
 public final class NettyHttpServerFactory extends HttpServerFactory
 {
 
+   private static final HttpServer NETTY_HTTP_SERVER = new NettyHttpServer();
+   
    /**
     * Constructor.
     */
@@ -48,7 +50,7 @@ public final class NettyHttpServerFactory extends HttpServerFactory
    @Override
    public HttpServer getHttpServer()
    {
-      throw new UnsupportedOperationException();
+      return NettyHttpServerFactory.NETTY_HTTP_SERVER;
    }
 
 }
