@@ -310,4 +310,20 @@ public class EndpointImpl extends Endpoint
       }
       return EndpointReferenceUtil.transform(clazz, builder.build());
    }
+   
+   public String getPath()
+   {
+      return this.address.getPath();
+   }
+   
+   public String getHost()
+   {
+      return this.address.getHost();
+   }
+   
+   public int getPort()
+   {
+      return this.address.getPort();
+   }
+   
 }

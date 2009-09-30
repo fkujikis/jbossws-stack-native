@@ -26,6 +26,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -54,12 +56,6 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.jboss.wsf.common.injection.InjectionHelper;
-import org.jboss.wsf.common.injection.PreDestroyHolder;
-import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.invocation.EndpointAssociation;
-import org.jboss.wsf.spi.invocation.InvocationContext;
-import org.jboss.wsf.spi.invocation.RequestHandler;
 
 /**
  * TODO: javadoc
@@ -69,12 +65,12 @@ import org.jboss.wsf.spi.invocation.RequestHandler;
 final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
 {
    private static final Logger LOG = Logger.getLogger(NettyInvocationHandler.class);
+   private final List<NettyCallbackHandler> callbacks = new LinkedList<NettyCallbackHandler>();
    private final Lock lock = new ReentrantLock();
-   protected Endpoint endpoint;
-   private List<PreDestroyHolder> preDestroyRegistry = new LinkedList<PreDestroyHolder>();
 
    public NettyInvocationHandler()
    {
+      super();
    }
    
    @Override
@@ -87,10 +83,14 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       RealNettyHttpServer.channelGroup.add(ctx.getChannel());
    } 
 
+   public boolean hasMoreCallbacks()
+   {
+      return this.callbacks.size() > 0;
+   }
+
    @Override
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception
    {
-      // TODO: distinguish between GET and POST methods
       HttpRequest request = (HttpRequest)e.getMessage();
       ChannelBuffer content = request.getContent();
       OutputStream baos = new ByteArrayOutputStream();
@@ -104,8 +104,15 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       boolean error = false;
       try
       {
-         String requestPath = new URL(request.getUri()).getPath();
-         handle(requestPath, getInputStream(content), outputStream);
+         String requestPath = request.getUri();
+         int paramIndex = requestPath.indexOf('?');
+         if (paramIndex != -1)
+         {
+            requestPath = requestPath.substring(0, paramIndex);
+         }
+         System.out.println("Request path: " + requestPath); // TODO: remove this line
+         String httpMethod = request.getMethod().getName();
+         handle(requestPath, httpMethod, getInputStream(content), outputStream, requestHeaders);
       }
       catch (Throwable t)
       {
@@ -114,7 +121,7 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       }
       finally
       {
-         writeResponse(e, request, error, ChannelBuffers.copiedBuffer(baos.toString(), "UTF-8"));
+         writeResponse(e, request, error, baos.toString());
       }
    }
    
@@ -123,78 +130,52 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       return new ChannelBufferInputStream(content);
    }
    
-   private void handle(String requestPath, InputStream inputStream, OutputStream outputStream) throws IOException
+   private void handle(String requestPath, String httpMethod, InputStream inputStream, OutputStream outputStream, Map<String, Object> requestHeaders) throws IOException
    {
-      this.lock.lock();
-      try
+      boolean handlerExists = false;
+      for (NettyCallbackHandler handler : this.callbacks)
+      {
+         requestPath = truncateHostName(requestPath);
+         System.out.println("Request path 2: " + requestPath);
+         if (requestPath.startsWith(handler.getHandledPath()))
+         {
+            handlerExists = true;
+            if (LOG.isDebugEnabled())
+               LOG.debug("Handling request path: " + requestPath);
+            handler.handle(httpMethod, inputStream, outputStream, requestHeaders);
+            break;
+         }
+      }
+      if (handlerExists == false)
+         LOG.warn("No callback handler registered for path: " + requestPath);
+   }
+   
+   private String truncateHostName(String s)
+   {
+      if (s.startsWith("http"))
       {
          try
          {
-            EndpointAssociation.setEndpoint(endpoint);
-            RequestHandler requestHandler = endpoint.getRequestHandler();
-            requestHandler.handleRequest(endpoint, inputStream, outputStream, new InvocationContext());
+            return new URL(s).getPath();
          }
-         finally
+         catch (MalformedURLException mue)
          {
-            this.registerForPreDestroy(endpoint);
-            EndpointAssociation.removeEndpoint();
+            LOG.error(mue.getMessage(), mue);
          }
       }
-      finally
-      {
-         this.lock.unlock();
-      }
+      
+      return s;
    }
    
-   protected final void postService()
-   {
-   }
-
-   public final void destroy() // TODO: provide interface method to be called
-   {
-      synchronized(this.preDestroyRegistry)
-      {
-         for (final PreDestroyHolder holder : this.preDestroyRegistry)
-         {
-            try
-            {
-               final Object targetBean = holder.getObject();
-               InjectionHelper.callPreDestroyMethod(targetBean);
-            }
-            catch (Exception exception)
-            {
-               LOG.error(exception.getMessage(), exception);
-            }
-         }
-         this.preDestroyRegistry.clear();
-         this.preDestroyRegistry = null;
-      }
-   }
-
-   private void registerForPreDestroy(Endpoint ep)
-   {
-      PreDestroyHolder holder = (PreDestroyHolder)ep.getAttachment(PreDestroyHolder.class);
-      if (holder != null)
-      {
-         synchronized(this.preDestroyRegistry)
-         {
-            if (!this.preDestroyRegistry.contains(holder))
-            {
-               this.preDestroyRegistry.add(holder);
-            }
-         }
-         ep.removeAttachment(PreDestroyHolder.class);
-      }
-   }
-
-   private void writeResponse(MessageEvent e, HttpRequest request, boolean error, ChannelBuffer content)
+   private void writeResponse(MessageEvent e, HttpRequest request, boolean error, String content)
    {
       // Build the response object.
       HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, error ? HttpResponseStatus.INTERNAL_SERVER_ERROR : HttpResponseStatus.OK);
       response.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/xml; charset=UTF-8");
       if (!error)
       {
-         response.setContent(content);
+         response.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(content.length()));
+         response.setContent(ChannelBuffers.copiedBuffer(content, "UTF-8"));
       }
 
       String cookieString = request.getHeader(HttpHeaders.Names.COOKIE);
@@ -224,6 +205,52 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
    {
       e.getCause().printStackTrace();
       e.getChannel().close();
+   }
+
+   public NettyCallbackHandler getCallback(String requestPath)
+   {
+      this.lock.lock();
+      try
+      {
+         for (NettyCallbackHandler handler : this.callbacks)
+         {
+            if (handler.getHandledPath().equals(requestPath))
+               return handler;
+         }
+      }
+      finally
+      {
+         this.lock.unlock();
+      }
+
+      return null;
+   }
+
+   public void registerCallback(NettyCallbackHandler callbackHandler)
+   {
+      this.lock.lock();
+      try
+      {
+         this.callbacks.add(callbackHandler);
+      }
+      finally
+      {
+         this.lock.unlock();
+      }
+   }
+
+   public void unregisterCallback(NettyCallbackHandler callbackHandler)
+   {
+      this.lock.lock();
+      try
+      {
+         this.callbacks.remove(callbackHandler);
+         callbackHandler.destroy();
+      }
+      finally
+      {
+         this.lock.unlock();
+      }
    }
 
 }

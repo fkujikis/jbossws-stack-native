@@ -588,12 +588,19 @@ public class RequestHandlerImpl implements RequestHandler
          }
          else
          {
-            String epAddress = endpoint.getAddress();
-            if (epAddress == null)
-               throw new IllegalArgumentException("Invalid endpoint address: " + epAddress);
+            if (context.getAttachment(Map.class) != null) // TODO: remove this ugly hack
+            {
+               handleWSDLRequestFromInvocationContext(endpoint, outStream, context);
+            }
+            else
+            {
+               String epAddress = endpoint.getAddress();
+               if (epAddress == null)
+                  throw new IllegalArgumentException("Invalid endpoint address: " + epAddress);
 
-            URL wsdlUrl = new URL(epAddress + "?wsdl");
-            IOUtils.copyStream(outStream, wsdlUrl.openStream());
+               URL wsdlUrl = new URL(epAddress + "?wsdl");
+               IOUtils.copyStream(outStream, wsdlUrl.openStream());
+            }
          }
       }
       catch (RuntimeException rte)
@@ -618,6 +625,33 @@ public class RequestHandlerImpl implements RequestHandler
       // For the base document the resourcePath should be null
       String resPath = (String)req.getParameter("resource");
       URL reqURL = new URL(req.getRequestURL().toString());
+
+      String wsdlHost = reqURL.getHost();
+
+      if (ServerConfig.UNDEFINED_HOSTNAME.equals(serverConfig.getWebServiceHost()) == false)
+         wsdlHost = serverConfig.getWebServiceHost();
+
+      if (log.isDebugEnabled())
+         log.debug("WSDL request, using host: " + wsdlHost);
+
+      WSDLRequestHandler wsdlRequestHandler = new WSDLRequestHandler(epMetaData);
+      Document document = wsdlRequestHandler.getDocumentForPath(reqURL, wsdlHost, resPath);
+
+      OutputStreamWriter writer = new OutputStreamWriter(outputStream);
+      new DOMWriter(writer).setPrettyprint(true).print(document.getDocumentElement());
+   }
+
+   private void handleWSDLRequestFromInvocationContext(Endpoint endpoint, OutputStream outputStream, InvocationContext context) throws MalformedURLException, IOException
+   {
+      ServerEndpointMetaData epMetaData = endpoint.getAttachment(ServerEndpointMetaData.class);
+      if (epMetaData == null)
+         throw new IllegalStateException("Cannot obtain endpoint meta data");
+
+      Map<String, Object> requestHeaders = (Map<String, Object>)context.getAttachment(Map.class);
+
+      // For the base document the resourcePath should be null
+      String resPath = (String)requestHeaders.get("resource");
+      URL reqURL = new URL(endpoint.getAddress());
 
       String wsdlHost = reqURL.getHost();
 

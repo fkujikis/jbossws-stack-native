@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.xml.ws.Endpoint;
 
+import org.jboss.ws.core.jaxws.spi.EndpointImpl;
 import org.jboss.wsf.common.ResourceLoaderAdapter;
 import org.jboss.wsf.framework.deployment.BackwardCompatibleContextRootDeploymentAspect;
 import org.jboss.wsf.framework.deployment.DeploymentAspectManagerImpl;
@@ -104,7 +105,10 @@ final class NettyHttpServer extends AbstractExtensible implements HttpServer
       daManager.setDeploymentAspects(getDeploymentAspects());
       daManager.deploy(dep);
 
-      throw new UnsupportedOperationException("TODO: continue in implementation");
+      EndpointImpl epImpl = (EndpointImpl)ep;
+      RealNettyHttpServer server = RealNettyHttpServer.getInstance("http", "localhost", epImpl.getPort());
+      NettyCallbackHandler callback = new NettyCallbackHandler(epImpl.getPath(), contextRoot, endpoint.getShortName());
+      server.registerCallback(callback);
    }
    
    private List<DeploymentAspect> getDeploymentAspects()
