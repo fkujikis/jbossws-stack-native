@@ -412,7 +412,8 @@ public class WSDL11Reader
          }
       }
 
-      log.trace("END processTypes: " + wsdlLoc + "\n" + destTypes);
+      if (log.isTraceEnabled())
+         log.trace("END processTypes: " + wsdlLoc + "\n" + destTypes);
    }
 
    private void copyParentNamespaceDeclarations(Element destElement, Element srcElement)
