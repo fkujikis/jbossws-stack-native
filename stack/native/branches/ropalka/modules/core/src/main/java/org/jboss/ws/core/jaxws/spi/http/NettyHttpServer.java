@@ -27,8 +27,14 @@ import java.util.List;
 import javax.xml.ws.Endpoint;
 
 import org.jboss.wsf.common.ResourceLoaderAdapter;
+import org.jboss.wsf.framework.deployment.BackwardCompatibleContextRootDeploymentAspect;
 import org.jboss.wsf.framework.deployment.DeploymentAspectManagerImpl;
+import org.jboss.wsf.framework.deployment.EndpointAddressDeploymentAspect;
 import org.jboss.wsf.framework.deployment.EndpointHandlerDeploymentAspect;
+import org.jboss.wsf.framework.deployment.EndpointLifecycleDeploymentAspect;
+import org.jboss.wsf.framework.deployment.EndpointNameDeploymentAspect;
+import org.jboss.wsf.framework.deployment.EndpointRegistryDeploymentAspect;
+import org.jboss.wsf.framework.deployment.URLPatternDeploymentAspect;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.AbstractExtensible;
@@ -105,11 +111,17 @@ final class NettyHttpServer extends AbstractExtensible implements HttpServer
    {
       List<DeploymentAspect> retVal = new LinkedList<DeploymentAspect>();
       
-      retVal.add(new EndpointHandlerDeploymentAspect());
-      retVal.add(new UnifiedMetaDataDeploymentAspect());
-      retVal.add(new ServiceEndpointInvokerDeploymentAspect());
-      retVal.add(new PublishContractDeploymentAspect());
-      retVal.add(new EagerInitializeDeploymentAspect());
+      retVal.add(new EndpointHandlerDeploymentAspect()); // 13
+      retVal.add(new BackwardCompatibleContextRootDeploymentAspect()); // 14
+      retVal.add(new URLPatternDeploymentAspect()); // 15
+      retVal.add(new EndpointAddressDeploymentAspect()); // 16
+      retVal.add(new EndpointNameDeploymentAspect()); // 17
+      retVal.add(new UnifiedMetaDataDeploymentAspect()); // 22
+      retVal.add(new ServiceEndpointInvokerDeploymentAspect()); // 23
+      retVal.add(new PublishContractDeploymentAspect()); // 24
+      retVal.add(new EagerInitializeDeploymentAspect()); // 25
+      retVal.add(new EndpointRegistryDeploymentAspect()); // 35
+      retVal.add(new EndpointLifecycleDeploymentAspect()); // 37
       
       return retVal;
    }

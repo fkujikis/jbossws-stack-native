@@ -82,12 +82,12 @@ final class NettyHttpServerConfig implements ServerConfig
 
    public int getWebServicePort()
    {
-      return 8686;
+      return 8878;
    }
 
    public int getWebServiceSecurePort()
    {
-      throw new UnsupportedOperationException();
+      return 8879;
    }
 
    public boolean isModifySOAPAddress()
