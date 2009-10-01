@@ -313,7 +313,7 @@ public class NettyTransportHandler
       }
    }
    
-   public boolean getHttpKeepAliveSet()
+   public static boolean getHttpKeepAliveSet()
    {
       return keepAliveProp;
    }
