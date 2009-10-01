@@ -45,6 +45,7 @@ import org.jboss.ws.core.jaxws.binding.BindingProviderImpl;
 import org.jboss.ws.core.jaxws.wsaddressing.EndpointReferenceUtil;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
+import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.http.HttpContext;
 import org.jboss.wsf.spi.http.HttpServer;
 import org.jboss.wsf.spi.http.HttpServerFactory;
@@ -76,6 +77,7 @@ public class EndpointImpl extends Endpoint
    private boolean isPublished;
    private boolean isDestroyed;
    private URI address;
+   private ArchiveDeployment dep;
 
    public EndpointImpl(String bindingId, Object implementor, WebServiceFeature[] features)
    {
@@ -175,7 +177,7 @@ public class EndpointImpl extends Endpoint
       if (context instanceof HttpContext)
       {
          serverContext = (HttpContext)context;
-         address = getAddressFromConfigAndContext(serverContext);
+         //address = getAddressFromConfigAndContext(serverContext); // TODO: is it necessary?
          HttpServer httpServer = serverContext.getHttpServer();
          httpServer.publish(serverContext, this);
          isPublished = true;
@@ -324,6 +326,31 @@ public class EndpointImpl extends Endpoint
    public int getPort()
    {
       return this.address.getPort();
+   }
+   
+   public String getName()
+   {
+      StringTokenizer st = new StringTokenizer(this.getPath(), "/");
+      st.nextToken();
+      StringBuilder sb = new StringBuilder();
+      while (st.hasMoreTokens())
+      {
+         sb.append('/');
+         sb.append(st.nextToken());
+      }
+      sb.append('/');
+      
+      return sb.toString();
+   }
+   
+   public void setDeployment(ArchiveDeployment dep)
+   {
+      this.dep = dep;
+   }
+   
+   public ArchiveDeployment getDeployment()
+   {
+      return this.dep;
    }
    
 }

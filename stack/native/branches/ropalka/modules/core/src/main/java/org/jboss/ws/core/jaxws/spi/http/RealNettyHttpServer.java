@@ -22,11 +22,13 @@
 package org.jboss.ws.core.jaxws.spi.http;
 
 import java.net.InetSocketAddress;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import javax.xml.ws.WebServiceException;
 
 import org.jboss.logging.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -36,8 +38,6 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.ws.core.client.transport.WSServerPipelineFactory;
-import org.jboss.ws.extensions.wsrm.api.RMException;
-import org.jboss.ws.extensions.wsrm.transport.backchannel.RMCallbackHandler;
 
 /**
  * TODO: javadoc
@@ -50,7 +50,7 @@ final class RealNettyHttpServer implements Runnable
    private static final Logger LOG = Logger.getLogger(RealNettyHttpServer.class);
    private static final Lock CLASS_LOCK = new ReentrantLock();
    private static final long WAIT_PERIOD = 100;
-   private static RealNettyHttpServer INSTANCE;
+   private static Map<String, RealNettyHttpServer> SERVERS = new HashMap<String, RealNettyHttpServer>();
    static final ChannelGroup channelGroup = new DefaultChannelGroup("rmBackPortsServer");
 
    private final Object instanceLock = new Object();
@@ -63,7 +63,7 @@ final class RealNettyHttpServer implements Runnable
    private ChannelFactory factory;
    private NettyInvocationHandler handler;
    
-   private RealNettyHttpServer(String scheme, String host, int port) throws RMException
+   private RealNettyHttpServer(String scheme, String host, int port)
    {
       super();
       this.scheme = scheme;
@@ -84,12 +84,12 @@ final class RealNettyHttpServer implements Runnable
          Channel c = bootstrap.bind(new InetSocketAddress(this.port));
          channelGroup.add(c);
          if (LOG.isDebugEnabled())
-            LOG.debug("WS-RM Backports Server started on port: " + this.port);
+            LOG.debug("Netty http server started on port: " + this.port);
       }
       catch (Exception e)
       {
          LOG.warn(e.getMessage(), e);
-         throw new RMException(e.getMessage(), e);
+         throw new WebServiceException(e.getMessage(), e);
       }
    }
    
@@ -101,6 +101,10 @@ final class RealNettyHttpServer implements Runnable
    public final void unregisterCallback(NettyCallbackHandler callbackHandler)
    {
       this.handler.unregisterCallback(callbackHandler);
+      if (!this.hasMoreCallbacks())
+      {
+         this.terminate();
+      }
    }
    
    public final NettyCallbackHandler getCallback(String requestPath)
@@ -176,6 +180,7 @@ final class RealNettyHttpServer implements Runnable
          
          this.stopped = true;
          LOG.debug("termination forced");
+         SERVERS.remove(scheme + "://" + host + ":" + port + "/");
          while (this.terminated == false)
          {
             try
@@ -196,39 +201,41 @@ final class RealNettyHttpServer implements Runnable
     * @param scheme protocol
     * @param host hostname
     * @param port port
-    * @return WS-RM back ports server
-    * @throws RMException
+    * @return netty http server
     */
-   public static RealNettyHttpServer getInstance(String scheme, String host, int port) throws RMException
+   public static RealNettyHttpServer getInstance(String scheme, String host, int port)
    {
       CLASS_LOCK.lock();
       try
       {
-         if (INSTANCE == null)
+         String key = scheme + "://" + host + ":" + port + "/";
+         RealNettyHttpServer server = SERVERS.get(key);
+         if (server == null)
          {
-            INSTANCE = new RealNettyHttpServer(scheme, host, (port == -1) ? 80 : port);
+            server = new RealNettyHttpServer(scheme, host, (port == -1) ? 80 : port); 
+            SERVERS.put(key, server);
             // forking back ports server
-            Thread t  = new Thread(INSTANCE, "NettyHttpServer");
+            Thread t  = new Thread(server, "NettyHttpServer listening on " + key);
             t.setDaemon(true);
             t.start();
             // registering shutdown hook
-            final RealNettyHttpServer server = INSTANCE;
+            final RealNettyHttpServer s = server;
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                public void run()
                {
-                  server.terminate();
+                  s.terminate();
                }
-            }, "RMBackPortsServerShutdownHook"));
+            }, "NettyHttpServerShutdownHook(" + key + ")"));
          }
          else
          {
-            boolean schemeEquals = INSTANCE.getScheme().equals(scheme);
-            boolean hostEquals = INSTANCE.getHost().equals(host);
-            boolean portEquals = INSTANCE.getPort() == ((port == -1) ? 80 : port);
+            boolean schemeEquals = server.getScheme().equals(scheme);
+            boolean hostEquals = server.getHost().equals(host);
+            boolean portEquals = server.getPort() == ((port == -1) ? 80 : port);
             if ((schemeEquals == false) || (hostEquals == false) || (portEquals == false))
                throw new IllegalArgumentException();
          }
-         return INSTANCE;
+         return server;
       }
       finally
       {

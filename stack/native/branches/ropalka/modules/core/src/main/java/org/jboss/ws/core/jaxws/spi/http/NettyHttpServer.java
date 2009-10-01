@@ -83,18 +83,27 @@ final class NettyHttpServer extends AbstractExtensible implements HttpServer
 
    public void destroy(HttpContext context, Endpoint endpoint)
    {
-      throw new UnsupportedOperationException();
+      EndpointImpl epImpl = (EndpointImpl)endpoint;
+      RealNettyHttpServer server = RealNettyHttpServer.getInstance("http", "localhost", epImpl.getPort());
+      NettyCallbackHandler callback = server.getCallback(epImpl.getPath());
+      server.unregisterCallback(callback);
+      
+      DeploymentAspectManagerImpl daManager = new DeploymentAspectManagerImpl(); 
+      daManager.setDeploymentAspects(getDeploymentAspects());
+      daManager.undeploy(epImpl.getDeployment());
    }
 
    public void publish(HttpContext context, Endpoint ep)
    {
+      EndpointImpl epImpl = (EndpointImpl)ep;
       Class<?> endpointClass = this.getEndpointClass(ep);
       String contextRoot = context.getContextRoot();
       ClassLoader loader = endpointClass.getClassLoader();
       // TODO: should we use archive deployment - see META-INF/services ???
       final ArchiveDeployment dep = (ArchiveDeployment) this.deploymentModelFactory.newDeployment(contextRoot, loader);
       final org.jboss.wsf.spi.deployment.Endpoint endpoint = this.deploymentModelFactory.newEndpoint(endpointClass.getName());
-      endpoint.setShortName("jaxws-dynamic-endpoint");
+      endpoint.setShortName(epImpl.getName());
+      endpoint.setURLPattern(epImpl.getName()); // TODO: rename method
       dep.getService().addEndpoint(endpoint);
       dep.setRootFile(new ResourceLoaderAdapter(loader));
       dep.setRuntimeClassLoader(loader);
@@ -104,8 +113,9 @@ final class NettyHttpServer extends AbstractExtensible implements HttpServer
       DeploymentAspectManagerImpl daManager = new DeploymentAspectManagerImpl(); 
       daManager.setDeploymentAspects(getDeploymentAspects());
       daManager.deploy(dep);
+      epImpl.setDeployment(dep);
+      // TODO: call DAManager.undeploy()
 
-      EndpointImpl epImpl = (EndpointImpl)ep;
       RealNettyHttpServer server = RealNettyHttpServer.getInstance("http", "localhost", epImpl.getPort());
       NettyCallbackHandler callback = new NettyCallbackHandler(epImpl.getPath(), contextRoot, endpoint.getShortName());
       server.registerCallback(callback);
@@ -115,6 +125,7 @@ final class NettyHttpServer extends AbstractExtensible implements HttpServer
    {
       List<DeploymentAspect> retVal = new LinkedList<DeploymentAspect>();
       
+      // TODO: native stack can't use framework classes directly
       retVal.add(new EndpointHandlerDeploymentAspect()); // 13
       retVal.add(new BackwardCompatibleContextRootDeploymentAspect()); // 14
       retVal.add(new URLPatternDeploymentAspect()); // 15

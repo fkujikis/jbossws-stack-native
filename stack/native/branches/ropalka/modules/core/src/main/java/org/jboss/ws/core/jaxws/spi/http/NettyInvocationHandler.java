@@ -110,7 +110,6 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
          {
             requestPath = requestPath.substring(0, paramIndex);
          }
-         System.out.println("Request path: " + requestPath); // TODO: remove this line
          String httpMethod = request.getMethod().getName();
          handle(requestPath, httpMethod, getInputStream(content), outputStream, requestHeaders);
       }
@@ -133,11 +132,15 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
    private void handle(String requestPath, String httpMethod, InputStream inputStream, OutputStream outputStream, Map<String, Object> requestHeaders) throws IOException
    {
       boolean handlerExists = false;
+      String handledPath = null;
+      requestPath = truncateHostName(requestPath);
       for (NettyCallbackHandler handler : this.callbacks)
       {
-         requestPath = truncateHostName(requestPath);
+         handledPath = truncateHostName(handler.getHandledPath());
+         System.out.println("---");
          System.out.println("Request path 2: " + requestPath);
-         if (requestPath.startsWith(handler.getHandledPath()))
+         System.out.println("Handled path 2: " + handledPath);
+         if (requestPath.equals(handledPath))
          {
             handlerExists = true;
             if (LOG.isDebugEnabled())
@@ -152,11 +155,12 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
    
    private String truncateHostName(String s)
    {
+      String retVal = s;
       if (s.startsWith("http"))
       {
          try
          {
-            return new URL(s).getPath();
+            retVal = new URL(s).getPath();
          }
          catch (MalformedURLException mue)
          {
@@ -164,7 +168,11 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
          }
       }
       
-      return s;
+      while (retVal.endsWith("/"))
+      {
+         retVal = retVal.substring(0, retVal.length() - 1);
+      }
+      return retVal;
    }
    
    private void writeResponse(MessageEvent e, HttpRequest request, boolean error, String content)
