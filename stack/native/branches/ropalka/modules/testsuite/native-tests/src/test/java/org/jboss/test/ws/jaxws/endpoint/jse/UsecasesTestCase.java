@@ -30,7 +30,6 @@ import javax.xml.ws.soap.SOAPBinding;
 
 import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.Endpoint1Iface;
 import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.Endpoint1Impl;
-import org.jboss.ws.Constants;
 import org.jboss.wsf.test.JBossWSTest;
 
 /**
@@ -40,23 +39,6 @@ import org.jboss.wsf.test.JBossWSTest;
  */
 public final class UsecasesTestCase extends JBossWSTest
 {
-   
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      
-      System.setProperty(Constants.HTTP_KEEP_ALIVE, Boolean.FALSE.toString());
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      System.getProperties().remove(Constants.HTTP_KEEP_ALIVE);
-
-      super.tearDown();
-   }
-
    private int port1 = 8878; // 8878
    private int port2 = 8878; // 8878
 
