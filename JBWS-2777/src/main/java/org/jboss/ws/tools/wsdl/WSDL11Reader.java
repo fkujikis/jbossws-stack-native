@@ -516,6 +516,13 @@ public class WSDL11Reader
       String targetNS = getOptionalAttribute(schemaEl, "targetNamespace");
       File tmpFile = null;
 
+      /*
+       *  The temporary file for the schema is named and created early before this method recurses.
+       * 
+       *  This allows the publishedLocations map to be updated with the known filename before
+       *  the file is actually written.
+       */
+      
       if (targetNS != null)
       {
          log.trace("processSchemaInclude: [targetNS=" + targetNS + ",parentURL=" + wsdlLoc + "]");
