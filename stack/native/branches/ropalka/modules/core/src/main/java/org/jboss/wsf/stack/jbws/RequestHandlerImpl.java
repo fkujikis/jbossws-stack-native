@@ -588,7 +588,7 @@ public class RequestHandlerImpl implements RequestHandler
          }
          else
          {
-            if (context.getAttachment(Map.class) != null) // TODO: remove this ugly hack
+            if (context != null && context.getAttachment(Map.class) != null) // TODO: remove this ugly hack
             {
                handleWSDLRequestFromInvocationContext(endpoint, outStream, context);
             }

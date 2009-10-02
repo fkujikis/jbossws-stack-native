@@ -39,8 +39,8 @@ import org.jboss.wsf.test.JBossWSTest;
  */
 public final class UsecasesTestCase extends JBossWSTest
 {
-   private int port1 = 8878; // 8878
-   private int port2 = 8878; // 8878
+   private int port1 = 8871;
+   private int port2 = 8872;
 
    public void testTwoPorts() throws Exception
    {
@@ -86,11 +86,33 @@ public final class UsecasesTestCase extends JBossWSTest
       endpoint1.stop();
       endpoint2.stop();
    }
-   
+
    public void testTwoPortsAndIdenticalPaths() throws Exception
    {
-      // TODO: provide test port1/service1 vs. port2/service1
+      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
+      Endpoint endpoint1 = publishEndpoint(Endpoint1Impl.class, publishURL1);
+
+      String publishURL2 = "http://" + getServerHost() + ":" + port2 + "/jaxws-endpoint/endpoint/number1";
+      Endpoint endpoint2 = publishEndpoint(new Endpoint1Impl(), publishURL2);
+
+      invokeEndpoint2(publishURL1);
+      invokeEndpoint2(publishURL2);
+
+      endpoint1.stop();
+      endpoint2.stop();
    }
+   
+   /*
+   public void testEndpointException() throws Exception
+   {
+      // TODO: provide test case where endpoint throws exception
+   }
+   
+   public void testAttachments() throws Exception
+   {
+      // TODO: provide test case where client sends attachment
+   }
+   */
 
    private Endpoint publishEndpoint(Object epImpl, String publishURL)
    {

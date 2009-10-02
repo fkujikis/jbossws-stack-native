@@ -137,9 +137,11 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       for (NettyCallbackHandler handler : this.callbacks)
       {
          handledPath = truncateHostName(handler.getHandledPath());
+         /*
          System.out.println("---");
          System.out.println("Request path 2: " + requestPath);
          System.out.println("Handled path 2: " + handledPath);
+         */
          if (requestPath.equals(handledPath))
          {
             handlerExists = true;

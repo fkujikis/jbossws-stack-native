@@ -177,7 +177,10 @@ public class EndpointImpl extends Endpoint
       if (context instanceof HttpContext)
       {
          serverContext = (HttpContext)context;
-         //address = getAddressFromConfigAndContext(serverContext); // TODO: is it necessary?
+         if (address == null)
+         {
+            address = getAddressFromConfigAndContext(serverContext); // TODO: is it necessary?
+         }
          HttpServer httpServer = serverContext.getHttpServer();
          httpServer.publish(serverContext, this);
          isPublished = true;

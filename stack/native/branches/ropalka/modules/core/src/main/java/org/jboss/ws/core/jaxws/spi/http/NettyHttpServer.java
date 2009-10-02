@@ -102,19 +102,22 @@ final class NettyHttpServer extends AbstractExtensible implements HttpServer
       // TODO: should we use archive deployment - see META-INF/services ???
       final ArchiveDeployment dep = (ArchiveDeployment) this.deploymentModelFactory.newDeployment(contextRoot, loader);
       final org.jboss.wsf.spi.deployment.Endpoint endpoint = this.deploymentModelFactory.newEndpoint(endpointClass.getName());
-      endpoint.setShortName(epImpl.getName());
+      endpoint.setShortName(epImpl.getName() + "-port-" + epImpl.getPort()); // we need to distinguish ports in endpoints registry
       endpoint.setURLPattern(epImpl.getName()); // TODO: rename method
       dep.getService().addEndpoint(endpoint);
       dep.setRootFile(new ResourceLoaderAdapter(loader));
       dep.setRuntimeClassLoader(loader);
       dep.setType(DeploymentType.JAXWS_JSE);
       dep.getService().setContextRoot(contextRoot);
+      // TODO: remove this properties hack
+      dep.getService().setProperty("protocol", "http");
+      dep.getService().setProperty("host", "127.0.0.1");
+      dep.getService().setProperty("port", epImpl.getPort());
       
       DeploymentAspectManagerImpl daManager = new DeploymentAspectManagerImpl(); 
       daManager.setDeploymentAspects(getDeploymentAspects());
       daManager.deploy(dep);
       epImpl.setDeployment(dep);
-      // TODO: call DAManager.undeploy()
 
       RealNettyHttpServer server = RealNettyHttpServer.getInstance("http", "localhost", epImpl.getPort());
       NettyCallbackHandler callback = new NettyCallbackHandler(epImpl.getPath(), contextRoot, endpoint.getShortName());
