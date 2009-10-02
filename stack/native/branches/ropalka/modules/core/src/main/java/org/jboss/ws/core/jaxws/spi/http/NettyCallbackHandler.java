@@ -33,6 +33,7 @@ import javax.xml.ws.WebServiceException;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
+import org.jboss.ws.core.jaxws.handler.MessageContextJAXWS;
 import org.jboss.ws.extensions.wsrm.transport.backchannel.RMCallbackHandlerImpl;
 import org.jboss.wsf.common.ObjectNameFactory;
 import org.jboss.wsf.common.injection.InjectionHelper;
@@ -102,22 +103,34 @@ final class NettyCallbackHandler
       }
    }
    
-   public void handle(String method, InputStream inputStream, OutputStream outputStream, Map<String, Object> requestHeaders) throws IOException
+   public int handle(String method, InputStream inputStream, OutputStream outputStream, Map<String, Object> requestHeaders) throws IOException
    {
-      InvocationContext invCtx = new InvocationContext();
-      invCtx.addAttachment(Map.class, requestHeaders);
-      if (method.equals("POST"))
+      Integer statusCode = null;
+      try
       {
-         doPost(inputStream, outputStream, invCtx);
+         InvocationContext invCtx = new InvocationContext();
+         invCtx.addAttachment(Map.class, requestHeaders);
+         if (method.equals("POST"))
+         {
+            doPost(inputStream, outputStream, invCtx);
+            statusCode = invCtx.getAttachment(Integer.class);
+         }
+         else if (method.equals("GET"))
+         {
+            doGet(inputStream, outputStream, invCtx);
+         }
+         else
+         {
+            throw new WSException("Unsupported HTTP method: " + method);
+         }
       }
-      else if (method.equals("GET"))
+      catch(Exception e)
       {
-         doGet(inputStream, outputStream, invCtx);
+         logger.error(e.getMessage(), e);
+         statusCode = 500;
       }
-      else
-      {
-         throw new WSException("Unsupported method: " + method);
-      }
+      
+      return statusCode == null ? 200 : statusCode;
    }
    
    public final String getHandledPath()

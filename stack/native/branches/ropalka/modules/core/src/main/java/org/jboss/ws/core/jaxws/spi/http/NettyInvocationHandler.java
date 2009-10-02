@@ -95,7 +95,8 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       ChannelBuffer content = request.getContent();
       OutputStream baos = new ByteArrayOutputStream();
       OutputStream outputStream = new BufferedOutputStream(baos);
-
+      Integer statusCode = null;
+      
       Map<String, Object> requestHeaders = new HashMap<String, Object>();
       for (String headerName : request.getHeaderNames())
       {
@@ -111,16 +112,16 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
             requestPath = requestPath.substring(0, paramIndex);
          }
          String httpMethod = request.getMethod().getName();
-         handle(requestPath, httpMethod, getInputStream(content), outputStream, requestHeaders);
+         statusCode = handle(requestPath, httpMethod, getInputStream(content), outputStream, requestHeaders);
       }
       catch (Throwable t)
       {
-         error = true;
+         statusCode = 500;
          LOG.error(t);
       }
       finally
       {
-         writeResponse(e, request, error, baos.toString());
+         writeResponse(e, request, baos.toString(), statusCode);
       }
    }
    
@@ -129,7 +130,7 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       return new ChannelBufferInputStream(content);
    }
    
-   private void handle(String requestPath, String httpMethod, InputStream inputStream, OutputStream outputStream, Map<String, Object> requestHeaders) throws IOException
+   private int handle(String requestPath, String httpMethod, InputStream inputStream, OutputStream outputStream, Map<String, Object> requestHeaders) throws IOException
    {
       boolean handlerExists = false;
       String handledPath = null;
@@ -147,12 +148,13 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
             handlerExists = true;
             if (LOG.isDebugEnabled())
                LOG.debug("Handling request path: " + requestPath);
-            handler.handle(httpMethod, inputStream, outputStream, requestHeaders);
-            break;
+            return handler.handle(httpMethod, inputStream, outputStream, requestHeaders);
          }
       }
       if (handlerExists == false)
          LOG.warn("No callback handler registered for path: " + requestPath);
+      
+      return 500;
    }
    
    private String truncateHostName(String s)
@@ -177,16 +179,14 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       return retVal;
    }
    
-   private void writeResponse(MessageEvent e, HttpRequest request, boolean error, String content)
+   private void writeResponse(MessageEvent e, HttpRequest request, String content, Integer statusCode)
    {
       // Build the response object.
-      HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, error ? HttpResponseStatus.INTERNAL_SERVER_ERROR : HttpResponseStatus.OK);
+      HttpResponseStatus status = statusCode == 500 ? HttpResponseStatus.INTERNAL_SERVER_ERROR : HttpResponseStatus.OK; 
+      HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
       response.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/xml; charset=UTF-8");
-      if (!error)
-      {
-         response.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(content.length()));
-         response.setContent(ChannelBuffers.copiedBuffer(content, "UTF-8"));
-      }
+      response.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(content.length()));
+      response.setContent(ChannelBuffers.copiedBuffer(content, "UTF-8"));
 
       String cookieString = request.getHeader(HttpHeaders.Names.COOKIE);
       if (cookieString != null)

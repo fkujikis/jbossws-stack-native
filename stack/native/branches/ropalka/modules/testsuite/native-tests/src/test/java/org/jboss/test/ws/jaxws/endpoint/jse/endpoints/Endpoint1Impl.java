@@ -22,6 +22,7 @@
 package org.jboss.test.ws.jaxws.endpoint.jse.endpoints;
 
 import javax.jws.WebService;
+import javax.xml.ws.WebServiceException;
 
 /**
  * Service implementation.
@@ -48,6 +49,11 @@ public class Endpoint1Impl implements Endpoint1Iface
    public int getCount()
    {
       return count;
+   }
+   
+   public void getException()
+   {
+      throw new WebServiceException("Ooops");
    }
 
 }

@@ -320,9 +320,13 @@ public class RequestHandlerImpl implements RequestHandler
             // by a null envelope.
             SOAPEnvelope soapEnv = part.getEnvelope();
             isFault = soapEnv != null && soapEnv.getBody().hasFault();
-            if (httpResponse != null && isFault)
+            if (isFault)
             {
-               httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+               invContext.addAttachment(Integer.class, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+               if (httpResponse != null)
+               {
+                  httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+               }
             }
          }
 

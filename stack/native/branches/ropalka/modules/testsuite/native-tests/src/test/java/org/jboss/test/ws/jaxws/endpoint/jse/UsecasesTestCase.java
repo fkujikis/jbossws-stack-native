@@ -101,13 +101,18 @@ public final class UsecasesTestCase extends JBossWSTest
       endpoint1.stop();
       endpoint2.stop();
    }
-   
-   /*
+
    public void testEndpointException() throws Exception
    {
-      // TODO: provide test case where endpoint throws exception
+      String publishURL = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
+      Endpoint endpoint = publishEndpoint(Endpoint1Impl.class, publishURL);
+
+      invokeEndpoint3(publishURL);
+
+      endpoint.stop();
    }
-   
+
+   /*
    public void testAttachments() throws Exception
    {
       // TODO: provide test case where client sends attachment
@@ -123,22 +128,16 @@ public final class UsecasesTestCase extends JBossWSTest
 
    private void invokeEndpoint1(String publishURL) throws Exception
    {
-      URL wsdlURL = new URL(publishURL + "?wsdl");
-      QName qname = new QName("http://org.jboss.ws/jaxws/endpoint/jse/endpoints/", "Endpoint1Impl");
-      Service service = Service.create(wsdlURL, qname);
-      Endpoint1Iface port = (Endpoint1Iface)service.getPort(Endpoint1Iface.class);
+      Endpoint1Iface port = this.getProxy(publishURL);
 
       String helloWorld = "Hello world!";
       Object retObj = port.echo(helloWorld);
       assertEquals(helloWorld, retObj);
    }
-   
+
    private void invokeEndpoint2(String publishURL) throws Exception
    {
-      URL wsdlURL = new URL(publishURL + "?wsdl");
-      QName qname = new QName("http://org.jboss.ws/jaxws/endpoint/jse/endpoints/", "Endpoint1Impl");
-      Service service = Service.create(wsdlURL, qname);
-      Endpoint1Iface port = (Endpoint1Iface)service.getPort(Endpoint1Iface.class);
+      Endpoint1Iface port = this.getProxy(publishURL);
 
       // Invoke the endpoint
       String helloWorld = "Hello world!";
@@ -148,6 +147,29 @@ public final class UsecasesTestCase extends JBossWSTest
       assertEquals(1, port.getCount());
       port.echo(helloWorld);
       assertEquals(2, port.getCount());
+   }
+
+   private void invokeEndpoint3(String publishURL) throws Exception
+   {
+      Endpoint1Iface port = this.getProxy(publishURL);
+
+      try
+      {
+         port.getException();
+         fail("Failure expected");
+      }
+      catch (Exception e)
+      {
+         log.debug(e.getMessage());
+      }
+   }
+
+   private Endpoint1Iface getProxy(String publishURL) throws Exception
+   {
+      URL wsdlURL = new URL(publishURL + "?wsdl");
+      QName qname = new QName("http://org.jboss.ws/jaxws/endpoint/jse/endpoints/", "Endpoint1Impl");
+      Service service = Service.create(wsdlURL, qname);
+      return (Endpoint1Iface)service.getPort(Endpoint1Iface.class);
    }
 
 }

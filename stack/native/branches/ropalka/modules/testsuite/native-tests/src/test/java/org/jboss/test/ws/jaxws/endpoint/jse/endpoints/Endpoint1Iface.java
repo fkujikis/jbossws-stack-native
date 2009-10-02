@@ -35,4 +35,5 @@ public interface Endpoint1Iface
 {
    String echo(String input);
    int getCount();
+   void getException();
 }
