@@ -21,8 +21,16 @@
  */
 package org.jboss.test.ws.jaxws.endpoint.jse.endpoints;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.activation.DataHandler;
 import javax.jws.WebService;
+import javax.jws.soap.SOAPBinding;
 import javax.xml.ws.WebServiceException;
+import javax.xml.ws.soap.MTOM;
+
+import org.jboss.logging.Logger;
 
 /**
  * Service implementation.
@@ -35,9 +43,12 @@ import javax.xml.ws.WebServiceException;
    targetNamespace = "http://org.jboss.ws/jaxws/endpoint/jse/endpoints/",
    endpointInterface = "org.jboss.test.ws.jaxws.endpoint.jse.endpoints.Endpoint1Iface"
 )
+@SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.BARE)
+@MTOM
 public class Endpoint1Impl implements Endpoint1Iface
 {
 
+   private Logger log = Logger.getLogger(Endpoint1Impl.class);
    private int count;
 
    public String echo(String input)
@@ -54,6 +65,29 @@ public class Endpoint1Impl implements Endpoint1Iface
    public void getException()
    {
       throw new WebServiceException("Ooops");
+   }
+
+   public DHResponse echoDataHandler(DHRequest request)
+   {
+      DataHandler dataHandler = request.getDataHandler();
+
+      try
+      {
+         log.info("Content type: " + dataHandler.getContentType());
+         Object dataContent = dataHandler.getContent();
+         log.info("Content class: " + dataContent);
+         if ( dataContent instanceof InputStream )
+         {
+            ((InputStream)dataContent).close();
+         }
+      }
+      catch (IOException e)
+      {
+         throw new WebServiceException(e);
+      }
+      
+      DataHandler responseData = new DataHandler("Server data", "text/plain");
+      return new DHResponse(responseData);
    }
 
 }

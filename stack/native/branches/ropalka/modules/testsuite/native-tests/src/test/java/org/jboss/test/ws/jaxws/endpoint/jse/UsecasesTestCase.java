@@ -21,15 +21,26 @@
  */
 package org.jboss.test.ws.jaxws.endpoint.jse;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Endpoint;
 import javax.xml.ws.Service;
+import javax.xml.ws.WebServiceFeature;
+import javax.xml.ws.soap.MTOMFeature;
 import javax.xml.ws.soap.SOAPBinding;
 
 import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.Endpoint1Iface;
 import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.Endpoint1Impl;
+import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.DHRequest;
+import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.DHResponse;
 import org.jboss.wsf.test.JBossWSTest;
 
 /**
@@ -39,8 +50,12 @@ import org.jboss.wsf.test.JBossWSTest;
  */
 public final class UsecasesTestCase extends JBossWSTest
 {
-   private int port1 = 8871;
-   private int port2 = 8872;
+   private static String fs = System.getProperty("file.separator");
+   private static File attachmentFile = JBossWSTest.getResourceFile("jaxws" + fs + "endpoint" + fs + "attachment.txt");
+   private static WebServiceFeature[] mtomEnabled = new WebServiceFeature[] { new MTOMFeature(true) };
+   
+   private static int port1 = 8871;
+   private static int port2 = 8872;
 
    public void testTwoPorts() throws Exception
    {
@@ -106,18 +121,20 @@ public final class UsecasesTestCase extends JBossWSTest
    {
       String publishURL = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
       Endpoint endpoint = publishEndpoint(Endpoint1Impl.class, publishURL);
-
       invokeEndpoint3(publishURL);
-
       endpoint.stop();
    }
 
-   /*
    public void testAttachments() throws Exception
    {
-      // TODO: provide test case where client sends attachment
+      for (int i = 0; i < 2; i++)
+      {
+         String publishURL = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
+         Endpoint endpoint = publishEndpoint(Endpoint1Impl.class, publishURL);
+         invokeEndpoint4(publishURL);
+         endpoint.stop();
+      }
    }
-   */
 
    private Endpoint publishEndpoint(Object epImpl, String publishURL)
    {
@@ -163,13 +180,53 @@ public final class UsecasesTestCase extends JBossWSTest
          log.debug(e.getMessage());
       }
    }
+   
+   private void invokeEndpoint4(String publishURL) throws Exception
+   {
+      Endpoint1Iface port = this.getProxy(publishURL, mtomEnabled);
+
+      FileDataSource fds = new FileDataSource(attachmentFile);
+      DataHandler dh = new DataHandler(fds);
+      DHResponse response = port.echoDataHandler(new DHRequest(dh));
+      assertNotNull(response);
+
+      Object content = getContent(response.getDataHandler());
+      String contentType = response.getDataHandler().getContentType();
+
+      assertEquals("Server data", content);
+      assertEquals("text/plain", contentType);
+   }
 
    private Endpoint1Iface getProxy(String publishURL) throws Exception
+   {
+      return this.getProxy(publishURL, null);
+   }
+
+   private Endpoint1Iface getProxy(String publishURL, WebServiceFeature[] features) throws Exception
    {
       URL wsdlURL = new URL(publishURL + "?wsdl");
       QName qname = new QName("http://org.jboss.ws/jaxws/endpoint/jse/endpoints/", "Endpoint1Impl");
       Service service = Service.create(wsdlURL, qname);
-      return (Endpoint1Iface)service.getPort(Endpoint1Iface.class);
+      return (Endpoint1Iface)service.getPort(Endpoint1Iface.class, features);
    }
 
+   private Object getContent(DataHandler dh) throws IOException
+   {
+      Object content = dh.getContent();
+
+      // Metro returns an ByteArrayInputStream
+      if (content instanceof InputStream)
+      {
+         try
+         {
+            BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)content));
+            return br.readLine();
+         }
+         finally
+         {
+            ((InputStream)content).close();
+         }
+      }
+      return content;
+   }
 }
