@@ -26,14 +26,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.management.ObjectName;
 import javax.xml.ws.WebServiceException;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.core.jaxws.handler.MessageContextJAXWS;
 import org.jboss.ws.extensions.wsrm.transport.backchannel.RMCallbackHandlerImpl;
 import org.jboss.wsf.common.ObjectNameFactory;
 import org.jboss.wsf.common.injection.InjectionHelper;
@@ -103,17 +102,15 @@ final class NettyCallbackHandler
       }
    }
    
-   public int handle(String method, InputStream inputStream, OutputStream outputStream, Map<String, Object> requestHeaders) throws IOException
+   public int handle(String method, InputStream inputStream, OutputStream outputStream, InvocationContext invCtx) throws IOException
    {
       Integer statusCode = null;
       try
       {
-         InvocationContext invCtx = new InvocationContext();
-         invCtx.addAttachment(Map.class, requestHeaders);
          if (method.equals("POST"))
          {
             doPost(inputStream, outputStream, invCtx);
-            statusCode = invCtx.getAttachment(Integer.class);
+            statusCode = (Integer)invCtx.getProperty(Constants.NETTY_STATUS_CODE);
          }
          else if (method.equals("GET"))
          {
@@ -183,7 +180,7 @@ final class NettyCallbackHandler
       }
    }
 
-   public final void destroy() // TODO: provide interface method to be called
+   public final void destroy()
    {
       synchronized(this.preDestroyRegistry)
       {

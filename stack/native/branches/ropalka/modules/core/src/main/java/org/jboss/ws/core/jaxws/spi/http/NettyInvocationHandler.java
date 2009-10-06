@@ -27,9 +27,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +56,8 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.jboss.ws.Constants;
+import org.jboss.wsf.spi.invocation.InvocationContext;
 
 /**
  * TODO: javadoc
@@ -97,12 +99,15 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       OutputStream outputStream = new BufferedOutputStream(baos);
       Integer statusCode = null;
       
-      Map<String, Object> requestHeaders = new HashMap<String, Object>();
+      InvocationContext invCtx = new InvocationContext();
+      Map<String, List<String>> requestHeaders = new HashMap<String, List<String>>();
+      Map<String, List<String>> responseHeaders = new HashMap<String, List<String>>();
+      invCtx.setProperty(Constants.NETTY_REQUEST_HEADERS, requestHeaders);
+      invCtx.setProperty(Constants.NETTY_RESPONSE_HEADERS, responseHeaders);
       for (String headerName : request.getHeaderNames())
       {
          requestHeaders.put(headerName, request.getHeaders(headerName));
       }
-      boolean error = false;
       try
       {
          String requestPath = request.getUri();
@@ -112,7 +117,7 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
             requestPath = requestPath.substring(0, paramIndex);
          }
          String httpMethod = request.getMethod().getName();
-         statusCode = handle(requestPath, httpMethod, getInputStream(content), outputStream, requestHeaders);
+         statusCode = handle(requestPath, httpMethod, getInputStream(content), outputStream, invCtx);
       }
       catch (Throwable t)
       {
@@ -121,7 +126,7 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       }
       finally
       {
-         writeResponse(e, request, baos.toString(), statusCode);
+         writeResponse(e, request, baos.toString(), statusCode, responseHeaders);
       }
    }
    
@@ -130,7 +135,8 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       return new ChannelBufferInputStream(content);
    }
    
-   private int handle(String requestPath, String httpMethod, InputStream inputStream, OutputStream outputStream, Map<String, Object> requestHeaders) throws IOException
+   private int handle(String requestPath, String httpMethod, InputStream inputStream, OutputStream outputStream, 
+      InvocationContext invCtx) throws IOException
    {
       boolean handlerExists = false;
       String handledPath = null;
@@ -138,17 +144,12 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       for (NettyCallbackHandler handler : this.callbacks)
       {
          handledPath = truncateHostName(handler.getHandledPath());
-         /*
-         System.out.println("---");
-         System.out.println("Request path 2: " + requestPath);
-         System.out.println("Handled path 2: " + handledPath);
-         */
          if (requestPath.equals(handledPath))
          {
             handlerExists = true;
             if (LOG.isDebugEnabled())
                LOG.debug("Handling request path: " + requestPath);
-            return handler.handle(httpMethod, inputStream, outputStream, requestHeaders);
+            return handler.handle(httpMethod, inputStream, outputStream, invCtx);
          }
       }
       if (handlerExists == false)
@@ -179,11 +180,20 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       return retVal;
    }
    
-   private void writeResponse(MessageEvent e, HttpRequest request, String content, Integer statusCode)
+   private void writeResponse(MessageEvent e, HttpRequest request, String content, int statusCode, Map<String, List<String>> responseHeaders)
    {
       // Build the response object.
-      HttpResponseStatus status = statusCode == 500 ? HttpResponseStatus.INTERNAL_SERVER_ERROR : HttpResponseStatus.OK; 
-      HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
+      HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, getResponseStatus(statusCode));
+      
+      Iterator<String> iterator = responseHeaders.keySet().iterator();
+      String key = null;
+      List<String> values = null;
+      while (iterator.hasNext())
+      {
+         key = iterator.next();
+         values = responseHeaders.get(key);
+         response.setHeader(key, values);
+      }
       response.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/xml; charset=UTF-8");
       response.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(content.length()));
       response.setContent(ChannelBuffers.copiedBuffer(content, "UTF-8"));
@@ -208,6 +218,16 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       // Write the response.
       ChannelFuture cf = e.getChannel().write(response);
       cf.awaitUninterruptibly();
+   }
+
+   private HttpResponseStatus getResponseStatus(int statusCode)
+   {
+      // TODO: https://jira.jboss.org/jira/browse/NETTY-233 
+      if (statusCode == 500) return HttpResponseStatus.INTERNAL_SERVER_ERROR;
+      if (statusCode == 202) return HttpResponseStatus.ACCEPTED;
+      if (statusCode == 204) return HttpResponseStatus.NO_CONTENT;
+      
+      return HttpResponseStatus.OK;
    }
 
    @Override
@@ -262,5 +282,5 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
          this.lock.unlock();
       }
    }
-
+   
 }
