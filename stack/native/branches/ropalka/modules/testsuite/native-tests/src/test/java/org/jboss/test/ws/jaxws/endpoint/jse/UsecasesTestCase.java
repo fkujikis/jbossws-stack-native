@@ -38,11 +38,10 @@ import javax.xml.ws.WebServiceFeature;
 import javax.xml.ws.soap.MTOMFeature;
 import javax.xml.ws.soap.SOAPBinding;
 
-import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.Endpoint1Iface;
-import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.Endpoint1Impl;
 import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.DHRequest;
 import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.DHResponse;
-import org.jboss.ws.Constants;
+import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.Endpoint1Iface;
+import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.Endpoint1Impl;
 import org.jboss.wsf.test.JBossWSTest;
 
 /**
@@ -61,13 +60,13 @@ public final class UsecasesTestCase extends JBossWSTest
 @Override
    protected void setUp() throws Exception
    {
-      System.setProperty(Constants.HTTP_KEEP_ALIVE, "false");
+//      System.setProperty(Constants.HTTP_KEEP_ALIVE, "false");
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      System.getProperties().remove(Constants.HTTP_KEEP_ALIVE);
+//      System.getProperties().remove(Constants.HTTP_KEEP_ALIVE);
    }
 
    public void testTwoPorts() throws Exception
@@ -210,7 +209,6 @@ public final class UsecasesTestCase extends JBossWSTest
    {
       Endpoint1Iface port = this.getProxy(publishURL, mtomEnabled);
 
-      final InputStream is = new ByteArrayInputStream("some string".getBytes());
       DataSource ds = new DataSource()
       {
 
@@ -221,7 +219,7 @@ public final class UsecasesTestCase extends JBossWSTest
 
          public InputStream getInputStream() throws IOException
          {
-            return is;
+            return new ByteArrayInputStream("some string".getBytes());
          }
 
          public String getName()
@@ -235,6 +233,7 @@ public final class UsecasesTestCase extends JBossWSTest
          }
          
       };
+      
       DataHandler dh = new DataHandler(ds);
       DHResponse response = port.echoDataHandler(new DHRequest(dh));
       assertNotNull(response);
