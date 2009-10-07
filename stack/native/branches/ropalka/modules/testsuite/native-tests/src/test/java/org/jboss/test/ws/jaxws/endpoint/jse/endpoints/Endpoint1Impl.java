@@ -22,14 +22,11 @@
 package org.jboss.test.ws.jaxws.endpoint.jse.endpoints;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.activation.DataHandler;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.soap.MTOM;
-
-import org.jboss.logging.Logger;
 
 /**
  * Service implementation.
@@ -46,7 +43,6 @@ import org.jboss.logging.Logger;
 public class Endpoint1Impl implements Endpoint1Iface
 {
 
-   private Logger log = Logger.getLogger(Endpoint1Impl.class);
    private int count;
 
    public String echo(String input)
@@ -71,12 +67,13 @@ public class Endpoint1Impl implements Endpoint1Iface
 
       try
       {
-         log.info("Content type: " + dataHandler.getContentType());
-         Object dataContent = dataHandler.getContent();
-         log.info("Content class: " + dataContent);
-         if ( dataContent instanceof InputStream )
+         if (!dataHandler.getContentType().equals("text/plain"))
          {
-            ((InputStream)dataContent).close();
+            throw new WebServiceException("Wrong content type");
+         }
+         if (!dataHandler.getContent().equals("some string"))
+         {
+            throw new WebServiceException("Wrong data");
          }
       }
       catch (IOException e)

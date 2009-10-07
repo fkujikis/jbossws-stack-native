@@ -22,14 +22,15 @@
 package org.jboss.test.ws.jaxws.endpoint.jse;
 
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
 
 import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
+import javax.activation.DataSource;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Endpoint;
 import javax.xml.ws.Service;
@@ -41,6 +42,7 @@ import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.Endpoint1Iface;
 import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.Endpoint1Impl;
 import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.DHRequest;
 import org.jboss.test.ws.jaxws.endpoint.jse.endpoints.DHResponse;
+import org.jboss.ws.Constants;
 import org.jboss.wsf.test.JBossWSTest;
 
 /**
@@ -50,12 +52,23 @@ import org.jboss.wsf.test.JBossWSTest;
  */
 public final class UsecasesTestCase extends JBossWSTest
 {
-   private static String fs = System.getProperty("file.separator");
-   private static File attachmentFile = JBossWSTest.getResourceFile("jaxws" + fs + "endpoint" + fs + "attachment.txt");
    private static WebServiceFeature[] mtomEnabled = new WebServiceFeature[] { new MTOMFeature(true) };
    
    private static int port1 = 8871;
    private static int port2 = 8872;
+   
+   
+@Override
+   protected void setUp() throws Exception
+   {
+      System.setProperty(Constants.HTTP_KEEP_ALIVE, "false");
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      System.getProperties().remove(Constants.HTTP_KEEP_ALIVE);
+   }
 
    public void testTwoPorts() throws Exception
    {
@@ -185,8 +198,32 @@ public final class UsecasesTestCase extends JBossWSTest
    {
       Endpoint1Iface port = this.getProxy(publishURL, mtomEnabled);
 
-      FileDataSource fds = new FileDataSource(attachmentFile);
-      DataHandler dh = new DataHandler(fds);
+      final InputStream is = new ByteArrayInputStream("some string".getBytes());
+      DataSource ds = new DataSource()
+      {
+
+         public String getContentType()
+         {
+            return "text/plain";
+         }
+
+         public InputStream getInputStream() throws IOException
+         {
+            return is;
+         }
+
+         public String getName()
+         {
+            return "unspecified";
+         }
+
+         public OutputStream getOutputStream() throws IOException
+         {
+            throw new UnsupportedOperationException();
+         }
+         
+      };
+      DataHandler dh = new DataHandler(ds);
       DHResponse response = port.echoDataHandler(new DHRequest(dh));
       assertNotNull(response);
 
