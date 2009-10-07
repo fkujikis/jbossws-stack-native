@@ -30,7 +30,7 @@ import javax.jws.soap.SOAPBinding;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 @WebService(targetNamespace = "http://org.jboss.ws/jaxws/endpoint/jse/endpoints/")
-@SOAPBinding(style = SOAPBinding.Style.DOCUMENT, parameterStyle = SOAPBinding.ParameterStyle.BARE)
+@SOAPBinding(style = SOAPBinding.Style.RPC)
 public interface Endpoint1Iface
 {
    String echo(String input);

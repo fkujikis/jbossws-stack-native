@@ -41,6 +41,7 @@ import org.jboss.logging.Logger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferInputStream;
 import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -57,6 +58,7 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.ws.Constants;
+import org.jboss.ws.core.client.transport.NettyTransportOutputStream;
 import org.jboss.wsf.spi.invocation.InvocationContext;
 
 /**
@@ -126,7 +128,7 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       }
       finally
       {
-         writeResponse(e, request, baos.toString(), statusCode, responseHeaders);
+         writeResponse(e, request, baos.toString(), statusCode, responseHeaders, ctx.getChannel());
       }
    }
    
@@ -180,7 +182,8 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       return retVal;
    }
    
-   private void writeResponse(MessageEvent e, HttpRequest request, String content, int statusCode, Map<String, List<String>> responseHeaders)
+   private void writeResponse(MessageEvent e, HttpRequest request, String content, int statusCode, Map<String, 
+         List<String>> responseHeaders, Channel channel) throws IOException
    {
       // Build the response object.
       HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, getResponseStatus(statusCode));
@@ -192,11 +195,19 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       {
          key = iterator.next();
          values = responseHeaders.get(key);
+         values = removeProhibitedCharacters(values);
          response.setHeader(key, values);
       }
-      response.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/xml; charset=UTF-8");
-      response.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(content.length()));
-      response.setContent(ChannelBuffers.copiedBuffer(content, "UTF-8"));
+      if (!responseHeaders.containsKey(HttpHeaders.Names.CONTENT_TYPE))
+      {
+         response.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/xml; charset=UTF-8");
+         response.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(content.length()));
+         response.setContent(ChannelBuffers.copiedBuffer(content, "UTF-8"));
+      }
+      else
+      {
+         response.setHeader(HttpHeaders.Names.TRANSFER_ENCODING, "chunked");
+      }
 
       String cookieString = request.getHeader(HttpHeaders.Names.COOKIE);
       if (cookieString != null)
@@ -217,7 +228,34 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
 
       // Write the response.
       ChannelFuture cf = e.getChannel().write(response);
+      if (responseHeaders.containsKey(HttpHeaders.Names.CONTENT_TYPE))
+      {
+         OutputStream out = new NettyTransportOutputStream(channel, 1024);
+         out.write(content.getBytes("UTF-8"));
+         out.close();
+      }
       cf.awaitUninterruptibly();
+   }
+   
+   private List<String> removeProhibitedCharacters(List<String> values)
+   {
+      List<String> retVal = new LinkedList<String>();
+      for (int i = 0; i < values.size(); i++)
+      {
+         retVal.add(i, removeProhibitedCharacters(values.get(i)));
+      }
+      
+      return retVal;
+   }
+   
+   private String removeProhibitedCharacters(String s)
+   {
+      String retVal = s;
+      
+      retVal = retVal.replace('\r', ' ');
+      retVal = retVal.replace('\n', ' ');
+      
+      return retVal;
    }
 
    private HttpResponseStatus getResponseStatus(int statusCode)

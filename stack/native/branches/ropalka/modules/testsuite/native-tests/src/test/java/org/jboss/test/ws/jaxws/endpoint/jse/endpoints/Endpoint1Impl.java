@@ -26,7 +26,6 @@ import java.io.InputStream;
 
 import javax.activation.DataHandler;
 import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.soap.MTOM;
 
@@ -43,7 +42,6 @@ import org.jboss.logging.Logger;
    targetNamespace = "http://org.jboss.ws/jaxws/endpoint/jse/endpoints/",
    endpointInterface = "org.jboss.test.ws.jaxws.endpoint.jse.endpoints.Endpoint1Iface"
 )
-@SOAPBinding(parameterStyle = SOAPBinding.ParameterStyle.BARE)
 @MTOM
 public class Endpoint1Impl implements Endpoint1Iface
 {
