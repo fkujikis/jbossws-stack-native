@@ -46,7 +46,7 @@ import org.jboss.ws.Constants;
 import org.jboss.wsf.test.JBossWSTest;
 
 /**
- * TODO: javadoc
+ * Tests endpoint dynamic publishing in JSE environment.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
@@ -73,10 +73,10 @@ public final class UsecasesTestCase extends JBossWSTest
    public void testTwoPorts() throws Exception
    {
       String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint1";
-      Endpoint endpoint1 = publishEndpoint(Endpoint1Impl.class, publishURL1);
+      Endpoint endpoint1 = publishEndpoint1(Endpoint1Impl.class, publishURL1);
 
       String publishURL2 = "http://" + getServerHost() + ":" + port2 + "/jaxws-endpoint2";
-      Endpoint endpoint2 = publishEndpoint(new Endpoint1Impl(), publishURL2);
+      Endpoint endpoint2 = publishEndpoint2(new Endpoint1Impl(), publishURL2);
 
       invokeEndpoint1(publishURL1);
       invokeEndpoint1(publishURL2);
@@ -88,10 +88,10 @@ public final class UsecasesTestCase extends JBossWSTest
    public void testTwoPortsAndLongPaths() throws Exception
    {
       String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
-      Endpoint endpoint1 = publishEndpoint(Endpoint1Impl.class, publishURL1);
+      Endpoint endpoint1 = publishEndpoint3(Endpoint1Impl.class, publishURL1);
 
       String publishURL2 = "http://" + getServerHost() + ":" + port2 + "/jaxws-endpoint/endpoint/number2";
-      Endpoint endpoint2 = publishEndpoint(new Endpoint1Impl(), publishURL2);
+      Endpoint endpoint2 = publishEndpoint1(new Endpoint1Impl(), publishURL2);
 
       invokeEndpoint1(publishURL1);
       invokeEndpoint1(publishURL2);
@@ -103,10 +103,10 @@ public final class UsecasesTestCase extends JBossWSTest
    public void testTwoPortsAndAlmostIdenticalLongPaths() throws Exception
    {
       String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
-      Endpoint endpoint1 = publishEndpoint(Endpoint1Impl.class, publishURL1);
+      Endpoint endpoint1 = publishEndpoint2(Endpoint1Impl.class, publishURL1);
 
       String publishURL2 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number11";
-      Endpoint endpoint2 = publishEndpoint(new Endpoint1Impl(), publishURL2);
+      Endpoint endpoint2 = publishEndpoint3(new Endpoint1Impl(), publishURL2);
 
       invokeEndpoint2(publishURL1);
       invokeEndpoint2(publishURL2);
@@ -118,10 +118,10 @@ public final class UsecasesTestCase extends JBossWSTest
    public void testTwoPortsAndIdenticalPaths() throws Exception
    {
       String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
-      Endpoint endpoint1 = publishEndpoint(Endpoint1Impl.class, publishURL1);
+      Endpoint endpoint1 = publishEndpoint1(Endpoint1Impl.class, publishURL1);
 
       String publishURL2 = "http://" + getServerHost() + ":" + port2 + "/jaxws-endpoint/endpoint/number1";
-      Endpoint endpoint2 = publishEndpoint(new Endpoint1Impl(), publishURL2);
+      Endpoint endpoint2 = publishEndpoint2(new Endpoint1Impl(), publishURL2);
 
       invokeEndpoint2(publishURL1);
       invokeEndpoint2(publishURL2);
@@ -133,7 +133,7 @@ public final class UsecasesTestCase extends JBossWSTest
    public void testEndpointException() throws Exception
    {
       String publishURL = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
-      Endpoint endpoint = publishEndpoint(Endpoint1Impl.class, publishURL);
+      Endpoint endpoint = publishEndpoint3(Endpoint1Impl.class, publishURL);
       invokeEndpoint3(publishURL);
       endpoint.stop();
    }
@@ -143,17 +143,29 @@ public final class UsecasesTestCase extends JBossWSTest
       for (int i = 0; i < 2; i++)
       {
          String publishURL = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
-         Endpoint endpoint = publishEndpoint(Endpoint1Impl.class, publishURL);
+         Endpoint endpoint = publishEndpoint3(Endpoint1Impl.class, publishURL);
          invokeEndpoint4(publishURL);
          endpoint.stop();
       }
    }
 
-   private Endpoint publishEndpoint(Object epImpl, String publishURL)
+   private Endpoint publishEndpoint1(Object epImpl, String publishURL)
    {
       Endpoint endpoint = Endpoint.create(SOAPBinding.SOAP11HTTP_BINDING, epImpl);
       endpoint.publish(publishURL);
       return endpoint;
+   }
+   
+   private Endpoint publishEndpoint2(Object epImpl, String publishURL)
+   {
+      Endpoint endpoint = Endpoint.create(epImpl);
+      endpoint.publish(publishURL);
+      return endpoint;
+   }
+
+   private Endpoint publishEndpoint3(Object epImpl, String publishURL)
+   {
+      return Endpoint.publish(publishURL, epImpl);
    }
 
    private void invokeEndpoint1(String publishURL) throws Exception

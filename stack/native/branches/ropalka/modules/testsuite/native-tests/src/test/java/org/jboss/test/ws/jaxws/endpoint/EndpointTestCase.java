@@ -22,7 +22,6 @@
 package org.jboss.test.ws.jaxws.endpoint;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 
@@ -50,27 +49,10 @@ import org.jboss.wsf.test.JBossWSTestSetup;
  */
 public class EndpointTestCase extends JBossWSTest
 {
+
    public static Test suite()
    {
-      return new TestSetup(new JBossWSTestSetup(EndpointTestCase.class, "jaxws-endpoint-servlet.war")) {
-
-         private Boolean useJBossWebLoader;
-         
-         protected void setUp() throws Exception
-         {
-            MBeanServerConnection server = JBossWSTestHelper.getServer();
-            useJBossWebLoader = (Boolean)server.getAttribute(new ObjectName("jboss.web:service=WebServer"), "UseJBossWebLoader");
-            server.setAttribute(new ObjectName("jboss.web:service=WebServer"), new Attribute("UseJBossWebLoader", Boolean.TRUE));
-            super.setUp();
-         }
-
-         protected void tearDown() throws Exception
-         {
-            super.tearDown();
-            MBeanServerConnection server = JBossWSTestHelper.getServer();
-            server.setAttribute(new ObjectName("jboss.web:service=WebServer"), new Attribute("UseJBossWebLoader", useJBossWebLoader));
-         }
-      };
+      return new TestSetup(new JBossWSTestSetup(EndpointTestCase.class, "jaxws-endpoint-servlet.war"));
    }
 
    public void testWSDLAccess() throws Exception
@@ -100,4 +82,5 @@ public class EndpointTestCase extends JBossWSTest
       BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
       assertEquals("hello-world", br.readLine());
    }
+
 }
