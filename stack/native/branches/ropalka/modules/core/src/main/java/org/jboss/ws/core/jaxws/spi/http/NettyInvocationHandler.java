@@ -230,11 +230,15 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       ChannelFuture cf = e.getChannel().write(response);
       if (responseHeaders.containsKey(HttpHeaders.Names.CONTENT_TYPE))
       {
-         OutputStream out = new NettyTransportOutputStream(channel, 1024);
+         NettyTransportOutputStream out = new NettyTransportOutputStream(channel, 1024);
          out.write(content.getBytes("UTF-8"));
          out.close();
+         out.getChannelFuture().awaitUninterruptibly();
       }
-      cf.awaitUninterruptibly();
+      else
+      {
+         cf.awaitUninterruptibly();
+      }
    }
    
    private List<String> removeProhibitedCharacters(List<String> values)
