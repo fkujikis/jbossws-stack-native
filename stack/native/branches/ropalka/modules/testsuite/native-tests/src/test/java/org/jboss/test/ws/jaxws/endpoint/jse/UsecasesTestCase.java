@@ -21,11 +21,9 @@
  */
 package org.jboss.test.ws.jaxws.endpoint.jse;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
 
@@ -56,25 +54,12 @@ public final class UsecasesTestCase extends JBossWSTest
    private static int port1 = 8871;
    private static int port2 = 8872;
    
-   
-@Override
-   protected void setUp() throws Exception
+   public void testDifferentPorts() throws Exception
    {
-//      System.setProperty(Constants.HTTP_KEEP_ALIVE, "false");
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-//      System.getProperties().remove(Constants.HTTP_KEEP_ALIVE);
-   }
-
-   public void testTwoPorts() throws Exception
-   {
-      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint1";
+      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint";
       Endpoint endpoint1 = publishEndpoint1(Endpoint1Impl.class, publishURL1);
 
-      String publishURL2 = "http://" + getServerHost() + ":" + port2 + "/jaxws-endpoint2";
+      String publishURL2 = "http://" + getServerHost() + ":" + port2 + "/jaxws-endpoint";
       Endpoint endpoint2 = publishEndpoint2(new Endpoint1Impl(), publishURL2);
 
       invokeEndpoint1(publishURL1);
@@ -84,12 +69,12 @@ public final class UsecasesTestCase extends JBossWSTest
       endpoint2.stop();
    }
 
-   public void testTwoPortsAndLongPaths() throws Exception
+   public void testDifferentPortsAndLongPaths() throws Exception
    {
-      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
+      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/long/path";
       Endpoint endpoint1 = publishEndpoint3(Endpoint1Impl.class, publishURL1);
 
-      String publishURL2 = "http://" + getServerHost() + ":" + port2 + "/jaxws-endpoint/endpoint/number2";
+      String publishURL2 = "http://" + getServerHost() + ":" + port2 + "/jaxws-endpoint/endpoint/long/path";
       Endpoint endpoint2 = publishEndpoint1(new Endpoint1Impl(), publishURL2);
 
       invokeEndpoint1(publishURL1);
@@ -99,7 +84,7 @@ public final class UsecasesTestCase extends JBossWSTest
       endpoint2.stop();
    }
 
-   public void testTwoPortsAndAlmostIdenticalLongPaths() throws Exception
+   public void testSamePortsAndAlmostIdenticalLongPaths() throws Exception
    {
       String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
       Endpoint endpoint1 = publishEndpoint2(Endpoint1Impl.class, publishURL1);
@@ -114,7 +99,7 @@ public final class UsecasesTestCase extends JBossWSTest
       endpoint2.stop();
    }
 
-   public void testTwoPortsAndIdenticalPaths() throws Exception
+   public void testDifferentPortsAndIdenticalPaths() throws Exception
    {
       String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
       Endpoint endpoint1 = publishEndpoint1(Endpoint1Impl.class, publishURL1);
@@ -129,7 +114,7 @@ public final class UsecasesTestCase extends JBossWSTest
       endpoint2.stop();
    }
 
-   public void testEndpointException() throws Exception
+   public void testEndpointThrowingException() throws Exception
    {
       String publishURL = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
       Endpoint endpoint = publishEndpoint3(Endpoint1Impl.class, publishURL);
@@ -137,7 +122,7 @@ public final class UsecasesTestCase extends JBossWSTest
       endpoint.stop();
    }
 
-   public void testAttachments() throws Exception
+   public void testEndpointProcessingAttachments() throws Exception
    {
       for (int i = 0; i < 2; i++)
       {
@@ -211,37 +196,18 @@ public final class UsecasesTestCase extends JBossWSTest
 
       DataSource ds = new DataSource()
       {
-
-         public String getContentType()
-         {
-            return "text/plain";
-         }
-
-         public InputStream getInputStream() throws IOException
-         {
-            return new ByteArrayInputStream("some string".getBytes());
-         }
-
-         public String getName()
-         {
-            return "unspecified";
-         }
-
-         public OutputStream getOutputStream() throws IOException
-         {
-            throw new UnsupportedOperationException();
-         }
-         
+         public String getContentType() { return "text/plain"; }
+         public InputStream getInputStream() throws IOException { return new ByteArrayInputStream("some string".getBytes()); }
+         public String getName() { return "none"; }
+         public OutputStream getOutputStream() throws IOException { return null; }
       };
-      
       DataHandler dh = new DataHandler(ds);
       DHResponse response = port.echoDataHandler(new DHRequest(dh));
       assertNotNull(response);
 
-      Object content = getContent(response.getDataHandler());
-      String contentType = response.getDataHandler().getContentType();
-
+      Object content = response.getDataHandler().getContent();
       assertEquals("Server data", content);
+      String contentType = response.getDataHandler().getContentType();
       assertEquals("text/plain", contentType);
    }
 
@@ -258,23 +224,4 @@ public final class UsecasesTestCase extends JBossWSTest
       return (Endpoint1Iface)service.getPort(Endpoint1Iface.class, features);
    }
 
-   private Object getContent(DataHandler dh) throws IOException
-   {
-      Object content = dh.getContent();
-
-      // Metro returns an ByteArrayInputStream
-      if (content instanceof InputStream)
-      {
-         try
-         {
-            BufferedReader br = new BufferedReader(new InputStreamReader((InputStream)content));
-            return br.readLine();
-         }
-         finally
-         {
-            ((InputStream)content).close();
-         }
-      }
-      return content;
-   }
 }
