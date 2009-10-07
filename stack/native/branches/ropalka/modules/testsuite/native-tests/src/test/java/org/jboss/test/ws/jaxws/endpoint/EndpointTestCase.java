@@ -57,12 +57,10 @@ public class EndpointTestCase extends JBossWSTest
 
    public void testWSDLAccess() throws Exception
    {
-      URL wsdlURL = new URL("http://" + getServerHost() + ":8080/jaxws-endpoint?wsdl");
-      WSDLReader wsdlReader = WSDLFactory.newInstance().newWSDLReader();
-      Definition wsdlDefinition = wsdlReader.readWSDL(wsdlURL.toString());
-      assertNotNull(wsdlDefinition);
+      readWSDL(new URL("http://" + getServerHost() + ":8080/jaxws-endpoint?wsdl"));
+      readWSDL(new URL("http://" + getServerHost() + ":8080/jaxws-endpoint2/endpoint/long/path?wsdl"));
    }
-
+   
    public void testClientAccess() throws Exception
    {
       // Create the port
@@ -81,6 +79,13 @@ public class EndpointTestCase extends JBossWSTest
       URL url = new URL("http://" + getServerHost() + ":8080/jaxws-endpoint-servlet?param=hello-world");
       BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
       assertEquals("hello-world", br.readLine());
+   }
+
+   private void readWSDL(URL wsdlURL) throws Exception
+   {
+      WSDLReader wsdlReader = WSDLFactory.newInstance().newWSDLReader();
+      Definition wsdlDefinition = wsdlReader.readWSDL(wsdlURL.toString());
+      assertNotNull(wsdlDefinition);
    }
 
 }
