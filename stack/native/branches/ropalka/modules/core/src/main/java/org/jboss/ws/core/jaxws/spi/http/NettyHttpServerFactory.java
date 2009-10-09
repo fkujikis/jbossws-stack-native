@@ -32,8 +32,9 @@ import org.jboss.wsf.spi.http.HttpServerFactory;
 public final class NettyHttpServerFactory extends HttpServerFactory
 {
 
-   private static final HttpServer NETTY_HTTP_SERVER = new NettyHttpServerAdapter();
-   
+   /** Netty HTTP server adapter singleton. */
+   private static final HttpServer NETTY_SERVER_ADAPTER_SINGLETON = new NettyHttpServerAdapter();
+
    /**
     * Constructor.
     */
@@ -41,16 +42,16 @@ public final class NettyHttpServerFactory extends HttpServerFactory
    {
       super();
    }
-   
+
    /**
-    * Returns Netty based http server.
+    * Returns Netty based http server adapter.
     * 
-    * @return Netty based http server
+    * @return Netty based http server adapter
     */
    @Override
    public HttpServer getHttpServer()
    {
-      return NettyHttpServerFactory.NETTY_HTTP_SERVER;
+      return NettyHttpServerFactory.NETTY_SERVER_ADAPTER_SINGLETON;
    }
 
 }

@@ -69,14 +69,16 @@ import org.jboss.wsf.spi.invocation.InvocationContext;
 final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
 {
    private static final Logger LOG = Logger.getLogger(NettyInvocationHandler.class);
+
    private final List<NettyHttpServerCallbackHandler> callbacks = new LinkedList<NettyHttpServerCallbackHandler>();
+
    private final Lock lock = new ReentrantLock();
 
    public NettyInvocationHandler()
    {
       super();
    }
-   
+
    @Override
    public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
    {
@@ -85,7 +87,7 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       //       If the added channel is closed before shutdown,
       //       it will be removed from the group automatically.
       NettyHttpServer.channelGroup.add(ctx.getChannel());
-   } 
+   }
 
    public boolean hasMoreCallbacks()
    {
@@ -95,12 +97,12 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
    @Override
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception
    {
-      HttpRequest request = (HttpRequest)e.getMessage();
+      HttpRequest request = (HttpRequest) e.getMessage();
       ChannelBuffer content = request.getContent();
       OutputStream baos = new ByteArrayOutputStream();
       OutputStream outputStream = new BufferedOutputStream(baos);
       Integer statusCode = null;
-      
+
       InvocationContext invCtx = new InvocationContext();
       Map<String, List<String>> requestHeaders = new HashMap<String, List<String>>();
       Map<String, List<String>> responseHeaders = new HashMap<String, List<String>>();
@@ -131,14 +133,14 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
          writeResponse(e, request, baos.toString(), statusCode, responseHeaders, ctx.getChannel());
       }
    }
-   
+
    private InputStream getInputStream(ChannelBuffer content)
    {
       return new ChannelBufferInputStream(content);
    }
-   
-   private int handle(String requestPath, String httpMethod, InputStream inputStream, OutputStream outputStream, 
-      InvocationContext invCtx) throws IOException
+
+   private int handle(String requestPath, String httpMethod, InputStream inputStream, OutputStream outputStream,
+         InvocationContext invCtx) throws IOException
    {
       boolean handlerExists = false;
       String handledPath = null;
@@ -156,10 +158,10 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       }
       if (handlerExists == false)
          LOG.warn("No callback handler registered for path: " + requestPath);
-      
+
       return 500;
    }
-   
+
    private String truncateHostName(String s)
    {
       String retVal = s;
@@ -174,20 +176,20 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
             LOG.error(mue.getMessage(), mue);
          }
       }
-      
+
       while (retVal.endsWith("/"))
       {
          retVal = retVal.substring(0, retVal.length() - 1);
       }
       return retVal;
    }
-   
-   private void writeResponse(MessageEvent e, HttpRequest request, String content, int statusCode, Map<String, 
-         List<String>> responseHeaders, Channel channel) throws IOException
+
+   private void writeResponse(MessageEvent e, HttpRequest request, String content, int statusCode,
+         Map<String, List<String>> responseHeaders, Channel channel) throws IOException
    {
       // Build the response object.
       HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, getResponseStatus(statusCode));
-      
+
       Iterator<String> iterator = responseHeaders.keySet().iterator();
       String key = null;
       List<String> values = null;
@@ -240,7 +242,7 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
          cf.awaitUninterruptibly();
       }
    }
-   
+
    private List<String> removeProhibitedCharacters(List<String> values)
    {
       List<String> retVal = new LinkedList<String>();
@@ -248,27 +250,30 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       {
          retVal.add(i, removeProhibitedCharacters(values.get(i)));
       }
-      
+
       return retVal;
    }
-   
+
    private String removeProhibitedCharacters(String s)
    {
       String retVal = s;
-      
+
       retVal = retVal.replace('\r', ' ');
       retVal = retVal.replace('\n', ' ');
-      
+
       return retVal;
    }
 
    private HttpResponseStatus getResponseStatus(int statusCode)
    {
       // TODO: https://jira.jboss.org/jira/browse/NETTY-233 
-      if (statusCode == 500) return HttpResponseStatus.INTERNAL_SERVER_ERROR;
-      if (statusCode == 202) return HttpResponseStatus.ACCEPTED;
-      if (statusCode == 204) return HttpResponseStatus.NO_CONTENT;
-      
+      if (statusCode == 500)
+         return HttpResponseStatus.INTERNAL_SERVER_ERROR;
+      if (statusCode == 202)
+         return HttpResponseStatus.ACCEPTED;
+      if (statusCode == 204)
+         return HttpResponseStatus.NO_CONTENT;
+
       return HttpResponseStatus.OK;
    }
 
@@ -324,5 +329,5 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
          this.lock.unlock();
       }
    }
-   
+
 }

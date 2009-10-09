@@ -53,13 +53,18 @@ import org.jboss.wsf.stack.jbws.WebAppResolver;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class NettyHttpServerCallbackHandler
+final class NettyHttpServerCallbackHandler // TODO: review class name
 {
-   private static final Logger logger = Logger.getLogger(RMCallbackHandlerImpl.class);
+   private static final Logger LOGGER = Logger.getLogger(RMCallbackHandlerImpl.class);
+
    private final String handledPath;
+
    private final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+
    private EndpointRegistry epRegistry;
+
    private Endpoint endpoint;
+
    private List<PreDestroyHolder> preDestroyRegistry = new LinkedList<PreDestroyHolder>();
 
    /**
@@ -80,7 +85,7 @@ final class NettyHttpServerCallbackHandler
    private void initRegistry()
    {
       epRegistry = spiProvider.getSPI(EndpointRegistryFactory.class).getEndpointRegistry();
-   }   
+   }
 
    /**
     * Initialize the service endpoint
@@ -94,82 +99,75 @@ final class NettyHttpServerCallbackHandler
 
       if (this.endpoint == null)
       {
-         ObjectName oname = ObjectNameFactory.create(Endpoint.SEPID_DOMAIN + ":" +
-           Endpoint.SEPID_PROPERTY_CONTEXT + "=" + context + "," +
-           Endpoint.SEPID_PROPERTY_ENDPOINT + "=" + endpointRegistryPath
-         );
+         ObjectName oname = ObjectNameFactory.create(Endpoint.SEPID_DOMAIN + ":" + Endpoint.SEPID_PROPERTY_CONTEXT
+               + "=" + context + "," + Endpoint.SEPID_PROPERTY_ENDPOINT + "=" + endpointRegistryPath);
          throw new WebServiceException("Cannot obtain endpoint for: " + oname);
       }
    }
-   
-   public int handle(String method, InputStream inputStream, OutputStream outputStream, InvocationContext invCtx) throws IOException
+
+   public int handle(String method, InputStream inputStream, OutputStream outputStream, InvocationContext invCtx)
+         throws IOException
    {
       Integer statusCode = null;
       try
       {
          if (method.equals("POST"))
          {
-            doPost(inputStream, outputStream, invCtx);
-            statusCode = (Integer)invCtx.getProperty(Constants.NETTY_STATUS_CODE);
+            this.handle(inputStream, outputStream, invCtx, false);
+            statusCode = (Integer) invCtx.getProperty(Constants.NETTY_STATUS_CODE);
          }
          else if (method.equals("GET"))
          {
-            doGet(inputStream, outputStream, invCtx);
+            this.handle(inputStream, outputStream, invCtx, true);
          }
          else
          {
             throw new WSException("Unsupported HTTP method: " + method);
          }
       }
-      catch(Exception e)
+      catch (Exception e)
       {
-         logger.error(e.getMessage(), e);
+         NettyHttpServerCallbackHandler.LOGGER.error(e.getMessage(), e);
          statusCode = 500;
       }
-      
+
       return statusCode == null ? 200 : statusCode;
    }
-   
-   public final String getHandledPath()
+
+   public String getHandledPath()
    {
       return this.handledPath;
    }
-   
-   public void doGet(InputStream inputStream, OutputStream outputStream, InvocationContext invCtx) throws IOException
+
+   private void handle(final InputStream inputStream, final OutputStream outputStream, final InvocationContext invCtx, final boolean wsdlRequest) throws IOException
    {
       try
       {
-         EndpointAssociation.setEndpoint(endpoint);
-         RequestHandler requestHandler = endpoint.getRequestHandler();
-         requestHandler.handleWSDLRequest(endpoint, outputStream, invCtx);
+         EndpointAssociation.setEndpoint(this.endpoint);
+         final RequestHandler requestHandler = this.endpoint.getRequestHandler();
+         
+         if (wsdlRequest)
+         {
+            requestHandler.handleWSDLRequest(this.endpoint, outputStream, invCtx);
+         }
+         else
+         {
+            requestHandler.handleRequest(this.endpoint, inputStream, outputStream, invCtx);
+         }
       }
       finally
       {
+         this.registerForPreDestroy(this.endpoint);
          EndpointAssociation.removeEndpoint();
       }
    }
 
-   public void doPost(InputStream inputStream, OutputStream outputStream, InvocationContext invCtx) throws IOException
+   private void registerForPreDestroy(final Endpoint ep)
    {
-      try
-      {
-         EndpointAssociation.setEndpoint(endpoint);
-         RequestHandler requestHandler = endpoint.getRequestHandler();
-         requestHandler.handleRequest(endpoint, inputStream, outputStream, invCtx);
-      }
-      finally
-      {
-         this.registerForPreDestroy(endpoint);
-         EndpointAssociation.removeEndpoint();
-      }
-   }
-
-   private void registerForPreDestroy(Endpoint ep)
-   {
-      PreDestroyHolder holder = (PreDestroyHolder)ep.getAttachment(PreDestroyHolder.class);
+      final PreDestroyHolder holder = (PreDestroyHolder) ep.getAttachment(PreDestroyHolder.class);
       if (holder != null)
       {
-         synchronized(this.preDestroyRegistry)
+         synchronized (this.preDestroyRegistry)
          {
             if (!this.preDestroyRegistry.contains(holder))
             {
@@ -182,7 +180,7 @@ final class NettyHttpServerCallbackHandler
 
    public final void destroy()
    {
-      synchronized(this.preDestroyRegistry)
+      synchronized (this.preDestroyRegistry)
       {
          for (final PreDestroyHolder holder : this.preDestroyRegistry)
          {
@@ -193,7 +191,7 @@ final class NettyHttpServerCallbackHandler
             }
             catch (Exception exception)
             {
-               logger.error(exception.getMessage(), exception);
+               NettyHttpServerCallbackHandler.LOGGER.error(exception.getMessage(), exception);
             }
          }
          this.preDestroyRegistry.clear();
@@ -202,4 +200,3 @@ final class NettyHttpServerCallbackHandler
    }
 
 }
-   

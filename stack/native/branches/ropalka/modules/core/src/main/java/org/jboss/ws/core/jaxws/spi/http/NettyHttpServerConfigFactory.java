@@ -25,15 +25,16 @@ import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.management.ServerConfigFactory;
 
 /**
- * TODO: javadoc
+ * Netty server configuration factory. 
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class NettyHttpServerConfigFactory extends ServerConfigFactory
 {
 
-   private static ServerConfig NETTY_CONFIG = new NettyHttpServerConfig();
-   
+   /** Netty config singleton. */
+   private static final ServerConfig NETTY_CONFIG_SINGLETON = new NettyHttpServerConfig();
+
    /**
     * Constructor.
     */
@@ -42,10 +43,15 @@ public final class NettyHttpServerConfigFactory extends ServerConfigFactory
       super();
    }
 
+   /**
+    * Provides Netty server configuration.
+    * 
+    * @return Netty server configuration
+    */
    @Override
    public ServerConfig getServerConfig()
    {
-      return NettyHttpServerConfigFactory.NETTY_CONFIG;
+      return NettyHttpServerConfigFactory.NETTY_CONFIG_SINGLETON;
    }
-   
+
 }

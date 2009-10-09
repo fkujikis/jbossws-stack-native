@@ -26,15 +26,29 @@ import org.jboss.wsf.spi.management.EndpointRegistry;
 import org.jboss.wsf.spi.management.EndpointRegistryFactory;
 
 /**
- * TODO: javadoc
+ * Netty server endpoint registry factory for JSE environment.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class NettyEndpointRegistryFactory extends EndpointRegistryFactory
 {
-   
-   private static EndpointRegistry ENDPOINT_REGISTRY = new DefaultEndpointRegistry();
 
+   /** Endpoing registry singleton. */
+   private static final EndpointRegistry ENDPOINT_REGISTRY = new DefaultEndpointRegistry();
+
+   /**
+    * Constructor.
+    */
+   public NettyEndpointRegistryFactory()
+   {
+      super();
+   }
+   
+   /**
+    * Returns endpoint registry.
+    * 
+    * @return endpoint registry
+    */
    @Override
    public EndpointRegistry getEndpointRegistry()
    {

@@ -28,21 +28,22 @@ import org.jboss.ws.WSException;
 import org.jboss.wsf.spi.management.ServerConfig;
 
 /**
- * TODO: javadoc
+ * Netty HTTP server config that configures user temp 
+ * directory to be used for contract publishing.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class NettyHttpServerConfig implements ServerConfig
 {
 
-   // TODO: count with security manager enabled
-   private static File TMP_DIR;
-   
+   /** Temporary directory location. */
+   private static File tmpDir;
+
    static
    {
       try
       {
-         TMP_DIR = new File(System.getProperty("java.io.tmpdir"));
+         NettyHttpServerConfig.tmpDir = new File(System.getProperty("java.io.tmpdir"));
       }
       catch (SecurityException se)
       {
@@ -50,20 +51,40 @@ final class NettyHttpServerConfig implements ServerConfig
       }
    }
 
+   /**
+    * Constructor.
+    */
+   public NettyHttpServerConfig()
+   {
+      super();
+   }
+
    public File getHomeDir()
    {
-      return NettyHttpServerConfig.TMP_DIR;
+      return NettyHttpServerConfig.tmpDir;
    }
 
    public File getServerDataDir()
    {
-      return NettyHttpServerConfig.TMP_DIR;
+      return NettyHttpServerConfig.tmpDir;
    }
 
    public File getServerTempDir()
    {
-      return NettyHttpServerConfig.TMP_DIR;
+      return NettyHttpServerConfig.tmpDir;
    }
+
+   public String getWebServiceHost()
+   {
+      return "localhost";
+   }
+
+   public boolean isModifySOAPAddress()
+   {
+      return false;
+   }
+
+   // not implemented methods
 
    public String getImplementationTitle()
    {
@@ -75,26 +96,14 @@ final class NettyHttpServerConfig implements ServerConfig
       throw new UnsupportedOperationException();
    }
 
-   public String getWebServiceHost()
-   {
-      return "localhost";
-   }
-
    public int getWebServicePort()
    {
       throw new UnsupportedOperationException();
-      //return 8878;
    }
 
    public int getWebServiceSecurePort()
    {
       throw new UnsupportedOperationException();
-      //return 8879;
-   }
-
-   public boolean isModifySOAPAddress()
-   {
-      return false;
    }
 
    public void setModifySOAPAddress(boolean flag)
@@ -116,5 +125,5 @@ final class NettyHttpServerConfig implements ServerConfig
    {
       throw new UnsupportedOperationException();
    }
-   
+
 }

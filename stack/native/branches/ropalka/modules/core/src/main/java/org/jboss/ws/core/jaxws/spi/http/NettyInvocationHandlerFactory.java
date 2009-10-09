@@ -27,15 +27,29 @@ import org.jboss.wsf.spi.invocation.InvocationHandlerFactory;
 import org.jboss.wsf.spi.invocation.InvocationType;
 
 /**
- * TODO: javadoc
+ * Netty invocation handler factory that supports JAXWS JSE invocation only.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class NettyInvocationHandlerFactory extends InvocationHandlerFactory
 {
 
+   /**
+    * Constructor.
+    */
+   public NettyInvocationHandlerFactory()
+   {
+      super();
+   }
+
+   /**
+    * Returns invocation handler for specified invocation type.
+    *
+    * @param type invocation type
+    * @return invocation handler
+    */
    @Override
-   public InvocationHandler newInvocationHandler(InvocationType type)
+   public InvocationHandler newInvocationHandler(final InvocationType type)
    {
       InvocationHandler handler = null;
 
@@ -45,7 +59,7 @@ public final class NettyInvocationHandlerFactory extends InvocationHandlerFactor
             handler = new InvocationHandlerJAXWS();
             break;
          default :
-            throw new IllegalArgumentException("Unable to resolve spi.invocation.InvocationHandler for type " + type);
+            throw new IllegalArgumentException("Unable to resolve spi.invocation.InvocationHandler for type: " + type);
       }
 
       return handler;

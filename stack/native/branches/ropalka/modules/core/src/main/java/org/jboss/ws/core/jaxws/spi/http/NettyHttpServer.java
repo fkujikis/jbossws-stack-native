@@ -46,23 +46,35 @@ import org.jboss.ws.core.client.transport.WSServerPipelineFactory;
  */
 final class NettyHttpServer implements Runnable
 {
-   
+
    private static final Logger LOG = Logger.getLogger(NettyHttpServer.class);
+
    private static final Lock CLASS_LOCK = new ReentrantLock();
+
    private static final long WAIT_PERIOD = 100;
+
    private static Map<String, NettyHttpServer> SERVERS = new HashMap<String, NettyHttpServer>();
+
    static final ChannelGroup channelGroup = new DefaultChannelGroup("rmBackPortsServer");
 
    private final Object instanceLock = new Object();
+
    private final String scheme;
+
    private final String host;
+
    private final int port;
+
    private boolean started;
+
    private boolean stopped;
+
    private boolean terminated;
+
    private ChannelFactory factory;
+
    private NettyInvocationHandler handler;
-   
+
    private NettyHttpServer(String scheme, String host, int port)
    {
       super();
@@ -92,12 +104,12 @@ final class NettyHttpServer implements Runnable
          throw new WebServiceException(e.getMessage(), e);
       }
    }
-   
+
    public final void registerCallback(NettyHttpServerCallbackHandler callbackHandler)
    {
       this.handler.registerCallback(callbackHandler);
    }
-   
+
    public final void unregisterCallback(NettyHttpServerCallbackHandler callbackHandler)
    {
       this.handler.unregisterCallback(callbackHandler);
@@ -106,12 +118,12 @@ final class NettyHttpServer implements Runnable
          this.terminate();
       }
    }
-   
+
    public final NettyHttpServerCallbackHandler getCallback(String requestPath)
    {
       return this.handler.getCallback(requestPath);
    }
-   
+
    public final boolean hasMoreCallbacks()
    {
       return this.handler.hasMoreCallbacks();
@@ -121,26 +133,26 @@ final class NettyHttpServer implements Runnable
    {
       return this.scheme;
    }
-   
+
    public final String getHost()
    {
       return this.host;
    }
-   
+
    public final int getPort()
    {
       return this.port;
    }
-   
+
    public final void run()
    {
       synchronized (this.instanceLock)
       {
          if (this.started)
             return;
-         
+
          this.started = true;
-         
+
          while (this.stopped == false)
          {
             try
@@ -170,14 +182,14 @@ final class NettyHttpServer implements Runnable
          }
       }
    }
-   
+
    public final void terminate()
    {
       synchronized (this.instanceLock)
       {
          if (this.stopped == true)
             return;
-         
+
          this.stopped = true;
          LOG.debug("termination forced");
          SERVERS.remove(scheme + "://" + host + ":" + port + "/");
@@ -195,7 +207,7 @@ final class NettyHttpServer implements Runnable
          }
       }
    }
-   
+
    /**
     * Starts back ports server on the background if method is called for the first time
     * @param scheme protocol
@@ -212,15 +224,16 @@ final class NettyHttpServer implements Runnable
          NettyHttpServer server = SERVERS.get(key);
          if (server == null)
          {
-            server = new NettyHttpServer(scheme, host, (port == -1) ? 80 : port); 
+            server = new NettyHttpServer(scheme, host, (port == -1) ? 80 : port);
             SERVERS.put(key, server);
             // forking back ports server
-            Thread t  = new Thread(server, "NettyHttpServer listening on " + key);
+            Thread t = new Thread(server, "NettyHttpServer listening on " + key);
             t.setDaemon(true);
             t.start();
             // registering shutdown hook
             final NettyHttpServer s = server;
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable()
+            {
                public void run()
                {
                   s.terminate();
@@ -242,5 +255,5 @@ final class NettyHttpServer implements Runnable
          CLASS_LOCK.unlock();
       }
    }
-   
+
 }

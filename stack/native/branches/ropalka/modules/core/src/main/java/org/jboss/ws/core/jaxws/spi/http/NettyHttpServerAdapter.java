@@ -62,11 +62,15 @@ final class NettyHttpServerAdapter implements HttpServer
 
    /** JBossWS SPI provider. */
    private static final SPIProvider SPI_PROVIDER = SPIProviderResolver.getInstance().getProvider();
+
    /** JBossWS Http Context factory. */
-   private static final HttpContextFactory HTTP_CONTEXT_FACTORY = NettyHttpServerAdapter.SPI_PROVIDER.getSPI(HttpContextFactory.class);
+   private static final HttpContextFactory HTTP_CONTEXT_FACTORY = NettyHttpServerAdapter.SPI_PROVIDER
+         .getSPI(HttpContextFactory.class);
+
    /** Deployment model factory. */
-   private static final DeploymentModelFactory DEPLOYMENT_FACTORY = NettyHttpServerAdapter.SPI_PROVIDER.getSPI(DeploymentModelFactory.class);
-   
+   private static final DeploymentModelFactory DEPLOYMENT_FACTORY = NettyHttpServerAdapter.SPI_PROVIDER
+         .getSPI(DeploymentModelFactory.class);
+
    /**
     * Constructor.
     */
@@ -83,38 +87,39 @@ final class NettyHttpServerAdapter implements HttpServer
 
    public void destroy(HttpContext context, Endpoint endpoint)
    {
-      EndpointImpl epImpl = (EndpointImpl)endpoint;
+      EndpointImpl epImpl = (EndpointImpl) endpoint;
       NettyHttpServer server = NettyHttpServer.getInstance("http", "localhost", epImpl.getPort());
       NettyHttpServerCallbackHandler callback = server.getCallback(epImpl.getPath());
       server.unregisterCallback(callback);
-      
-      DeploymentAspectManagerImpl daManager = new DeploymentAspectManagerImpl(); 
+
+      DeploymentAspectManagerImpl daManager = new DeploymentAspectManagerImpl();
       daManager.setDeploymentAspects(getDeploymentAspects());
       daManager.undeploy(epImpl.getDeployment());
    }
 
    public void publish(HttpContext context, Endpoint ep)
    {
-      EndpointImpl epImpl = (EndpointImpl)ep;
+      EndpointImpl epImpl = (EndpointImpl) ep;
       String contextRoot = context.getContextRoot();
       Deployment dep = this.newDeployment(epImpl, contextRoot);
-      
-      DeploymentAspectManagerImpl daManager = new DeploymentAspectManagerImpl(); 
+
+      DeploymentAspectManagerImpl daManager = new DeploymentAspectManagerImpl();
       daManager.setDeploymentAspects(getDeploymentAspects());
       daManager.deploy(dep);
       epImpl.setDeployment(dep);
 
       NettyHttpServer server = NettyHttpServer.getInstance("http", "localhost", epImpl.getPort());
-      NettyHttpServerCallbackHandler callback = new NettyHttpServerCallbackHandler(epImpl.getPath(), contextRoot, this.getEndpointRegistryPath(epImpl));
+      NettyHttpServerCallbackHandler callback = new NettyHttpServerCallbackHandler(epImpl.getPath(), contextRoot, this
+            .getEndpointRegistryPath(epImpl));
       server.registerCallback(callback);
    }
-   
+
    private String getEndpointRegistryPath(EndpointImpl endpoint)
    {
       // we need to distinguish ports in endpoints registry in JSE environment
       return endpoint.getPathWithoutContext() + "-port-" + endpoint.getPort();
    }
-   
+
    private Deployment newDeployment(EndpointImpl epImpl, String contextRoot)
    {
       Class<?> endpointClass = this.getEndpointClass(epImpl);
@@ -129,19 +134,19 @@ final class NettyHttpServerAdapter implements HttpServer
       dep.setRuntimeClassLoader(loader);
       dep.setType(DeploymentType.JAXWS_JSE);
       dep.getService().setContextRoot(contextRoot);
-      
+
       // TODO: remove this properties hack
       dep.getService().setProperty("protocol", "http");
       dep.getService().setProperty("host", "127.0.0.1");
       dep.getService().setProperty("port", epImpl.getPort());
-      
+
       return dep;
    }
-   
+
    private List<DeploymentAspect> getDeploymentAspects()
    {
       List<DeploymentAspect> retVal = new LinkedList<DeploymentAspect>();
-      
+
       // TODO: native stack can't use framework classes directly
       retVal.add(new EndpointHandlerDeploymentAspect()); // 13
       retVal.add(new BackwardCompatibleContextRootDeploymentAspect()); // 14
@@ -154,7 +159,7 @@ final class NettyHttpServerAdapter implements HttpServer
       retVal.add(new EagerInitializeDeploymentAspect()); // 25
       retVal.add(new EndpointRegistryDeploymentAspect()); // 35
       retVal.add(new EndpointLifecycleDeploymentAspect()); // 37
-      
+
       return retVal;
    }
 
