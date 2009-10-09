@@ -21,144 +21,226 @@
  */
 package org.jboss.ws.core.jaxws.spi.http;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-import javax.xml.ws.Endpoint;
+import javax.xml.ws.WebServiceException;
 
-import org.jboss.ws.core.jaxws.spi.EndpointImpl;
-import org.jboss.wsf.common.ResourceLoaderAdapter;
-import org.jboss.wsf.framework.deployment.BackwardCompatibleContextRootDeploymentAspect;
-import org.jboss.wsf.framework.deployment.DeploymentAspectManagerImpl;
-import org.jboss.wsf.framework.deployment.EndpointAddressDeploymentAspect;
-import org.jboss.wsf.framework.deployment.EndpointHandlerDeploymentAspect;
-import org.jboss.wsf.framework.deployment.EndpointLifecycleDeploymentAspect;
-import org.jboss.wsf.framework.deployment.EndpointNameDeploymentAspect;
-import org.jboss.wsf.framework.deployment.EndpointRegistryDeploymentAspect;
-import org.jboss.wsf.framework.deployment.URLPatternDeploymentAspect;
-import org.jboss.wsf.spi.SPIProvider;
-import org.jboss.wsf.spi.SPIProviderResolver;
-import org.jboss.wsf.spi.deployment.AbstractExtensible;
-import org.jboss.wsf.spi.deployment.ArchiveDeployment;
-import org.jboss.wsf.spi.deployment.DeploymentAspect;
-import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
-import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
-import org.jboss.wsf.spi.http.HttpContext;
-import org.jboss.wsf.spi.http.HttpContextFactory;
-import org.jboss.wsf.spi.http.HttpServer;
-import org.jboss.wsf.stack.jbws.EagerInitializeDeploymentAspect;
-import org.jboss.wsf.stack.jbws.PublishContractDeploymentAspect;
-import org.jboss.wsf.stack.jbws.ServiceEndpointInvokerDeploymentAspect;
-import org.jboss.wsf.stack.jbws.UnifiedMetaDataDeploymentAspect;
+import org.jboss.logging.Logger;
+import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFactory;
+import org.jboss.netty.channel.group.ChannelGroup;
+import org.jboss.netty.channel.group.DefaultChannelGroup;
+import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.ws.core.client.transport.WSServerPipelineFactory;
 
 /**
  * TODO: javadoc
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-// TODO: review thread safety
-final class NettyHttpServer extends AbstractExtensible implements HttpServer
+final class NettyHttpServer implements Runnable
 {
-
-   /** JBossWS SPI provider. */
-   private static final SPIProvider SPI_PROVIDER = SPIProviderResolver.getInstance().getProvider();
-   /** JBossWS Http Context factory. */
-   private static final HttpContextFactory HTTP_CONTEXT_FACTORY = NettyHttpServer.SPI_PROVIDER.getSPI(HttpContextFactory.class);
-   /** Deployment model factory. */
-   private final DeploymentModelFactory deploymentModelFactory;
    
-   public NettyHttpServer()
+   private static final Logger LOG = Logger.getLogger(NettyHttpServer.class);
+   private static final Lock CLASS_LOCK = new ReentrantLock();
+   private static final long WAIT_PERIOD = 100;
+   private static Map<String, NettyHttpServer> SERVERS = new HashMap<String, NettyHttpServer>();
+   static final ChannelGroup channelGroup = new DefaultChannelGroup("rmBackPortsServer");
+
+   private final Object instanceLock = new Object();
+   private final String scheme;
+   private final String host;
+   private final int port;
+   private boolean started;
+   private boolean stopped;
+   private boolean terminated;
+   private ChannelFactory factory;
+   private NettyInvocationHandler handler;
+   
+   private NettyHttpServer(String scheme, String host, int port)
    {
       super();
+      this.scheme = scheme;
+      this.host = host;
+      this.port = port;
+      try
+      {
+         factory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
 
-      // deployment factory
-      final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-      this.deploymentModelFactory = spiProvider.getSPI(DeploymentModelFactory.class);
-   }
-
-   public HttpContext createContext(final String contextRoot)
-   {
-      return NettyHttpServer.HTTP_CONTEXT_FACTORY.newHttpContext(this, contextRoot);
-   }
-
-   public void destroy(HttpContext context, Endpoint endpoint)
-   {
-      EndpointImpl epImpl = (EndpointImpl)endpoint;
-      RealNettyHttpServer server = RealNettyHttpServer.getInstance("http", "localhost", epImpl.getPort());
-      NettyCallbackHandler callback = server.getCallback(epImpl.getPath());
-      server.unregisterCallback(callback);
-      
-      DeploymentAspectManagerImpl daManager = new DeploymentAspectManagerImpl(); 
-      daManager.setDeploymentAspects(getDeploymentAspects());
-      daManager.undeploy(epImpl.getDeployment());
-   }
-
-   public void publish(HttpContext context, Endpoint ep)
-   {
-      EndpointImpl epImpl = (EndpointImpl)ep;
-      Class<?> endpointClass = this.getEndpointClass(ep);
-      String contextRoot = context.getContextRoot();
-      ClassLoader loader = endpointClass.getClassLoader();
-      // TODO: should we use archive deployment - see META-INF/services ???
-      final ArchiveDeployment dep = (ArchiveDeployment) this.deploymentModelFactory.newDeployment(contextRoot, loader);
-      final org.jboss.wsf.spi.deployment.Endpoint endpoint = this.deploymentModelFactory.newEndpoint(endpointClass.getName());
-      endpoint.setShortName(epImpl.getName() + "-port-" + epImpl.getPort()); // we need to distinguish ports in endpoints registry
-      endpoint.setURLPattern(epImpl.getName()); // TODO: rename method
-      dep.getService().addEndpoint(endpoint);
-      dep.setRootFile(new ResourceLoaderAdapter(loader));
-      dep.setRuntimeClassLoader(loader);
-      dep.setType(DeploymentType.JAXWS_JSE);
-      dep.getService().setContextRoot(contextRoot);
-      // TODO: remove this properties hack
-      dep.getService().setProperty("protocol", "http");
-      dep.getService().setProperty("host", "127.0.0.1");
-      dep.getService().setProperty("port", epImpl.getPort());
-      
-      DeploymentAspectManagerImpl daManager = new DeploymentAspectManagerImpl(); 
-      daManager.setDeploymentAspects(getDeploymentAspects());
-      daManager.deploy(dep);
-      epImpl.setDeployment(dep);
-
-      RealNettyHttpServer server = RealNettyHttpServer.getInstance("http", "localhost", epImpl.getPort());
-      NettyCallbackHandler callback = new NettyCallbackHandler(epImpl.getPath(), contextRoot, endpoint.getShortName());
-      server.registerCallback(callback);
+         ServerBootstrap bootstrap = new ServerBootstrap(factory);
+         this.handler = new NettyInvocationHandler();
+         WSServerPipelineFactory channelPipelineFactory = new WSServerPipelineFactory();
+         channelPipelineFactory.setRequestHandler(this.handler);
+         bootstrap.setPipelineFactory(channelPipelineFactory);
+         bootstrap.setOption("child.tcpNoDelay", true);
+         bootstrap.setOption("child.keepAlive", true);
+         // Bind and start to accept incoming connections.
+         Channel c = bootstrap.bind(new InetSocketAddress(this.port));
+         channelGroup.add(c);
+         if (LOG.isDebugEnabled())
+            LOG.debug("Netty http server started on port: " + this.port);
+      }
+      catch (Exception e)
+      {
+         LOG.warn(e.getMessage(), e);
+         throw new WebServiceException(e.getMessage(), e);
+      }
    }
    
-   private List<DeploymentAspect> getDeploymentAspects()
+   public final void registerCallback(NettyHttpServerCallbackHandler callbackHandler)
    {
-      List<DeploymentAspect> retVal = new LinkedList<DeploymentAspect>();
-      
-      // TODO: native stack can't use framework classes directly
-      retVal.add(new EndpointHandlerDeploymentAspect()); // 13
-      retVal.add(new BackwardCompatibleContextRootDeploymentAspect()); // 14
-      retVal.add(new URLPatternDeploymentAspect()); // 15
-      retVal.add(new EndpointAddressDeploymentAspect()); // 16
-      retVal.add(new EndpointNameDeploymentAspect()); // 17
-      retVal.add(new UnifiedMetaDataDeploymentAspect()); // 22
-      retVal.add(new ServiceEndpointInvokerDeploymentAspect()); // 23
-      retVal.add(new PublishContractDeploymentAspect()); // 24
-      retVal.add(new EagerInitializeDeploymentAspect()); // 25
-      retVal.add(new EndpointRegistryDeploymentAspect()); // 35
-      retVal.add(new EndpointLifecycleDeploymentAspect()); // 37
-      
-      return retVal;
+      this.handler.registerCallback(callbackHandler);
+   }
+   
+   public final void unregisterCallback(NettyHttpServerCallbackHandler callbackHandler)
+   {
+      this.handler.unregisterCallback(callbackHandler);
+      if (!this.hasMoreCallbacks())
+      {
+         this.terminate();
+      }
+   }
+   
+   public final NettyHttpServerCallbackHandler getCallback(String requestPath)
+   {
+      return this.handler.getCallback(requestPath);
+   }
+   
+   public final boolean hasMoreCallbacks()
+   {
+      return this.handler.hasMoreCallbacks();
    }
 
-   public void start()
+   public final String getScheme()
    {
-      // does nothing
+      return this.scheme;
    }
-
+   
+   public final String getHost()
+   {
+      return this.host;
+   }
+   
+   public final int getPort()
+   {
+      return this.port;
+   }
+   
+   public final void run()
+   {
+      synchronized (this.instanceLock)
+      {
+         if (this.started)
+            return;
+         
+         this.started = true;
+         
+         while (this.stopped == false)
+         {
+            try
+            {
+               this.instanceLock.wait(WAIT_PERIOD);
+               LOG.debug("serving requests");
+            }
+            catch (InterruptedException ie)
+            {
+               LOG.warn(ie.getMessage(), ie);
+            }
+         }
+         try
+         {
+            //Close all connections and server sockets.
+            channelGroup.close().awaitUninterruptibly();
+            //Shutdown the selector loop (boss and worker).
+            if (factory != null)
+            {
+               factory.releaseExternalResources();
+            }
+         }
+         finally
+         {
+            LOG.debug("terminated");
+            this.terminated = true;
+         }
+      }
+   }
+   
+   public final void terminate()
+   {
+      synchronized (this.instanceLock)
+      {
+         if (this.stopped == true)
+            return;
+         
+         this.stopped = true;
+         LOG.debug("termination forced");
+         SERVERS.remove(scheme + "://" + host + ":" + port + "/");
+         while (this.terminated == false)
+         {
+            try
+            {
+               LOG.debug("waiting for termination");
+               this.instanceLock.wait(WAIT_PERIOD);
+            }
+            catch (InterruptedException ie)
+            {
+               LOG.warn(ie.getMessage(), ie);
+            }
+         }
+      }
+   }
+   
    /**
-    * Returns implementor class associated with endpoint.
-    *
-    * @param endpoint to get implementor class from
-    * @return implementor class
+    * Starts back ports server on the background if method is called for the first time
+    * @param scheme protocol
+    * @param host hostname
+    * @param port port
+    * @return netty http server
     */
-   private Class<?> getEndpointClass(final Endpoint endpoint)
+   public static NettyHttpServer getInstance(String scheme, String host, int port)
    {
-      final Object implementor = endpoint.getImplementor();
-      return implementor instanceof Class<?> ? (Class<?>) implementor : implementor.getClass();
+      CLASS_LOCK.lock();
+      try
+      {
+         String key = scheme + "://" + host + ":" + port + "/";
+         NettyHttpServer server = SERVERS.get(key);
+         if (server == null)
+         {
+            server = new NettyHttpServer(scheme, host, (port == -1) ? 80 : port); 
+            SERVERS.put(key, server);
+            // forking back ports server
+            Thread t  = new Thread(server, "NettyHttpServer listening on " + key);
+            t.setDaemon(true);
+            t.start();
+            // registering shutdown hook
+            final NettyHttpServer s = server;
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+               public void run()
+               {
+                  s.terminate();
+               }
+            }, "NettyHttpServerShutdownHook(" + key + ")"));
+         }
+         else
+         {
+            boolean schemeEquals = server.getScheme().equals(scheme);
+            boolean hostEquals = server.getHost().equals(host);
+            boolean portEquals = server.getPort() == ((port == -1) ? 80 : port);
+            if ((schemeEquals == false) || (hostEquals == false) || (portEquals == false))
+               throw new IllegalArgumentException();
+         }
+         return server;
+      }
+      finally
+      {
+         CLASS_LOCK.unlock();
+      }
    }
-
+   
 }

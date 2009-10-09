@@ -53,7 +53,7 @@ import org.jboss.wsf.stack.jbws.WebAppResolver;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class NettyCallbackHandler
+final class NettyHttpServerCallbackHandler
 {
    private static final Logger logger = Logger.getLogger(RMCallbackHandlerImpl.class);
    private final String handledPath;
@@ -66,11 +66,11 @@ final class NettyCallbackHandler
     * Request path to listen for incomming messages
     * @param handledPath
     */
-   public NettyCallbackHandler(String path, String context, String endpointClass)
+   public NettyHttpServerCallbackHandler(String path, String context, String endpointRegistryPath)
    {
       super();
       this.initRegistry();
-      this.initEndpoint(context, endpointClass);
+      this.initEndpoint(context, endpointRegistryPath);
       this.handledPath = path;
    }
 
@@ -87,16 +87,16 @@ final class NettyCallbackHandler
     * @param contextPath context path
     * @param servletName servlet name
     */
-   private void initEndpoint(String contextPath, String servletName)
+   private void initEndpoint(final String context, final String endpointRegistryPath)
    {
-      final EndpointResolver resolver = new WebAppResolver(contextPath, servletName);
+      final EndpointResolver resolver = new WebAppResolver(context, endpointRegistryPath);
       this.endpoint = epRegistry.resolve(resolver);
 
       if (this.endpoint == null)
       {
          ObjectName oname = ObjectNameFactory.create(Endpoint.SEPID_DOMAIN + ":" +
-           Endpoint.SEPID_PROPERTY_CONTEXT + "=" + contextPath + "," +
-           Endpoint.SEPID_PROPERTY_ENDPOINT + "=" + servletName
+           Endpoint.SEPID_PROPERTY_CONTEXT + "=" + context + "," +
+           Endpoint.SEPID_PROPERTY_ENDPOINT + "=" + endpointRegistryPath
          );
          throw new WebServiceException("Cannot obtain endpoint for: " + oname);
       }
@@ -202,3 +202,4 @@ final class NettyCallbackHandler
    }
 
 }
+   

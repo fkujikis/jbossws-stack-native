@@ -188,7 +188,7 @@ public final class UsecasesTestCase extends JBossWSTest
       }
       catch (Exception e)
       {
-         log.debug(e.getMessage());
+         assertEquals("Ooops", e.getMessage());
       }
    }
    

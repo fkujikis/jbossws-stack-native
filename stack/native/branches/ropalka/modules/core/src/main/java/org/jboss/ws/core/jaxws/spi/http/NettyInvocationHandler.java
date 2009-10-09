@@ -69,7 +69,7 @@ import org.jboss.wsf.spi.invocation.InvocationContext;
 final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
 {
    private static final Logger LOG = Logger.getLogger(NettyInvocationHandler.class);
-   private final List<NettyCallbackHandler> callbacks = new LinkedList<NettyCallbackHandler>();
+   private final List<NettyHttpServerCallbackHandler> callbacks = new LinkedList<NettyHttpServerCallbackHandler>();
    private final Lock lock = new ReentrantLock();
 
    public NettyInvocationHandler()
@@ -84,7 +84,7 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       //       so that they are closed properly on shutdown
       //       If the added channel is closed before shutdown,
       //       it will be removed from the group automatically.
-      RealNettyHttpServer.channelGroup.add(ctx.getChannel());
+      NettyHttpServer.channelGroup.add(ctx.getChannel());
    } 
 
    public boolean hasMoreCallbacks()
@@ -143,7 +143,7 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       boolean handlerExists = false;
       String handledPath = null;
       requestPath = truncateHostName(requestPath);
-      for (NettyCallbackHandler handler : this.callbacks)
+      for (NettyHttpServerCallbackHandler handler : this.callbacks)
       {
          handledPath = truncateHostName(handler.getHandledPath());
          if (requestPath.equals(handledPath))
@@ -279,12 +279,12 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       e.getChannel().close();
    }
 
-   public NettyCallbackHandler getCallback(String requestPath)
+   public NettyHttpServerCallbackHandler getCallback(String requestPath)
    {
       this.lock.lock();
       try
       {
-         for (NettyCallbackHandler handler : this.callbacks)
+         for (NettyHttpServerCallbackHandler handler : this.callbacks)
          {
             if (handler.getHandledPath().equals(requestPath))
                return handler;
@@ -298,7 +298,7 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       return null;
    }
 
-   public void registerCallback(NettyCallbackHandler callbackHandler)
+   public void registerCallback(NettyHttpServerCallbackHandler callbackHandler)
    {
       this.lock.lock();
       try
@@ -311,7 +311,7 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       }
    }
 
-   public void unregisterCallback(NettyCallbackHandler callbackHandler)
+   public void unregisterCallback(NettyHttpServerCallbackHandler callbackHandler)
    {
       this.lock.lock();
       try

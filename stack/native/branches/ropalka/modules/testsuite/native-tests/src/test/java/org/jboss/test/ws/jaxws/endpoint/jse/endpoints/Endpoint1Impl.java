@@ -24,6 +24,8 @@ package org.jboss.test.ws.jaxws.endpoint.jse.endpoints;
 import java.io.IOException;
 
 import javax.activation.DataHandler;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.soap.MTOM;
@@ -44,25 +46,42 @@ public class Endpoint1Impl implements Endpoint1Iface
 {
 
    private int count;
+   private boolean initialized;
 
    public String echo(String input)
    {
       count++;
       return input;
    }
+   
+   @PostConstruct
+   public void init()
+   {
+      System.out.println("Endpoint initialized: " + this);
+      this.initialized = true;
+   }
+
+   @PreDestroy
+   public void destroy()
+   {
+      System.out.println("Endpoint destroyed: " + this);
+   }
 
    public int getCount()
    {
+      this.ensureInit();
       return count;
    }
    
    public void getException()
    {
+      this.ensureInit();
       throw new WebServiceException("Ooops");
    }
 
    public DHResponse echoDataHandler(DHRequest request)
    {
+      this.ensureInit();
       DataHandler dataHandler = request.getDataHandler();
 
       try
@@ -83,6 +102,12 @@ public class Endpoint1Impl implements Endpoint1Iface
       
       DataHandler responseData = new DataHandler("Server data", "text/plain");
       return new DHResponse(responseData);
+   }
+   
+   private void ensureInit()
+   {
+      if (!this.initialized)
+         throw new IllegalStateException();
    }
 
 }

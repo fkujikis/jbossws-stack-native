@@ -45,7 +45,7 @@ import org.jboss.ws.core.jaxws.binding.BindingProviderImpl;
 import org.jboss.ws.core.jaxws.wsaddressing.EndpointReferenceUtil;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
-import org.jboss.wsf.spi.deployment.ArchiveDeployment;
+import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.http.HttpContext;
 import org.jboss.wsf.spi.http.HttpServer;
 import org.jboss.wsf.spi.http.HttpServerFactory;
@@ -56,15 +56,13 @@ import org.w3c.dom.Element;
 /**
  * A Web service endpoint implementation.
  *  
- * @author Thomas.Diesler@jboss.com
- * @since 07-Jul-2006
+ * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class EndpointImpl extends Endpoint
 {
-   // provide logging
-   private final Logger log = Logger.getLogger(EndpointImpl.class);
 
-   // The permission to publish an endpoint
+   private static final Logger log = Logger.getLogger(EndpointImpl.class);
    private static final WebServicePermission ENDPOINT_PUBLISH_PERMISSION = new WebServicePermission("publishEndpoint");
 
    private Object implementor;
@@ -77,7 +75,7 @@ public class EndpointImpl extends Endpoint
    private boolean isPublished;
    private boolean isDestroyed;
    private URI address;
-   private ArchiveDeployment dep;
+   private Deployment dep;
 
    public EndpointImpl(String bindingId, Object implementor, WebServiceFeature[] features)
    {
@@ -128,8 +126,6 @@ public class EndpointImpl extends Endpoint
       // Create and start the HTTP server
       SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
       HttpServer httpServer = spiProvider.getSPI(HttpServerFactory.class).getHttpServer();
-      httpServer.setProperties(properties);
-      httpServer.start();
 
       String path = address.getPath();
       String contextRoot = "/" + new StringTokenizer(path, "/").nextToken();
@@ -148,31 +144,16 @@ public class EndpointImpl extends Endpoint
    @Override
    public void publish(Object context)
    {
-      log.debug("publish: " + context);
+      if (context == null)
+         throw new IllegalArgumentException("Null context");
+      
+      log.debug("publishing endpoint " + this + " to " + context);
 
       if (isDestroyed)
          throw new IllegalStateException("Endpoint already destroyed");
 
       // Check with the security manger
       checkPublishEndpointPermission();
-
-      /* Check if we are standalone
-      boolean isStandalone;
-      try
-      {
-         SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-         spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();
-         isStandalone = false;
-      }
-      catch (Exception ex)
-      {
-         // ignore, there should be no ServerConfigFactory in VM
-         isStandalone = true;
-      }
-
-      if (isStandalone == false)
-         throw new IllegalStateException("Cannot publish endpoint from within server");
-      */
 
       if (context instanceof HttpContext)
       {
@@ -184,6 +165,10 @@ public class EndpointImpl extends Endpoint
          HttpServer httpServer = serverContext.getHttpServer();
          httpServer.publish(serverContext, this);
          isPublished = true;
+      }
+      else
+      {
+         throw new UnsupportedOperationException("Cannot handle contexts of type: " + context);
       }
    }
    
@@ -245,7 +230,7 @@ public class EndpointImpl extends Endpoint
    @Override
    public void setMetadata(List<Source> list)
    {
-      log.info("Ignore metadata, not implemented");
+      log.info("Ignore metadata, not implemented"); // TODO:
       this.metadata = list;
    }
 
@@ -258,7 +243,7 @@ public class EndpointImpl extends Endpoint
    @Override
    public void setExecutor(Executor executor)
    {
-      log.info("Ignore executor, not implemented");
+      log.info("Ignore executor, not implemented"); // TODO
       this.executor = executor;
    }
 
@@ -300,7 +285,8 @@ public class EndpointImpl extends Endpoint
    {
       if (isDestroyed || !isPublished)
          throw new WebServiceException("Cannot get EPR for an unpubblished or already destroyed endpoint!");
-      if (getBinding() instanceof HTTPBinding )
+
+      if (getBinding() instanceof HTTPBinding)
       {
          throw new UnsupportedOperationException("Cannot get epr when using the XML/HTTP binding");
       }
@@ -313,6 +299,7 @@ public class EndpointImpl extends Endpoint
          for (Element el : referenceParameters)
             builder.referenceParameter(el);
       }
+
       return EndpointReferenceUtil.transform(clazz, builder.build());
    }
    
@@ -331,8 +318,9 @@ public class EndpointImpl extends Endpoint
       return this.address.getPort();
    }
    
-   public String getName()
+   public String getPathWithoutContext()
    {
+      // TODO: optimize this method
       StringTokenizer st = new StringTokenizer(this.getPath(), "/");
       st.nextToken();
       StringBuilder sb = new StringBuilder();
@@ -346,12 +334,15 @@ public class EndpointImpl extends Endpoint
       return sb.toString();
    }
    
-   public void setDeployment(ArchiveDeployment dep)
+   public void setDeployment(final Deployment dep)
    {
-      this.dep = dep;
+      if (this.dep == null)
+      {
+         this.dep = dep;
+      }
    }
    
-   public ArchiveDeployment getDeployment()
+   public Deployment getDeployment()
    {
       return this.dep;
    }

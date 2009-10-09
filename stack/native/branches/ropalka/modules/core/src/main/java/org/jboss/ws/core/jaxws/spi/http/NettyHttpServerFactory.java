@@ -32,7 +32,7 @@ import org.jboss.wsf.spi.http.HttpServerFactory;
 public final class NettyHttpServerFactory extends HttpServerFactory
 {
 
-   private static final HttpServer NETTY_HTTP_SERVER = new NettyHttpServer();
+   private static final HttpServer NETTY_HTTP_SERVER = new NettyHttpServerAdapter();
    
    /**
     * Constructor.
