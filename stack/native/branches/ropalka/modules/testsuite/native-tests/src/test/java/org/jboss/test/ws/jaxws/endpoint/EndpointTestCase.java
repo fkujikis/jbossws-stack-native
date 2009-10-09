@@ -25,9 +25,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-import javax.management.Attribute;
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
 import javax.wsdl.Definition;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
@@ -38,7 +35,6 @@ import junit.extensions.TestSetup;
 import junit.framework.Test;
 
 import org.jboss.wsf.test.JBossWSTest;
-import org.jboss.wsf.test.JBossWSTestHelper;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
 /**

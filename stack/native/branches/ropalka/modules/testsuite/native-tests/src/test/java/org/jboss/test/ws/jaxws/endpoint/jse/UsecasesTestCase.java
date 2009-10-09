@@ -165,12 +165,14 @@ public final class UsecasesTestCase extends JBossWSTest
    {
       Endpoint1Iface port = this.getProxy(publishURL);
 
-      // Invoke the endpoint
       String helloWorld = "Hello world!";
+      
       assertEquals(0, port.getCount());
       Object retObj = port.echo(helloWorld);
+
       assertEquals(helloWorld, retObj);
       assertEquals(1, port.getCount());
+      
       port.echo(helloWorld);
       assertEquals(2, port.getCount());
    }
