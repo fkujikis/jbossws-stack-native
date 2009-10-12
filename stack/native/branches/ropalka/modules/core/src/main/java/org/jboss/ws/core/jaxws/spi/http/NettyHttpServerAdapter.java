@@ -27,6 +27,10 @@ import java.util.List;
 import javax.xml.ws.Endpoint;
 
 import org.jboss.ws.core.jaxws.spi.EndpointImpl;
+import org.jboss.ws.core.server.netty.NettyCallbackHandler;
+import org.jboss.ws.core.server.netty.NettyHttpServer;
+import org.jboss.ws.core.server.netty.NettyHttpServerFactory;
+import org.jboss.ws.core.server.netty.NettyRequestHandlerFactory;
 import org.jboss.wsf.common.ResourceLoaderAdapter;
 import org.jboss.wsf.framework.deployment.BackwardCompatibleContextRootDeploymentAspect;
 import org.jboss.wsf.framework.deployment.DeploymentAspectManagerImpl;
@@ -70,6 +74,8 @@ final class NettyHttpServerAdapter implements HttpServer
    /** Deployment model factory. */
    private static final DeploymentModelFactory DEPLOYMENT_FACTORY = NettyHttpServerAdapter.SPI_PROVIDER
          .getSPI(DeploymentModelFactory.class);
+   
+   private static final NettyRequestHandlerFactory requestHandlerFactory = NettyRequestHandlerFactoryImpl.getInstance();
 
    /**
     * Constructor.
@@ -88,8 +94,8 @@ final class NettyHttpServerAdapter implements HttpServer
    public void destroy(HttpContext context, Endpoint endpoint)
    {
       EndpointImpl epImpl = (EndpointImpl) endpoint;
-      NettyHttpServer server = NettyHttpServer.getInstance("http", "localhost", epImpl.getPort());
-      NettyHttpServerCallbackHandler callback = server.getCallback(epImpl.getPath());
+      NettyHttpServer server = NettyHttpServerFactory.getNettyHttpServer(epImpl.getPort(), this.requestHandlerFactory);
+      NettyCallbackHandler callback = server.getCallback(epImpl.getPath());
       server.unregisterCallback(callback);
 
       DeploymentAspectManagerImpl daManager = new DeploymentAspectManagerImpl();
@@ -108,8 +114,8 @@ final class NettyHttpServerAdapter implements HttpServer
       daManager.deploy(dep);
       epImpl.setDeployment(dep);
 
-      NettyHttpServer server = NettyHttpServer.getInstance("http", "localhost", epImpl.getPort());
-      NettyHttpServerCallbackHandler callback = new NettyHttpServerCallbackHandler(epImpl.getPath(), contextRoot, this
+      NettyHttpServer server = NettyHttpServerFactory.getNettyHttpServer(epImpl.getPort(), requestHandlerFactory);
+      NettyCallbackHandler callback = new NettyCallbackHandlerImpl(epImpl.getPath(), contextRoot, this
             .getEndpointRegistryPath(epImpl));
       server.registerCallback(callback);
    }

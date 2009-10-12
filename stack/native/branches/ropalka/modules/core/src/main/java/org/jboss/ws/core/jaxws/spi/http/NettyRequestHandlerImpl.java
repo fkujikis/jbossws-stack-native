@@ -59,39 +59,22 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.ws.Constants;
 import org.jboss.ws.core.client.transport.NettyTransportOutputStream;
+import org.jboss.ws.core.server.netty.NettyCallbackHandler;
+import org.jboss.ws.core.server.netty.AbstractNettyRequestHandler;
 import org.jboss.wsf.spi.invocation.InvocationContext;
 
 /**
- * TODO: javadoc
+ * Netty request handler for endpoint publish API.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
+final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
 {
-   private static final Logger LOG = Logger.getLogger(NettyInvocationHandler.class);
+   private static final Logger LOG = Logger.getLogger(NettyRequestHandlerImpl.class);
 
-   private final List<NettyHttpServerCallbackHandler> callbacks = new LinkedList<NettyHttpServerCallbackHandler>();
-
-   private final Lock lock = new ReentrantLock();
-
-   public NettyInvocationHandler()
+   public NettyRequestHandlerImpl()
    {
       super();
-   }
-
-   @Override
-   public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
-   {
-      // HERE: Add all accepted channels to the group
-      //       so that they are closed properly on shutdown
-      //       If the added channel is closed before shutdown,
-      //       it will be removed from the group automatically.
-      NettyHttpServer.channelGroup.add(ctx.getChannel());
-   }
-
-   public boolean hasMoreCallbacks()
-   {
-      return this.callbacks.size() > 0;
    }
 
    @Override
@@ -145,16 +128,14 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
       boolean handlerExists = false;
       String handledPath = null;
       requestPath = truncateHostName(requestPath);
-      for (NettyHttpServerCallbackHandler handler : this.callbacks)
+      NettyCallbackHandlerImpl handler = (NettyCallbackHandlerImpl)this.getCallback(requestPath);
+      if (handler != null)
       {
-         handledPath = truncateHostName(handler.getHandledPath());
-         if (requestPath.equals(handledPath))
-         {
-            handlerExists = true;
-            if (LOG.isDebugEnabled())
-               LOG.debug("Handling request path: " + requestPath);
-            return handler.handle(httpMethod, inputStream, outputStream, invCtx);
-         }
+         handlerExists = true;
+         if (LOG.isDebugEnabled())
+            LOG.debug("Handling request path: " + requestPath);
+         
+         return handler.handle(httpMethod, inputStream, outputStream, invCtx);
       }
       if (handlerExists == false)
          LOG.warn("No callback handler registered for path: " + requestPath);
@@ -275,59 +256,6 @@ final class NettyInvocationHandler extends SimpleChannelUpstreamHandler
          return HttpResponseStatus.NO_CONTENT;
 
       return HttpResponseStatus.OK;
-   }
-
-   @Override
-   public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
-   {
-      e.getCause().printStackTrace();
-      e.getChannel().close();
-   }
-
-   public NettyHttpServerCallbackHandler getCallback(String requestPath)
-   {
-      this.lock.lock();
-      try
-      {
-         for (NettyHttpServerCallbackHandler handler : this.callbacks)
-         {
-            if (handler.getHandledPath().equals(requestPath))
-               return handler;
-         }
-      }
-      finally
-      {
-         this.lock.unlock();
-      }
-
-      return null;
-   }
-
-   public void registerCallback(NettyHttpServerCallbackHandler callbackHandler)
-   {
-      this.lock.lock();
-      try
-      {
-         this.callbacks.add(callbackHandler);
-      }
-      finally
-      {
-         this.lock.unlock();
-      }
-   }
-
-   public void unregisterCallback(NettyHttpServerCallbackHandler callbackHandler)
-   {
-      this.lock.lock();
-      try
-      {
-         this.callbacks.remove(callbackHandler);
-         callbackHandler.destroy();
-      }
-      finally
-      {
-         this.lock.unlock();
-      }
    }
 
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,12 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.extensions.wsrm.transport.backchannel;
+package org.jboss.ws.core.server.netty;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+
+import javax.xml.ws.WebServiceException;
 
 import org.jboss.logging.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -34,61 +34,46 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.ws.core.client.transport.WSServerPipelineFactory;
-import org.jboss.ws.extensions.wsrm.api.RMException;
 
 /**
- * Back ports server used by addressable clients
+ * Netty http server implementation.
  *
- * @author richard.opalka@jboss.com
- * @author alessio.soldano@jboss.com
- *
- * @since Nov 20, 2007
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:asoldano@redhat.com">Alessio Soldano</a>
  */
-public final class RMBackPortsServer implements Runnable
+final class NettyHttpServerImpl implements NettyHttpServer, Runnable
 {
-   private static final Logger LOG = Logger.getLogger(RMBackPortsServer.class);
-   private static final Lock CLASS_LOCK = new ReentrantLock();
+
+   private static final Logger LOG = Logger.getLogger(NettyHttpServerImpl.class);
+
    private static final long WAIT_PERIOD = 100;
-   private static RMBackPortsServer INSTANCE;
-   static final ChannelGroup channelGroup = new DefaultChannelGroup("rmBackPortsServer");
+
+   static final ChannelGroup channelGroup = new DefaultChannelGroup("NettyHttpServer");
 
    private final Object instanceLock = new Object();
-   private final String scheme;
-   private final String host;
+
    private final int port;
-   private RMBackPortsInvocationHandler handler;
+
    private boolean started;
+
    private boolean stopped;
+
    private boolean terminated;
+
    private ChannelFactory factory;
-   
-   public final void registerCallback(RMCallbackHandler callbackHandler)
-   {
-      this.handler.registerCallback(callbackHandler);
-   }
-   
-   public final void unregisterCallback(RMCallbackHandler callbackHandler)
-   {
-      this.handler.unregisterCallback(callbackHandler);
-   }
-   
-   public final RMCallbackHandler getCallback(String requestPath)
-   {
-      return this.handler.getCallback(requestPath);
-   }
-   
-   private RMBackPortsServer(String scheme, String host, int port) throws RMException
+
+   private AbstractNettyRequestHandler handler;
+
+   NettyHttpServerImpl(int port, NettyRequestHandlerFactory<?> nettyRequestHandlerFactory)
    {
       super();
-      this.scheme = scheme;
-      this.host = host;
       this.port = port;
       try
       {
          factory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
 
          ServerBootstrap bootstrap = new ServerBootstrap(factory);
-         this.handler = new RMBackPortsInvocationHandler();
+         this.handler = nettyRequestHandlerFactory.newNettyRequestHandler();
          WSServerPipelineFactory channelPipelineFactory = new WSServerPipelineFactory();
          channelPipelineFactory.setRequestHandler(this.handler);
          bootstrap.setPipelineFactory(channelPipelineFactory);
@@ -97,46 +82,101 @@ public final class RMBackPortsServer implements Runnable
          // Bind and start to accept incoming connections.
          Channel c = bootstrap.bind(new InetSocketAddress(this.port));
          channelGroup.add(c);
+         // forking Netty server
+         Thread t = new Thread(this, "NettyHttpServer listening on port " + port);
+         t.setDaemon(true);
+         t.start();
+         // registering shutdown hook
+         Runnable shutdownHook = new NettyHttpServerShutdownHook(this);
+         Runtime.getRuntime().addShutdownHook(
+               new Thread(shutdownHook, "NettyHttpServerShutdownHook(port=" + port + ")"));
          if (LOG.isDebugEnabled())
-            LOG.debug("WS-RM Backports Server started on port: " + this.port);
+            LOG.debug("Netty http server started on port: " + this.port);
       }
       catch (Exception e)
       {
          LOG.warn(e.getMessage(), e);
-         throw new RMException(e.getMessage(), e);
+         throw new WebServiceException(e.getMessage(), e);
       }
    }
-   
-   public final String getScheme()
+
+   public final void registerCallback(final NettyCallbackHandler callback)
    {
-      return this.scheme;
+      if (callback == null)
+         throw new IllegalArgumentException("Null callback handler");
+
+      this.ensureUpAndRunning();
+
+      this.handler.registerCallback(callback);
    }
-   
-   public final String getHost()
+
+   public final void unregisterCallback(final NettyCallbackHandler callback)
    {
-      return this.host;
+      if (callback == null)
+         throw new IllegalArgumentException("Null callback handler");
+
+      this.ensureUpAndRunning();
+
+      try
+      {
+         this.handler.unregisterCallback(callback);
+      }
+      finally
+      {
+         if (!this.hasMoreCallbacks())
+         {
+            this.terminate();
+         }
+      }
    }
-   
+
+   public final NettyCallbackHandler getCallback(final String requestPath)
+   {
+      if (requestPath == null)
+         throw new IllegalArgumentException("Null request path");
+
+      this.ensureUpAndRunning();
+
+      return this.handler.getCallback(requestPath);
+   }
+
+   public final boolean hasMoreCallbacks()
+   {
+      this.ensureUpAndRunning();
+
+      return this.handler.hasMoreCallbacks();
+   }
+
    public final int getPort()
    {
+      this.ensureUpAndRunning();
+
       return this.port;
    }
-   
+
+   private void ensureUpAndRunning()
+   {
+      synchronized (this.instanceLock)
+      {
+         if (this.stopped)
+            throw new IllegalStateException("Server is down");
+      }
+   }
+
    public final void run()
    {
       synchronized (this.instanceLock)
       {
          if (this.started)
             return;
-         
+
          this.started = true;
-         
+
          while (this.stopped == false)
          {
             try
             {
                this.instanceLock.wait(WAIT_PERIOD);
-               LOG.debug("serving requests");
             }
             catch (InterruptedException ie)
             {
@@ -160,14 +200,14 @@ public final class RMBackPortsServer implements Runnable
          }
       }
    }
-   
+
    public final void terminate()
    {
       synchronized (this.instanceLock)
       {
          if (this.stopped == true)
             return;
-         
+
          this.stopped = true;
          LOG.debug("termination forced");
          while (this.terminated == false)
@@ -182,52 +222,30 @@ public final class RMBackPortsServer implements Runnable
                LOG.warn(ie.getMessage(), ie);
             }
          }
+         synchronized (NettyHttpServerFactory.SERVERS)
+         {
+            NettyHttpServerFactory.SERVERS.remove(port);
+         }
       }
    }
-   
-   /**
-    * Starts back ports server on the background if method is called for the first time
-    * @param scheme protocol
-    * @param host hostname
-    * @param port port
-    * @return WS-RM back ports server
-    * @throws RMException
-    */
-   public static RMBackPortsServer getInstance(String scheme, String host, int port) throws RMException
+
+   private static final class NettyHttpServerShutdownHook implements Runnable
    {
-      CLASS_LOCK.lock();
-      try
+
+      private final NettyHttpServerImpl nettyHttpServer;
+
+      private NettyHttpServerShutdownHook(final NettyHttpServerImpl nettyHttpServer)
       {
-         if (INSTANCE == null)
-         {
-            INSTANCE = new RMBackPortsServer(scheme, host, (port == -1) ? 80 : port);
-            // forking back ports server
-            Thread t  = new Thread(INSTANCE, "RMBackPortsServer");
-            t.setDaemon(true);
-            t.start();
-            // registering shutdown hook
-            final RMBackPortsServer server = INSTANCE;
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-               public void run()
-               {
-                  server.terminate();
-               }
-            }, "RMBackPortsServerShutdownHook"));
-         }
-         else
-         {
-            boolean schemeEquals = INSTANCE.getScheme().equals(scheme);
-            boolean hostEquals = INSTANCE.getHost().equals(host);
-            boolean portEquals = INSTANCE.getPort() == ((port == -1) ? 80 : port);
-            if ((schemeEquals == false) || (hostEquals == false) || (portEquals == false))
-               throw new IllegalArgumentException();
-         }
-         return INSTANCE;
+         super();
+
+         this.nettyHttpServer = nettyHttpServer;
       }
-      finally
+
+      public void run()
       {
-         CLASS_LOCK.unlock();
+         this.nettyHttpServer.terminate();
       }
+
    }
-   
+
 }

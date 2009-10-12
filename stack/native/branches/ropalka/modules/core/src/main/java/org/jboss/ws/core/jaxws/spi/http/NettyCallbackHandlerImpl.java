@@ -33,6 +33,7 @@ import javax.xml.ws.WebServiceException;
 import org.jboss.logging.Logger;
 import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
+import org.jboss.ws.core.server.netty.NettyCallbackHandler;
 import org.jboss.ws.extensions.wsrm.transport.backchannel.RMCallbackHandlerImpl;
 import org.jboss.wsf.common.ObjectNameFactory;
 import org.jboss.wsf.common.injection.InjectionHelper;
@@ -53,7 +54,7 @@ import org.jboss.wsf.stack.jbws.WebAppResolver;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class NettyHttpServerCallbackHandler // TODO: review class name
+final class NettyCallbackHandlerImpl implements NettyCallbackHandler
 {
    private static final Logger LOGGER = Logger.getLogger(RMCallbackHandlerImpl.class);
 
@@ -71,7 +72,7 @@ final class NettyHttpServerCallbackHandler // TODO: review class name
     * Request path to listen for incomming messages
     * @param handledPath
     */
-   public NettyHttpServerCallbackHandler(String path, String context, String endpointRegistryPath)
+   public NettyCallbackHandlerImpl(String path, String context, String endpointRegistryPath)
    {
       super();
       this.initRegistry();
@@ -127,14 +128,14 @@ final class NettyHttpServerCallbackHandler // TODO: review class name
       }
       catch (Exception e)
       {
-         NettyHttpServerCallbackHandler.LOGGER.error(e.getMessage(), e);
+         NettyCallbackHandlerImpl.LOGGER.error(e.getMessage(), e);
          statusCode = 500;
       }
 
       return statusCode == null ? 200 : statusCode;
    }
 
-   public String getHandledPath()
+   public String getPath()
    {
       return this.handledPath;
    }
@@ -177,6 +178,11 @@ final class NettyHttpServerCallbackHandler // TODO: review class name
          ep.removeAttachment(PreDestroyHolder.class);
       }
    }
+   
+   public final void init()
+   {
+      // does nothing
+   }
 
    public final void destroy()
    {
@@ -191,7 +197,7 @@ final class NettyHttpServerCallbackHandler // TODO: review class name
             }
             catch (Exception exception)
             {
-               NettyHttpServerCallbackHandler.LOGGER.error(exception.getMessage(), exception);
+               NettyCallbackHandlerImpl.LOGGER.error(exception.getMessage(), exception);
             }
          }
          this.preDestroyRegistry.clear();
