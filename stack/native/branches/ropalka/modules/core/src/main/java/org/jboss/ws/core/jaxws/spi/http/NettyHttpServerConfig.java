@@ -59,26 +59,51 @@ final class NettyHttpServerConfig implements ServerConfig
       super();
    }
 
+   /**
+    * @see ServerConfig#getServerHomeDir()
+    * 
+    * @return server home directory
+    */
    public File getHomeDir()
    {
       return NettyHttpServerConfig.tmpDir;
    }
 
+   /**
+    * @see ServerConfig#getServerDataDir()
+    * 
+    * @return server data directory
+    */
    public File getServerDataDir()
    {
       return NettyHttpServerConfig.tmpDir;
    }
 
+   /**
+    * @see ServerConfig#getServerTempDir()
+    * 
+    * @return server temp directory
+    */
    public File getServerTempDir()
    {
       return NettyHttpServerConfig.tmpDir;
    }
 
+   /**
+    * @see ServerConfig#getWebServiceHost()
+    * 
+    * @return localhost
+    */
    public String getWebServiceHost()
    {
       return "localhost";
    }
 
+   /**
+    * @see ServerConfig#isModifySOAPAddress()
+    * 
+    * @return always return false
+    */
    public boolean isModifySOAPAddress()
    {
       return false;

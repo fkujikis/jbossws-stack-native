@@ -26,7 +26,6 @@ import java.util.concurrent.Executors;
 
 import javax.xml.ws.WebServiceException;
 
-import org.jboss.logging.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -44,208 +43,213 @@ import org.jboss.ws.core.client.transport.WSServerPipelineFactory;
 final class NettyHttpServerImpl implements NettyHttpServer, Runnable
 {
 
-   private static final Logger LOG = Logger.getLogger(NettyHttpServerImpl.class);
-
+   /** Wait period. */
    private static final long WAIT_PERIOD = 100;
 
-   static final ChannelGroup channelGroup = new DefaultChannelGroup("NettyHttpServer");
+   /** Netty channel group. */
+   static final ChannelGroup NETTY_CHANNEL_GROUP = new DefaultChannelGroup("NettyHttpServer");
 
-   private final Object instanceLock = new Object();
-
+   /** Server port. */
    private final int port;
 
-   private boolean started;
-
+   /** Indicates server is stopped. */
    private boolean stopped;
 
+   /** Indicates server is terminated. */
    private boolean terminated;
 
-   private ChannelFactory factory;
+   /** Channel factory. */
+   private ChannelFactory channelFactory;
 
-   private AbstractNettyRequestHandler handler;
+   /** Netty request handler. */
+   private AbstractNettyRequestHandler nettyRequestHandler;
 
-   NettyHttpServerImpl(int port, NettyRequestHandlerFactory<?> nettyRequestHandlerFactory)
+   /**
+    * Constructor. This starts new http server in the background and registers shutdown hook for it.
+    *
+    * @param port server port
+    * @param nettyRequestHandlerFactory request handler factory
+    */
+   NettyHttpServerImpl(final int port, final NettyRequestHandlerFactory<?> nettyRequestHandlerFactory)
    {
       super();
       this.port = port;
       try
       {
-         factory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
+         this.channelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors
+               .newCachedThreadPool());
 
-         ServerBootstrap bootstrap = new ServerBootstrap(factory);
-         this.handler = nettyRequestHandlerFactory.newNettyRequestHandler();
-         WSServerPipelineFactory channelPipelineFactory = new WSServerPipelineFactory();
-         channelPipelineFactory.setRequestHandler(this.handler);
+         final ServerBootstrap bootstrap = new ServerBootstrap(this.channelFactory);
+         this.nettyRequestHandler = nettyRequestHandlerFactory.newNettyRequestHandler();
+         final WSServerPipelineFactory channelPipelineFactory = new WSServerPipelineFactory();
+         channelPipelineFactory.setRequestHandler(this.nettyRequestHandler);
          bootstrap.setPipelineFactory(channelPipelineFactory);
          bootstrap.setOption("child.tcpNoDelay", true);
          bootstrap.setOption("child.keepAlive", true);
          // Bind and start to accept incoming connections.
-         Channel c = bootstrap.bind(new InetSocketAddress(this.port));
-         channelGroup.add(c);
+         final Channel c = bootstrap.bind(new InetSocketAddress(this.port));
+         NettyHttpServerImpl.NETTY_CHANNEL_GROUP.add(c);
          // forking Netty server
-         Thread t = new Thread(this, "NettyHttpServer listening on port " + port);
+         final Thread t = new Thread(this, "NettyHttpServer listening on port " + port);
          t.setDaemon(true);
          t.start();
          // registering shutdown hook
-         Runnable shutdownHook = new NettyHttpServerShutdownHook(this);
+         final Runnable shutdownHook = new NettyHttpServerShutdownHook(this);
          Runtime.getRuntime().addShutdownHook(
                new Thread(shutdownHook, "NettyHttpServerShutdownHook(port=" + port + ")"));
-         if (LOG.isDebugEnabled())
-            LOG.debug("Netty http server started on port: " + this.port);
       }
       catch (Exception e)
       {
-         LOG.warn(e.getMessage(), e);
          throw new WebServiceException(e.getMessage(), e);
       }
    }
 
-   public final void registerCallback(final NettyCallbackHandler callback)
+   /**
+    * @see NettyHttpServer#registerCallback(NettyCallbackHandler)
+    * 
+    * @param callback new callback
+    */
+   public void registerCallback(final NettyCallbackHandler callback)
    {
-      if (callback == null)
-         throw new IllegalArgumentException("Null callback handler");
-
-      this.ensureUpAndRunning();
-
-      this.handler.registerCallback(callback);
-   }
-
-   public final void unregisterCallback(final NettyCallbackHandler callback)
-   {
-      if (callback == null)
-         throw new IllegalArgumentException("Null callback handler");
-
-      this.ensureUpAndRunning();
-
-      try
+      if (callback != null)
       {
-         this.handler.unregisterCallback(callback);
-      }
-      finally
-      {
-         if (!this.hasMoreCallbacks())
-         {
-            this.terminate();
-         }
+         this.ensureUpAndRunning();
+         this.nettyRequestHandler.registerCallback(callback);
       }
    }
 
-   public final NettyCallbackHandler getCallback(final String requestPath)
+   /**
+    * @see NettyHttpServer#unregisterCallback(NettyCallbackHandler)
+    *
+    * @param callback old callback
+    */
+   public void unregisterCallback(final NettyCallbackHandler callback)
    {
-      if (requestPath == null)
-         throw new IllegalArgumentException("Null request path");
-
-      this.ensureUpAndRunning();
-
-      return this.handler.getCallback(requestPath);
-   }
-
-   public final boolean hasMoreCallbacks()
-   {
-      this.ensureUpAndRunning();
-
-      return this.handler.hasMoreCallbacks();
-   }
-
-   public final int getPort()
-   {
-      this.ensureUpAndRunning();
-
-      return this.port;
-   }
-
-   private void ensureUpAndRunning()
-   {
-      synchronized (this.instanceLock)
+      if (callback != null)
       {
-         if (this.stopped)
-            throw new IllegalStateException("Server is down");
-      }
-   }
-
-   public final void run()
-   {
-      synchronized (this.instanceLock)
-      {
-         if (this.started)
-            return;
-
-         this.started = true;
-
-         while (this.stopped == false)
-         {
-            try
-            {
-               this.instanceLock.wait(WAIT_PERIOD);
-            }
-            catch (InterruptedException ie)
-            {
-               LOG.warn(ie.getMessage(), ie);
-            }
-         }
+         this.ensureUpAndRunning();
          try
          {
-            //Close all connections and server sockets.
-            channelGroup.close().awaitUninterruptibly();
-            //Shutdown the selector loop (boss and worker).
-            if (factory != null)
-            {
-               factory.releaseExternalResources();
-            }
+            this.nettyRequestHandler.unregisterCallback(callback);
          }
          finally
          {
-            LOG.debug("terminated");
-            this.terminated = true;
+            if (!this.hasMoreCallbacks())
+            {
+               this.terminate();
+            }
          }
       }
    }
 
-   public final void terminate()
+   /**
+    * @see NettyHttpServer#getCallback(String)
+    *
+    * @param requestPath request path
+    * @return callback handler associated with path
+    */
+   public NettyCallbackHandler getCallback(final String requestPath)
    {
-      synchronized (this.instanceLock)
+      if (requestPath == null)
       {
-         if (this.stopped == true)
-            return;
+         throw new IllegalArgumentException("Null request path");
+      }
 
-         this.stopped = true;
-         LOG.debug("termination forced");
-         while (this.terminated == false)
-         {
-            try
-            {
-               LOG.debug("waiting for termination");
-               this.instanceLock.wait(WAIT_PERIOD);
-            }
-            catch (InterruptedException ie)
-            {
-               LOG.warn(ie.getMessage(), ie);
-            }
-         }
-         synchronized (NettyHttpServerFactory.SERVERS)
-         {
-            NettyHttpServerFactory.SERVERS.remove(port);
-         }
+      this.ensureUpAndRunning();
+      return this.nettyRequestHandler.getCallback(requestPath);
+   }
+
+   /**
+    * @see NettyHttpServer#hasMoreCallbacks()
+    * 
+    * @return true if at least one callback handler is registered, false otherwise
+    */
+   public boolean hasMoreCallbacks()
+   {
+      this.ensureUpAndRunning();
+      return this.nettyRequestHandler.hasMoreCallbacks();
+   }
+
+   /**
+    * @see NettyHttpServer#getPort()
+    * 
+    * @return server port
+    */
+   public int getPort()
+   {
+      this.ensureUpAndRunning();
+      return this.port;
+   }
+
+   /**
+    * Ensures server is up and running.
+    */
+   private synchronized void ensureUpAndRunning()
+   {
+      if (this.stopped)
+      {
+         throw new IllegalStateException("Server is down");
       }
    }
 
-   private static final class NettyHttpServerShutdownHook implements Runnable
+   /**
+    * Handles incomming connections.
+    */
+   public synchronized void run()
    {
-
-      private final NettyHttpServerImpl nettyHttpServer;
-
-      private NettyHttpServerShutdownHook(final NettyHttpServerImpl nettyHttpServer)
+      while (!this.stopped)
       {
-         super();
+         try
+         {
+            this.wait(NettyHttpServerImpl.WAIT_PERIOD);
+         }
+         catch (InterruptedException ie)
+         {
+            ie.printStackTrace();
+         }
+      }
+      try
+      {
+         //Close all connections and server sockets.
+         NettyHttpServerImpl.NETTY_CHANNEL_GROUP.close().awaitUninterruptibly();
+         //Shutdown the selector loop (boss and worker).
+         if (this.channelFactory != null)
+         {
+            this.channelFactory.releaseExternalResources();
+         }
+      }
+      finally
+      {
+         this.terminated = true;
+      }
+   }
 
-         this.nettyHttpServer = nettyHttpServer;
+   /**
+    * Terminates server instance.
+    */
+   public synchronized void terminate()
+   {
+      if (this.stopped)
+      {
+         return;
       }
 
-      public void run()
+      this.stopped = true;
+      while (!this.terminated)
       {
-         this.nettyHttpServer.terminate();
+         try
+         {
+            this.wait(NettyHttpServerImpl.WAIT_PERIOD);
+         }
+         catch (InterruptedException ie)
+         {
+            ie.printStackTrace();
+         }
       }
-
+      synchronized (NettyHttpServerFactory.SERVERS)
+      {
+         NettyHttpServerFactory.SERVERS.remove(this.port);
+      }
    }
 
 }

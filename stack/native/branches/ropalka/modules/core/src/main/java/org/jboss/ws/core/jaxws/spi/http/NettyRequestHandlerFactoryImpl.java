@@ -31,21 +31,35 @@ import org.jboss.ws.core.server.netty.NettyRequestHandlerFactory;
 final class NettyRequestHandlerFactoryImpl implements NettyRequestHandlerFactory<NettyRequestHandlerImpl>
 {
    
+   /** Factory singleton. */
    private static final NettyRequestHandlerFactory<NettyRequestHandlerImpl> SINGLETON = new NettyRequestHandlerFactoryImpl();
    
+   /**
+    * Constructor.
+    */
    private NettyRequestHandlerFactoryImpl()
    {
       super();
    }
 
+   /**
+    * Creates new request handler.
+    * 
+    * @return new request handler
+    */
    public NettyRequestHandlerImpl newNettyRequestHandler()
    {
       return new NettyRequestHandlerImpl();
    }
    
+   /**
+    * Returns factory instance.
+    *
+    * @return factory instance
+    */
    public static NettyRequestHandlerFactory<NettyRequestHandlerImpl> getInstance()
    {
-      return SINGLETON;
+      return NettyRequestHandlerFactoryImpl.SINGLETON;
    }
 
 }

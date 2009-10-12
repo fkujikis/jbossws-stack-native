@@ -45,6 +45,7 @@ public abstract class AbstractNettyRequestHandler extends SimpleChannelUpstreamH
 
    /** Callbacks registry. */
    private final List<NettyCallbackHandler> callbacks = new LinkedList<NettyCallbackHandler>();
+
    /** Callback registry lock. */
    private final Lock callbackRegistryLock = new ReentrantLock();
 
@@ -69,7 +70,7 @@ public abstract class AbstractNettyRequestHandler extends SimpleChannelUpstreamH
       //       so that they are closed properly on shutdown
       //       If the added channel is closed before shutdown,
       //       it will be removed from the group automatically.
-      NettyHttpServerImpl.channelGroup.add(ctx.getChannel());
+      NettyHttpServerImpl.NETTY_CHANNEL_GROUP.add(ctx.getChannel());
    }
 
    /**
