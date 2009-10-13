@@ -43,7 +43,7 @@ public final class NettyEndpointRegistryFactory extends EndpointRegistryFactory
    {
       super();
    }
-   
+
    /**
     * Returns endpoint registry.
     * 

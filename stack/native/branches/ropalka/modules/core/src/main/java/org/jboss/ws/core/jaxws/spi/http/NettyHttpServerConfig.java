@@ -111,42 +111,83 @@ final class NettyHttpServerConfig implements ServerConfig
 
    // not implemented methods
 
+   /**
+    * Not implemented.
+    * 
+    * @return string
+    */
    public String getImplementationTitle()
    {
       throw new UnsupportedOperationException();
    }
 
+   /**
+    * Not implemented.
+    * 
+    * @return string
+    */
    public String getImplementationVersion()
    {
       throw new UnsupportedOperationException();
    }
 
+   /**
+    * Not implemented.
+    * 
+    * @return int
+    */
    public int getWebServicePort()
    {
       throw new UnsupportedOperationException();
    }
 
+   /**
+    * Not implemented.
+    * 
+    * @return int
+    */
    public int getWebServiceSecurePort()
    {
       throw new UnsupportedOperationException();
    }
 
-   public void setModifySOAPAddress(boolean flag)
+   /**
+    * Not implemented.
+    * 
+    * @param flag boolean
+    */
+   public void setModifySOAPAddress(final boolean flag)
    {
       throw new UnsupportedOperationException();
    }
 
-   public void setWebServiceHost(String host) throws UnknownHostException
+   /**
+    * Not implemented.
+    * 
+    * @param host string
+    * @throws UnknownHostException never thrown
+    */
+   public void setWebServiceHost(final String host) throws UnknownHostException
    {
       throw new UnsupportedOperationException();
    }
 
-   public void setWebServicePort(int port)
+   /**
+    * Not implemented.
+    * 
+    * @param port int
+    */
+   public void setWebServicePort(final int port)
    {
       throw new UnsupportedOperationException();
    }
 
-   public void setWebServiceSecurePort(int port)
+   /**
+    * Not implemented.
+    * 
+    * @param port int
+    */
+   public void setWebServiceSecurePort(final int port)
    {
       throw new UnsupportedOperationException();
    }

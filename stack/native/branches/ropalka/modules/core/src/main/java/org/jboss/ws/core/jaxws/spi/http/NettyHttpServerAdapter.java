@@ -74,7 +74,7 @@ final class NettyHttpServerAdapter implements HttpServer
    /** Deployment model factory. */
    private static final DeploymentModelFactory DEPLOYMENT_FACTORY = NettyHttpServerAdapter.SPI_PROVIDER
          .getSPI(DeploymentModelFactory.class);
-   
+
    private static final NettyRequestHandlerFactory requestHandlerFactory = NettyRequestHandlerFactoryImpl.getInstance();
 
    /**
@@ -123,7 +123,7 @@ final class NettyHttpServerAdapter implements HttpServer
    private String getEndpointRegistryPath(EndpointImpl endpoint)
    {
       // we need to distinguish ports in endpoints registry in JSE environment
-      return endpoint.getPathWithoutContext() + "-port-" + endpoint.getPort();
+      return endpoint.getPath() + "-port-" + endpoint.getPort();
    }
 
    private Deployment newDeployment(EndpointImpl epImpl, String contextRoot)

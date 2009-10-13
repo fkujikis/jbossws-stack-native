@@ -30,10 +30,10 @@ import org.jboss.ws.core.server.netty.NettyRequestHandlerFactory;
  */
 final class NettyRequestHandlerFactoryImpl implements NettyRequestHandlerFactory<NettyRequestHandlerImpl>
 {
-   
+
    /** Factory singleton. */
    private static final NettyRequestHandlerFactory<NettyRequestHandlerImpl> SINGLETON = new NettyRequestHandlerFactoryImpl();
-   
+
    /**
     * Constructor.
     */
@@ -51,7 +51,7 @@ final class NettyRequestHandlerFactoryImpl implements NettyRequestHandlerFactory
    {
       return new NettyRequestHandlerImpl();
    }
-   
+
    /**
     * Returns factory instance.
     *

@@ -308,11 +308,6 @@ public class EndpointImpl extends Endpoint
       return this.address.getPath();
    }
    
-   public String getHost()
-   {
-      return this.address.getHost();
-   }
-   
    public int getPort()
    {
       return this.address.getPort();

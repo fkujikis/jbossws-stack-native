@@ -126,15 +126,14 @@ final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
          InvocationContext invCtx) throws IOException
    {
       boolean handlerExists = false;
-      String handledPath = null;
       requestPath = truncateHostName(requestPath);
-      NettyCallbackHandlerImpl handler = (NettyCallbackHandlerImpl)this.getCallback(requestPath);
+      NettyCallbackHandlerImpl handler = (NettyCallbackHandlerImpl) this.getCallback(requestPath);
       if (handler != null)
       {
          handlerExists = true;
          if (LOG.isDebugEnabled())
             LOG.debug("Handling request path: " + requestPath);
-         
+
          return handler.handle(httpMethod, inputStream, outputStream, invCtx);
       }
       if (handlerExists == false)

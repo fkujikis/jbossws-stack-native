@@ -27,7 +27,6 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.management.ObjectName;
 import javax.xml.ws.WebServiceException;
 
 import org.jboss.logging.Logger;
@@ -35,7 +34,6 @@ import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.server.netty.NettyCallbackHandler;
 import org.jboss.ws.extensions.wsrm.transport.backchannel.RMCallbackHandlerImpl;
-import org.jboss.wsf.common.ObjectNameFactory;
 import org.jboss.wsf.common.injection.InjectionHelper;
 import org.jboss.wsf.common.injection.PreDestroyHolder;
 import org.jboss.wsf.spi.SPIProvider;
@@ -50,122 +48,134 @@ import org.jboss.wsf.spi.management.EndpointResolver;
 import org.jboss.wsf.stack.jbws.WebAppResolver;
 
 /**
- * TODO: javadoc
+ * Netty callback handler operating in JSE environment (replacement for Servlet on J2EE side).
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class NettyCallbackHandlerImpl implements NettyCallbackHandler
 {
+
+   /** 200 HTTP status code. */
+   public static final int SC_OK = 200;
+
+   /** 500 HTTP status code. */
+   public static final int SC_INTERNAL_SERVER_ERROR = 500;
+
+   /** Logger. */
    private static final Logger LOGGER = Logger.getLogger(RMCallbackHandlerImpl.class);
 
+   /** SPI provider instance. */
+   private static final SPIProvider SPI_PROVIDER = SPIProviderResolver.getInstance().getProvider();
+
+   /** Endpoints registry. */
+   private static final EndpointRegistry ENDPOINTS_REGISTRY = NettyCallbackHandlerImpl.SPI_PROVIDER.getSPI(
+         EndpointRegistryFactory.class).getEndpointRegistry();
+
+   /** @PreDestroy registry. */
+   private final List<PreDestroyHolder> preDestroyRegistry = new LinkedList<PreDestroyHolder>();
+
+   /** Path this Netty callback operates on. */
    private final String handledPath;
 
-   private final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-
-   private EndpointRegistry epRegistry;
-
+   /** Endpoint associated with this callback. */
    private Endpoint endpoint;
 
-   private List<PreDestroyHolder> preDestroyRegistry = new LinkedList<PreDestroyHolder>();
-
    /**
-    * Request path to listen for incomming messages
-    * @param handledPath
+    * Constructor.
+    *
+    * @param path this handler operates on
+    * @param context this handler operates on
+    * @param endpointRegistryPath registry id
     */
-   public NettyCallbackHandlerImpl(String path, String context, String endpointRegistryPath)
+   public NettyCallbackHandlerImpl(final String path, final String context, final String endpointRegistryPath)
    {
       super();
-      this.initRegistry();
       this.initEndpoint(context, endpointRegistryPath);
       this.handledPath = path;
    }
 
    /**
-    * Initializes endpoint registry
-    */
-   private void initRegistry()
-   {
-      epRegistry = spiProvider.getSPI(EndpointRegistryFactory.class).getEndpointRegistry();
-   }
-
-   /**
-    * Initialize the service endpoint
-    * @param contextPath context path
-    * @param servletName servlet name
+    * Initialize the service endpoint and associate it with this callback.
+    *
+    * @param context context path
+    * @param endpointRegistryPath registry id
     */
    private void initEndpoint(final String context, final String endpointRegistryPath)
    {
       final EndpointResolver resolver = new WebAppResolver(context, endpointRegistryPath);
-      this.endpoint = epRegistry.resolve(resolver);
+      this.endpoint = NettyCallbackHandlerImpl.ENDPOINTS_REGISTRY.resolve(resolver);
 
       if (this.endpoint == null)
       {
-         ObjectName oname = ObjectNameFactory.create(Endpoint.SEPID_DOMAIN + ":" + Endpoint.SEPID_PROPERTY_CONTEXT
-               + "=" + context + "," + Endpoint.SEPID_PROPERTY_ENDPOINT + "=" + endpointRegistryPath);
-         throw new WebServiceException("Cannot obtain endpoint for: " + oname);
+         throw new WebServiceException("Cannot obtain endpoint for: " + endpointRegistryPath);
       }
    }
 
-   public int handle(String method, InputStream inputStream, OutputStream outputStream, InvocationContext invCtx)
-         throws IOException
+   /**
+    * Handles either WSDL GET request or endpoint POST invocation.
+    * 
+    * @param method only HTTP GET and POST methods are supported
+    * @param is input stream
+    * @param os output stream
+    * @param invCtx invocation context
+    * @return HTTP status code
+    * @throws IOException if some I/O error occurs
+    */
+   public int handle(final String method, final InputStream is, final OutputStream os, final InvocationContext invCtx)
+      throws IOException
    {
       Integer statusCode = null;
       try
       {
+         EndpointAssociation.setEndpoint(this.endpoint);
+         final RequestHandler requestHandler = this.endpoint.getRequestHandler();
+
          if (method.equals("POST"))
          {
-            this.handle(inputStream, outputStream, invCtx, false);
+            requestHandler.handleRequest(this.endpoint, is, os, invCtx);
             statusCode = (Integer) invCtx.getProperty(Constants.NETTY_STATUS_CODE);
          }
          else if (method.equals("GET"))
          {
-            this.handle(inputStream, outputStream, invCtx, true);
+            requestHandler.handleWSDLRequest(this.endpoint, os, invCtx);
          }
          else
          {
             throw new WSException("Unsupported HTTP method: " + method);
          }
       }
-      catch (Exception e)
+      catch (final Exception e)
       {
          NettyCallbackHandlerImpl.LOGGER.error(e.getMessage(), e);
-         statusCode = 500;
-      }
-
-      return statusCode == null ? 200 : statusCode;
-   }
-
-   public String getPath()
-   {
-      return this.handledPath;
-   }
-
-   private void handle(final InputStream inputStream, final OutputStream outputStream, final InvocationContext invCtx, final boolean wsdlRequest) throws IOException
-   {
-      try
-      {
-         EndpointAssociation.setEndpoint(this.endpoint);
-         final RequestHandler requestHandler = this.endpoint.getRequestHandler();
-         
-         if (wsdlRequest)
-         {
-            requestHandler.handleWSDLRequest(this.endpoint, outputStream, invCtx);
-         }
-         else
-         {
-            requestHandler.handleRequest(this.endpoint, inputStream, outputStream, invCtx);
-         }
+         statusCode = NettyCallbackHandlerImpl.SC_INTERNAL_SERVER_ERROR;
       }
       finally
       {
          this.registerForPreDestroy(this.endpoint);
          EndpointAssociation.removeEndpoint();
       }
+
+      return statusCode == null ? NettyCallbackHandlerImpl.SC_OK : statusCode;
    }
 
-   private void registerForPreDestroy(final Endpoint ep)
+   /**
+    * Returns request path this callback operates on.
+    * 
+    * @return callback path
+    */
+   public String getPath()
    {
-      final PreDestroyHolder holder = (PreDestroyHolder) ep.getAttachment(PreDestroyHolder.class);
+      return this.handledPath;
+   }
+
+   /**
+    * Registers endpoint for with @PreDestroy registry.
+    * 
+    * @param endpoint webservice endpoint
+    */
+   private void registerForPreDestroy(final Endpoint endpoint)
+   {
+      final PreDestroyHolder holder = (PreDestroyHolder) endpoint.getAttachment(PreDestroyHolder.class);
       if (holder != null)
       {
          synchronized (this.preDestroyRegistry)
@@ -175,16 +185,22 @@ final class NettyCallbackHandlerImpl implements NettyCallbackHandler
                this.preDestroyRegistry.add(holder);
             }
          }
-         ep.removeAttachment(PreDestroyHolder.class);
+         endpoint.removeAttachment(PreDestroyHolder.class);
       }
    }
-   
-   public final void init()
+
+   /**
+    * Template lifecycle method that does nothing in this implementation.
+    */
+   public void init()
    {
-      // does nothing
+      // Does nothing
    }
 
-   public final void destroy()
+   /**
+    * Calls @PreDestroy annotated methods on endpoint bean.
+    */
+   public void destroy()
    {
       synchronized (this.preDestroyRegistry)
       {
@@ -201,7 +217,6 @@ final class NettyCallbackHandlerImpl implements NettyCallbackHandler
             }
          }
          this.preDestroyRegistry.clear();
-         this.preDestroyRegistry = null;
       }
    }
 
