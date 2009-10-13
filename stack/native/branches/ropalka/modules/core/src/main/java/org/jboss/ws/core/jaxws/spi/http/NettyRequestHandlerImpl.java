@@ -168,7 +168,7 @@ final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
          Map<String, List<String>> responseHeaders, Channel channel) throws IOException
    {
       // Build the response object.
-      HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, getResponseStatus(statusCode));
+      HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(statusCode));
 
       Iterator<String> iterator = responseHeaders.keySet().iterator();
       String key = null;
@@ -236,25 +236,13 @@ final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
 
    private String removeProhibitedCharacters(String s)
    {
+      // TODO: https://jira.jboss.org/jira/browse/NETTY-237
       String retVal = s;
 
       retVal = retVal.replace('\r', ' ');
       retVal = retVal.replace('\n', ' ');
 
       return retVal;
-   }
-
-   private HttpResponseStatus getResponseStatus(int statusCode)
-   {
-      // TODO: https://jira.jboss.org/jira/browse/NETTY-233 
-      if (statusCode == 500)
-         return HttpResponseStatus.INTERNAL_SERVER_ERROR;
-      if (statusCode == 202)
-         return HttpResponseStatus.ACCEPTED;
-      if (statusCode == 204)
-         return HttpResponseStatus.NO_CONTENT;
-
-      return HttpResponseStatus.OK;
    }
 
 }
