@@ -53,10 +53,10 @@ public final class UsecasesTestCase extends JBossWSTest
    
    private static int port1 = 8871;
    private static int port2 = 8872;
-   
-   public void testDifferentPorts() throws Exception
+
+   public void testDifferentPortsSameContext() throws Exception
    {
-      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint";
+      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/";
       Endpoint endpoint1 = publishEndpoint1(Endpoint1Impl.class, publishURL1);
 
       String publishURL2 = "http://" + getServerHost() + ":" + port2 + "/jaxws-endpoint";
@@ -69,9 +69,24 @@ public final class UsecasesTestCase extends JBossWSTest
       endpoint2.stop();
    }
 
+   public void testDifferentPortsNoContext() throws Exception
+   {
+      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/";
+      Endpoint endpoint1 = publishEndpoint1(Endpoint1Impl.class, publishURL1);
+
+      String publishURL2 = "http://" + getServerHost() + ":" + port2;
+      Endpoint endpoint2 = publishEndpoint2(new Endpoint1Impl(), publishURL2);
+
+      invokeEndpoint1(publishURL1);
+      invokeEndpoint1(publishURL2);
+
+      endpoint1.stop();
+      endpoint2.stop();
+   }
+
    public void testDifferentPortsAndLongPaths() throws Exception
    {
-      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/long/path";
+      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/long/path/";
       Endpoint endpoint1 = publishEndpoint3(Endpoint1Impl.class, publishURL1);
 
       String publishURL2 = "http://" + getServerHost() + ":" + port2 + "/jaxws-endpoint/endpoint/long/path";
@@ -86,7 +101,7 @@ public final class UsecasesTestCase extends JBossWSTest
 
    public void testSamePortsAndAlmostIdenticalLongPaths() throws Exception
    {
-      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
+      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1/";
       Endpoint endpoint1 = publishEndpoint2(Endpoint1Impl.class, publishURL1);
 
       String publishURL2 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number11";
@@ -101,7 +116,7 @@ public final class UsecasesTestCase extends JBossWSTest
 
    public void testDifferentPortsAndIdenticalPaths() throws Exception
    {
-      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1";
+      String publishURL1 = "http://" + getServerHost() + ":" + port1 + "/jaxws-endpoint/endpoint/number1/";
       Endpoint endpoint1 = publishEndpoint1(Endpoint1Impl.class, publishURL1);
 
       String publishURL2 = "http://" + getServerHost() + ":" + port2 + "/jaxws-endpoint/endpoint/number1";

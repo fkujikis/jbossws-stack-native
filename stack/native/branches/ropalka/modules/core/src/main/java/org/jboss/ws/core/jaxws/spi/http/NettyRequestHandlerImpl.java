@@ -103,6 +103,7 @@ final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
          {
             requestPath = requestPath.substring(0, paramIndex);
          }
+         requestPath = this.getRequestPath(requestPath);
          String httpMethod = request.getMethod().getName();
          statusCode = handle(requestPath, httpMethod, getInputStream(content), outputStream, invCtx);
       }
@@ -122,46 +123,22 @@ final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
       return new ChannelBufferInputStream(content);
    }
 
-   private int handle(String requestPath, String httpMethod, InputStream inputStream, OutputStream outputStream,
-         InvocationContext invCtx) throws IOException
+   private int handle(final String requestPath, final String httpMethod, final InputStream inputStream, final OutputStream outputStream,
+         final InvocationContext invCtx) throws IOException
    {
-      boolean handlerExists = false;
-      requestPath = truncateHostName(requestPath);
-      NettyCallbackHandlerImpl handler = (NettyCallbackHandlerImpl) this.getCallback(requestPath);
+      final NettyCallbackHandlerImpl handler = (NettyCallbackHandlerImpl) this.getCallback(requestPath);
       if (handler != null)
       {
-         handlerExists = true;
-         if (LOG.isDebugEnabled())
-            LOG.debug("Handling request path: " + requestPath);
+         NettyRequestHandlerImpl.LOG.debug("Handling " + httpMethod + " request for " + requestPath);
 
          return handler.handle(httpMethod, inputStream, outputStream, invCtx);
       }
-      if (handlerExists == false)
-         LOG.warn("No callback handler registered for path: " + requestPath);
-
-      return 500;
-   }
-
-   private String truncateHostName(String s)
-   {
-      String retVal = s;
-      if (s.startsWith("http"))
+      else
       {
-         try
-         {
-            retVal = new URL(s).getPath();
-         }
-         catch (MalformedURLException mue)
-         {
-            LOG.error(mue.getMessage(), mue);
-         }
-      }
+         NettyRequestHandlerImpl.LOG.warn("No callback handler registered for path: " + requestPath);
 
-      while (retVal.endsWith("/"))
-      {
-         retVal = retVal.substring(0, retVal.length() - 1);
+         return 501;
       }
-      return retVal;
    }
 
    private void writeResponse(MessageEvent e, HttpRequest request, String content, int statusCode,
@@ -223,6 +200,30 @@ final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
       }
    }
 
+   // TODO: https://jira.jboss.org/jira/browse/NETTY-239
+   private String getRequestPath(String s)
+   {
+      String retVal = s;
+      if (s.startsWith("http"))
+      {
+         try
+         {
+            retVal = new URL(s).getPath();
+         }
+         catch (MalformedURLException mue)
+         {
+            LOG.error(mue.getMessage(), mue);
+         }
+      }
+
+      while (retVal.endsWith("/"))
+      {
+         retVal = retVal.substring(0, retVal.length() - 1);
+      }
+      return retVal;
+   }
+
+   // TODO: https://jira.jboss.org/jira/browse/NETTY-237
    private List<String> removeProhibitedCharacters(List<String> values)
    {
       List<String> retVal = new LinkedList<String>();
@@ -234,9 +235,9 @@ final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
       return retVal;
    }
 
+   // TODO: https://jira.jboss.org/jira/browse/NETTY-237
    private String removeProhibitedCharacters(String s)
    {
-      // TODO: https://jira.jboss.org/jira/browse/NETTY-237
       String retVal = s;
 
       retVal = retVal.replace('\r', ' ');

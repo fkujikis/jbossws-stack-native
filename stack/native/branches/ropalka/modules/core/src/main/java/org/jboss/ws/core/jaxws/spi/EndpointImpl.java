@@ -80,7 +80,9 @@ public class EndpointImpl extends Endpoint
    public EndpointImpl(String bindingId, Object implementor, WebServiceFeature[] features)
    {
       if (implementor == null)
+      {
          throw new IllegalArgumentException("Implementor cannot be null");
+      }
 
       this.implementor = implementor;
       this.bindingProvider = new BindingProviderImpl(bindingId);
@@ -90,13 +92,13 @@ public class EndpointImpl extends Endpoint
    @Override
    public Binding getBinding()
    {
-      return bindingProvider.getBinding();
+      return this.bindingProvider.getBinding();
    }
 
    @Override
    public Object getImplementor()
    {
-      return implementor;
+      return this.implementor;
    }
 
    /**
@@ -107,7 +109,7 @@ public class EndpointImpl extends Endpoint
     * @param address specifying the address to use. The address must be compatible with the binding specified at the time the endpoint was created.
     */
    @Override
-   public void publish(String addr)
+   public void publish(final String addr)
    {
       log.debug("publish: " + addr);
 
@@ -121,17 +123,16 @@ public class EndpointImpl extends Endpoint
       }
 
       // Check with the security manger
-      checkPublishEndpointPermission();
+      this.checkPublishEndpointPermission();
 
-      // Create and start the HTTP server
-      SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-      HttpServer httpServer = spiProvider.getSPI(HttpServerFactory.class).getHttpServer();
+      // Get HTTP server
+      final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+      final HttpServer httpServer = spiProvider.getSPI(HttpServerFactory.class).getHttpServer();
 
-      String path = address.getPath();
-      String contextRoot = "/" + new StringTokenizer(path, "/").nextToken();
-      HttpContext context = httpServer.createContext(contextRoot);
+      final String contextRoot = this.getContextRoot();
+      final HttpContext context = httpServer.createContext(contextRoot);
 
-      publish(context);
+      this.publish(context);
    }
 
    /**
@@ -157,14 +158,14 @@ public class EndpointImpl extends Endpoint
 
       if (context instanceof HttpContext)
       {
-         serverContext = (HttpContext)context;
-         if (address == null)
+         this.serverContext = (HttpContext)context;
+         if (this.address == null)
          {
-            address = getAddressFromConfigAndContext(serverContext); // TODO: is it necessary?
+            this.address = getAddressFromConfigAndContext(serverContext); // TODO: is it necessary?
          }
-         HttpServer httpServer = serverContext.getHttpServer();
-         httpServer.publish(serverContext, this);
-         isPublished = true;
+         HttpServer httpServer = this.serverContext.getHttpServer();
+         httpServer.publish(this.serverContext, this);
+         this.isPublished = true;
       }
       else
       {
@@ -218,17 +219,17 @@ public class EndpointImpl extends Endpoint
    @Override
    public boolean isPublished()
    {
-      return isPublished;
+      return this.isPublished;
    }
 
    @Override
    public List<Source> getMetadata()
    {
-      return metadata;
+      return this.metadata;
    }
 
    @Override
-   public void setMetadata(List<Source> list)
+   public void setMetadata(final List<Source> list)
    {
       log.info("Ignore metadata, not implemented"); // TODO:
       this.metadata = list;
@@ -237,7 +238,7 @@ public class EndpointImpl extends Endpoint
    @Override
    public Executor getExecutor()
    {
-      return executor;
+      return this.executor;
    }
 
    @Override
@@ -250,13 +251,13 @@ public class EndpointImpl extends Endpoint
    @Override
    public Map<String, Object> getProperties()
    {
-      return properties;
+      return this.properties;
    }
 
    @Override
    public void setProperties(Map<String, Object> map)
    {
-      properties = map;
+      this.properties = map;
    }
 
    private void checkPublishEndpointPermission()
@@ -305,7 +306,12 @@ public class EndpointImpl extends Endpoint
    
    public String getPath()
    {
-      return this.address.getPath();
+      String path = this.address.getPath();
+      while (path.endsWith("/"))
+      {
+         path = path.substring(0, path.length() - 1);
+      }
+      return path;
    }
    
    public int getPort()
@@ -313,11 +319,28 @@ public class EndpointImpl extends Endpoint
       return this.address.getPort();
    }
    
+   public String getContextRoot()
+   {
+      final StringTokenizer st = new StringTokenizer(this.getPath(), "/");
+      
+      String contextRoot = "/";
+      
+      if (st.hasMoreTokens())
+      {
+         contextRoot += st.nextToken();
+      }
+      
+      return contextRoot;
+   }
+   
    public String getPathWithoutContext()
    {
       // TODO: optimize this method
       StringTokenizer st = new StringTokenizer(this.getPath(), "/");
-      st.nextToken();
+      if (st.hasMoreTokens())
+      {
+         st.nextToken();
+      }
       StringBuilder sb = new StringBuilder();
       while (st.hasMoreTokens())
       {
