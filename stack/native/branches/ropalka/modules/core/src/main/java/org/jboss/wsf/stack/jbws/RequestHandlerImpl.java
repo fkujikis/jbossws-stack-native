@@ -51,6 +51,8 @@ import javax.xml.ws.addressing.JAXWSAConstants;
 import javax.xml.ws.http.HTTPBinding;
 
 import org.jboss.logging.Logger;
+import org.jboss.netty.handler.codec.http.HttpMessage;
+import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonBinding;
@@ -65,8 +67,8 @@ import org.jboss.ws.core.jaxrpc.handler.MessageContextJAXRPC;
 import org.jboss.ws.core.jaxrpc.handler.SOAPMessageContextJAXRPC;
 import org.jboss.ws.core.jaxws.handler.MessageContextJAXWS;
 import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
+import org.jboss.ws.core.jaxws.spi.http.AbstractNettyMessage;
 import org.jboss.ws.core.server.MimeHeaderSource;
-import org.jboss.ws.core.server.NettyHeaderSource;
 import org.jboss.ws.core.server.ServiceEndpointInvoker;
 import org.jboss.ws.core.server.ServletHeaderSource;
 import org.jboss.ws.core.server.ServletRequestContext;
@@ -261,7 +263,7 @@ public class RequestHandlerImpl implements RequestHandler
       // Set servlet specific properties
       HttpServletResponse httpResponse = null;
       ServletHeaderSource headerSource = null;
-      NettyHeaderSource nettyHeaderSource = this.getNettyHeadersSource(invContext);
+      AbstractNettyMessage nettyMessage = this.getNettyHeadersSource(invContext);
       if (invContext instanceof ServletRequestContext)
       {
          ServletRequestContext reqContext = (ServletRequestContext)invContext;
@@ -295,7 +297,7 @@ public class RequestHandlerImpl implements RequestHandler
       try
       {
          msgContext.setEndpointMetaData(sepMetaData);
-         MessageAbstraction resMessage = processRequest(endpoint, nettyHeaderSource == null ? headerSource : nettyHeaderSource, invContext, inStream);
+         MessageAbstraction resMessage = processRequest(endpoint, nettyMessage == null ? headerSource : nettyMessage, invContext, inStream);
 
          // Replace the message context with the response context
          msgContext = MessageContextAssociation.peekMessageContext();
@@ -307,10 +309,6 @@ public class RequestHandlerImpl implements RequestHandler
             {
                headerSource.setHeaderMap(headers);
             }
-            else if (nettyHeaderSource != null)
-            {
-               nettyHeaderSource.setHeaderMap(headers);
-            }
          }
 
          Integer code = (Integer)msgContext.get(MessageContextJAXWS.HTTP_RESPONSE_CODE);
@@ -320,12 +318,9 @@ public class RequestHandlerImpl implements RequestHandler
             {
                httpResponse.setStatus(code.intValue());
             }
-            else
+            else if (nettyMessage != null)
             {
-               if (nettyHeaderSource != null)
-               {
-                  invContext.setProperty(Constants.NETTY_STATUS_CODE, code.intValue());
-               }
+               nettyMessage.setStatus(code.intValue());
             }
          }
 
@@ -349,12 +344,9 @@ public class RequestHandlerImpl implements RequestHandler
                {
                   httpResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                }
-               else
+               else if (nettyMessage != null)
                {
-                  if (nettyHeaderSource != null)
-                  {
-                     invContext.setProperty(Constants.NETTY_STATUS_CODE, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                  }
+                  nettyMessage.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                }
             }
          }
@@ -382,17 +374,9 @@ public class RequestHandlerImpl implements RequestHandler
       }
    }
 
-   private NettyHeaderSource getNettyHeadersSource(final InvocationContext invContext)
+   private AbstractNettyMessage getNettyHeadersSource(final InvocationContext invContext)
    {
-      Map<String, List<String>> nettyRequestHeaders = (Map<String, List<String>>)invContext.getProperty(Constants.NETTY_REQUEST_HEADERS);
-      Map<String, List<String>> nettyResponseHeaders = (Map<String, List<String>>)invContext.getProperty(Constants.NETTY_RESPONSE_HEADERS);
-
-      if (nettyRequestHeaders != null && nettyResponseHeaders != null)
-      {
-         return new NettyHeaderSource(nettyRequestHeaders, nettyResponseHeaders);
-      }
-
-      return null;
+      return (AbstractNettyMessage)invContext.getProperty(Constants.NETTY_MESSAGE);
    }
 
    private void sendResponse(Endpoint endpoint, OutputStream output, boolean isFault) throws SOAPException, IOException
@@ -664,7 +648,7 @@ public class RequestHandlerImpl implements RequestHandler
          HttpServletRequest req = reqContext.getHttpServletRequest();
          requestURL = new URL(req.getRequestURL().toString());
       }
-      else if (context.getProperty(Constants.NETTY_REQUEST_HEADERS) != null)
+      else if (context.getProperty(Constants.NETTY_MESSAGE) != null)
       {
          requestURL = new URL(endpoint.getAddress());
       }
@@ -682,10 +666,10 @@ public class RequestHandlerImpl implements RequestHandler
          HttpServletRequest req = reqContext.getHttpServletRequest();
          resourcePath = (String)req.getParameter("resource");
       }
-      else if (context.getProperty(Constants.NETTY_REQUEST_HEADERS) != null)
+      else if (context.getProperty(Constants.NETTY_MESSAGE) != null)
       {
-         Map<String, Object> requestHeaders = (Map<String, Object>)context.getProperty(Constants.NETTY_REQUEST_HEADERS);
-         resourcePath = (String)requestHeaders.get("resource");
+         return null;
+         // TODO: implement resourcePath = getResourcePath(nettyMessage.getUri()); // i.e. parse it from query string
       }
       
       return resourcePath;
@@ -697,7 +681,7 @@ public class RequestHandlerImpl implements RequestHandler
          return false;
       
       final boolean servletInvocationContext = context instanceof ServletRequestContext;
-      final boolean nettyInvocationContext = context.getProperty(Constants.NETTY_REQUEST_HEADERS) != null;
+      final boolean nettyInvocationContext = context.getProperty(Constants.NETTY_MESSAGE) != null;
 
       return servletInvocationContext || nettyInvocationContext;
    }

@@ -21,36 +21,15 @@
  */
 package org.jboss.ws.core.jaxws.spi.http;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.logging.Logger;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferInputStream;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.handler.codec.http.Cookie;
-import org.jboss.netty.handler.codec.http.CookieDecoder;
-import org.jboss.netty.handler.codec.http.CookieEncoder;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpRequest;
@@ -58,8 +37,6 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.ws.Constants;
-import org.jboss.ws.core.client.transport.NettyTransportOutputStream;
-import org.jboss.ws.core.server.netty.NettyCallbackHandler;
 import org.jboss.ws.core.server.netty.AbstractNettyRequestHandler;
 import org.jboss.wsf.spi.invocation.InvocationContext;
 
@@ -70,178 +47,131 @@ import org.jboss.wsf.spi.invocation.InvocationContext;
  */
 final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
 {
+   /** Logger. */
    private static final Logger LOG = Logger.getLogger(NettyRequestHandlerImpl.class);
 
+   /**
+    * Constructor.
+    */
    public NettyRequestHandlerImpl()
    {
       super();
    }
 
+   /**
+    * Callback method called by Netty HTTP server.
+    * 
+    * @param ctx channel handler context
+    * @param event message event
+    * @throws Exception
+    */
    @Override
-   public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception
+   public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent event)
    {
-      HttpRequest request = (HttpRequest) e.getMessage();
-      ChannelBuffer content = request.getContent();
-      OutputStream baos = new ByteArrayOutputStream();
-      OutputStream outputStream = new BufferedOutputStream(baos);
-      Integer statusCode = null;
+      // TODO: create custom HttpNettyRequest and don't use Netty provided default impl.
+      final HttpRequest request = (HttpRequest) event.getMessage();
+      if (HttpVersion.HTTP_1_1.equals(request.getProtocolVersion()))
+      {
+         final AbstractNettyMessage message = new NettyHttp11Message(ctx.getChannel(), request);
 
-      InvocationContext invCtx = new InvocationContext();
-      Map<String, List<String>> requestHeaders = new HashMap<String, List<String>>();
-      Map<String, List<String>> responseHeaders = new HashMap<String, List<String>>();
-      invCtx.setProperty(Constants.NETTY_REQUEST_HEADERS, requestHeaders);
-      invCtx.setProperty(Constants.NETTY_RESPONSE_HEADERS, responseHeaders);
-      for (String headerName : request.getHeaderNames())
-      {
-         requestHeaders.put(headerName, request.getHeaders(headerName));
-      }
-      try
-      {
-         String requestPath = request.getUri();
-         int paramIndex = requestPath.indexOf('?');
-         if (paramIndex != -1)
+         final InvocationContext invCtx = new InvocationContext();
+         invCtx.setProperty(Constants.NETTY_MESSAGE, message);
+         try
          {
-            requestPath = requestPath.substring(0, paramIndex);
+            final String requestPath = this.getRequestPath(request.getUri());
+            final String httpMethod = request.getMethod().getName();
+            this.handle(requestPath, httpMethod, message.getInputStream(), message.getOutputStream(), invCtx);
          }
-         requestPath = this.getRequestPath(requestPath);
-         String httpMethod = request.getMethod().getName();
-         statusCode = handle(requestPath, httpMethod, getInputStream(content), outputStream, invCtx);
+         catch (Exception e)
+         {
+            NettyRequestHandlerImpl.LOG.error(e);
+            this.sendError(event, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+         }
       }
-      catch (Throwable t)
+      else
       {
-         statusCode = 500;
-         LOG.error(t);
-      }
-      finally
-      {
-         writeResponse(e, request, baos.toString(), statusCode, responseHeaders, ctx.getChannel());
+         NettyRequestHandlerImpl.LOG.fatal("HTTP 1.0 not supported");
+         this.sendError(event, HttpResponseStatus.NOT_IMPLEMENTED);
       }
    }
 
-   private InputStream getInputStream(ChannelBuffer content)
-   {
-      return new ChannelBufferInputStream(content);
-   }
-
-   private int handle(final String requestPath, final String httpMethod, final InputStream inputStream, final OutputStream outputStream,
-         final InvocationContext invCtx) throws IOException
+   /**
+    * Calls Netty callback handler associated with request path.
+    * 
+    * @param requestPath to handle
+    * @param httpMethod http method (GET or POST)
+    * @param is input stream 
+    * @param os output stream
+    * @param invCtx invocation context
+    * @throws IOException if some I/O error occurs
+    */
+   private void handle(final String requestPath, final String httpMethod, final InputStream is,
+         final OutputStream os, final InvocationContext invCtx) throws IOException
    {
       final NettyCallbackHandlerImpl handler = (NettyCallbackHandlerImpl) this.getCallback(requestPath);
       if (handler != null)
       {
-         NettyRequestHandlerImpl.LOG.debug("Handling " + httpMethod + " request for " + requestPath);
-
-         return handler.handle(httpMethod, inputStream, outputStream, invCtx);
+         handler.handle(httpMethod, is, os, invCtx);
       }
       else
       {
-         NettyRequestHandlerImpl.LOG.warn("No callback handler registered for path: " + requestPath);
-
-         return 501;
+         final String errorMessage = "No callback handler registered for path: " + requestPath;
+         NettyRequestHandlerImpl.LOG.warn(errorMessage);
+         throw new IllegalArgumentException(errorMessage);
       }
    }
 
-   private void writeResponse(MessageEvent e, HttpRequest request, String content, int statusCode,
-         Map<String, List<String>> responseHeaders, Channel channel) throws IOException
+   /**
+    * Sends error to HTTP client.
+    * 
+    * @param event message event
+    * @param statusCode HTTP status code
+    */
+   private void sendError(final MessageEvent event, final HttpResponseStatus statusCode)
    {
       // Build the response object.
-      HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(statusCode));
-
-      Iterator<String> iterator = responseHeaders.keySet().iterator();
-      String key = null;
-      List<String> values = null;
-      while (iterator.hasNext())
-      {
-         key = iterator.next();
-         values = responseHeaders.get(key);
-         values = removeProhibitedCharacters(values);
-         response.setHeader(key, values);
-      }
-      if (!responseHeaders.containsKey(HttpHeaders.Names.CONTENT_TYPE))
-      {
-         response.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/xml; charset=UTF-8");
-         response.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(content.length()));
-         response.setContent(ChannelBuffers.copiedBuffer(content, "UTF-8"));
-      }
-      else
-      {
-         response.setHeader(HttpHeaders.Names.TRANSFER_ENCODING, "chunked");
-      }
-
-      String cookieString = request.getHeader(HttpHeaders.Names.COOKIE);
-      if (cookieString != null)
-      {
-         CookieDecoder cookieDecoder = new CookieDecoder();
-         Set<Cookie> cookies = cookieDecoder.decode(cookieString);
-         if (!cookies.isEmpty())
-         {
-            // Reset the cookies if necessary.
-            CookieEncoder cookieEncoder = new CookieEncoder(true);
-            for (Cookie cookie : cookies)
-            {
-               cookieEncoder.addCookie(cookie);
-            }
-            response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-         }
-      }
+      final HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, statusCode);
+      response.setHeader(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
 
       // Write the response.
-      ChannelFuture cf = e.getChannel().write(response);
-      if (responseHeaders.containsKey(HttpHeaders.Names.CONTENT_TYPE))
-      {
-         NettyTransportOutputStream out = new NettyTransportOutputStream(channel, 1024);
-         out.write(content.getBytes("UTF-8"));
-         out.close();
-         out.getChannelFuture().awaitUninterruptibly();
-      }
-      else
-      {
-         cf.awaitUninterruptibly();
-      }
+      event.getChannel().write(response).awaitUninterruptibly();
    }
 
-   // TODO: https://jira.jboss.org/jira/browse/NETTY-239
-   private String getRequestPath(String s)
+   /**
+    * Returns request path without query string.
+    * 
+    * @param requestPath to parse
+    * @return request path without query string
+    */
+   private String getRequestPath(final String requestPath)
    {
-      String retVal = s;
-      if (s.startsWith("http"))
+      String retVal = requestPath;
+      
+      // remove query string if available
+      final int paramIndex = retVal.indexOf('?');
+      if (paramIndex != -1)
+      {
+         retVal = retVal.substring(0, paramIndex);
+      }
+
+      // remove protocol, host and port if available
+      if (retVal.startsWith("http"))
       {
          try
          {
-            retVal = new URL(s).getPath();
+            retVal = new URL(retVal).getPath();
          }
          catch (MalformedURLException mue)
          {
-            LOG.error(mue.getMessage(), mue);
+            NettyRequestHandlerImpl.LOG.error(mue.getMessage(), mue);
          }
       }
-
+      
+      // remove '/' characters at the end
       while (retVal.endsWith("/"))
       {
          retVal = retVal.substring(0, retVal.length() - 1);
       }
-      return retVal;
-   }
-
-   // TODO: https://jira.jboss.org/jira/browse/NETTY-237
-   private List<String> removeProhibitedCharacters(List<String> values)
-   {
-      List<String> retVal = new LinkedList<String>();
-      for (int i = 0; i < values.size(); i++)
-      {
-         retVal.add(i, removeProhibitedCharacters(values.get(i)));
-      }
-
-      return retVal;
-   }
-
-   // TODO: https://jira.jboss.org/jira/browse/NETTY-237
-   private String removeProhibitedCharacters(String s)
-   {
-      String retVal = s;
-
-      retVal = retVal.replace('\r', ' ');
-      retVal = retVal.replace('\n', ' ');
 
       return retVal;
    }

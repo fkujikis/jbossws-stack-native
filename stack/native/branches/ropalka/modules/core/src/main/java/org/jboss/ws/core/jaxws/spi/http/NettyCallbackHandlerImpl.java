@@ -30,7 +30,6 @@ import java.util.List;
 import javax.xml.ws.WebServiceException;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.server.netty.NettyCallbackHandler;
 import org.jboss.ws.extensions.wsrm.transport.backchannel.RMCallbackHandlerImpl;
@@ -54,12 +53,6 @@ import org.jboss.wsf.stack.jbws.WebAppResolver;
  */
 final class NettyCallbackHandlerImpl implements NettyCallbackHandler
 {
-
-   /** 200 HTTP status code. */
-   public static final int SC_OK = 200;
-
-   /** 500 HTTP status code. */
-   public static final int SC_INTERNAL_SERVER_ERROR = 500;
 
    /** Logger. */
    private static final Logger LOGGER = Logger.getLogger(RMCallbackHandlerImpl.class);
@@ -118,13 +111,11 @@ final class NettyCallbackHandlerImpl implements NettyCallbackHandler
     * @param is input stream
     * @param os output stream
     * @param invCtx invocation context
-    * @return HTTP status code
     * @throws IOException if some I/O error occurs
     */
-   public int handle(final String method, final InputStream is, final OutputStream os, final InvocationContext invCtx)
-      throws IOException
+   public void handle(final String method, final InputStream is, final OutputStream os, final InvocationContext invCtx)
+         throws IOException
    {
-      Integer statusCode = null;
       try
       {
          EndpointAssociation.setEndpoint(this.endpoint);
@@ -133,7 +124,6 @@ final class NettyCallbackHandlerImpl implements NettyCallbackHandler
          if (method.equals("POST"))
          {
             requestHandler.handleRequest(this.endpoint, is, os, invCtx);
-            statusCode = (Integer) invCtx.getProperty(Constants.NETTY_STATUS_CODE);
          }
          else if (method.equals("GET"))
          {
@@ -147,15 +137,28 @@ final class NettyCallbackHandlerImpl implements NettyCallbackHandler
       catch (final Exception e)
       {
          NettyCallbackHandlerImpl.LOGGER.error(e.getMessage(), e);
-         statusCode = NettyCallbackHandlerImpl.SC_INTERNAL_SERVER_ERROR;
       }
       finally
       {
+         try
+         {
+            is.close();
+         }
+         catch (IOException e)
+         {
+            NettyCallbackHandlerImpl.LOGGER.error(e.getMessage(), e);
+         }
+         try
+         {
+            os.close();
+         }
+         catch (IOException e)
+         {
+            NettyCallbackHandlerImpl.LOGGER.error(e.getMessage(), e);
+         }
          this.registerForPreDestroy(this.endpoint);
          EndpointAssociation.removeEndpoint();
       }
-
-      return statusCode == null ? NettyCallbackHandlerImpl.SC_OK : statusCode;
    }
 
    /**
