@@ -58,9 +58,7 @@ public class HRefInlineHandler
    public void processHRefs() throws SOAPException
    {
       String bodyStr = DOMWriter.printNode(soapBody, true);
-      boolean debugEnabled = log.isDebugEnabled();
-      if (debugEnabled)
-         log.debug("Begin processHRefs:\n" + bodyStr);
+      log.debug("Begin processHRefs:\n" + bodyStr);
 
       SOAPBodyElement soapBodyElement = soapBody.getBodyElement();
       processElement(soapBodyElement);
@@ -80,8 +78,7 @@ public class HRefInlineHandler
       }
 
       bodyStr = DOMWriter.printNode(soapBody, true);
-      if (debugEnabled)
-         log.debug("End processHRefs:\n" + bodyStr);
+      log.debug("End processHRefs:\n" + bodyStr);
    }
 
    private void processElement(SOAPElement soapElement) throws SOAPException

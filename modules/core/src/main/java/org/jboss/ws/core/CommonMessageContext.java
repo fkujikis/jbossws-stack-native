@@ -244,8 +244,7 @@ public abstract class CommonMessageContext implements Map<String, Object>
          }
          catch (IllegalArgumentException ex)
          {
-            if (log.isDebugEnabled())
-               log.debug("Ignore: " + ex.getMessage());
+            log.debug("Ignore: " + ex.getMessage());
          }
       }
    }

@@ -210,9 +210,7 @@ public class MessageFactoryImpl extends MessageFactory
       }
 
       ContentType contentType = getContentType(mimeHeaders);
-      if (log.isDebugEnabled()) {
-         log.debug("createMessage: [contentType=" + contentType + "]");
-      }
+      log.debug("createMessage: [contentType=" + contentType + "]");
 
       SOAPMessageImpl soapMessage = new SOAPMessageImpl();
       String encoding = contentType.getParameterList().get("charset");

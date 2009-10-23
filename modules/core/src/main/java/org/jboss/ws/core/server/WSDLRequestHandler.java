@@ -23,8 +23,6 @@ package org.jboss.ws.core.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.jboss.logging.Logger;
@@ -54,16 +52,13 @@ import org.w3c.dom.NodeList;
 public class WSDLRequestHandler
 {
    // provide logging
-   private static Logger log = Logger.getLogger(WSDLRequestHandler.class);
+   private Logger log = Logger.getLogger(WSDLRequestHandler.class);
 
-   private final EndpointMetaData epMetaData;
-   private final ServerConfig config;
+   private EndpointMetaData epMetaData;
 
    public WSDLRequestHandler(EndpointMetaData epMetaData)
    {
       this.epMetaData = epMetaData;
-      SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-      this.config = spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();
    }
 
    /**
@@ -98,8 +93,7 @@ public class WSDLRequestHandler
          File impResourceFile = new File(impResourcePath);
          String wsdlPublishLoc = epMetaData.getServiceMetaData().getWsdlPublishLocation();
 
-         if (log.isDebugEnabled())
-            log.debug("Importing resource file: " + impResourceFile.getCanonicalPath());
+         log.debug("Importing resource file: " + impResourceFile.getCanonicalPath());
 
          String wsdlLocFilePath = wsdlLocFile.getParentFile().getCanonicalPath();
          SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
@@ -213,32 +207,25 @@ public class WSDLRequestHandler
                {
                   String orgLocation = locationAttr.getNodeValue();
 
-                  if (isHttp(orgLocation))
-                  {
-                     URL orgURL = new URL(orgLocation);
-                     String orgProtocol = orgURL.getProtocol();
-                     String host = orgURL.getHost();
-                     final boolean rewriteLocation =
-                        ServerConfig.UNDEFINED_HOSTNAME.equals(host) ||
-                        this.config.isModifySOAPAddress();
+                  URL orgURL = new URL(orgLocation);
+                  String orgHost = orgURL.getHost();
+                  String orgPath = orgURL.getPath();
 
-                     if (rewriteLocation)
-                     {
-                        //we stick with the original protocol (https) if the transport guarantee is CONFIDENTIAL
-                        //(if the original wsdl soap:address uses https we can't overwrite it with http)
-                        boolean confidential = "https".equalsIgnoreCase(orgProtocol);
-                        String reqProtocol = reqURL.getProtocol();
-                        
-                        int port = confidential ? getPortForProtocol("https") : getPortForProtocol(reqProtocol);
-                        String path = orgURL.getPath();
-                        String newLocation = new URL(confidential ? "https" : reqProtocol, wsdlHost, port, path).toString();
-                        if (!newLocation.equals(orgLocation))
-                        {
-                           locationAttr.setNodeValue(newLocation);
-                           if (log.isDebugEnabled())
-                              log.debug("Mapping address from '" + orgLocation + "' to '" + newLocation + "'");
-                        }
-                     }
+                  if (ServerConfig.UNDEFINED_HOSTNAME.equals(orgHost))
+                  {
+                     URL newURL = new URL(wsdlHost); 
+                     String newProtocol = newURL.getProtocol();
+                     String newHost = newURL.getHost();
+                     int newPort = newURL.getPort();
+                     
+                     String newLocation = newProtocol + "://" + newHost;
+                     if (newPort != -1)
+                        newLocation += ":" + newPort;
+                     
+                     newLocation += orgPath;
+                     locationAttr.setNodeValue(newLocation);
+
+                     log.trace("Mapping address from '" + orgLocation + "' to '" + newLocation + "'");
                   }
                }
             }
@@ -248,50 +235,6 @@ public class WSDLRequestHandler
             }
          }
       }
-   }
-   
-   private static boolean isHttp(String orgLocation)
-   {
-      try
-      {
-         String scheme = new URI(orgLocation).getScheme();
-         if (scheme != null && scheme.startsWith("http"))
-         {
-            return true;
-         }
-         else
-         {
-            log.info("Skipping rewrite of non-http address: " + orgLocation);
-            return false;
-         }
-      }
-      catch (URISyntaxException e)
-      {
-         log.error("Skipping rewrite of invalid address: " + orgLocation, e);
-         return false;
-      }
-   }
-
-   /**
-    * Returns real http and https protocol values. Returns -1 for non http(s) protocols.
-    *
-    * @param protocol to handle
-    * @return real http(s) value, or -1 if not http(s) protocol
-    */
-   private int getPortForProtocol( final String protocol )
-   {
-      final String lowerCasedProtocol = protocol.toLowerCase();
-
-      if ( "http".equals( lowerCasedProtocol ) )
-      {
-         return config.getWebServicePort();
-      }
-      else if ( "https".equals( lowerCasedProtocol ) )
-      {
-         return config.getWebServiceSecurePort();
-      }
-
-      return -1;
    }
 
 }

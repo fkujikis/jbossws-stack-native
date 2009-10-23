@@ -133,11 +133,8 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
       State prevState = soapContent.getState();
       if (nextState != prevState)
       {
-         if (log.isDebugEnabled())
-         {
-            log.debug("-----------------------------------");
-            log.debug("Transitioning from " + prevState + " to " + nextState);
-         }
+         log.debug("-----------------------------------");
+         log.debug("Transitioning from " + prevState + " to " + nextState);
          lockDOMExpansion = true;
 
          soapContent = soapContent.transitionTo(nextState);

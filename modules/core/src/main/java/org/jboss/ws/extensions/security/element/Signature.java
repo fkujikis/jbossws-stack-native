@@ -63,8 +63,7 @@ public class Signature implements SecurityProcess
          catch (Exception e)
          {
             //log exception and ignore, KeyInfo might not reference a security token
-            if (log.isDebugEnabled())
-               log.debug("KeyInfo does not contain any reference to a binary security token.", e);
+            log.debug("KeyInfo does not contain any reference to a binary security token.", e);
          }
       }
       catch (XMLSecurityException e)
