@@ -44,7 +44,6 @@ import javax.xml.ws.addressing.Relationship;
 import javax.xml.ws.addressing.soap.SOAPAddressingBuilder;
 import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
 
-import org.jboss.logging.Logger;
 import org.jboss.ws.core.soap.NameImpl;
 import org.jboss.ws.core.soap.SOAPFactoryImpl;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
@@ -68,8 +67,6 @@ import org.w3c.dom.NamedNodeMap;
  */
 public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl implements SOAPAddressingProperties
 {
-   private static Logger log = Logger.getLogger(SOAPAddressingBuilderImpl.class);
-   
 	private static AddressingConstants ADDR = new AddressingConstantsImpl();
 
 	private NamespaceRegistry nsRegistry = new NamespaceRegistry();
@@ -224,12 +221,6 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 		{
 			SOAPFactoryImpl factory = (SOAPFactoryImpl)SOAPFactory.newInstance();
 			SOAPHeader soapHeader = message.getSOAPHeader();					
-			
-			if (soapHeader == null)
-			{
-			   log.warn("No SOAP headers found!");
-			   return;
-			}
 			
 			// Add the xmlns:wsa declaration
 			soapHeader.addNamespaceDeclaration(ADDR.getNamespacePrefix(), ADDR.getNamespaceURI());

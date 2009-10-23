@@ -24,7 +24,6 @@ package org.jboss.ws.core.jaxws.handler;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.xml.ws.handler.MessageContext;
@@ -128,7 +127,7 @@ public abstract class MessageContextJAXWS extends CommonMessageContext implement
    {
       super.setOperationMetaData(opMetaData);
 
-      // [JBWS-2013] Implement standard message context properties
+      // [JBWS-2031] Implement standard message context properties
       if (opMetaData != null)
       {
          EndpointMetaData epMetaData = opMetaData.getEndpointMetaData();
@@ -139,11 +138,14 @@ public abstract class MessageContextJAXWS extends CommonMessageContext implement
          {
             try
             {
-               put(MessageContext.WSDL_DESCRIPTION, wsdlURL.toURI());
+               ByteArrayOutputStream baos = new ByteArrayOutputStream();
+               IOUtils.copyStream(baos, wsdlURL.openStream()); // [JBWS-2325] ensure file descriptors are closed
+               InputSource inputSource = new InputSource(new ByteArrayInputStream(baos.toByteArray()));
+               put(MessageContext.WSDL_DESCRIPTION, inputSource);
             }
-            catch (URISyntaxException e)
+            catch (IOException ex)
             {
-               log.warn("Cannot get the wsdl url", e);
+               throw new WSException("Cannot open: " + wsdlURL);
             }
          }
 

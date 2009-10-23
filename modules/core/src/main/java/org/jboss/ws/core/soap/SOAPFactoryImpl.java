@@ -150,7 +150,7 @@ public class SOAPFactoryImpl extends SOAPFactory
             }
             else
             {
-               if (log.isTraceEnabled()) log.trace("Ignore child type: " + nodeType);
+               log.trace("Ignore child type: " + nodeType);
             }
          }
       }
