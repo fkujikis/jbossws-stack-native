@@ -53,7 +53,6 @@ import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.core.soap.UnboundHeader;
 import org.jboss.ws.core.utils.HolderUtils;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
-import org.jboss.ws.extensions.wsrm.RMConstant;
 import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
@@ -208,7 +207,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
    {
       if (epMetaData == null)
       {
-         ClassLoader ctxLoader = SecurityActions.getContextClassLoader();
+         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
          UnifiedVirtualFile vfsRoot = new ResourceLoaderAdapter();
          UnifiedMetaData wsMetaData = new UnifiedMetaData(vfsRoot);
          wsMetaData.setClassLoader(ctxLoader);
@@ -262,9 +261,8 @@ public abstract class CommonClient implements StubExt, HeaderSource
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       msgContext.setOperationMetaData(opMetaData);
 
-      Map<String, Object> requestCtx = getRequestContext();
       // Copy properties to the message context
-      msgContext.putAll(requestCtx);
+      msgContext.putAll(getRequestContext());
 
       // The direction of the message
       DirectionHolder direction = new DirectionHolder(Direction.OutBound);
@@ -318,14 +316,12 @@ public abstract class CommonClient implements StubExt, HeaderSource
                   try
                   {
                      URL wsaToURL = new URL(wsaTo);
-                     if (log.isDebugEnabled())
-                        log.debug("Sending request to addressing destination: " + wsaToURL);
+                     log.debug("Sending request to addressing destination: " + wsaToURL);
                      targetAddress = wsaToURL.toExternalForm();
                   }
                   catch (MalformedURLException ex)
                   {
-                     if (log.isDebugEnabled())
-                        log.debug("Not a valid URL: " + wsaTo);
+                     log.debug("Not a valid URL: " + wsaTo);
                   }
                }
             }
@@ -334,17 +330,16 @@ public abstract class CommonClient implements StubExt, HeaderSource
             if (targetAddress == null)
                throw new WSException("Target endpoint address not set");
 
-            Map<String, Object> callProps = new HashMap<String, Object>(requestCtx);
+            Map<String, Object> callProps = new HashMap<String, Object>(getRequestContext());
             EndpointInfo epInfo = new EndpointInfo(epMetaData, targetAddress, callProps);
-            boolean maintainSession = shouldMaintainSession();
-            if (maintainSession)
+            if (shouldMaintainSession())
                addSessionInfo(reqMessage, callProps);
 
             RemoteConnection remoteConnection = new RemoteConnectionFactory().getRemoteConnection(epInfo);
             MessageAbstraction resMessage = remoteConnection.invoke(reqMessage, epInfo, oneway);
 
-            if (maintainSession)
-               saveSessionInfo(callProps, requestCtx);
+            if (shouldMaintainSession())
+               saveSessionInfo(callProps, getRequestContext());
 
             // At pivot the message context might be replaced
             msgContext = processPivotInternal(msgContext, direction);
@@ -360,14 +355,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
 
          // Get the return object
          Object retObj = null;
-         boolean isWsrmMessage = msgContext.get(RMConstant.REQUEST_CONTEXT) != null;
-         boolean wsrmOneWay = false;
-         if (isWsrmMessage)
-         {
-            Boolean temp = (Boolean)((Map<String, Object>)msgContext.get(RMConstant.REQUEST_CONTEXT)).get(RMConstant.ONE_WAY_OPERATION);
-            wsrmOneWay = (temp == null) ? Boolean.FALSE : temp.booleanValue();
-         }
-         if ((oneway == false && handlerPass) || (isWsrmMessage && (wsrmOneWay == false)))
+         if (oneway == false && handlerPass)
          {
             // Verify 
             if (binding instanceof CommonSOAPBinding)
@@ -488,11 +476,9 @@ public abstract class CommonClient implements StubExt, HeaderSource
 
    protected void addAttachmentParts(MessageAbstraction reqMessage)
    {
-      boolean debugEnabled = log.isDebugEnabled();
       for (AttachmentPart part : attachmentParts)
       {
-         if (debugEnabled)
-            log.debug("Adding attachment part: " + part.getContentId());
+         log.debug("Adding attachment part: " + part.getContentId());
          reqMessage.addAttachmentPart(part);
       }
    }
