@@ -26,32 +26,6 @@ http://jira.jboss.com/jira/browse/JBWS?report=com.atlassian.jira.plugin.system.p
 What's new in jbossws-native-${project.version}
 ----------------------------------
 
-Feature Request
-
-    TODO: enumerate
-
-Bug
-
-    TODO: enumerate
-
-Task
-
-    TODO: enumerate
-
-Errata
-
-    See: TODO: reference to associated JIRA issue
-    
-Enjoy,
-The JBossWS Team
-
-
-Previous Releases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
------------------------
-jbossws-native-3.2.2.GA
------------------------
-
 Bug
 
     * [JBWS-2651] - ClassCast Exception in case of malformed webservice response
@@ -84,6 +58,12 @@ Task
 Errata
 
     See: https://jira.jboss.org/jira/browse/JBWS-2865
+
+Enjoy,
+The JBossWS Team
+
+
+Previous Releases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -----------------------
 jbossws-native-3.2.1.GA

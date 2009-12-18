@@ -9,7 +9,7 @@
   <parent>
     <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native</artifactId>
-    <version>3.3.0-SNAPSHOT</version>
+    <version>3.2.2.GA</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -203,6 +203,14 @@
             <configuration>
               <artifactItems>org.jboss.ws:jbossws-jboss*:zip:resources</artifactItems>
               <artifactItems>
+                <artifactItem>
+                  <groupId>org.jboss.ws</groupId>
+                  <artifactId>jbossws-jboss500</artifactId>
+                  <version>${jbossws.jboss500.version}</version>
+                  <classifier>resources</classifier>
+                  <type>zip</type>
+                  <outputDirectory>${project.build.directory}/resources/jbossws-jboss500</outputDirectory>
+                </artifactItem>
                 <artifactItem>
                   <groupId>org.jboss.ws</groupId>
                   <artifactId>jbossws-jboss501</artifactId>

@@ -17,7 +17,7 @@
   <artifactId>jbossws-native</artifactId>
   <packaging>pom</packaging>
 
-  <version>3.3.0-SNAPSHOT</version>
+  <version>3.2.2.GA</version>
 
   <!-- Parent -->
   <parent>
@@ -28,9 +28,9 @@
 
   <!-- Source Control Management -->
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossws/stack/native/trunk</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossws/stack/native/trunk</developerConnection>
-    <url>http://fisheye.jboss.com/viewrep/JBossWS/stack/native/trunk</url>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossws/stack/native/tags/jbossws-native-3.2.2.GA</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossws/stack/native/tags/jbossws-native-3.2.2.GA</developerConnection>
+    <url>http://fisheye.jboss.com/viewrep/JBossWS/stack/native/tags/jbossws-native-3.2.2.GA</url>
   </scm>
 
   <!-- Modules -->
@@ -47,9 +47,10 @@
 
   <!-- Properties -->
   <properties>
-    <jbossws.common.version>1.2.2-SNAPSHOT</jbossws.common.version>
-    <jbossws.framework.version>3.3.0-SNAPSHOT</jbossws.framework.version>
-    <jbossws.spi.version>1.2.2-SNAPSHOT</jbossws.spi.version>
+    <jbossws.common.version>1.2.2.GA</jbossws.common.version>
+    <jbossws.framework.version>3.2.2.GA</jbossws.framework.version>
+    <jbossws.spi.version>1.2.2.GA</jbossws.spi.version>
+    <jbossws.jboss500.version>3.2.1.GA</jbossws.jboss500.version>
     <jbossws.jboss501.version>3.2.1.GA</jbossws.jboss501.version>
     <jbossws.jboss510.version>3.2.1.GA</jbossws.jboss510.version>
     <!-- [JBWS-2505] -->
@@ -106,6 +107,18 @@
         <artifactId>jbossws-framework</artifactId>
         <version>${jbossws.framework.version}</version>
         <classifier>testsuite</classifier>
+        <type>zip</type>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.ws</groupId>
+        <artifactId>jbossws-jboss500</artifactId>
+        <version>${jbossws.jboss500.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.ws</groupId>
+        <artifactId>jbossws-jboss500</artifactId>
+        <version>${jbossws.jboss500.version}</version>
+        <classifier>resources</classifier>
         <type>zip</type>
       </dependency>
       <dependency>
@@ -486,6 +499,18 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+
+    <!--
+    Name:  jboss500
+    Descr: JBoss-5.0.0 specific options
+    -->
+    <profile>
+      <id>jboss500</id>
+      <properties>
+        <jbossws.integration.target>jboss500</jbossws.integration.target>
+        <jboss.home>${jboss500.home}</jboss.home>
+      </properties>
     </profile>
 
     <!--

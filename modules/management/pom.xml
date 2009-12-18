@@ -8,7 +8,7 @@
   <parent>
     <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native</artifactId>
-    <version>3.3.0-SNAPSHOT</version>
+    <version>3.2.2.GA</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -28,6 +28,11 @@
       <classifier>testsuite</classifier>
       <scope>provided</scope>
       <type>zip</type>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.ws</groupId>
+      <artifactId>jbossws-jboss500</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jboss.ws</groupId>
