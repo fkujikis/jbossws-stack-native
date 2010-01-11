@@ -89,7 +89,6 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          {
             return null;
          }
-         log.error("Exception while building envelope", ex);
          QName faultCode = Constants.SOAP11_FAULT_CODE_CLIENT;
          throw new CommonSOAPFaultException(faultCode, ex.getMessage());
       }
@@ -134,7 +133,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
    {
       // Construct the envelope
       SOAPPartImpl soapPart = (SOAPPartImpl)soapMessage.getSOAPPart();
-      SOAPEnvelopeImpl soapEnv = new SOAPEnvelopeImpl(soapPart, (SOAPElementImpl)soapFactory.createElement(domEnv, false), false);
+      SOAPEnvelopeImpl soapEnv = new SOAPEnvelopeImpl(soapPart, soapFactory.createElement(domEnv, false), false);
 
       DOMUtils.copyAttributes(soapEnv, domEnv);
 

@@ -21,6 +21,8 @@
  */
 package org.jboss.ws.core.client;
 
+import org.jboss.remoting.marshal.Marshaller;
+import org.jboss.remoting.marshal.UnMarshaller;
 import org.jboss.ws.core.jaxws.binding.HTTPMessageMarshaller;
 import org.jboss.ws.core.jaxws.binding.HTTPMessageUnMarshaller;
 

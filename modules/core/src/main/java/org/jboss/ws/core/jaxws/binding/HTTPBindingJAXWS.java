@@ -66,8 +66,7 @@ public class HTTPBindingJAXWS implements CommonBinding, BindingExt, HTTPBinding
 
    public EndpointInvocation unbindRequestMessage(OperationMetaData opMetaData, MessageAbstraction reqMessage) throws BindingException
    {
-      if (log.isDebugEnabled())
-         log.debug("unbindRequestMessage: " + opMetaData.getQName());
+      log.debug("unbindRequestMessage: " + opMetaData.getQName());
       try
       {
          // Construct the endpoint invocation object
@@ -96,8 +95,7 @@ public class HTTPBindingJAXWS implements CommonBinding, BindingExt, HTTPBinding
 
    public MessageAbstraction bindResponseMessage(OperationMetaData opMetaData, EndpointInvocation epInv) throws BindingException
    {
-      if (log.isDebugEnabled())
-         log.debug("bindResponseMessage: " + opMetaData.getQName());
+      log.debug("bindResponseMessage: " + opMetaData.getQName());
       try
       {
          CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();

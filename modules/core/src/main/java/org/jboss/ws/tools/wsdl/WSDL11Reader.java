@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -317,7 +318,6 @@ public class WSDL11Reader
          {
             UnknownExtensibilityElement uee = (UnknownExtensibilityElement)extElement;
             boolean understood = false;
-            understood = understood || processPolicyElements(uee, dest);
             understood = understood || processUseAddressing(uee, dest);
             //add processing of further extensibility element types below
             
@@ -329,41 +329,6 @@ public class WSDL11Reader
       }
    }
 
-   /**
-    * Process the provided extensibility element looking for policies or policy references.
-    * Returns true if the provided element is policy related, false otherwise.
-    * 
-    * @param extElement
-    * @param dest
-    * @return
-    */
-   private boolean processPolicyElements(UnknownExtensibilityElement extElement, Extendable dest)
-   {
-      boolean result = false;
-      Element srcElement = extElement.getElement();
-      if (Constants.URI_WS_POLICY.equals(srcElement.getNamespaceURI()))
-      {
-         //copy missing namespaces from the source element to our element
-         Element element = (Element)srcElement.cloneNode(true);
-         copyMissingNamespaceDeclarations(element, srcElement);
-         if (element.getLocalName().equals("Policy"))
-         {
-            WSDLExtensibilityElement el = new WSDLExtensibilityElement(Constants.WSDL_ELEMENT_POLICY, element);
-            el.setRequired("true".equalsIgnoreCase(element.getAttribute("required")));
-            dest.addExtensibilityElement(el);
-            result = true;
-         }
-         else if (element.getLocalName().equals("PolicyReference"))
-         {
-            WSDLExtensibilityElement el = new WSDLExtensibilityElement(Constants.WSDL_ELEMENT_POLICYREFERENCE, element);
-            el.setRequired("true".equalsIgnoreCase(element.getAttribute("required")));
-            dest.addExtensibilityElement(el);
-            result = true;
-         }
-      }
-      return result;
-   }
-   
    /**
     * Process the provided extensibility element looking for UsingAddressing.
     * Returns true if the provided element is UsingAddressing, false otherwise.
@@ -422,19 +387,21 @@ public class WSDL11Reader
             String localname = domElementClone.getLocalName();
             try
             {
-               Map<URL,URL> publishedMapping = new HashMap<URL, URL>();
+               List<URL> published = new LinkedList<URL>();
                if ("import".equals(localname))
                {
-                  processSchemaImport(destTypes, wsdlLoc, domElementClone, publishedMapping);
+                  processSchemaImport(destTypes, wsdlLoc, domElementClone, published);
                }
                else if ("schema".equals(localname))
                {
-                  processSchemaInclude(destTypes, wsdlLoc, domElementClone, publishedMapping);
+                  processSchemaInclude(destTypes, wsdlLoc, domElementClone, published);
                }
                else
                {
                   throw new IllegalArgumentException("Unsuported schema element: " + localname);
                }
+               published.clear();
+               published = null;
             }
             catch (IOException e)
             {
@@ -465,8 +432,7 @@ public class WSDL11Reader
          }
       }
 
-      if (log.isTraceEnabled())
-         log.trace("END processTypes: " + wsdlLoc + "\n" + destTypes);
+      log.trace("END processTypes: " + wsdlLoc + "\n" + destTypes);
    }
 
    private void copyParentNamespaceDeclarations(Element destElement, Element srcElement)
@@ -527,7 +493,7 @@ public class WSDL11Reader
       }
    }
 
-   private void processSchemaImport(WSDLTypes types, URL wsdlLoc, Element importEl, Map<URL, URL> publishedLocations) throws IOException, WSDLException
+   private void processSchemaImport(WSDLTypes types, URL wsdlLoc, Element importEl, List<URL> published) throws IOException, WSDLException
    {
       if (wsdlLoc == null)
          throw new IllegalArgumentException("Cannot process import, parent location not set");
@@ -539,21 +505,22 @@ public class WSDL11Reader
          throw new IllegalArgumentException("schemaLocation is null for xsd:import");
 
       URL locationURL = getLocationURL(wsdlLoc, location);
-      if (!publishedLocations.containsKey(locationURL))
+      Element rootElement = DOMUtils.parse(new ResourceURL(locationURL).openStream());
+      if (!published.contains(locationURL))
       {
-         Element rootElement = DOMUtils.parse(new ResourceURL(locationURL).openStream());
-         processSchemaInclude(types, locationURL, rootElement, publishedLocations);
+         published.add(locationURL);
+         URL newloc = processSchemaInclude(types, locationURL, rootElement,  published);
+         if (newloc != null)
+            importEl.setAttribute("schemaLocation", newloc.toExternalForm());
       }
-      URL newLoc = publishedLocations.get(locationURL);
-      if (newLoc != null)
-         importEl.setAttribute("schemaLocation", newLoc.toExternalForm());
    }
 
-   private void processSchemaInclude(WSDLTypes types, URL wsdlLoc, Element schemaEl, Map<URL, URL> publishedLocations) throws IOException, WSDLException
+   private URL processSchemaInclude(WSDLTypes types, URL wsdlLoc, Element schemaEl, List<URL> published) throws IOException, WSDLException
    {
       if (wsdlLoc == null)
          throw new IllegalArgumentException("Cannot process iclude, parent location not set");
 
+      File tmpFile = null;
       if (wsdlLoc == null)
          throw new IllegalArgumentException("Cannot process include, parent location not set");
 
@@ -566,33 +533,6 @@ public class WSDL11Reader
       importElement.setAttribute("namespace", Constants.URI_SOAP11_ENC);
       schemaEl.insertBefore(importElement, DOMUtils.getFirstChildElement(schemaEl));
 
-      String targetNS = getOptionalAttribute(schemaEl, "targetNamespace");
-      File tmpFile = null;
-
-      /*
-       *  The temporary file for the schema is named and created early before this method recurses.
-       * 
-       *  This allows the publishedLocations map to be updated with the known filename before
-       *  the file is actually written.
-       */
-      
-      if (targetNS != null)
-      {
-         log.trace("processSchemaInclude: [targetNS=" + targetNS + ",parentURL=" + wsdlLoc + "]");
-
-         tmpFile = SchemaUtils.getSchemaTempFile(targetNS);
-         tempFiles.add(tmpFile);
-
-         publishedLocations.put(wsdlLoc, tmpFile.toURL());
-      }
-      else
-      {
-         tmpFile = SchemaUtils.getSchemaTempFile("no_namespace");
-         tempFiles.add(tmpFile);
-
-         publishedLocations.put(wsdlLoc, tmpFile.toURL());
-      }
-
       // Handle schema includes
       Iterator it = DOMUtils.getChildElements(schemaEl, new QName(Constants.NS_SCHEMA_XSD, "include"));
       while (it.hasNext())
@@ -604,36 +544,44 @@ public class WSDL11Reader
 
          URL locationURL = getLocationURL(wsdlLoc, location);
          Element rootElement = DOMUtils.parse(new ResourceURL(locationURL).openStream());
-         if (!publishedLocations.containsKey(locationURL))
+         if (!published.contains(locationURL))
          {
-            processSchemaInclude(types, locationURL, rootElement, publishedLocations);
-         }
-
-         URL newLoc = publishedLocations.get(locationURL);
-         if (newLoc != null)
-         {
-            includeEl.setAttribute("schemaLocation", newLoc.toExternalForm());
+            published.add(locationURL);
+            URL newloc = processSchemaInclude(types, locationURL, rootElement, published);
+            if (newloc != null)
+               includeEl.setAttribute("schemaLocation", newloc.toExternalForm());
          }
       }
 
-      if (tmpFile != null)
+      String targetNS = getOptionalAttribute(schemaEl, "targetNamespace");
+      if (targetNS != null)
       {
+         log.trace("processSchemaInclude: [targetNS=" + targetNS + ",parentURL=" + wsdlLoc + "]");
+
+         tmpFile = SchemaUtils.getSchemaTempFile(targetNS);
+         tempFiles.add(tmpFile);
+
          FileWriter fwrite = new FileWriter(tmpFile);
          new DOMWriter(fwrite).setPrettyprint(true).print(schemaEl);
          fwrite.close();
 
-      }
-
-      if (targetNS != null)
-      {
          schemaLocationsMap.put(targetNS, tmpFile.toURL());
       }
-      else
+
+      // schema elements that have no target namespace are skipped
+      //
+      //  <xsd:schema>
+      //    <xsd:import namespace="http://org.jboss.webservice/example/types" schemaLocation="Hello.xsd"/>
+      //    <xsd:import namespace="http://org.jboss.webservice/example/types/arrays/org/jboss/test/webservice/admindevel" schemaLocation="subdir/HelloArr.xsd"/>
+      //  </xsd:schema>
+      if (targetNS == null)
       {
          log.trace("Schema element without target namespace in: " + wsdlLoc);
       }
 
       handleSchemaImports(schemaEl, wsdlLoc);
+
+      return tmpFile != null ? tmpFile.toURL() : null;
    }
 
    private void handleSchemaImports(Element schemaEl, URL parentURL) throws WSDLException, IOException
@@ -729,20 +677,6 @@ public class WSDL11Reader
       {
          WSDLInterface destInterface = new WSDLInterface(destWsdl, qname);
 
-         //policy extensions
-         QName policyURIsProp = (QName)srcPortType.getExtensionAttribute(Constants.WSDL_ATTRIBUTE_WSP_POLICYURIS);
-         if (policyURIsProp != null && !"".equalsIgnoreCase(policyURIsProp.getLocalPart()))
-         {
-            destInterface.addProperty(new WSDLProperty(Constants.WSDL_PROPERTY_POLICYURIS, policyURIsProp.getLocalPart()));
-         }
-
-         // eventing extensions
-         QName eventSourceProp = (QName)srcPortType.getExtensionAttribute(Constants.WSDL_ATTRIBUTE_WSE_EVENTSOURCE);
-         if (eventSourceProp != null && eventSourceProp.getLocalPart().equals(Boolean.TRUE.toString()))
-         {
-            destInterface.addProperty(new WSDLProperty(Constants.WSDL_PROPERTY_EVENTSOURCE, eventSourceProp.getLocalPart()));
-         }
-         
          // documentation
          Element documentationElement = srcPortType.getDocumentationElement();
          if (documentationElement != null && documentationElement.getTextContent() != null)

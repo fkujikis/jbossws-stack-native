@@ -117,8 +117,7 @@ public class NativeServiceRefBinderJAXWS implements ServiceRefBinder
 
       String targetClassName = (targetClass != null ? targetClass.getName() : null);
       String externalName = encCtx.getNameInNamespace() + "/" + encName;
-      if (log.isDebugEnabled())
-         log.debug("setupServiceRef [jndi=" + externalName + ",target=" + targetClassName + "]");
+      log.debug("setupServiceRef [jndi=" + externalName + ",target=" + targetClassName + "]");
 
       String serviceImplClass = null;
 
