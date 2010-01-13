@@ -47,8 +47,8 @@ public class JavaToXSDFactory
       {
          String defaultName = "org.jboss.ws.tools.factories.JavaToXSDFactory";
          factoryName = System.getProperty("org.jboss.ws.tools.JavaToXSDFactory", defaultName);
-         ClassLoader loader = SecurityActions.getContextClassLoader();
-         Class factoryClass = SecurityActions.loadClass(loader, factoryName);
+         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+         Class factoryClass = loader.loadClass(factoryName);
          factory = (JavaToXSDFactory) factoryClass.newInstance();
       }
       catch(Throwable e)

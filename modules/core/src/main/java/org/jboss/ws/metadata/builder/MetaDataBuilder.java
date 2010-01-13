@@ -46,9 +46,6 @@ import org.jboss.ws.WSException;
 import org.jboss.ws.core.soap.Use;
 import org.jboss.ws.extensions.addressing.AddressingPropertiesImpl;
 import org.jboss.ws.extensions.addressing.metadata.AddressingOpMetaExt;
-import org.jboss.ws.extensions.eventing.EventingConstants;
-import org.jboss.ws.extensions.eventing.EventingUtils;
-import org.jboss.ws.extensions.eventing.metadata.EventingEpMetaExt;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
@@ -58,11 +55,8 @@ import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
 import org.jboss.ws.metadata.wsdl.WSDLInterface;
 import org.jboss.ws.metadata.wsdl.WSDLInterfaceOperation;
-import org.jboss.ws.metadata.wsdl.WSDLInterfaceOperationOutput;
 import org.jboss.ws.metadata.wsdl.WSDLProperty;
 import org.jboss.ws.metadata.wsdl.WSDLService;
-import org.jboss.ws.metadata.wsdl.WSDLUtils;
-import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
 import org.jboss.wsf.common.ObjectNameFactory;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
@@ -73,9 +67,9 @@ import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.management.ServerConfigFactory;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
-import org.jboss.wsf.spi.metadata.j2ee.MDBMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSESecurityMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.MDBMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSESecurityMetaData.JSEResourceCollection;
 
 /** An abstract meta data builder.
@@ -146,13 +140,6 @@ public abstract class MetaDataBuilder
             urlPattern = endpoint.getURLPattern();
       }
 
-      // Endpoint API hack
-      Integer port = (Integer)dep.getService().getProperty("port");
-      if (port == null)
-      {
-         port = -1;
-      }
-
       // If not, derive the context root from the deployment
       if (contextRoot == null)
       {
@@ -182,7 +169,7 @@ public abstract class MetaDataBuilder
       sepMetaData.setURLPattern(urlPattern);
 
       String servicePath = contextRoot + urlPattern;
-      sepMetaData.setEndpointAddress(getServiceEndpointAddress(null, servicePath, port));
+      sepMetaData.setEndpointAddress(getServiceEndpointAddress(null, servicePath));
    }
 
    public static ObjectName createServiceEndpointID(Deployment dep, ServerEndpointMetaData sepMetaData)
@@ -221,7 +208,7 @@ public abstract class MetaDataBuilder
 
    /** Get the web service address for a given path
     */
-   public static String getServiceEndpointAddress(String uriScheme, String servicePath, int servicePort)
+   public static String getServiceEndpointAddress(String uriScheme, String servicePath)
    {
       if (servicePath == null || servicePath.length() == 0)
          throw new WSException("Service path cannot be null");
@@ -236,42 +223,33 @@ public abstract class MetaDataBuilder
       ServerConfig config = spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();
 
       String host = config.getWebServiceHost();
-
-      int port = servicePort;
-      if (servicePort == -1)
+      String port = "";
+      if ("https".equals(uriScheme))
       {
-         if ("https".equals(uriScheme))
+         int portNo = config.getWebServiceSecurePort();
+         if (portNo != 443)
          {
-            port = config.getWebServiceSecurePort();
+            port = ":" + portNo;
          }
-         else
+
+      }
+      else
+      {
+         int portNo = config.getWebServicePort();
+         if (portNo != 80)
          {
-            port = config.getWebServicePort();
+            port = ":" + portNo;
          }
       }
 
-      // Reset port if using the default for the scheme.
-      if (("http".equals(uriScheme) && port == 80) || ("https".equals(uriScheme) && port == 443))
-      {
-         port = -1;
-      }
-
-      URL url = null;
+      String urlStr = uriScheme + "://" + host + port + servicePath;
       try
       {
-         if (port > -1)
-         {
-            url = new URL(uriScheme, host, port, servicePath);
-         }
-         else
-         {
-            url = new URL(uriScheme, host, servicePath);
-         }
-         return url.toExternalForm();
+         return new URL(urlStr).toExternalForm();
       }
       catch (MalformedURLException e)
       {
-         throw new WSException("Malformed URL: uriScheme={" + uriScheme + "} host={" + host + "} port={" + port + "} servicePath={" + servicePath + "}", e);
+         throw new WSException("Malformed URL: " + urlStr);
       }
    }
 
@@ -338,10 +316,9 @@ public abstract class MetaDataBuilder
                if (requiresRewrite(orgAddress, uriScheme))
                {
                   String servicePath = sepMetaData.getContextRoot() + sepMetaData.getURLPattern();
-                  String serviceEndpointURL = getServiceEndpointAddress(uriScheme, servicePath, -1);
+                  String serviceEndpointURL = getServiceEndpointAddress(uriScheme, servicePath);
 
-                  if (log.isDebugEnabled())
-                     log.debug("Replace service endpoint address '" + orgAddress + "' with '" + serviceEndpointURL + "'");
+                  log.debug("Replace service endpoint address '" + orgAddress + "' with '" + serviceEndpointURL + "'");
                   wsdlEndpoint.setAddress(serviceEndpointURL);
                   sepMetaData.setEndpointAddress(serviceEndpointURL);
 
@@ -351,8 +328,7 @@ public abstract class MetaDataBuilder
                }
                else
                {
-                  if (log.isDebugEnabled())
-                     log.debug("Don't replace service endpoint address '" + orgAddress + "'");
+                  log.debug("Don't replace service endpoint address '" + orgAddress + "'");
                   try
                   {
                      sepMetaData.setEndpointAddress(new URL(orgAddress).toExternalForm());
@@ -394,13 +370,10 @@ public abstract class MetaDataBuilder
       String tnsURI = wsdlOneOneDefinition.getTargetNamespace();
 
       // search for matching portElement and replace the address URI
-      if (modifyPortAddress(tnsURI, portQName, serviceEndpointURL, wsdlOneOneDefinition.getServices()))
-      {
-         return;
-      }
+      Port wsdlOneOnePort = modifyPortAddress(tnsURI, portQName, serviceEndpointURL, wsdlOneOneDefinition.getServices());
 
-      // recursively process imports if none can be found
-      if (!wsdlOneOneDefinition.getImports().isEmpty())
+      // recursivly process imports if none can be found
+      if (wsdlOneOnePort == null && !wsdlOneOneDefinition.getImports().isEmpty())
       {
 
          Iterator imports = wsdlOneOneDefinition.getImports().values().iterator();
@@ -411,28 +384,19 @@ public abstract class MetaDataBuilder
             while (importsByNS.hasNext())
             {
                Import anImport = (Import)importsByNS.next();
-               if (modifyPortAddress(anImport.getNamespaceURI(), portQName, serviceEndpointURL, anImport.getDefinition().getServices()))
-               {
-                  return;
-               }
+               wsdlOneOnePort = modifyPortAddress(anImport.getNamespaceURI(), portQName, serviceEndpointURL, anImport.getDefinition().getServices());
             }
          }
       }
-      
-      throw new IllegalArgumentException("Cannot find port with name '" + portQName + "' in wsdl document");
+
+      // if it still doesn't exist something is wrong
+      if (wsdlOneOnePort == null)
+         throw new IllegalArgumentException("Cannot find port with name '" + portQName + "' in wsdl document");
    }
 
-   /**
-    * Try matching the port and modify it. Return true if the port is actually matched.
-    * 
-    * @param tnsURI
-    * @param portQName
-    * @param serviceEndpointURL
-    * @param services
-    * @return
-    */
-   private static boolean modifyPortAddress(String tnsURI, QName portQName, String serviceEndpointURL, Map services)
+   private static Port modifyPortAddress(String tnsURI, QName portQName, String serviceEndpointURL, Map services)
    {
+      Port wsdlOneOnePort = null;
       Iterator itServices = services.values().iterator();
       while (itServices.hasNext())
       {
@@ -444,7 +408,7 @@ public abstract class MetaDataBuilder
             String portLocalName = (String)itPorts.next();
             if (portQName.equals(new QName(tnsURI, portLocalName)))
             {
-               Port wsdlOneOnePort = (Port)wsdlOneOnePorts.get(portLocalName);
+               wsdlOneOnePort = (Port)wsdlOneOnePorts.get(portLocalName);
                List extElements = wsdlOneOnePort.getExtensibilityElements();
                for (Object extElement : extElements)
                {
@@ -464,11 +428,11 @@ public abstract class MetaDataBuilder
                      address.setLocationURI(serviceEndpointURL);
                   }
                }
-               return true;
             }
          }
       }
-      return false;
+
+      return wsdlOneOnePort;
    }
 
    private static String getUriScheme(String addrStr)
@@ -487,40 +451,7 @@ public abstract class MetaDataBuilder
 
    protected void processEndpointMetaDataExtensions(EndpointMetaData epMetaData, WSDLDefinitions wsdlDefinitions)
    {
-      for (WSDLInterface wsdlInterface : wsdlDefinitions.getInterfaces())
-      {
-         WSDLProperty eventSourceProp = wsdlInterface.getProperty(Constants.WSDL_PROPERTY_EVENTSOURCE);
-         if (eventSourceProp != null && epMetaData instanceof ServerEndpointMetaData)
-         {
-            ServerEndpointMetaData sepMetaData = (ServerEndpointMetaData)epMetaData;
-            String eventSourceNS = wsdlInterface.getName().getNamespaceURI() + "/" + wsdlInterface.getName().getLocalPart();
-
-            // extract the schema model
-            JBossXSModel schemaModel = WSDLUtils.getSchemaModel(wsdlDefinitions.getWsdlTypes());
-            String[] notificationSchema = EventingUtils.extractNotificationSchema(schemaModel);
-
-            // extract the root element NS
-            String notificationRootElementNS = null;
-            WSDLInterfaceOperation wsdlInterfaceOperation = wsdlInterface.getOperations()[0];
-            if (wsdlInterfaceOperation.getOutputs().length > 0)
-            {
-               WSDLInterfaceOperationOutput wsdlInterfaceOperationOutput = wsdlInterfaceOperation.getOutputs()[0];
-               notificationRootElementNS = wsdlInterfaceOperationOutput.getElement().getNamespaceURI();
-            }
-            else
-            {
-               // WSDL operation of an WSDL interface that is marked as an event source
-               // requires to carry an output message.
-               throw new WSException("Unable to resolve eventing root element NS. No operation output found at " + wsdlInterfaceOperation.getName());
-            }
-
-            EventingEpMetaExt ext = new EventingEpMetaExt(EventingConstants.NS_EVENTING);
-            ext.setEventSourceNS(eventSourceNS);
-            ext.setNotificationSchema(notificationSchema);
-            ext.setNotificationRootElementNS(notificationRootElementNS);
-            sepMetaData.addExtension(ext);
-         }
-      }
+	   //nothing to do; WS-Eventing processing removed as it's not supported (JBPAPP-1888)
    }
 
    /** Process operation meta data extensions. */
