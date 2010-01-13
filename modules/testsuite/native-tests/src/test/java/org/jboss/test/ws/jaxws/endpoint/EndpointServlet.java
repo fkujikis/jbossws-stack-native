@@ -39,20 +39,23 @@ import javax.xml.ws.wsaddressing.W3CEndpointReference;
 
 import org.jboss.logging.Logger;
 import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.spi.SPIProvider;
+import org.jboss.wsf.spi.SPIProviderResolver;
+import org.jboss.wsf.spi.http.HttpContext;
+import org.jboss.wsf.spi.http.HttpServer;
+import org.jboss.wsf.spi.http.HttpServerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- * Tests Endpoint deployment in J2EE environment.
+ * Test Endpoint deployment
  *
- * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author Thomas.Diesler@jboss.org
+ * @since 12-Jul-2006
  */
 public class EndpointServlet extends HttpServlet
 {
-   
-   private Endpoint endpoint1;
-   private Endpoint endpoint2;
+   private Endpoint endpoint;
    private static final String TEST_ELEMENT = "<fabrikam:CustomerKey xmlns:fabrikam='http://example.com/fabrikam'>123456789</fabrikam:CustomerKey>";
    
    @Override
@@ -60,16 +63,25 @@ public class EndpointServlet extends HttpServlet
    {
       super.init(config);
       
-      endpoint1 = Endpoint.create(SOAPBinding.SOAP11HTTP_BINDING, new EndpointBean());
-      endpoint1.publish("http://localhost:8080/jaxws-endpoint");
-      endpoint2 = Endpoint.publish("http://localhost:8080/jaxws-endpoint2/endpoint/long/path", EndpointBean.class);
+      // Create the endpoint
+      EndpointBean epImpl = new EndpointBean();
+      endpoint = Endpoint.create(SOAPBinding.SOAP11HTTP_BINDING, epImpl);
+
+      // Create and start the HTTP server
+      SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+      HttpServer httpServer = spiProvider.getSPI(HttpServerFactory.class).getHttpServer();
+      httpServer.start();
+      
+      // Create the context and publish the endpoint
+      HttpContext context = httpServer.createContext("/jaxws-endpoint");
+      endpoint.publish(context);
    }
    
    @Override
    public void destroy()
    {
-      endpoint1.stop();
-      endpoint2.stop();
+      // Stop the endpoint
+      endpoint.stop();
       
       super.destroy();
    }
@@ -87,14 +99,15 @@ public class EndpointServlet extends HttpServlet
       String retStr = port.echo(param);
       
       //Test epr
-      assertEndpointReference(endpoint1.getEndpointReference(DOMUtils.parse(TEST_ELEMENT)), TEST_ELEMENT);
-      assertEndpointReference(endpoint1.getEndpointReference(W3CEndpointReference.class, (Element[])null), null);
+      assertEndpointReference(endpoint.getEndpointReference(DOMUtils.parse(TEST_ELEMENT)), TEST_ELEMENT);
+      assertEndpointReference(endpoint.getEndpointReference(W3CEndpointReference.class, (Element[])null), null);
 
       // Return the result
       PrintWriter pw = new PrintWriter(res.getWriter());
       pw.print(retStr);
-      pw.close();
    }
+   
+
    
    private void assertEndpointReference(EndpointReference epr, String refPar) throws IOException
    {
@@ -108,6 +121,7 @@ public class EndpointServlet extends HttpServlet
       assert("http://127.0.0.1:8080/jaxws-endpoint".equals(addresses.item(0).getFirstChild().getNodeValue()));
       if (refPar != null)
       {
+         //TODO enhance this check
          assert(epr.toString().contains(refPar));
       }
    }

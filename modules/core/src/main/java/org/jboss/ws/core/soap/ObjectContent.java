@@ -135,9 +135,7 @@ public class ObjectContent extends SOAPContent
       QName xmlType = container.getXmlType();
       Class javaType = container.getJavaType();
 
-      boolean debugEnabled = log.isDebugEnabled();
-      if (debugEnabled)
-         log.debug("getXMLFragment from Object [xmlType=" + xmlType + ",javaType=" + javaType + "]");
+      log.debug("getXMLFragment from Object [xmlType=" + xmlType + ",javaType=" + javaType + "]");
 
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext == null)
@@ -168,8 +166,7 @@ public class ObjectContent extends SOAPContent
          Result result = ser.serialize(container, serContext);
 
          xmlFragment = new XMLFragment(result);
-         if (debugEnabled)
-            log.debug("xmlFragment: " + xmlFragment);
+         log.debug("xmlFragment: " + xmlFragment);
       }
       catch (BindingException e)
       {
