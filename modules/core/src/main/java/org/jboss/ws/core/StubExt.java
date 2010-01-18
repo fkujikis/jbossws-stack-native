@@ -27,13 +27,15 @@ import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
 import javax.xml.soap.AttachmentPart;
 
+import org.jboss.ws.metadata.umdm.EndpointMetaData;
+
 /**
  * An extension of the standard JAXRPC/JAXWS stubs.
  *
  * @author Thomas.Diesler@jboss.org
  * @since 17-Jan-2007
  */
-public interface StubExt extends ConfigProvider, EndpointMetadataProvider
+public interface StubExt extends ConfigProvider
 {
    /** ClientTimeout property: org.jboss.ws.timeout */
    static final String PROPERTY_CLIENT_TIMEOUT = "org.jboss.ws.timeout";
@@ -72,6 +74,11 @@ public interface StubExt extends ConfigProvider, EndpointMetadataProvider
    /** HTTP chunk size */
    static final String PROPERTY_CHUNKED_ENCODING_SIZE = "http://org.jboss.ws/http#chunksize";
 
+   /**
+    * Get the endpoint meta data for this stub
+    */
+   EndpointMetaData getEndpointMetaData();
+   
    /**
     * Add a header that is not bound to an input parameter.
     * A propriatory extension, that is not part of JAXRPC.

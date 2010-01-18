@@ -52,7 +52,6 @@ import javax.xml.ws.handler.HandlerResolver;
 import javax.xml.ws.spi.ServiceDelegate;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.core.EndpointMetadataProvider;
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.core.jaxws.client.ClientFeatureProcessor;
 import org.jboss.ws.core.jaxws.client.ClientImpl;
@@ -148,8 +147,7 @@ public class ServiceDelegateImpl extends ServiceDelegate
       }
       else
       {
-         ClassLoader cl = serviceClass.getClassLoader();
-         UnifiedMetaData wsMetaData = cl == null ? new UnifiedMetaData(vfsRoot) : new UnifiedMetaData(vfsRoot, cl);
+         UnifiedMetaData wsMetaData = new UnifiedMetaData(vfsRoot);
          serviceMetaData = new ServiceMetaData(wsMetaData, serviceName);
          wsMetaData.addService(serviceMetaData);
       }
@@ -554,7 +552,7 @@ public class ServiceDelegateImpl extends ServiceDelegate
    {
       if (features != null)
       {
-         EndpointMetaData epMetaData = ((EndpointMetadataProvider)stub).getEndpointMetaData();
+         EndpointMetaData epMetaData = ((StubExt)stub).getEndpointMetaData();
          for (WebServiceFeature feature : features)
          {
             ClientFeatureProcessor.processFeature(feature, epMetaData, stub);
