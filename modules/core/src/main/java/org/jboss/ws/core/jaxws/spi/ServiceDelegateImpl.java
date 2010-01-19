@@ -52,7 +52,6 @@ import javax.xml.ws.handler.HandlerResolver;
 import javax.xml.ws.spi.ServiceDelegate;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.core.EndpointMetadataProvider;
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.core.jaxws.client.ClientFeatureProcessor;
 import org.jboss.ws.core.jaxws.client.ClientImpl;
@@ -62,7 +61,6 @@ import org.jboss.ws.core.jaxws.client.ServiceObjectFactoryJAXWS;
 import org.jboss.ws.core.jaxws.handler.HandlerResolverImpl;
 import org.jboss.ws.core.jaxws.wsaddressing.EndpointReferenceUtil;
 import org.jboss.ws.core.jaxws.wsaddressing.NativeEndpointReference;
-import org.jboss.ws.extensions.wsrm.api.RMProvider;
 import org.jboss.ws.metadata.builder.jaxws.JAXWSClientMetaDataBuilder;
 import org.jboss.ws.metadata.builder.jaxws.JAXWSMetaDataBuilder;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
@@ -95,7 +93,7 @@ import org.w3c.dom.Element;
 public class ServiceDelegateImpl extends ServiceDelegate
 {
    // provide logging
-   private static final Logger log = Logger.getLogger(ServiceDelegateImpl.class);
+   private final Logger log = Logger.getLogger(ServiceDelegateImpl.class);
 
    // The executor service
    private static ExecutorService defaultExecutor = Executors.newCachedThreadPool();
@@ -107,17 +105,9 @@ public class ServiceDelegateImpl extends ServiceDelegate
    private HandlerResolver handlerResolver;
    // The executor service
    private ExecutorService executor;
-   // The features
-   private WebServiceFeature[] features;
 
    // A list of annotated ports
    private List<QName> annotatedPorts = new ArrayList<QName>();
-
-   public ServiceDelegateImpl(URL wsdlURL, QName serviceName, Class serviceClass, WebServiceFeature[] features)
-   {
-      this(wsdlURL, serviceName, serviceClass);
-      this.features = features;
-   }
 
    public ServiceDelegateImpl(URL wsdlURL, QName serviceName, Class serviceClass)
    {
@@ -148,8 +138,7 @@ public class ServiceDelegateImpl extends ServiceDelegate
       }
       else
       {
-         ClassLoader cl = serviceClass.getClassLoader();
-         UnifiedMetaData wsMetaData = cl == null ? new UnifiedMetaData(vfsRoot) : new UnifiedMetaData(vfsRoot, cl);
+         UnifiedMetaData wsMetaData = new UnifiedMetaData(vfsRoot);
          serviceMetaData = new ServiceMetaData(wsMetaData, serviceName);
          wsMetaData.addService(serviceMetaData);
       }
@@ -413,7 +402,7 @@ public class ServiceDelegateImpl extends ServiceDelegate
          T proxy;
          try
          {
-            proxy = (T)Proxy.newProxyInstance(cl, new Class[] { seiClass, RMProvider.class, BindingProvider.class, StubExt.class }, handler);
+            proxy = (T)Proxy.newProxyInstance(cl, new Class[] { seiClass, BindingProvider.class, StubExt.class }, handler);
          }
          catch (RuntimeException rte)
          {
@@ -480,7 +469,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    public <T> Dispatch<T> createDispatch(QName portName, Class<T> type, Mode mode, WebServiceFeature... features)
    {
       Dispatch<T> dispatch = createDispatch(portName, type, mode);
-      initWebserviceFeatures(dispatch, this.features);
       initWebserviceFeatures(dispatch, features);
       return dispatch;
    }
@@ -494,7 +482,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
       
       Dispatch<T> dispatch = createDispatch(portName, type, mode);
       initAddressingProperties(dispatch, epr);
-      initWebserviceFeatures(dispatch, this.features);
       initWebserviceFeatures(dispatch, features);
       return dispatch;
    }
@@ -503,7 +490,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    public Dispatch<Object> createDispatch(QName portName, JAXBContext context, Mode mode, WebServiceFeature... features)
    {
       Dispatch<Object> dispatch = createDispatch(portName, context, mode);
-      initWebserviceFeatures(dispatch, this.features);
       initWebserviceFeatures(dispatch, features);
       return dispatch;
    }
@@ -517,7 +503,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
 
       Dispatch<Object> dispatch = createDispatch(portName, context, mode);
       initAddressingProperties(dispatch, epr);
-      initWebserviceFeatures(dispatch, this.features);
       initWebserviceFeatures(dispatch, features);
       return dispatch;
    }
@@ -526,7 +511,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    public <T> T getPort(QName portName, Class<T> sei, WebServiceFeature... features)
    {
       T port = getPort(portName, sei);
-      initWebserviceFeatures(port, this.features);
       initWebserviceFeatures(port, features);
       return port;
    }
@@ -536,7 +520,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    {
       T port = getPort(sei);
       initAddressingProperties((BindingProvider)port, epr);
-      initWebserviceFeatures(port, this.features);
       initWebserviceFeatures(port, features);
       return port;
    }
@@ -545,7 +528,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    public <T> T getPort(Class<T> sei, WebServiceFeature... features)
    {
       T port = getPort(sei);
-      initWebserviceFeatures(port, this.features);
       initWebserviceFeatures(port, features);
       return port;
    }
@@ -554,7 +536,7 @@ public class ServiceDelegateImpl extends ServiceDelegate
    {
       if (features != null)
       {
-         EndpointMetaData epMetaData = ((EndpointMetadataProvider)stub).getEndpointMetaData();
+         EndpointMetaData epMetaData = ((StubExt)stub).getEndpointMetaData();
          for (WebServiceFeature feature : features)
          {
             ClientFeatureProcessor.processFeature(feature, epMetaData, stub);

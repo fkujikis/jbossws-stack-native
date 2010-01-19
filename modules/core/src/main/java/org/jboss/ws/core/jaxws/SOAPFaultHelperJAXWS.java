@@ -92,20 +92,17 @@ public class SOAPFaultHelperJAXWS
          TypeMapping typeMapping = serContext.getTypeMapping();
 
          Iterator it = detail.getDetailEntries();
-         boolean debugEnabled = log.isDebugEnabled();
          while (it.hasNext())
          {
             DetailEntry deElement = (DetailEntry)it.next();
             QName xmlName = deElement.getElementQName();
-            if (debugEnabled)
-               log.debug("Processing detail entry: " + xmlName);
+            log.debug("Processing detail entry: " + xmlName);
 
             OperationMetaData opMetaData = msgContext.getOperationMetaData();
             FaultMetaData faultMetaData = opMetaData.getFault(xmlName);
             if (faultMetaData != null)
             {
-               if (debugEnabled)
-                  log.debug("Deserialize fault: " + faultMetaData);
+               log.debug("Deserialize fault: " + faultMetaData);
                QName xmlType = faultMetaData.getXmlType();
                Class<?> faultBeanClass = faultMetaData.getFaultBean();
 
@@ -152,10 +149,7 @@ public class SOAPFaultHelperJAXWS
                }
             }
             else
-            {
-               if (debugEnabled)
-                  log.debug("Cannot find fault meta data for: " + xmlName);
-            }
+               log.debug("Cannot find fault meta data for: " + xmlName);
          }
       }
 
@@ -284,10 +278,7 @@ public class SOAPFaultHelperJAXWS
          detail.addChildElement(detailEntry);
       }
       else
-      {
-         if (log.isDebugEnabled())
-            log.debug("Cannot obtain fault meta data for: " + exClass);
-      }
+         log.debug("Cannot obtain fault meta data for: " + exClass);
 
       return soapMessage;
    }
@@ -368,8 +359,7 @@ public class SOAPFaultHelperJAXWS
          Result result = ser.serialize(xmlName, xmlType, faultObject, serContext, null);
          XMLFragment xmlFragment = new XMLFragment(result);
          String xmlStr = xmlFragment.toXMLString();
-         if (log.isDebugEnabled())
-            log.debug("Fault detail: " + xmlStr);
+         log.debug("Fault detail: " + xmlStr);
 
          Element domElement = xmlFragment.toElement();
          SOAPFactoryImpl soapFactory = new SOAPFactoryImpl();

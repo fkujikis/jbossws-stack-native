@@ -21,8 +21,11 @@
  */
 package org.jboss.ws.core.soap;
 
+import java.util.Iterator;
+
 import javax.xml.namespace.QName;
 import javax.xml.soap.Name;
+import javax.xml.soap.Node;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
@@ -49,9 +52,9 @@ public class SOAPEnvelopeImpl extends SOAPElementImpl implements SOAPEnvelope
 
    /** Construct a SOAP envelope for the given SOAP version URI prefix, etc.
     */
-   public SOAPEnvelopeImpl(SOAPPartImpl soapPart, SOAPElementImpl element, boolean addHeaderAndBody) throws SOAPException
+   public SOAPEnvelopeImpl(SOAPPartImpl soapPart, SOAPElement element, boolean addHeaderAndBody) throws SOAPException
    {
-      super(element);
+      super((SOAPElementImpl)element);
 
       this.soapPart = soapPart;
       soapPart.setEnvelope(this);
@@ -150,12 +153,26 @@ public class SOAPEnvelopeImpl extends SOAPElementImpl implements SOAPEnvelope
 
    public SOAPBody getBody() throws SOAPException
    {
-      return (SOAPBody)getFirstChildElementByLocalName("Body");
+      Iterator it = getChildElements();
+      while (it.hasNext())
+      {
+         Node node = (Node)it.next();
+         if ("Body".equals(node.getLocalName()))
+            return (SOAPBody)node;
+      }
+      return null;
    }
 
    public SOAPHeader getHeader() throws SOAPException
    {
-      return (SOAPHeader)getFirstChildElementByLocalName("Header");
+      Iterator it = getChildElements();
+      while (it.hasNext())
+      {
+         Node node = (Node)it.next();
+         if ("Header".equals(node.getLocalName()))
+            return (SOAPHeader)node;
+      }
+      return null;
    }
 
    /**

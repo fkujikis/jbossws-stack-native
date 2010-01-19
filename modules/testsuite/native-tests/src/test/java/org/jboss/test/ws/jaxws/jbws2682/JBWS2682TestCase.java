@@ -57,7 +57,7 @@ public class JBWS2682TestCase extends JBossWSTest
       "<soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:jbw='http://ws.jboss.org/jbws2682'>" + 
       "  <soapenv:Header/>" + "  <soapenv:Body>" + 
       "    <jbw:echo>" + 
-      "      <arg0>1-1ciao</arg0>" + 
+      "      <arg0>1-1</arg0>" + 
       "    </jbw:echo>" + 
       "  </soapenv:Body>" + 
       "</soapenv:Envelope>";
@@ -94,12 +94,6 @@ public class JBWS2682TestCase extends JBossWSTest
 
    public void testBadMessage() throws Exception
    {
-      if (true)
-      {
-         System.out.println("FIXME [JBWS-2682] Incorrect Parsing of Badly Formed int.");
-         return;
-      }
-      
       SOAPMessage response = sendMessage(this.badMsgString);
       SOAPEnvelope resEnv = response.getSOAPPart().getEnvelope();
       SOAPFault fault = resEnv.getBody().getFault();

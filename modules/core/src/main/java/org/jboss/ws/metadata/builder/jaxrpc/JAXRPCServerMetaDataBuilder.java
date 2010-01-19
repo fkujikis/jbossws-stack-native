@@ -69,8 +69,7 @@ public class JAXRPCServerMetaDataBuilder extends JAXRPCMetaDataBuilder
     */
    public UnifiedMetaData buildMetaData(ArchiveDeployment dep)
    {
-      if (log.isDebugEnabled())
-         log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
+      log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
       try
       {
          // For every webservice-description build the ServiceMetaData
@@ -231,8 +230,7 @@ public class JAXRPCServerMetaDataBuilder extends JAXRPCMetaDataBuilder
             }
          }
 
-         if (log.isDebugEnabled())
-            log.debug("END buildMetaData: " + wsMetaData);
+         log.debug("END buildMetaData: " + wsMetaData);
          return wsMetaData;
       }
       catch (RuntimeException rte)

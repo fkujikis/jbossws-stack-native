@@ -317,7 +317,6 @@ public class WSDL11Reader
          {
             UnknownExtensibilityElement uee = (UnknownExtensibilityElement)extElement;
             boolean understood = false;
-            understood = understood || processPolicyElements(uee, dest);
             understood = understood || processUseAddressing(uee, dest);
             //add processing of further extensibility element types below
             
@@ -329,41 +328,6 @@ public class WSDL11Reader
       }
    }
 
-   /**
-    * Process the provided extensibility element looking for policies or policy references.
-    * Returns true if the provided element is policy related, false otherwise.
-    * 
-    * @param extElement
-    * @param dest
-    * @return
-    */
-   private boolean processPolicyElements(UnknownExtensibilityElement extElement, Extendable dest)
-   {
-      boolean result = false;
-      Element srcElement = extElement.getElement();
-      if (Constants.URI_WS_POLICY.equals(srcElement.getNamespaceURI()))
-      {
-         //copy missing namespaces from the source element to our element
-         Element element = (Element)srcElement.cloneNode(true);
-         copyMissingNamespaceDeclarations(element, srcElement);
-         if (element.getLocalName().equals("Policy"))
-         {
-            WSDLExtensibilityElement el = new WSDLExtensibilityElement(Constants.WSDL_ELEMENT_POLICY, element);
-            el.setRequired("true".equalsIgnoreCase(element.getAttribute("required")));
-            dest.addExtensibilityElement(el);
-            result = true;
-         }
-         else if (element.getLocalName().equals("PolicyReference"))
-         {
-            WSDLExtensibilityElement el = new WSDLExtensibilityElement(Constants.WSDL_ELEMENT_POLICYREFERENCE, element);
-            el.setRequired("true".equalsIgnoreCase(element.getAttribute("required")));
-            dest.addExtensibilityElement(el);
-            result = true;
-         }
-      }
-      return result;
-   }
-   
    /**
     * Process the provided extensibility element looking for UsingAddressing.
     * Returns true if the provided element is UsingAddressing, false otherwise.
@@ -729,20 +693,6 @@ public class WSDL11Reader
       {
          WSDLInterface destInterface = new WSDLInterface(destWsdl, qname);
 
-         //policy extensions
-         QName policyURIsProp = (QName)srcPortType.getExtensionAttribute(Constants.WSDL_ATTRIBUTE_WSP_POLICYURIS);
-         if (policyURIsProp != null && !"".equalsIgnoreCase(policyURIsProp.getLocalPart()))
-         {
-            destInterface.addProperty(new WSDLProperty(Constants.WSDL_PROPERTY_POLICYURIS, policyURIsProp.getLocalPart()));
-         }
-
-         // eventing extensions
-         QName eventSourceProp = (QName)srcPortType.getExtensionAttribute(Constants.WSDL_ATTRIBUTE_WSE_EVENTSOURCE);
-         if (eventSourceProp != null && eventSourceProp.getLocalPart().equals(Boolean.TRUE.toString()))
-         {
-            destInterface.addProperty(new WSDLProperty(Constants.WSDL_PROPERTY_EVENTSOURCE, eventSourceProp.getLocalPart()));
-         }
-         
          // documentation
          Element documentationElement = srcPortType.getDocumentationElement();
          if (documentationElement != null && documentationElement.getTextContent() != null)

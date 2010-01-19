@@ -21,9 +21,6 @@
  */
 package org.jboss.ws.core.jaxws;
 
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 
 import javax.xml.bind.JAXBContext;
@@ -86,27 +83,15 @@ public class CustomizableJAXBContextFactory extends JAXBContextFactory
       }
    }
 
-   public JAXBContext createContext(final Class[] clazzes, final BindingCustomization bcust) throws WSException
+   public JAXBContext createContext(Class[] clazzes, BindingCustomization bcust) throws WSException
    {
       try
       {
-         JAXBContext jaxbCtx = AccessController.doPrivileged(new PrivilegedExceptionAction<JAXBContext>() {
-            public JAXBContext run() throws PrivilegedActionException
-            {
-               try
-               {
-                  return JAXBContext.newInstance(clazzes, bcust);
-               }
-               catch (JAXBException e)
-               {
-                  throw new PrivilegedActionException(e);
-               }
-            }
-         });
+         JAXBContext jaxbCtx = JAXBContext.newInstance(clazzes, bcust);
          incrementContextCount();
          return jaxbCtx;
       }
-      catch (Exception e)
+      catch (JAXBException e)
       {
          throw new WSException("Failed to create JAXBContext", e);
       }
