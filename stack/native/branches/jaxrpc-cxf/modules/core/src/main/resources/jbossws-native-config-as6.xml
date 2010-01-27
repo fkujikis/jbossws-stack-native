@@ -2,17 +2,6 @@
 
 <deployment xmlns="urn:jboss:bean-deployer:2.0">
 
-  <!-- WSDeploymentAspectDeployers factory -->
-  <bean name="WSAspectizedDeployersFactory" class="org.jboss.webservices.integration.deployers.WSAspectizedDeployersFactory">
-    <constructor>
-      <parameter>
-        <inject bean="Deployers"/>
-      </parameter>
-    </constructor>
-    <incallback method="addDeployer"/>
-    <uncallback method="removeDeployer"/>
-  </bean>
-
   <!-- The registry for web service endpoints -->
   <bean name="WSEndpointRegistry" class="org.jboss.wsf.framework.management.ManagedEndpointRegistry">
     <property name="mbeanServer"><inject bean="WSMBeanServerLocator" property="mbeanServer"/></property>
