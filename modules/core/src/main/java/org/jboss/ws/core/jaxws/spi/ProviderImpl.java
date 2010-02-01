@@ -24,11 +24,9 @@ package org.jboss.ws.core.jaxws.spi;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
-import javax.xml.ws.BindingType;
 import javax.xml.ws.Endpoint;
 import javax.xml.ws.EndpointReference;
 import javax.xml.ws.Service;
@@ -48,120 +46,101 @@ import org.w3c.dom.Element;
  * Service provider for ServiceDelegate and Endpoint objects.
  *  
  * @author Thomas.Diesler@jboss.com
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
- * @see javax.xml.ws.spi.Provider
+ * @since 03-May-2006
  */
-public final class ProviderImpl extends Provider
+public class ProviderImpl extends Provider
 {
-
+   // 6.2 Conformance (Concrete javax.xml.ws.spi.Provider required): An implementation MUST provide
+   // a concrete class that extends javax.xml.ws.spi.Provider. Such a class MUST have a public constructor
+   // which takes no arguments.
    public ProviderImpl()
    {
    }
 
    @Override
-   public Endpoint createAndPublishEndpoint(final String address, final Object implementor)
+   public ServiceDelegate createServiceDelegate(URL wsdlLocation, QName serviceName, Class serviceClass)
    {
-      return this.createAndPublishEndpoint(address, implementor, (WebServiceFeature[])null);
+      ServiceDelegateImpl delegate = new ServiceDelegateImpl(wsdlLocation, serviceName, serviceClass);
+      DOMUtils.clearThreadLocals();
+      return delegate;
    }
 
-   // @Override TODO: comment out override on switch to JAX-WS 2.2
-   public Endpoint createAndPublishEndpoint(final String address, final Object implementor, final WebServiceFeature... features)
+   @Override
+   public Endpoint createEndpoint(String bindingId, Object implementor)
    {
-      final String bindingId = getBindingFromAddress(address);
-      final EndpointImpl endpoint = (EndpointImpl)createEndpoint(bindingId, implementor, features);
-      endpoint.publish(address);
-
+      EndpointImpl endpoint = new EndpointImpl(bindingId, implementor);
       return endpoint;
    }
 
    @Override
-   public Endpoint createEndpoint(final String bindingId, final Object implementor)
+   public Endpoint createAndPublishEndpoint(String address, Object implementor)
    {
-      return this.createEndpoint(bindingId, implementor, (WebServiceFeature[])null);
+      // 6.3 Conformance (Provider createAndPublishEndpoint Method): The effect of invoking the createAnd-
+      // PublishEndpoint method on a Provider MUST be the same as first invoking the createEndpoint
+      // method with the binding ID appropriate to the URL scheme used by the address, then invoking the 
+      // publish(String address) method on the resulting endpoint.
+
+      String bindingId = getBindingFromAddress(address);
+      EndpointImpl endpoint = (EndpointImpl)createEndpoint(bindingId, implementor);
+      endpoint.publish(address);
+      return endpoint;
    }
 
-   // @Override TODO: comment out override on switch to JAX-WS 2.2
-   public Endpoint createEndpoint(final String bindingId, final Object implementor, final WebServiceFeature... features)
+   private String getBindingFromAddress(String address)
    {
-      final String nonNullBindingId = this.getBindingId(bindingId, implementor.getClass());
-      
-      return new EndpointImpl(nonNullBindingId, implementor, features);
-   }
-
-   /* TODO: comment out on switch to JAX-WS 2.2
-   @SuppressWarnings("unchecked")
-   @Override
-   public Endpoint createEndpoint(final String bindingId, final Class implementorClass, final Invoker invoker,
-         final WebServiceFeature... features)
-   {
-      throw new UnsupportedOperationException("This method is not portable across JAX-WS implementations");
-   }
-   */
-   
-   @Override
-   public ServiceDelegate createServiceDelegate(final URL wsdlLocation, final QName serviceName, final Class serviceClass)
-   {
-      return this.createServiceDelegate(wsdlLocation, serviceName, serviceClass, (WebServiceFeature[])null);
-   }
-
-   // @Override TODO: comment out override on switch to JAX-WS 2.2
-   // TODO - If this createServiceDelegate is removed from a future version the exception wrapping should be retained.
-   public ServiceDelegate createServiceDelegate(final URL wsdlLocation, final QName serviceName, final Class serviceClass, 
-         final WebServiceFeature... features)
-   {
+      String bindingId;
       try
       {
-         ServiceDelegateImpl delegate = new ServiceDelegateImpl(wsdlLocation, serviceName, serviceClass, features);
-         DOMUtils.clearThreadLocals();
-         return delegate;
+         URL url = new URL(address);
+         String protocol = url.getProtocol();
+         if (protocol.startsWith("http"))
+         {
+            bindingId = SOAPBinding.SOAP11HTTP_BINDING;
+         }
+         else
+         {
+            throw new IllegalArgumentException("Unsupported protocol: " + address);
+         }
       }
-      catch (RuntimeException e)
+      catch (MalformedURLException e)
       {
-         throw new WebServiceException(e);
+         throw new IllegalArgumentException("Invalid endpoint address: " + address);
       }
-   }
-
-   // @Override TODO: comment out override on switch to JAX-WS 2.2
-   public W3CEndpointReference createW3CEndpointReference(final String address, final QName interfaceName, 
-         final QName serviceName, final QName portName, final List<Element> metadata, final String wsdlDocumentLocation, 
-         final List<Element> referenceParameters, final List<Element> elements, final Map<QName, String> attributes)
-   {
-      throw new UnsupportedOperationException(); // TODO
+      return bindingId;
    }
 
    @Override
-   public W3CEndpointReference createW3CEndpointReference(final String address, final QName serviceName, 
-         final QName portName, final List<Element> metadata, final String wsdlDocumentLocation,
-         final List<Element> referenceParameters)
+   public W3CEndpointReference createW3CEndpointReference(String address, QName serviceName, QName portName, List<Element> metadata, String wsdlDocumentLocation,
+         List<Element> referenceParameters)
    {
-      final NativeEndpointReference epr = new NativeEndpointReference();
+      NativeEndpointReference epr = new NativeEndpointReference();
       epr.setAddress(address);
       epr.setServiceName(serviceName);
       epr.setEndpointName(portName);
       epr.setMetadata(metadata);
       epr.setWsdlLocation(wsdlDocumentLocation);
       epr.setReferenceParameters(referenceParameters);
-
       return EndpointReferenceUtil.transform(W3CEndpointReference.class, epr);
    }
 
    @Override
-   public <T> T getPort(final EndpointReference epr, final Class<T> sei, final WebServiceFeature... features)
+   public <T> T getPort(EndpointReference epr, Class<T> sei, WebServiceFeature... features)
    {
-      final NativeEndpointReference nepr = EndpointReferenceUtil.transform(NativeEndpointReference.class, epr);
-      final URL wsdlLocation = nepr.getWsdlLocation();
-      final QName serviceName = nepr.getServiceName();
-      final ServiceDelegate delegate = createServiceDelegate(wsdlLocation, serviceName, Service.class);
-
+      URL wsdlLocation = null;
+      QName serviceName = null;
+      NativeEndpointReference nepr = EndpointReferenceUtil.transform(NativeEndpointReference.class, epr);
+      
+      wsdlLocation = nepr.getWsdlLocation();
+      serviceName = nepr.getServiceName();
+      ServiceDelegate delegate = createServiceDelegate(wsdlLocation, serviceName, Service.class);
       return delegate.getPort(epr, sei, features);
    }
 
    @Override
-   public EndpointReference readEndpointReference(final Source eprInfoset)
+   public EndpointReference readEndpointReference(Source eprInfoset)
    {
       if (eprInfoset == null)
          throw new NullPointerException("Provided eprInfoset cannot be null");
-
       try
       {
          //we currently support W3CEndpointReference only
@@ -172,38 +151,4 @@ public final class ProviderImpl extends Provider
          throw new WebServiceException(e);
       }
    }
-
-   private String getBindingFromAddress(final String address)
-   {
-      try
-      {
-         final URL url = new URL(address);
-         final String protocol = url.getProtocol();
-
-         if (protocol.toLowerCase().startsWith("http"))
-         {
-            return SOAPBinding.SOAP11HTTP_BINDING;
-         }
-      }
-      catch (MalformedURLException e)
-      {
-         throw new IllegalArgumentException("Invalid endpoint address: " + address);
-      }
-
-      throw new IllegalArgumentException("Unsupported protocol: " + address);
-   }
-
-   private String getBindingId(final String bindingId, final Class<?> implementorClass)
-   {
-      if (bindingId != null)
-      {
-         return bindingId;
-      }
-      else
-      {
-         final BindingType bindingType = implementorClass.getAnnotation(BindingType.class);
-         return (bindingType != null) ? bindingType.value() : SOAPBinding.SOAP11HTTP_BINDING;
-      }
-   }
-
 }

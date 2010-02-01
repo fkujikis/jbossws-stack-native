@@ -22,7 +22,6 @@
 package org.jboss.ws.core.jaxws.client;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -47,7 +46,6 @@ import org.jboss.logging.Logger;
 import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.StubExt;
-import org.jboss.ws.extensions.wsrm.api.RMProvider;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.wsf.common.JavaUtils;
@@ -91,7 +89,6 @@ public class ClientProxy implements InvocationHandler
       this.executor = executor;
       this.stubMethods = new ArrayList(Arrays.asList(BindingProvider.class.getMethods()));
       this.stubMethods.addAll(Arrays.asList(StubExt.class.getMethods()));
-      this.stubMethods.addAll(Arrays.asList(RMProvider.class.getMethods()));
       this.objectMethods = Arrays.asList(Object.class.getMethods());
    }
 
@@ -103,16 +100,8 @@ public class ClientProxy implements InvocationHandler
       String methodName = method.getName();
       if (stubMethods.contains(method))
       {
-         try
-         {
-            Method stubMethod = ClientImpl.class.getMethod(methodName, method.getParameterTypes());
-            return stubMethod.invoke(client, args);
-         }
-         catch (InvocationTargetException ite) //unwrap the cause and re-throw as is if it's a WebServiceException (spec requirement for getEndpointReference(..) for instance)
-         {
-            Throwable cause = ite.getCause();
-            throw (cause != null && cause instanceof WebServiceException) ? cause : ite;
-         }
+         Method stubMethod = ClientImpl.class.getMethod(methodName, method.getParameterTypes());
+         return stubMethod.invoke(client, args);
       }
 
       // An invocation on proxy's Object class
@@ -170,12 +159,6 @@ public class ClientProxy implements InvocationHandler
 
    private Object invoke(QName opName, Object[] args, Class retType, Map<String, Object> resContext) throws RemoteException
    {      
-      boolean rmDetected = this.client.getEndpointConfigMetaData().getConfig().getRMMetaData() != null;
-      boolean rmActivated = client.getWSRMSequence() != null;
-      if (rmDetected && !rmActivated)
-      {
-         client.createSequence();
-      }
       Object retObj = client.invoke(opName, args, resContext);
       if (retObj != null)
       {
