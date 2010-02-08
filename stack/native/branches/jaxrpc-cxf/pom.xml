@@ -40,6 +40,7 @@
     <module>modules/client</module>
     <module>modules/management</module>
     <module>modules/resources</module>
+    <module>modules/services</module>
   </modules>
 
   <!-- Properties -->

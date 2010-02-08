@@ -40,6 +40,7 @@
     <include name="**/jbossws-native-client.jar"/>
     <include name="**/jbossws-native-core.jar"/>
     <include name="**/jbossws-native-factories.jar"/>
+    <include name="**/jbossws-native-services.jar"/>
     <include name="**/jbossws-spi.jar"/>
     <include name="**/jaxrpc-api.jar"/>
     <include name="**/saaj-api.jar"/>
@@ -79,6 +80,7 @@
     <include name="**/FastInfoset.jar"/>
     <include name="**/jboss-jaxb-intros.jar"/>
     <include name="**/jbossws-native-core.jar"/>
+    <include name="**/jbossws-native-services.jar"/>
     <include name="**/jettison.jar"/>
     <include name="**/netty.jar"/>
     <include name="**/policy.jar"/>
