@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name='PhoneBook' targetNamespace='http://test.jboss.org/ws/jbws2930' xmlns='http://schemas.xmlsoap.org/wsdl/' xmlns:ns1='http://test.jboss.org/ws/jbws2930/types' xmlns:soap='http://schemas.xmlsoap.org/wsdl/soap/' xmlns:tns='http://test.jboss.org/ws/jbws2930' xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
+ <types>
+  <xs:schema targetNamespace='http://test.jboss.org/ws/jbws2930/types' xmlns:xs='http://www.w3.org/2001/XMLSchema' xmlns:tns='http://test.jboss.org/ws/jbws2930/types'>
+
+   <xs:import schemaLocation="./Name.xsd"/>
+
+   <xs:complexType name='Person'>
+    <xs:sequence>
+     <xs:element name='firstName' nillable='true' type='xs:string'/>
+     <xs:element name='surname' nillable='true' type='xs:string'/>
+    </xs:sequence>
+   </xs:complexType>     
+
+   <xs:complexType name='TelephoneNumber'>
+    <xs:sequence>
+      <xs:element name='areaCode' nillable='true' type='xs:string'/>
+      <xs:element name='number' nillable='true' type='xs:string'/>
+      <xs:element ref='Nickname'/>
+    </xs:sequence>
+   </xs:complexType>   
+     
+   <xs:element name='lookup' type='tns:Person'/>
+   <xs:element name='lookupResponse' type='tns:TelephoneNumber'/>
+
+  </xs:schema>
+ </types>
+ <message name='PhoneBook_lookup'>
+  <part element='ns1:lookup' name='parameters'/>
+ </message>
+ <message name='PhoneBook_lookupResponse'>
+  <part element='ns1:lookupResponse' name='result'/>
+ </message>
+ <portType name='PhoneBook'>
+  <operation name='lookup'>
+   <input message='tns:PhoneBook_lookup'/>
+   <output message='tns:PhoneBook_lookupResponse'/>
+  </operation>
+ </portType>
+ <binding name='PhoneBookBinding' type='tns:PhoneBook'>
+  <soap:binding style='document' transport='http://schemas.xmlsoap.org/soap/http'/>
+  <operation name='lookup'>
+   <soap:operation soapAction=''/>
+   <input>
+    <soap:body use='literal'/>
+   </input>
+   <output>
+    <soap:body use='literal'/>
+   </output>
+  </operation>
+ </binding>
+ <service name='PhoneBook'>
+  <port binding='tns:PhoneBookBinding' name='PhoneBookPort'>
+   <soap:address location='REPLACE_WITH_ACTUAL_URL'/>
+  </port>
+ </service>
+</definitions>
