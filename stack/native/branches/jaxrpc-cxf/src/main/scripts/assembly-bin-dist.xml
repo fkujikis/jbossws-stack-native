@@ -104,6 +104,7 @@
                 <include>java/org/jboss/test/ws/management/**</include>
                 <include>java/org/jboss/test/ws/projectGenerator/**</include>
                 <include>resources/console/**</include>
+                <include>resources/jaxrpc/samples/**</include>
                 <include>resources/jaxws/samples/**</include>
                 <include>resources/jaxws/smoke/**</include>
                 <include>resources/management/**</include>
