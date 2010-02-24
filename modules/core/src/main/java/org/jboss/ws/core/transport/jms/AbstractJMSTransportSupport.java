@@ -93,8 +93,7 @@ public abstract class AbstractJMSTransportSupport implements MessageListener
             return;
          }
 
-         if (log.isDebugEnabled())
-            log.debug("Incomming SOAP message: " + msgStr);
+         log.debug("Incomming SOAP message: " + msgStr);
 
          String fromName = null;
          Destination destination = message.getJMSDestination();
@@ -108,8 +107,7 @@ public abstract class AbstractJMSTransportSupport implements MessageListener
          processSOAPMessage(fromName, inputStream, outputStream);
 
          msgStr = new String(outputStream.toByteArray());
-         if (log.isDebugEnabled())
-            log.debug("Outgoing SOAP message: " + msgStr);
+         log.debug("Outgoing SOAP message: " + msgStr);
 
          if (msgStr.length() > 0)
          {
@@ -151,24 +149,20 @@ public abstract class AbstractJMSTransportSupport implements MessageListener
       EndpointAssociation.setEndpoint(endpoint);
       try
       {
-         boolean debugEnabled = log.isDebugEnabled();
-         if (debugEnabled)
-            log.debug("dipatchMessage: " + endpoint.getName());
+         log.debug("dipatchMessage: " + endpoint.getName());
 
          // [JBWS-1324]: workaround to prevent message processing before endpoint is started
          EndpointState state = endpoint.getState();
          ObjectName name = endpoint.getName();
          long startTime = System.currentTimeMillis();
-         if (debugEnabled)
-            log.debug(name + " is in state: " + state);
+         log.debug(name + " is in state: " + state);
          while (state != EndpointState.STARTED && (System.currentTimeMillis() - startTime < 60000))
          {
             try
             {
                Thread.sleep(1000);
                state = endpoint.getState();
-               if (debugEnabled)
-                  log.debug(name + " is now in state: " + state);
+               log.debug(name + " is now in state: " + state);
             }
             catch (InterruptedException e)
             {

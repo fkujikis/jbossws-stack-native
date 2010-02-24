@@ -82,7 +82,7 @@ public class ToolsUnifiedMetaDataBuilder
       if (!Remote.class.isAssignableFrom(seiClass))
          throw new WSException("A service endpoint interface should extend Remote");
 
-      ClassLoader contextClassLoader = SecurityActions.getContextClassLoader();
+      ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
       ResourceLoaderAdapter vfsRoot = new ResourceLoaderAdapter();
       um = new UnifiedMetaData(vfsRoot);
       um.setClassLoader(contextClassLoader);

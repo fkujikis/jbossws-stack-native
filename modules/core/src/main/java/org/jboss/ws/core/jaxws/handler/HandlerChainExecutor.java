@@ -83,8 +83,7 @@ public class HandlerChainExecutor
             sortedChain.add(handler);
       }
 
-      if (log.isDebugEnabled())
-         log.debug("Create a handler executor: " + sortedChain);
+      log.debug("Create a handler executor: " + sortedChain);
       for (Handler handler : sortedChain)
       {
          handlers.add(handler);
@@ -123,9 +122,7 @@ public class HandlerChainExecutor
 
       if (handlers.size() > 0)
       {
-         boolean debugEnabled = log.isDebugEnabled();
-         if (debugEnabled)
-            log.debug("Enter: handle" + (isOutbound ? "Out" : "In ") + "BoundMessage");
+         log.debug("Enter: handle" + (isOutbound ? "Out" : "In ") + "BoundMessage");
 
          int index = getFirstHandler();
          Handler currHandler = null;
@@ -165,8 +162,7 @@ public class HandlerChainExecutor
             if (doNext == false)
                falseIndex = index;
 
-            if (debugEnabled)
-               log.debug("Exit: handle" + (isOutbound ? "Out" : "In ") + "BoundMessage with status: " + doNext);
+            log.debug("Exit: handle" + (isOutbound ? "Out" : "In ") + "BoundMessage with status: " + doNext);
          }
       }
 
@@ -183,9 +179,7 @@ public class HandlerChainExecutor
 
       if (handlers.size() > 0)
       {
-         boolean debugEnabled = log.isDebugEnabled();
-         if (debugEnabled)
-            log.debug("Enter: handle" + (isOutbound ? "Out" : "In ") + "BoundFault");
+         log.debug("Enter: handle" + (isOutbound ? "Out" : "In ") + "BoundFault");
 
          if (msgContext instanceof SOAPMessageContext)
          {
@@ -241,8 +235,7 @@ public class HandlerChainExecutor
          }
          finally
          {
-            if (debugEnabled)
-               log.debug("Exit: handle" + (isOutbound ? "Out" : "In ") + "BoundFault with status: " + doNext);
+            log.debug("Exit: handle" + (isOutbound ? "Out" : "In ") + "BoundFault with status: " + doNext);
          }
       }
 

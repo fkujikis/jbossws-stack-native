@@ -56,7 +56,7 @@ public class ReceiveX509Certificate implements TokenOperation
       {
          try
          {
-            ClassLoader loader = SecurityActions.getContextClassLoader();
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
             Class<?> cpClass = loader.loadClass(certificatePrincipal);
             certMapping = (CertificatePrincipal) cpClass.newInstance();
          }

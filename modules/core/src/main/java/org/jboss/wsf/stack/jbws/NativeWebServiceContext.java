@@ -21,8 +21,6 @@
  */
 package org.jboss.wsf.stack.jbws;
 
-import java.security.Principal;
-
 import javax.xml.ws.EndpointReference;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.handler.MessageContext;
@@ -37,24 +35,24 @@ import org.jboss.wsf.spi.invocation.ExtensibleWebServiceContext;
 import org.w3c.dom.Element;
 
 /**
- * A WebServiceContext implementing the getEndpointReference jaxws methods. 
+ * An ExtensibileWebServiceContext implementing the getEndpointReference jaxws 2.1 methods 
  * 
  * @author alessio.soldano@jboss.com
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @since 27-Jan-2009
  */
-public final class NativeWebServiceContext extends ExtensibleWebServiceContext
+public abstract class NativeWebServiceContext extends ExtensibleWebServiceContext
 {
-   public NativeWebServiceContext(final MessageContext messageContext)
+   public NativeWebServiceContext(MessageContext messageContext)
    {
       super(messageContext);
    }
    
-   public EndpointReference getEndpointReference(final Element... referenceParameters)
+   public EndpointReference getEndpointReference(Element... referenceParameters)
    {
-      return this.getEndpointReference(W3CEndpointReference.class, referenceParameters);
+      return getEndpointReference(W3CEndpointReference.class, referenceParameters);
    }
 
-   public <T extends EndpointReference> T getEndpointReference(final Class<T> clazz, final Element... referenceParameters)
+   public <T extends EndpointReference> T getEndpointReference(Class<T> clazz, Element... referenceParameters)
    {
       EndpointMetaData epMetaData = ((CommonMessageContext)getMessageContext()).getEndpointMetaData();
       if (epMetaData == null)
@@ -76,17 +74,5 @@ public final class NativeWebServiceContext extends ExtensibleWebServiceContext
             builder.referenceParameter(el);
       }
       return EndpointReferenceUtil.transform(clazz, builder.build());
-   }
-
-   @Override
-   public Principal getUserPrincipal()
-   {
-      throw new UnsupportedOperationException();
-   }
-
-   @Override
-   public boolean isUserInRole(String role)
-   {
-      throw new UnsupportedOperationException();
    }
 }

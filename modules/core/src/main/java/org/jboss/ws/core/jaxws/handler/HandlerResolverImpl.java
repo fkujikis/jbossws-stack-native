@@ -110,8 +110,7 @@ public class HandlerResolverImpl implements HandlerResolver
 
    public List<Handler> getHandlerChain(PortInfo info, HandlerType type)
    {
-      if (log.isDebugEnabled())
-         log.debug("getHandlerChain: [type=" + type + ",info=" + info + "]");
+      log.debug("getHandlerChain: [type=" + type + ",info=" + info + "]");
 
       List<Handler> handlers = new ArrayList<Handler>();
       for (ScopedHandler scopedHandler : getHandlerMap(type))
@@ -124,8 +123,7 @@ public class HandlerResolverImpl implements HandlerResolver
 
    public void initServiceHandlerChain(ServiceMetaData serviceMetaData)
    {
-      if (log.isDebugEnabled())
-         log.debug("initServiceHandlerChain: " + serviceMetaData.getServiceName());
+      log.debug("initServiceHandlerChain: " + serviceMetaData.getServiceName());
 
       // clear all exisisting handler to avoid double registration
       List<ScopedHandler> handlerMap = getHandlerMap(HandlerType.ENDPOINT);
@@ -138,8 +136,7 @@ public class HandlerResolverImpl implements HandlerResolver
 
    public void initHandlerChain(EndpointConfigMetaData epConfigMetaData, HandlerType type, boolean clearExistingHandlers)
    {
-      if (log.isDebugEnabled())
-         log.debug("initHandlerChain: " + type);
+      log.debug("initHandlerChain: " + type);
 
       List<ScopedHandler> handlerMap = getHandlerMap(type);
 
@@ -188,8 +185,7 @@ public class HandlerResolverImpl implements HandlerResolver
 
    private boolean addHandler(HandlerMetaDataJAXWS hmd, Handler handler, HandlerType type)
    {
-      if (log.isDebugEnabled())
-         log.debug("addHandler: " + hmd);
+      log.debug("addHandler: " + hmd);
 
       List<ScopedHandler> handlerMap = getHandlerMap(type);
       ScopedHandler scopedHandler = new ScopedHandler(handler);

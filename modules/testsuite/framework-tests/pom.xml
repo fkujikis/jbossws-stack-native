@@ -9,7 +9,7 @@
   <parent>
     <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native-testsuite</artifactId>
-    <version>3.3.0-SNAPSHOT</version>
+    <version>3.1.2.SP5</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -111,7 +111,6 @@
                     <property name="tests.output.dir" value="${project.build.directory}" />
                     <ant antfile="src/test/ant-import/build-jars-jaxws.xml" target="build-jars-jaxws" />
                     <ant antfile="src/test/ant-import/build-samples-jaxws.xml" target="build-samples-jaxws" />
-                    <ant antfile="src/test/ant-import/build-samples-jaxrpc.xml" target="build-samples-jaxrpc"/>
                   </tasks>
                 </configuration>
               </execution>
