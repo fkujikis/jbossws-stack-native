@@ -6,3 +6,7 @@ org/jboss/test/ws/jaxws/samples/serviceref/ServiceRefEJBTestCase.*
 
 # [JBWS-2217] Fix BPEL jaxrpc samples
 org/jboss/test/ws/jaxrpc/samples/wsbpel/hello/*TestCase.*
+
+# [JBWS2565] and [JBWS2630] Fix in the next EAP release
+org/jboss/test/ws/jaxws/jbws2630/JBWS2630TestCase
+org/jboss/test/ws/jaxws/jbws2565/JBWS2565TestCase
