@@ -334,7 +334,12 @@ public class WSDLFilePublisher
 
       File locationFile = null;
       if (predefinedLocation == false)
-      {
+      {  
+          //JBWS-2829: windows issue
+          if (archiveName.startsWith("http://")) {
+              archiveName = archiveName.replace("http://", "http-");         
+          }
+ 
          locationFile = new File(serverConfig.getServerDataDir().getCanonicalPath() + "/wsdl/" + archiveName);
       }
       else
