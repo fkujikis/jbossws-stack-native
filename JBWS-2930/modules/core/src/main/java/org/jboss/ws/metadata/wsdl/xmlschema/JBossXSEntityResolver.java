@@ -133,9 +133,13 @@ public class JBossXSEntityResolver implements XMLEntityResolver
          }
 
          // Delegate to JBoss Entity Resolver
-         XMLInputSource source = getXMLInputSource(delegate.resolveEntity(null, namespaceURI), resId);
-         if (source != null)
-            return source;
+         InputSource is = delegate.resolveEntity(null, namespaceURI);
+         if (is != null)
+         {
+            XMLInputSource source = getXMLInputSource(is, resId);
+            if (source != null)
+               return source;
+         }
       }
       catch (SAXException e)
       {

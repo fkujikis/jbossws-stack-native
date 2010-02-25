@@ -507,15 +507,16 @@ public class JBossXSModel implements XSModel, Cloneable
 
    private JBossXSNamespaceItem createNamespaceItemIfNotExistent(String ns)
    {
-      if (ns == null)
-         throw new IllegalArgumentException("Illegal null argument:ns");
+      //if (ns == null)
+      //   throw new IllegalArgumentException("Illegal null argument:ns");
 
       JBossXSNamespaceItem jbnm = nsimap.get(ns);
       if (jbnm == null)
       {
          jbnm = new JBossXSNamespaceItem(ns, namespaceRegistry, qualifiedElements);
          nsimap.put(ns, jbnm);
-         registerNamespace(ns);
+         if (ns != null)
+            registerNamespace(ns);
       }
 
       return jbnm;
