@@ -49,8 +49,7 @@ public class SimpleFileImportTestCase extends JBossWSTest
       assertTrue("File does not exist: " + wsdlFile.getCanonicalPath(), wsdlFile.exists());
 
       // Setting the URLStreamHandlerFactory simulates the behaviour in JBoss
-      // [JBWS-2948] commented to prevent setting wrong stream handler with VFS3 
-      //internalInitURLHandlers();
+      internalInitURLHandlers();
 
       URL wsdlURL = wsdlFile.toURL();
       Definition wsdlDefinition = WSDL11DefinitionFactory.newInstance().parse(wsdlURL);

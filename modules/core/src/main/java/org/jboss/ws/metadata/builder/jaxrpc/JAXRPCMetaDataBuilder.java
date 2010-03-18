@@ -160,17 +160,13 @@ public abstract class JAXRPCMetaDataBuilder extends MetaDataBuilder
 
          WSDLBindingOperation wsdlBindingOperation = wsdlOperation.getBindingOperation();
          if (wsdlBindingOperation == null)
-         {
             log.warn("Could not locate binding operation for:" + opQName);
-         }
-         else
-         {
-            // Change operation according namespace defined on binding 
-            // <soap:body use="encoded" namespace="http://MarshallTestW2J.org/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-            String namespaceURI = wsdlBindingOperation.getNamespaceURI();
-            if (namespaceURI != null)
-               opQName = new QName(namespaceURI, opName);
-         }
+
+         // Change operation according namespace defined on binding 
+         // <soap:body use="encoded" namespace="http://MarshallTestW2J.org/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         String namespaceURI = wsdlBindingOperation.getNamespaceURI();
+         if (namespaceURI != null)
+            opQName = new QName(namespaceURI, opName);
 
          // Set java method name
          String javaName = opName.substring(0, 1).toLowerCase() + opName.substring(1);
@@ -517,7 +513,7 @@ public abstract class JAXRPCMetaDataBuilder extends MetaDataBuilder
       String ns = xmlType.getNamespaceURI() != null ? xmlType.getNamespaceURI() : "";
       XSTypeDefinition xsType = schemaModel.getTypeDefinition(localPart, ns);
       XOPScanner scanner = new XOPScanner();
-      if (scanner.findXOPTypeDef(xsType) != null || (localPart.equals("base64Binary") && ns.equals(Constants.NS_SCHEMA_XSD)))
+      if (scanner.findXOPTypeDef(xsType) != null | (localPart.equals("base64Binary") && ns.equals(Constants.NS_SCHEMA_XSD)))
       {
          // FIXME: read the xmime:contentType from the element declaration
          // See SchemaUtils#findXOPTypeDef(XSTypeDefinition typeDef) for details

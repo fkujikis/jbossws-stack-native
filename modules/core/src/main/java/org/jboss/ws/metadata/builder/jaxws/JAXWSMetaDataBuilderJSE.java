@@ -43,8 +43,7 @@ public class JAXWSMetaDataBuilderJSE
     */
    public UnifiedMetaData buildMetaData(ArchiveDeployment dep)
    {
-      if (log.isDebugEnabled())
-         log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
+      log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
       try
       {
          UnifiedMetaData wsMetaData = new UnifiedMetaData(dep.getRootFile());
@@ -62,8 +61,7 @@ public class JAXWSMetaDataBuilderJSE
             JAXWSServerMetaDataBuilder.setupProviderOrWebService(dep, wsMetaData, beanClass, shortName);
          }
          
-         if (log.isDebugEnabled())
-            log.debug("END buildMetaData: " + wsMetaData);
+         log.debug("END buildMetaData: " + wsMetaData);
          return wsMetaData;
       }
       catch (RuntimeException rte)

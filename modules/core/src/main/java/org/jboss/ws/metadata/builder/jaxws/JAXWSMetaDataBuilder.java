@@ -44,19 +44,16 @@ import javax.jws.soap.SOAPBinding;
 import javax.jws.soap.SOAPMessageHandlers;
 import javax.jws.soap.SOAPBinding.ParameterStyle;
 import javax.xml.bind.annotation.XmlList;
-import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
 import javax.xml.ws.BindingType;
-import javax.xml.ws.FaultAction;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
 import javax.xml.ws.WebFault;
 import javax.xml.ws.Action;
 import javax.xml.ws.addressing.AddressingProperties;
-import javax.xml.ws.soap.AddressingFeature;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.Constants;
@@ -89,7 +86,6 @@ import org.jboss.ws.metadata.wsdl.WSDLBindingMessageReference;
 import org.jboss.ws.metadata.wsdl.WSDLBindingOperation;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLMIMEPart;
-import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.wsf.common.JavaUtils;
 import org.jboss.wsf.spi.binding.BindingCustomization;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -125,22 +121,9 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
    {
       if (wsClass.isAnnotationPresent(BindingType.class))
       {
-         if (log.isDebugEnabled())
-            log.debug("processBindingType on: " + wsClass.getName());
+         log.debug("processBindingType on: " + wsClass.getName());
          BindingType anBindingType = (BindingType)wsClass.getAnnotation(BindingType.class);
          epMetaData.setBindingId(anBindingType.value());
-      }
-   }
-   
-   protected void processXmlSeeAlso(Class<?> wsClass)
-   {
-      if ((wsClass.isAnnotationPresent(XmlSeeAlso.class)))
-      {
-         XmlSeeAlso xsa = wsClass.getAnnotation(XmlSeeAlso.class);
-         for (Class<?> clazz : xsa.value())
-         {
-            javaTypes.add(clazz);
-         }
       }
    }
 
@@ -148,8 +131,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
    {
       if (wsClass.isAnnotationPresent(SOAPBinding.class))
       {
-         if (log.isDebugEnabled())
-            log.debug("processSOAPBinding on: " + wsClass.getName());
+         log.debug("processSOAPBinding on: " + wsClass.getName());
          SOAPBinding anSoapBinding = wsClass.getAnnotation(SOAPBinding.class);
 
          SOAPBinding.Style attrStyle = anSoapBinding.style();
@@ -204,9 +186,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
    public static UnifiedHandlerChainsMetaData getHandlerChainsMetaData(Class<?> wsClass, String filename)
    {
       URL fileURL = null;
-      boolean debugEnabled = log.isDebugEnabled();
-      if (debugEnabled)
-         log.debug("processHandlerChain [" + filename + "] on: " + wsClass.getName());
+      log.debug("processHandlerChain [" + filename + "] on: " + wsClass.getName());
 
       // Try the filename as URL
       try
@@ -236,11 +216,8 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       // Try the filename as Resource
       if (fileURL == null)
       {
-         if (debugEnabled)
-         {
-            log.debug(wsClass.getProtectionDomain().getCodeSource());
-            log.debug(wsClass.getClassLoader());
-         }
+         log.debug(wsClass.getProtectionDomain().getCodeSource());
+         log.debug(wsClass.getClassLoader());
          fileURL = wsClass.getClassLoader().getResource(filename);
       }
 
@@ -262,8 +239,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       if (fileURL == null)
          throw new WSException("Cannot resolve handler file '" + filename + "' on " + wsClass.getName());
 
-      if (debugEnabled)
-         log.debug("Loading handler chain: " + fileURL);
+      log.debug("Loading handler chain: " + fileURL);
 
       UnifiedHandlerChainsMetaData handlerChainsMetaData = null;
       try
@@ -555,145 +531,46 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
 
       return (namespace != null) ? new QName(namespace, name) : new QName(name);
    }
-   
-   /*
-    * 1. A non-default @Action(input=...) or @WebMethod(action=...) value on a SEI method
-    *    MUST result into wsdl:input[@wsam:Action] attribute in the corresponding wsdl:operation.
-    *    Also, @Action(input=...) and @WebMethod(action=...) annotation element values MUST
-    *    be same, if present.
-    * 2. If wsdl:input[@wsam:Action] cannot be mapped from the above steps, then wsam:Action
-    *    is generated using the metadata defaulting algorithm as if wsdl:input[@name] is
-    *    not present in WSDL.
-    */
-   private String getInputActionName(final Method method, final EndpointMetaData endpointMD, final OperationMetaData operationMD)
-   {
-      String actionInput = null;
-      Action actionAnn = method.getAnnotation(Action.class);
-      if ((actionAnn != null) && (!"".equals(actionAnn.input())))
-         actionInput = actionAnn.input();
-      
-      String webMethodAction = null;
-      WebMethod webMethodAnn = method.getAnnotation(WebMethod.class);
-      if ((webMethodAnn != null) && (!"".equals(webMethodAnn.action())))
-         webMethodAction = webMethodAnn.action();
-      
-      if ((actionInput != null) && (webMethodAction != null) && !actionInput.equals(webMethodAction))
-         throw new RuntimeException("@Action.input and @WebMethod.action must have same value if both specified: " + method);
-      
-      if (actionInput != null)
-         return actionInput;
-      
-      if (webMethodAction != null)
-         return webMethodAction;
-
-      if (endpointMD.isFeatureEnabled(AddressingFeature.class))
-      {
-         String tns = endpointMD.getPortTypeName().getNamespaceURI();
-         String portTypeName = endpointMD.getPortTypeName().getLocalPart();
-         String opName = operationMD.getQName().getLocalPart();
-
-         return tns + portTypeName + "/" + opName + "Request";
-      }
-
-      return null;
-   }
-
-   /*
-    * 2. A non-default @Action(output=...) value on a SEI method MUST result into wsdl:output-
-    *    [@wsam:Action] attribute in the corresponding wsdl:operation.
-    * 5. If wsdl:output[@wsam:Action] cannot be mapped from the above steps, then wsam:Action
-    *    is generated using the metadata defaulting algorithm as if wsdl:output[@name] is not present in
-    *    WSDL.
-    */
-   private String getOutputActionName(final Method method, final EndpointMetaData endpointMD, final OperationMetaData operationMD)
-   {
-      if (operationMD.isOneWay())
-         return null;
-      
-      Action actionAnn = method.getAnnotation(Action.class);
-      if ((actionAnn != null) && (!"".equals(actionAnn.output())))
-         return actionAnn.output();
-      
-      if (endpointMD.isFeatureEnabled(AddressingFeature.class))
-      {
-         String tns = endpointMD.getPortTypeName().getNamespaceURI();
-         String portTypeName = endpointMD.getPortTypeName().getLocalPart();
-         String opName = operationMD.getQName().getLocalPart();
-
-         return tns + portTypeName + "/" + opName + "Response";
-      }
-
-      return null;
-   }
-
-   /*
-    * 3. A non-default @Action(@FaultAction=...) value on a SEI method MUST result into wsdl:fault-
-    *    [@wsam:Action] attribute in the corresponding wsdl:operation. The wsdl:fault element
-    *    MUST correspond to the exception specified by className annotated element value.
-    * 6. If wsdl:fault[@wsam:Action] cannot be mapped from the above steps, then wsam:Action is
-    *    generated using the metadata defaulting algorithm as if wsdl:fault[@name] is the corresponding
-    *    exception class name.
-    */
-   private String getFaultActionName(final Method method, final EndpointMetaData endpointMD, final OperationMetaData operationMD, final FaultMetaData faultMD)
-   {
-      if (operationMD.isOneWay())
-         return null;
-      
-      String faultBeanName = faultMD.getJavaTypeName();
-      Action actionAnn = method.getAnnotation(Action.class);
-      FaultAction faultActionAnn = null;
-      if (actionAnn != null)
-      {
-         for (FaultAction faultAction : actionAnn.fault())
-         {
-            if (faultAction.className().getName().equals(faultBeanName))
-            {
-               faultActionAnn = faultAction;
-               break;
-            }
-         }
-      }
-      
-      if ((faultActionAnn != null) && (!"".equals(faultActionAnn.value())))
-         return faultActionAnn.value();
-      
-      if (endpointMD.isFeatureEnabled(AddressingFeature.class))
-      {
-         String tns = endpointMD.getPortTypeName().getNamespaceURI();
-         String portTypeName = endpointMD.getPortTypeName().getLocalPart();
-         String opName = operationMD.getQName().getLocalPart();
-         int dotIndex = faultBeanName.lastIndexOf('.');
-         String excetionClassName = dotIndex == -1 ? faultBeanName : faultBeanName.substring(dotIndex + 1);
-
-         return tns + portTypeName + "/" + opName + "/Fault/" + excetionClassName;
-      }
-      
-      return null;
-   }
 
    /**
     * Process operation meta data extensions.
     */
-   private void processMetaExtensions(Method method, EndpointMetaData endpointMD, OperationMetaData operationMD)
+   private void processMetaExtensions(Method method, EndpointMetaData epMetaData, OperationMetaData opMetaData)
    {
       AddressingProperties ADDR = new AddressingPropertiesImpl();
       AddressingOpMetaExt addrExt = new AddressingOpMetaExt(ADDR.getNamespaceURI());
 
-      addrExt.setInboundAction(this.getInputActionName(method, endpointMD, operationMD));
-      addrExt.setOutboundAction(this.getOutputActionName(method, endpointMD, operationMD));
-      for (FaultMetaData faultMD : operationMD.getFaults())
+      Action anAction = method.getAnnotation(Action.class);
+      if (anAction != null)
       {
-         addrExt.setFaultAction(faultMD.getFaultBeanName(), this.getFaultActionName(method, endpointMD, operationMD, faultMD));
+         addrExt.setInboundAction(anAction.input());
+         addrExt.setOutboundAction(anAction.output());
+      }
+      else
+      // default action values
+      {
+         String tns = epMetaData.getPortName().getNamespaceURI();
+         String portTypeName = epMetaData.getPortName().getLocalPart();
+         String opName = opMetaData.getQName().getLocalPart();
+         addrExt.setInboundAction(tns + "/" + portTypeName + "/" + opName + "Request");
+
+         if (!opMetaData.isOneWay())
+            addrExt.setOutboundAction(tns + "/" + portTypeName + "/" + opName + "Response");
       }
 
-      operationMD.addExtension(addrExt);
+      opMetaData.addExtension(addrExt);
    }
 
    private void processWebMethod(EndpointMetaData epMetaData, Method method)
    {
       String javaName = method.getName();
-      // skip async methods, they dont need meta data representation
-      if (javaName.endsWith(Constants.ASYNC_METHOD_SUFFIX))
+
+      // Methods added by JBoss AOP will be marked as synthetic and should be skipped.
+      if (method.isSynthetic() == true)
+    	  return;
+      
+      // skip asnyc methods, they dont need meta data representation
+      if (method.getName().endsWith(Constants.ASYNC_METHOD_SUFFIX))
          return;
 
       // reflection defaults
@@ -1014,8 +891,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
                         String partName = mimePart.getPartName();
                         if (paramMetaData.getPartName().equals(partName))
                         {
-                           if (log.isDebugEnabled())
-                              log.debug("Identified 'mime:content' binding: " + partName + ", mimeTypes=" + mimePart.getMimeTypes());
+                           log.debug("Identified 'mime:content' binding: " + partName + ", mimeTypes=" + mimePart.getMimeTypes());
                            paramMetaData.setSwA(true);
                            paramMetaData.setMimeTypes(mimePart.getMimeTypes());
                            break;
@@ -1034,18 +910,35 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       epMetaData.clearOperations();
 
       // Process @WebMethod annotations
-      boolean webMethodFound = false;
+      int webMethodCount = 0;
       for (Method method : wsClass.getMethods())
       {
-         if (WSDLUtils.isWebMethod(method))
+         WebMethod annotation = method.getAnnotation(WebMethod.class);
+         boolean exclude = annotation != null && annotation.exclude();
+         if (!exclude && (annotation != null || wsClass.isInterface()))
          {
             processWebMethod(epMetaData, method);
-            webMethodFound = true;
+            webMethodCount++;
          }
       }
 
-      if (!webMethodFound)
-         throw new WSException("Exposable methods not found: " + wsClass);
+      // @WebService should expose all inherited methods if @WebMethod is never specified
+      if (webMethodCount == 0 && !wsClass.isInterface())
+      {
+         for (Method method : wsClass.getMethods())
+         {
+            WebMethod annotation = method.getAnnotation(WebMethod.class);
+            boolean exclude = annotation != null && annotation.exclude();
+            if (!exclude && method.getDeclaringClass() != Object.class)
+            {
+               processWebMethod(epMetaData, method);
+               webMethodCount++;
+            }
+         }
+      }
+
+      if (webMethodCount == 0)
+         throw new WSException("No exposable methods found");
    }
 
    protected void initWrapperGenerator(ClassLoader loader)

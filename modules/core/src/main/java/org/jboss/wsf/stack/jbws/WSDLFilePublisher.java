@@ -101,9 +101,6 @@ public class WSDLFilePublisher
       for (ServiceMetaData serviceMetaData : wsMetaData.getServices())
       {
          File wsdlFile = getPublishLocation(deploymentName, serviceMetaData);
-         if (wsdlFile == null)
-            continue;
-
          wsdlFile.getParentFile().mkdirs();
 
          // Get the wsdl definition and write it to the wsdl publish location
@@ -191,8 +188,7 @@ public class WSDLFilePublisher
                wsdlWriter.writeWSDL(subdef, fw);
                fw.close();
 
-               if (log.isDebugEnabled())
-                  log.debug("WSDL import published to: " + targetURL);
+               log.debug("WSDL import published to: " + targetURL);
 
                // recursively publish imports
                publishWsdlImports(targetURL, subdef, published);
@@ -265,8 +261,7 @@ public class WSDLFilePublisher
                      if (fos != null) fos.close();
                   }
 
-                  if (log.isDebugEnabled())
-                     log.debug("XMLSchema import published to: " + xsdURL);
+                  log.debug("XMLSchema import published to: " + xsdURL);
 
                   // recursively publish imports
                   Element subdoc = DOMUtils.parse(xsdURL.openStream());
@@ -329,13 +324,9 @@ public class WSDLFilePublisher
          wsdlLocation = serviceMetaData.getWsdlFile();
 
       if (wsdlLocation == null)
-      {
-         log.warn("Cannot obtain wsdl location for: " + serviceMetaData.getServiceName());
-         return null;
-      }
+         throw new IllegalStateException("Cannot obtain wsdl location for: " + serviceMetaData.getServiceName());
 
-      if (log.isDebugEnabled())
-         log.debug("Publish WSDL file: " + wsdlLocation);
+      log.debug("Publish WSDL file: " + wsdlLocation);
 
       // Only file URLs are supported in <wsdl-publish-location>
       String publishLocation = serviceMetaData.getWsdlPublishLocation();
@@ -344,11 +335,6 @@ public class WSDLFilePublisher
       File locationFile = null;
       if (predefinedLocation == false)
       {
-         //JBWS-2829: windows issue
-         if (archiveName.startsWith("http://")) {
-             archiveName = archiveName.replace("http://", "http-");         
-         }
-   
          locationFile = new File(serverConfig.getServerDataDir().getCanonicalPath() + "/wsdl/" + archiveName);
       }
       else
@@ -369,7 +355,7 @@ public class WSDLFilePublisher
          wsdlLocation = wsdlLocation.substring(wsdlLocation.indexOf(expLocation) + expLocation.length());
          wsdlFile = new File(locationFile + "/" + wsdlLocation);
       }
-      else if (wsdlLocation.startsWith("vfsfile:") || wsdlLocation.startsWith("file:") || wsdlLocation.startsWith("jar:") || wsdlLocation.startsWith("vfszip:"))
+      else if (wsdlLocation.startsWith("vfsfile:") || wsdlLocation.startsWith("file:") || wsdlLocation.startsWith("jar:"))
       {
          wsdlLocation = wsdlLocation.substring(wsdlLocation.lastIndexOf("/") + 1);
          wsdlFile = new File(locationFile + "/" + wsdlLocation);

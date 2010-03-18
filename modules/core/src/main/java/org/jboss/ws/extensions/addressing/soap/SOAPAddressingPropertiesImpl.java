@@ -39,13 +39,11 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.addressing.AddressingConstants;
 import javax.xml.ws.addressing.AddressingException;
 import javax.xml.ws.addressing.AttributedURI;
-import javax.xml.ws.addressing.MapRequiredException;
 import javax.xml.ws.addressing.ReferenceParameters;
 import javax.xml.ws.addressing.Relationship;
 import javax.xml.ws.addressing.soap.SOAPAddressingBuilder;
 import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
 
-import org.jboss.logging.Logger;
 import org.jboss.ws.core.soap.NameImpl;
 import org.jboss.ws.core.soap.SOAPFactoryImpl;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
@@ -69,8 +67,6 @@ import org.w3c.dom.NamedNodeMap;
  */
 public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl implements SOAPAddressingProperties
 {
-   private static Logger log = Logger.getLogger(SOAPAddressingBuilderImpl.class);
-   
 	private static AddressingConstants ADDR = new AddressingConstantsImpl();
 
 	private NamespaceRegistry nsRegistry = new NamespaceRegistry();
@@ -80,10 +76,10 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 	private String getRequiredHeaderContent(SOAPHeader soapHeader, QName qname)
 	{
 		Element element = DOMUtils.getFirstChildElement(soapHeader, qname);
-		if(null == element) throw new MapRequiredException(qname);
+		if(null == element) throw new AddressingException("Required element "+qname+" is missing");
 
 		String value = DOMUtils.getTextContent(element);
-		if(null == value || value.equals("")) throw new MapRequiredException(qname);
+		if(null == value || value.equals("")) throw new AddressingException("Required element "+qname+" is missing");
 		
 		return value;
 	}
@@ -104,7 +100,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 		try
 		{
 			SOAPHeader soapHeader = message.getSOAPHeader();
-			
+
 			SOAPAddressingBuilder builder = new SOAPAddressingBuilderImpl();
 			AddressingConstants ADDR = builder.newAddressingConstants();
 			registerNamespaces(ADDR, soapHeader);		
@@ -150,17 +146,8 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 			// wsa:Action
 			// This REQUIRED element of type xs:anyURI conveys the [action] property.
 			// The [children] of this element convey the value of this property.
-	         if (message.getProperty("isRequired") != null && (Boolean)message.getProperty("isRequired")) 
-	         {
-	            //check the action header only if the required value is true
-	            String action = getRequiredHeaderContent(soapHeader, ADDR.getActionQName());
-                setAction(builder.newURI(action));
-	         } 
-	         else
-	         {
-	            String action = getOptionalHeaderContent(soapHeader, ADDR.getActionQName());
-                if (action != null) setAction(builder.newURI(action));
-	         }
+			String action = getRequiredHeaderContent(soapHeader, ADDR.getActionQName());
+			setAction(builder.newURI(action));
 
 			// Read wsa:MessageID
 			// This OPTIONAL element (whose content is of type xs:anyURI) conveys the [message id] property.
@@ -234,12 +221,6 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 		{
 			SOAPFactoryImpl factory = (SOAPFactoryImpl)SOAPFactory.newInstance();
 			SOAPHeader soapHeader = message.getSOAPHeader();					
-			
-			if (soapHeader == null)
-			{
-			   log.warn("No SOAP headers found!");
-			   return;
-			}
 			
 			// Add the xmlns:wsa declaration
 			soapHeader.addNamespaceDeclaration(ADDR.getNamespacePrefix(), ADDR.getNamespaceURI());

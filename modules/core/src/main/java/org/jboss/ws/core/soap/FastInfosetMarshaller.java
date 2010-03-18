@@ -28,13 +28,14 @@ import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.core.client.Marshaller;
+import org.jboss.remoting.InvocationRequest;
+import org.jboss.remoting.invocation.OnewayInvocation;
+import org.jboss.remoting.marshal.Marshaller;
 
 import com.sun.xml.fastinfoset.dom.DOMDocumentSerializer;
 
 /**
  * @author Thomas.Diesler@jboss.org
- * @author alessio.soldano@jboss.com
  * @since 12-Mar-2008
  */
 public class FastInfosetMarshaller implements Marshaller
@@ -50,6 +51,12 @@ public class FastInfosetMarshaller implements Marshaller
     */
    public void write(Object dataObject, OutputStream output) throws IOException
    {
+      if (dataObject instanceof InvocationRequest)
+         dataObject = ((InvocationRequest)dataObject).getParameter();
+
+      if (dataObject instanceof OnewayInvocation)
+         dataObject = ((OnewayInvocation)dataObject).getParameters()[0];
+
       if ((dataObject instanceof SOAPMessage) == false)
          throw new IllegalArgumentException("Not a SOAPMessage: " + dataObject);
 
@@ -70,5 +77,10 @@ public class FastInfosetMarshaller implements Marshaller
          ioex.initCause(ex);
          throw ioex;
       }
+   }
+
+   public Marshaller cloneMarshaller() throws CloneNotSupportedException
+   {
+      return new FastInfosetMarshaller();
    }
 }

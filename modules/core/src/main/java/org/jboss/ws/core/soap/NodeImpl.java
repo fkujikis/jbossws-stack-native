@@ -30,6 +30,8 @@ import java.util.Map;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPException;
 
+import org.jboss.logging.Logger;
+import org.jboss.util.NotImplementedException;
 import org.jboss.ws.WSException;
 import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.common.DOMWriter;
@@ -57,6 +59,9 @@ import org.w3c.dom.UserDataHandler;
  */
 public class NodeImpl implements javax.xml.soap.Node
 {
+   // provide logging
+   private static Logger log = Logger.getLogger(NodeImpl.class);
+
    // The parent of this Node
    protected SOAPElementImpl soapParent;
    // This org.w3c.dom.Node
@@ -314,8 +319,7 @@ public class NodeImpl implements javax.xml.soap.Node
       if (soapParent != null)
       {
          List children = ((NodeImpl)soapParent).soapChildren;
-         int len = children.size();
-         for (int i = 0; i < len; i++)
+         for (int i = 0; i < children.size(); i++)
          {
             NodeImpl node = (NodeImpl)children.get(i);
             if (node == this && i > 0)
@@ -340,11 +344,10 @@ public class NodeImpl implements javax.xml.soap.Node
       if (soapParent != null)
       {
          List children = ((NodeImpl)soapParent).soapChildren;
-         int len = children.size();
-         for (int i = 0; i < len; i++)
+         for (int i = 0; i < children.size(); i++)
          {
             NodeImpl node = (NodeImpl)children.get(i);
-            if (node == this && (i + 1) < len)
+            if (node == this && (i + 1) < children.size())
             {
                sibling = (NodeImpl)children.get(i + 1);
                break;
@@ -558,7 +561,7 @@ public class NodeImpl implements javax.xml.soap.Node
       }
       else if (node instanceof org.w3c.dom.Comment)
       {
-         retNode = new CommentImpl(node);
+         retNode = new TextImpl(node);
       }
       else if (node instanceof org.w3c.dom.Element)
       {
@@ -593,17 +596,20 @@ public class NodeImpl implements javax.xml.soap.Node
 
    public short compareDocumentPosition(Node other) throws DOMException
    {
-      return this.domNode.compareDocumentPosition(other);
+      // FIXME compareDocumentPosition
+      throw new NotImplementedException("compareDocumentPosition");
    }
 
    public String getBaseURI()
    {
-      return this.domNode.getBaseURI();
+      // FIXME getBaseURI
+      throw new NotImplementedException("getBaseURI");
    }
 
    public Object getFeature(String feature, String version)
    {
-      return this.domNode.getFeature(feature, version);
+      // FIXME getFeature
+      throw new NotImplementedException("getFeature");
    }
 
    public String getTextContent() throws DOMException
@@ -622,7 +628,8 @@ public class NodeImpl implements javax.xml.soap.Node
 
    public boolean isDefaultNamespace(String namespaceURI)
    {
-      return this.domNode.isDefaultNamespace(namespaceURI);
+      // FIXME isDefaultNamespace
+      throw new NotImplementedException("isDefaultNamespace");
    }
 
    public boolean isEqualNode(Node arg)
@@ -632,17 +639,20 @@ public class NodeImpl implements javax.xml.soap.Node
 
    public boolean isSameNode(Node other)
    {
-      return this.domNode.isSameNode(other);
+      // FIXME isSameNode
+      throw new NotImplementedException("isSameNode");
    }
 
    public String lookupNamespaceURI(String prefix)
    {
-      return this.domNode.lookupNamespaceURI(prefix);
+      // FIXME lookupNamespaceURI
+      throw new NotImplementedException("lookupNamespaceURI");
    }
 
    public String lookupPrefix(String namespaceURI)
    {
-      return this.domNode.lookupPrefix(namespaceURI);
+      // FIXME lookupPrefix
+      throw new NotImplementedException("lookupPrefix");
    }
 
    public void setTextContent(String textContent) throws DOMException

@@ -24,7 +24,6 @@ package org.jboss.ws.extensions.addressing.jaxws;
 import org.jboss.logging.Logger;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
 import org.jboss.ws.extensions.addressing.soap.SOAPAddressingPropertiesImpl;
-import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.wsf.common.handler.GenericSOAPHandler;
@@ -33,7 +32,6 @@ import org.w3c.dom.Element;
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
-import javax.xml.ws.BindingProvider;
 import javax.xml.ws.addressing.AddressingBuilder;
 import javax.xml.ws.addressing.AddressingException;
 import javax.xml.ws.addressing.JAXWSAConstants;
@@ -42,7 +40,6 @@ import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.MessageContext.Scope;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
-import javax.xml.ws.soap.AddressingFeature;
 
 import java.net.URISyntaxException;
 import java.util.Collections;
@@ -107,14 +104,7 @@ public class WSAddressingClientHandler extends GenericSOAPHandler
          try
          {
             OperationMetaData opMetaData = ((CommonMessageContext)msgContext).getOperationMetaData();
-            if (msgContext.get(BindingProvider.SOAPACTION_URI_PROPERTY) != null) 
-            {
-                addrProps.setAction(ADDR_BUILDER.newURI(msgContext.get(BindingProvider.SOAPACTION_URI_PROPERTY).toString()));
-            }
-            else 
-            {
-                addrProps.setAction(ADDR_BUILDER.newURI(opMetaData.getJavaName()));
-            }
+            addrProps.setAction(ADDR_BUILDER.newURI(opMetaData.getJavaName()));
          }
          catch (URISyntaxException ex)
          {
@@ -139,22 +129,7 @@ public class WSAddressingClientHandler extends GenericSOAPHandler
 			{
 				SOAPAddressingBuilder builder = (SOAPAddressingBuilder)SOAPAddressingBuilder.getAddressingBuilder();
 				SOAPAddressingProperties addrProps = (SOAPAddressingProperties)builder.newAddressingProperties();
-                CommonMessageContext commonMsgContext = (CommonMessageContext)msgContext;
-                ClientEndpointMetaData serverMetaData = (ClientEndpointMetaData)commonMsgContext.getEndpointMetaData();
-                AddressingFeature addrFeature = serverMetaData.getFeature(AddressingFeature.class);
-                if (addrFeature != null && addrFeature.isRequired())
-                {
-                   try 
-                   {
-                       soapMessage.setProperty("isRequired", true);
-                   }
-                   catch (Exception e) 
-                   {
-                      //ignore 
-                   }
-                   
-                }
-                addrProps.readHeaders(soapMessage);
+				addrProps.readHeaders(soapMessage);
             msgContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES, addrProps);
             msgContext.setScope(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES, Scope.APPLICATION);
             msgContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_INBOUND, addrProps);

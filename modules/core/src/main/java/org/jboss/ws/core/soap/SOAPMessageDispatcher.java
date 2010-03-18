@@ -54,7 +54,6 @@ public class SOAPMessageDispatcher
    {
       OperationMetaData opMetaData = null;
 
-      boolean debugEnabled = log.isDebugEnabled();
       // Dispatch based on wsa:Action
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       AddressingProperties inProps = (AddressingProperties)msgContext.get(JAXWSAConstants.SERVER_ADDRESSING_PROPERTIES_INBOUND);
@@ -66,8 +65,7 @@ public class SOAPMessageDispatcher
             if (wsaAction.equals(opAux.getSOAPAction()))
             {
                opMetaData = opAux;
-               if (debugEnabled)
-                  log.debug("Use wsa:Action dispatch: " + wsaAction);
+               log.debug("Use wsa:Action dispatch: " + wsaAction);
                break;
             }
          }
@@ -99,8 +97,7 @@ public class SOAPMessageDispatcher
 
          if (soapBodyElement == null)
          {
-            boolean wsrmDisabled = epMetaData.getConfig().getRMMetaData() == null; 
-            if ((epMetaData.getStyle() == Style.RPC) && (wsrmDisabled)) // RM hack
+            if (epMetaData.getStyle() == Style.RPC)
                throw new SOAPException("Empty SOAP body with no child element not supported for RPC");
 
             // [JBWS-1125] Support empty soap body elements
@@ -136,8 +133,7 @@ public class SOAPMessageDispatcher
          }
       }
 
-      if (debugEnabled)
-         log.debug("getDispatchDestination: " + (opMetaData != null ? opMetaData.getQName() : null));
+      log.debug("getDispatchDestination: " + (opMetaData != null ? opMetaData.getQName() : null));
       return opMetaData;
    }
 }
