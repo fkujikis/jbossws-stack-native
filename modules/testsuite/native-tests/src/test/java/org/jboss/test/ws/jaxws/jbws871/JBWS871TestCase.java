@@ -151,12 +151,17 @@ public class JBWS871TestCase extends JBossWSTest
       assertEquals(intArr, jbel.getValue());
    }
 
-   //Comment out this test , it is BP-2211 violation, see JBWS-2969
-   /*public void testEchoNullArray() throws Exception
+   public void testEchoNullArray() throws Exception
    {
       Integer[] outArr = endpoint.intArr("null", null);
       assertNull(outArr);
-   }*/
+   }
+
+   public void testEchoEmptyArray() throws Exception
+   {
+      Integer[] outArr = endpoint.intArr("empty", new Integer[]{});
+      assertEquals(0, outArr.length);
+   }
 
    public void testEchoSingleValueArray() throws Exception
    {

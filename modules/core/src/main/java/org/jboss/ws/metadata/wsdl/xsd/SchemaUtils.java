@@ -70,7 +70,7 @@ public class SchemaUtils
 {
    private static SchemaUtils ourInstance = new SchemaUtils();
 
-   protected static final String xsNS = Constants.NS_SCHEMA_XSD;
+   protected static String xsNS = Constants.NS_SCHEMA_XSD;
 
    private static Map<Class, QName> toolsTypeMappingOverride = new HashMap<Class, QName>();
 
@@ -535,7 +535,6 @@ public class SchemaUtils
       fname = fname.replace('/', '_');
       fname = fname.replace(':', '_');
       fname = fname.replace('?', '_');
-      fname = fname.replace('#', '_');
       
       return File.createTempFile("JBossWS_" + fname, ".xsd", tmpdir);
    }

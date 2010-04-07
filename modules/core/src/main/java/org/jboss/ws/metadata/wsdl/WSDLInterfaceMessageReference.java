@@ -76,11 +76,6 @@ public abstract class WSDLInterfaceMessageReference extends Extendable implement
     * Used for WSDL 1.1
     */
    private QName messageName;
-   
-   /**
-    * wsam:Action
-    */
-   private String action;
 
    public WSDLInterfaceMessageReference(WSDLInterfaceOperation wsdlOperation)
    {
@@ -220,26 +215,6 @@ public abstract class WSDLInterfaceMessageReference extends Extendable implement
    public QName getMessageName()
    {
       return messageName;
-   }
-
-   /**
-    * Sets wsam:Action
-    *
-    * @param action action
-    */
-   public void setAction(String action)
-   {
-      this.action = action;
-   }
-
-   /**
-    * Gets wsam:Action
-    *
-    * return action
-    */
-   public String getAction()
-   {
-      return this.action;
    }
 
    /**

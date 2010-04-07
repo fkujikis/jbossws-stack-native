@@ -86,7 +86,7 @@ public final class JBWS2268TestCase extends JBossWSTest
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       IOUtils.copyStream(baos, new FileInputStream(logFile));
-      assertEquals("init() destroy()", baos.toString().trim());
+      assertEquals(baos.toString().trim(), "init() destroy()");
       logFile.delete();
    }
 

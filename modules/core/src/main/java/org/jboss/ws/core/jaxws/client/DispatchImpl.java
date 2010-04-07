@@ -55,7 +55,6 @@ import org.jboss.util.NotImplementedException;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.ConfigProvider;
-import org.jboss.ws.core.EndpointMetadataProvider;
 import org.jboss.ws.core.MessageAbstraction;
 import org.jboss.ws.core.client.EndpointInfo;
 import org.jboss.ws.core.client.HTTPProtocolConnection;
@@ -89,7 +88,7 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  * @author Thomas.Diesler@jboss.com
  * @since 04-Jul-2006
  */
-public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMetadataProvider
+public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
 {
    // provide logging
    private final Logger log = Logger.getLogger(DispatchImpl.class);
@@ -191,15 +190,16 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
       // R2745 A HTTP request MESSAGE MUST contain a SOAPAction HTTP header field
       // with a quoted empty string value, if in the corresponding WSDL description,
       // the soapAction attribute of soapbind:operation is either not present, or
-      // present with an empty string as its value.      
+      // present with an empty string as its value.
+      String soapAction = null;
       Map<String, Object> reqContext = getRequestContext();
-      String soapAction = (String) reqContext.get(BindingProvider.SOAPACTION_URI_PROPERTY);;
-      Boolean useSOAPAction = (Boolean) reqContext.get(BindingProvider.SOAPACTION_USE_PROPERTY);
-      if (Boolean.TRUE.equals(useSOAPAction) && soapAction == null)
+      Boolean useSOAPAction = (Boolean)reqContext.get(BindingProvider.SOAPACTION_USE_PROPERTY);
+      if (Boolean.TRUE.equals(useSOAPAction))
       {
+         soapAction = (String)reqContext.get(BindingProvider.SOAPACTION_URI_PROPERTY);
+         if (soapAction == null)
             throw new IllegalStateException("Cannot obtain: " + BindingProvider.SOAPACTION_URI_PROPERTY);
       }
-      
       MimeHeaders mimeHeaders = reqMsg.getMimeHeaders();
       mimeHeaders.addHeader("SOAPAction", soapAction != null ? soapAction : "");
 
@@ -638,10 +638,5 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
       if (opMetaData == null)
          log.debug("Cannot find the right operation metadata!");
       return opMetaData;
-   }
-
-   public EndpointMetaData getEndpointMetaData()
-   {
-      return epMetaData;
    }
 }

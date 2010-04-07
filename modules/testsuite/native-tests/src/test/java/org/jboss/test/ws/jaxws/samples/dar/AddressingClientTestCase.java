@@ -30,7 +30,6 @@ import junit.framework.Test;
 
 import org.jboss.wsf.common.ObjectNameFactory;
 import org.jboss.wsf.test.JBossWSTest;
-import org.jboss.wsf.test.JBossWSTestHelper;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
 /**
@@ -45,22 +44,7 @@ public class AddressingClientTestCase extends JBossWSTest
    
    public static Test suite()
    {
-      //TODO: replace isHornetQAvailable call with JBossWSTestHelper.isTargetJBoss6() once AS 6 M3 is out and hence M2 is not supported anymore
-      return new JBossWSTestSetup(AddressingClientTestCase.class, isHornetQAvailable() ? "jaxws-samples-dar-queue.sar,jaxws-samples-dar-addressing-client.war,jaxws-samples-dar-addressing.jar" : "jaxws-samples-dar-addressing-client.war,jaxws-samples-dar-addressing.jar");
-   }
-   
-   private static boolean isHornetQAvailable()
-   {
-      try
-      {
-         ObjectName oname = ObjectNameFactory.create("jboss.system:type=Server");
-         String jbossVersion = (String)getServer().getAttribute(oname, "VersionNumber");
-         return JBossWSTestHelper.isTargetJBoss6() && !jbossVersion.contains("M2");
-      }
-      catch (Exception e)
-      {
-         return false;
-      }
+      return new JBossWSTestSetup(AddressingClientTestCase.class, "jaxws-samples-dar-addressing-client.war,jaxws-samples-dar-addressing.jar");
    }
 
    public void testSync() throws Exception
@@ -68,18 +52,7 @@ public class AddressingClientTestCase extends JBossWSTest
       URL wsdlURL = new URL("http://" + getServerHost() + ":8080/dar?wsdl");
       AddressingClient client = new AddressingClient(wsdlURL, getServerHost());
       Date start = new Date();
-      try
-      {
-         client.run(true);
-      }
-      catch (Exception e)
-      {
-         if (e.getMessage().indexOf("return value can not be null") == -1)
-         {
-            throw e ;
-         }
-         // do nothing, ingore the expected WebServiceException, See JBWS2969
-      }
+      client.run(false);
       Date stop = new Date();
       assertTrue(stop.getTime() - start.getTime() > TEST_RUN_TIME / 2);
    }
@@ -89,18 +62,7 @@ public class AddressingClientTestCase extends JBossWSTest
       URL wsdlURL = new URL("http://" + getServerHost() + ":8080/dar?wsdl");
       AddressingClient client = new AddressingClient(wsdlURL, getServerHost());
       Date start = new Date();
-      try
-      {
-         client.run(true);
-      }
-      catch (Exception e)
-      {
-         if (e.getMessage().indexOf("return value can not be null") == -1)
-         {
-            throw e ;
-         }
-         //do nothing, ingore the expected WebServiceException, See JBWS2969
-      }
+      client.run(true);
       Date stop = new Date();
       assertTrue(stop.getTime() - start.getTime() > TEST_RUN_TIME / 2);
    }

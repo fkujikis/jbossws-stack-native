@@ -23,7 +23,9 @@ package org.jboss.ws.metadata.builder.jaxws;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.jws.soap.SOAPBinding;
 import javax.xml.namespace.QName;
@@ -31,10 +33,9 @@ import javax.xml.ws.BindingType;
 
 import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
+import org.jboss.ws.annotation.EndpointConfig;
 import org.jboss.ws.core.jaxws.client.ServiceObjectFactoryJAXWS;
 import org.jboss.ws.core.soap.Style;
-import org.jboss.ws.extensions.policy.metadata.PolicyMetaDataBuilder;
-import org.jboss.ws.extensions.wsrm.common.RMHelper;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -56,7 +57,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedCallPropertyMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedStubPropertyMetaData;
-import org.jboss.ws.annotation.EndpointConfig;
 
 /**
  * A client side meta data builder.
@@ -66,21 +66,16 @@ import org.jboss.ws.annotation.EndpointConfig;
  */
 public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
 {
-   public ServiceMetaData buildMetaData(QName serviceName, URL wsdlURL, UnifiedVirtualFile vfsRoot)
-   {
-      return this.buildMetaData(serviceName, wsdlURL, vfsRoot, null);
-   }
 
-   public ServiceMetaData buildMetaData(QName serviceName, URL wsdlURL, UnifiedVirtualFile vfsRoot, ClassLoader classLoader)
+   public ServiceMetaData buildMetaData(QName serviceName, URL wsdlURL, UnifiedVirtualFile vfsRoot)
    {
       if (wsdlURL == null)
          throw new IllegalArgumentException("Invalid wsdlURL: " + wsdlURL);
 
-      if (log.isDebugEnabled())
-         log.debug("START buildMetaData: [service=" + serviceName + "]");
+      log.debug("START buildMetaData: [service=" + serviceName + "]");
       try
       {
-         UnifiedMetaData wsMetaData = classLoader != null ? new UnifiedMetaData(vfsRoot, classLoader) : new UnifiedMetaData(vfsRoot);
+         UnifiedMetaData wsMetaData = new UnifiedMetaData(vfsRoot);
 
          ServiceMetaData serviceMetaData = new ServiceMetaData(wsMetaData, serviceName);
          wsMetaData.addService(serviceMetaData);
@@ -90,20 +85,12 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
 
          buildMetaDataInternal(serviceMetaData, wsdlDefinitions);
 
-         //Setup policies for each endpoint
-         for (EndpointMetaData epMetaData : serviceMetaData.getEndpoints())
-         {
-            PolicyMetaDataBuilder policyBuilder = PolicyMetaDataBuilder.getClientSidePolicyMetaDataBuilder();
-            policyBuilder.processPolicyExtensions(epMetaData, wsdlDefinitions);
-         }
-         
          // Read the WSDL and initialize the schema model
          // This should only be needed for debuging purposes of the UMDM
          JBossXSModel schemaModel = WSDLUtils.getSchemaModel(wsdlDefinitions.getWsdlTypes());
          serviceMetaData.getTypesMetaData().setSchemaModel(schemaModel);
 
-         if (log.isDebugEnabled())
-            log.debug("END buildMetaData: " + wsMetaData);
+         log.debug("END buildMetaData: " + wsMetaData);
          return serviceMetaData;
       }
       catch (RuntimeException rte)
@@ -212,8 +199,7 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
 
          if(epMetaData.matches(portComp))
          {
-            if (log.isDebugEnabled())
-               log.debug("Processing service-ref contribution on portType: "+epMetaData.getPortTypeName());
+            log.debug("Processing service-ref contribution on portType: "+epMetaData.getPortTypeName());
 
             // process MTOM overrides
             if(portComp.getEnableMTOM())
@@ -298,10 +284,11 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
       processEndpointConfig(epMetaData, wsClass);
       epMetaData.initEndpointConfig();
 
+      // Process an optional @HandlerChain annotation
+      processHandlerChain(epMetaData, wsClass);
+
       // Process @WebMethod
       processWebMethods(epMetaData, wsClass);
-      
-      processXmlSeeAlso(wsClass);
 
       // Initialize types
       createJAXBContext(epMetaData);
@@ -316,12 +303,6 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
 
       // Eager initialization
       epMetaData.eagerInitialize();
-
-      // wsrm initialization
-      if (epMetaData.getConfig().getRMMetaData() != null)
-      {
-         RMHelper.setupRMOperations(epMetaData);
-      }
 
       if(log.isDebugEnabled()) log.debug("END: rebuildMetaData\n" + epMetaData.getServiceMetaData());
    }
