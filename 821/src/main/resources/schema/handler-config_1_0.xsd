@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.bea.com/xml/ns/jws" xmlns:jws="http://www.bea.com/xml/ns/jws"
+  xmlns:j2ee="http://java.sun.com/xml/ns/j2ee" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.1">
+  
+  <xsd:annotation>
+    <xsd:documentation>
+      <![CDATA[
+      This is the schema definition for the handler chain configuration
+      file used by JSR-181. It relies on the handler definitions that
+      are part of the standard J2EE deployment descriptors.
+      ]]>
+    </xsd:documentation>
+  </xsd:annotation>
+  
+  <xsd:include schemaLocation="j2ee_1_4.xsd"/>
+  <xsd:include schemaLocation="j2ee_web_services_1_1.xsd"/>
+  
+  <xsd:complexType name="handler-chainType">
+    <xsd:sequence>
+      <xsd:element name="handler-chain-name" type="j2ee:string"/>
+      <xsd:element name="handler" type="j2ee:port-component_handlerType" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  
+  <xsd:complexType name="handler-configType">
+    <xsd:sequence>
+      <xsd:element name="handler-chain" type="jws:handler-chainType" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  
+  <xsd:element name="handler-config" type="jws:handler-configType"/>
+  
+</xsd:schema>

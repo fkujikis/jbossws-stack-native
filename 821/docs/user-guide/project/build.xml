@@ -1,0 +1,45 @@
+<project name="Documentation" default="all.doc" basedir=".">
+
+  <property name="docbook-support.home" value="../../docbook-support"/>
+  <property name="doc.module.home" value="."/>
+
+  <available property="docbook-support.available" file="${docbook-support.home}/support.xml"/>
+
+  <!-- Setup the build timestamp & build identifer properties -->
+  <property file="../../../version.properties"/>
+  <tstamp>
+    <format property="build.date" pattern="dd-MMM-yyyy"/>
+  </tstamp>
+  <tstamp>
+    <format property="build.id" pattern="yyyyMMddHHmm"/>
+  </tstamp>
+
+  <!-- all.doc -->
+  <target name="all.doc" depends="get-docbook-support, copy-templates">
+
+    <ant antfile="${doc.module.home}/build-docbook.xml" inheritall="false">
+      <property name="docbook-support.home" value="${docbook-support.home}"/>
+    </ant>
+  </target>
+
+  <!-- get-docbook-support -->
+  <target name="get-docbook-support" unless="docbook-support.available">
+      <echo>Export docbook-support to ${docbook-support.home}/..</echo>
+      <cvs command="export -r HEAD"
+         cvsRoot=":pserver:anonymous:@anoncvs.forge.jboss.com:/cvsroot/jboss"
+         package="docbook-support"
+         dest="${docbook-support.home}/.."
+         failonerror="true"/>
+  </target>
+
+  <!-- copy-templates -->
+  <target name="copy-templates">
+    <copy tofile="en/master.xml" file="en/master.template" filtering="yes" overwrite="yes">
+      <filterset>
+        <filter token="build.date" value="${build.date}"/>
+        <filtersfile file="../../../version.properties"/>
+      </filterset>
+    </copy>
+  </target>
+
+</project>

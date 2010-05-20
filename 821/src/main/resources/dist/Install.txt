@@ -1,0 +1,29 @@
+
+Installation instructions
+=========================
+
+This distribution ships with JBoss binaries for JDK1.4 and JDK1.5.
+Please make sure your chose the right distribution that fits your target JDK.
+
+In order to install JBossWS the following steps are necessary:
+
+1.) 	Copy lib/jbossws-client.jar to <JBOSS_HOME>/client/
+2.) 	Unzip lib/jbossws.sar to <JBOSS_HOME>/server/<SERVER>/deploy/
+3.) 	Replacing JBossXB
+
+	In order to upgrade to 1.0.2 you need to manually replace the jboss-xml-binding.jar 
+	in the JBOSS/client and JBOSS/lib directories. 
+	The 4.0.4GA compatible release can be found here:  
+	http://repository.jboss.com/jboss/jbossxb/1.0.0.CR6/
+
+
+That's it!
+After the jbossws.sar is deployed you should be able to access JBossWS under
+http://localhost:8080/jbossws
+
+If you have any questions, please post to the userforum:
+http://www.jboss.org/index.html?module=bb&op=viewforum&f=200
+
+
+Enjoy,
+The JBossWS Team

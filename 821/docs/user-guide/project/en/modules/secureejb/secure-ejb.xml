@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<chapter id="secure-ejb">
+  
+  <title>Secure Endpoints</title>
+  
+  <para><command>Secure the access to the SLSB</command></para>
+  
+  <para>First we secure the access to the SLSB as we would do for normal (non web service) invocations.</para>
+  
+  <para>In ejb-jar.xml, we setup the method permissions for the SLSB endpoint. 
+    Note, that it is not necessarily required for the endpoint to have home/remote interfaces.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+  <enterprise-beans>
+    <session>
+      <ejb-name>RoleSecuredSLSB</ejb-name>
+      <remote>org.jboss.test.ws.samples.secureejb.OrganizationRemote</remote>
+      <home>org.jboss.test.ws.samples.secureejb.OrganizationHome</home>
+      <service-endpoint>org.jboss.test.ws.samples.secureejb.OrganizationService</service-endpoint>
+      <ejb-class>org.jboss.test.ws.samples.secureejb.OrganizationImpl</ejb-class>
+      <session-type>Stateless</session-type>
+      <transaction-type>Container</transaction-type>
+      <security-role-ref>
+        <role-name>friend</role-name>
+      </security-role-ref>
+    </session>
+    <session>
+      <ejb-name>BasicSecuredSLSB</ejb-name>
+      <remote>org.jboss.test.ws.samples.secureejb.OrganizationRemote</remote>
+      <home>org.jboss.test.ws.samples.secureejb.OrganizationHome</home>
+      <service-endpoint>org.jboss.test.ws.samples.secureejb.OrganizationService</service-endpoint>
+      <ejb-class>org.jboss.test.ws.samples.secureejb.OrganizationImpl</ejb-class>
+      <session-type>Stateless</session-type>
+      <transaction-type>Container</transaction-type>
+    </session>
+  </enterprise-beans>
+
+  <assembly-descriptor>
+    <security-role>
+      <role-name>friend</role-name>
+    </security-role>
+    <method-permission>
+      <role-name>friend</role-name>
+      <method>
+        <ejb-name>RoleSecuredSLSB</ejb-name>
+        <method-name>*</method-name>
+      </method>
+    </method-permission>
+    <method-permission>
+      <unchecked/>
+      <method>
+        <ejb-name>BasicSecuredSLSB</ejb-name>
+        <method-name>*</method-name>
+      </method>
+    </method-permission>
+  </assembly-descriptor>
+  ]]></programlisting></para>
+
+  <para><command>Define the security domain</command></para>
+  
+  <para>Next, define the security domain for this deployment in jboss.xml. 
+    The JBossWS security context is configured in login-config.xml and uses the 
+    <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=UsersRolesLoginModule">UsersRolesLoginModule</ulink>.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+  <jboss>
+    <security-domain>java:/jaas/JBossWS</security-domain>
+    <enterprise-beans>
+      <session>
+        <ejb-name>RoleSecuredSLSB</ejb-name>
+        <jndi-name>ejb/RoleSecuredSLSB</jndi-name>
+        <port-component>
+          <port-component-name>RoleSecured</port-component-name>
+          <port-component-uri>/ws4ee-samples-ejb/RoleSecured</port-component-uri>
+        </port-component>
+      </session>
+      <session>
+        <ejb-name>BasicSecuredSLSB</ejb-name>
+        <jndi-name>ejb/BasicSecuredSLSB</jndi-name>
+        <port-component>
+          <port-component-name>BasicSecured</port-component-name>
+          <port-component-uri>/ws4ee-samples-ejb/BasicSecured</port-component-uri>
+        </port-component>
+      </session>
+    </enterprise-beans>
+  </jboss>
+  ]]></programlisting></para>
+
+  <para>In login-config.xml, that lives in the server config dir, you will find the definition of the JBossWS security domain.</para>
+
+  <para>
+    <programlisting><![CDATA[
+  <!-- 
+    A template configuration for the JBossWS security domain.
+    This defaults to the UsersRolesLoginModule the same as other and should be
+    changed to a stronger authentication mechanism as required.
+  -->
+  <application-policy name="JBossWS">
+    <authentication>
+      <login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule"
+        flag="required">
+        <module-option name="usersProperties">props/jbossws-users.properties</module-option>
+        <module-option name="rolesProperties">props/jbossws-roles.properties</module-option>
+        <module-option name="unauthenticatedIdentity">anonymous</module-option>
+      </login-module>
+    </authentication>
+  </application-policy>
+  ]]></programlisting></para>
+
+  <para><command> Use the JAXRPC Stub to set principal/credential</command></para>
+  
+  <para>A web service client may use the javax.xml.rpc.Stub object to set the username/password combination</para>
+
+  <para>
+    <programlisting><![CDATA[
+  public void testWebServiceAccess() throws Exception
+   {
+      OrganizationEndpoint endpoint = service.getPort(OrganizationEndpoint.class);
+
+      Stub stub = (Stub)endpoint;
+      stub._setProperty(Stub.USERNAME_PROPERTY, "kermit");
+      stub._setProperty(Stub.PASSWORD_PROPERTY, "thefrog");
+
+      String info = endpoint.getContactInfo("mafia");
+      assertEquals("The 'mafia' boss is currently out of office, please call again.", info);
+   }
+   ]]></programlisting></para>
+  
+  <para><command> Using HTTP Basic Auth for security</command></para>
+  
+  <para>To enable HTTP Basic authentication you need to add a port-component descriptor to your jboss.xml file, which contains an auth-method tag. 
+    We just modify the jboss.xml from above.</para>
+
+  <para>
+    <programlisting><![CDATA[
+  <jboss>
+    <security-domain>java:/jaas/JBossWS</security-domain>
+    <enterprise-beans>
+      <session>
+        <ejb-name>RoleSecuredSLSB</ejb-name>
+        <jndi-name>ejb/RoleSecuredSLSB</jndi-name>
+        <port-component>
+          <port-component-name>RoleSecured</port-component-name>
+          <port-component-uri>/ws4ee-samples-ejb/RoleSecured</port-component-uri>
+          <auth-method>BASIC</auth-method>
+        </port-component>
+      </session>
+      <session>
+        <ejb-name>BasicSecuredSLSB</ejb-name>
+        <jndi-name>ejb/BasicSecuredSLSB</jndi-name>
+        <port-component>
+          <port-component-name>BasicSecured</port-component-name>
+          <port-component-uri>/ws4ee-samples-ejb/BasicSecured</port-component-uri>
+          <auth-method>BASIC</auth-method>
+        </port-component>
+      </session>
+    </enterprise-beans>
+  </jboss>
+   ]]></programlisting></para>
+  
+  <para><command>Secure HTTP transport</command></para>
+  
+  <para>You can also require that all webservice requests use SSL by adding the transport-guarantee tag in your jboss.xml file. 
+    Modify jboss.xml file to also require the transport guarantee CONFIDENTIAL.
+  </para>
+
+  <para>
+    <programlisting><![CDATA[
+  <jboss>
+    <security-domain>java:/jaas/JBossWS</security-domain>
+    <enterprise-beans>
+      <session>
+        <ejb-name>RoleSecuredSLSB</ejb-name>
+        <jndi-name>ejb/RoleSecuredSLSB</jndi-name>
+        <port-component>
+          <port-component-name>RoleSecured</port-component-name>
+          <port-component-uri>/ws4ee-samples-ejb/RoleSecured</port-component-uri>
+          <auth-method>BASIC</auth-method>
+          <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </port-component>
+      </session>
+      <session>
+        <ejb-name>BasicSecuredSLSB</ejb-name>
+        <jndi-name>ejb/BasicSecuredSLSB</jndi-name>
+        <port-component>
+          <port-component-name>BasicSecured</port-component-name>
+          <port-component-uri>/ws4ee-samples-ejb/BasicSecured</port-component-uri>
+          <auth-method>BASIC</auth-method>
+          <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </port-component>
+      </session>
+    </enterprise-beans>
+  </jboss>
+   ]]></programlisting></para>
+  
+  <para>At last, make sure that your WSDL files point to the right url. 
+    Otherwise your webservice client may be redirected to the unsecure HTTP access method. 
+    The easiest way is to add "https://" to the SOAP Address entry:</para>
+
+  <para>
+    <programlisting><![CDATA[
+   <service name="OrganizationService">
+    <port name="BasicSecuredPort" binding="tns:OrganizationServiceBinding">
+     <soap:address location="https://localhost:8443/ws4ee-samples-ejb/BasicSecured"/>
+    </port>
+    <port name="RoleSecuredPort" binding="tns:OrganizationServiceBinding">
+     <soap:address location="https://localhost:8443/ws4ee-samples-ejb/RoleSecured"/>
+    </port>
+   </service>
+  ]]></programlisting></para>
+
+  <para>For this to work the Tomcat+SSL connector must be enabled. 
+  </para>
+
+  <para>
+    <programlisting><![CDATA[
+   <Connector port="8443" address="${jboss.bind.address}"
+        maxThreads="100" minSpareThreads="5" maxSpareThreads="15"
+        scheme="https" secure="true" clientAuth="want"
+        keystoreFile="${jboss.server.home.dir}/conf/keystores/wsse.keystore" 
+        keystorePass="jbossws"
+        truststoreFile="${jboss.server.home.dir}/conf/keystores/wsse.keystore" 
+        truststorePass="jbossws"
+        sslProtocol = "TLS" />
+  ]]></programlisting></para>
+        
+  <para>For details see: <ulink url="http://tomcat.apache.org/tomcat-5.5-doc/ssl-howto.html"/>
+  </para>
+
+  <para>On the client side the truststore must be installed
+  </para>
+
+  <para>
+    <programlisting><![CDATA[
+      <sysproperty key="javax.net.ssl.keyStore" value="${test.resources.dir}/wsse/wsse.keystore"/>
+      <sysproperty key="javax.net.ssl.trustStore" value="${test.resources.dir}/wsse/wsse.truststore"/>
+      <sysproperty key="javax.net.ssl.keyStorePassword" value="jbossws"/>
+      <sysproperty key="javax.net.ssl.trustStorePassword" value="jbossws"/>
+      <sysproperty key="javax.net.ssl.keyStoreType" value="jks"/>
+      <sysproperty key="javax.net.ssl.trustStoreType" value="jks"/>
+  ]]></programlisting></para>
+  
+  <para>In case you see the following exception, you should disable URL checking on the client side
+  </para>
+  
+  <para>
+    <programlisting><![CDATA[
+  java.io.IOException: HTTPS hostname wrong:  should be <localhost>
+    at sun.net.www.protocol.https.HttpsClient.checkURLSpoofing(HttpsClient.java:493)
+    at sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:418)
+  ]]></programlisting></para>
+  
+  <para>
+    <programlisting><![CDATA[
+      <sysproperty key="org.jboss.security.ignoreHttpsHost" value="true"/>
+  ]]></programlisting></para>
+  
+</chapter>

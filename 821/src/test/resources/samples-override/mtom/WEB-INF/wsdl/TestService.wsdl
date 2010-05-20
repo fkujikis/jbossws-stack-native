@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions name="XOPTest" targetNamespace="http://org.jboss.ws/samples/mtom"
+             xmlns:tns="http://org.jboss.ws/samples/mtom"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+   <types>
+      <schema xmlns="http://www.w3.org/2001/XMLSchema"
+              targetNamespace="http://org.jboss.ws/samples/mtom"
+              xmlns:xmime="http://www.w3.org/2005/05/xmlmime">
+
+         <import schemaLocation="http://www.w3.org/2005/05/xmlmime" namespace="http://www.w3.org/2005/05/xmlmime"/>
+
+         <element name="imagejpeg" xmime:contentType="image/jpeg" type="xmime:base64Binary"/>
+         <element name="textplain" xmime:contentType="text/plain" type="xmime:base64Binary"/>
+         <element name="textxml" xmime:contentType="text/xml" type="xmime:base64Binary"/>
+         <element name="applxml" xmime:contentType="application/xml" type="xmime:base64Binary"/>
+         <element name="octets" xmime:contentType="application/octet-stream" type="xmime:base64Binary"/>
+
+         <complexType name="XOPBinary" >
+            <simpleContent>
+               <extension base="xsd:base64Binary" >
+                  <attribute ref="xmime:contentType"/>
+               </extension>
+            </simpleContent>
+         </complexType>
+      </schema>
+   </types>
+
+   <message name="XOPTest_sendMimeImageJPEG">
+      <part name="message" type="xsd:string"/>
+      <part name="xoppart" element="tns:imagejpeg"/>
+   </message>
+   <message name="XOPTest_sendMimeImageJPEGResponse">
+      <part name="result" element="tns:imagejpeg"/>
+   </message>
+   <message name="XOPTest_sendMimeTextPlain">
+      <part name="message" type="xsd:string"/>
+      <part name="xoppart" element="tns:textplain"/>
+   </message>
+   <message name="XOPTest_sendMimeTextPlainResponse">
+      <part name="result" element="tns:textplain"/>
+   </message>
+   <message name="XOPTest_sendMimeTextXML">
+      <part name="message" type="xsd:string"/>
+      <part name="xoppart" element="tns:textxml"/>
+   </message>
+   <message name="XOPTest_sendMimeTextXMLResponse">
+      <part name="result" element="tns:textxml"/>
+   </message>
+   <message name="XOPTest_sendMimeApplicationXML">
+      <part name="message" type="xsd:string"/>
+      <part name="xoppart" element="tns:applxml"/>
+   </message>
+   <message name="XOPTest_sendMimeApplicationXMLResponse">
+      <part name="result" element="tns:applxml"/>
+   </message>
+
+   <message name="XOPTest_sendOctets">
+      <part name="message" type="xsd:string"/>
+      <part name="xoppart" element="tns:octets"/>
+   </message>
+   <message name="XOPTest_sendOctetsResponse">
+      <part name="result" element="tns:octets"/>
+   </message>
+
+   <portType name="XOPTest">
+      <operation name="sendMimeImageJPEG">
+         <input message="tns:XOPTest_sendMimeImageJPEG"/>
+         <output message="tns:XOPTest_sendMimeImageJPEGResponse"/>
+      </operation>
+      <operation name="sendMimeTextPlain">
+         <input message="tns:XOPTest_sendMimeTextPlain"/>
+         <output message="tns:XOPTest_sendMimeTextPlainResponse"/>
+      </operation>
+      <operation name="sendMimeTextXML">
+         <input message="tns:XOPTest_sendMimeTextXML"/>
+         <output message="tns:XOPTest_sendMimeTextXMLResponse"/>
+      </operation>
+      <operation name="sendMimeApplicationXML">
+         <input message="tns:XOPTest_sendMimeApplicationXML"/>
+         <output message="tns:XOPTest_sendMimeApplicationXMLResponse"/>
+      </operation>
+
+      <operation name="sendOctets">
+         <input message="tns:XOPTest_sendOctets"/>
+         <output message="tns:XOPTest_sendOctetsResponse"/>
+      </operation>
+   </portType>
+
+   <binding name="XOPTestBinding" type="tns:XOPTest">
+      <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc"/>
+      <operation name="sendMimeImageJPEG">
+         <soap:operation soapAction=""/>
+         <input>
+            <soap:body use="literal" namespace="http://org.jboss.ws/samples/mtom"/>
+         </input>
+         <output>
+            <soap:body use="literal" namespace="http://org.jboss.ws/samples/mtom"/>
+         </output>
+      </operation>
+      <operation name="sendMimeTextPlain">
+         <soap:operation soapAction=""/>
+         <input>
+            <soap:body use="literal" namespace="http://org.jboss.ws/samples/mtom"/>
+         </input>
+         <output>
+            <soap:body use="literal" namespace="http://org.jboss.ws/samples/mtom"/>
+         </output>
+      </operation>     
+      <operation name="sendMimeTextXML">
+         <soap:operation soapAction=""/>
+         <input>
+            <soap:body use="literal" namespace="http://org.jboss.ws/samples/mtom"/>
+         </input>
+         <output>
+            <soap:body use="literal" namespace="http://org.jboss.ws/samples/mtom"/>
+         </output>
+      </operation>
+      <operation name="sendMimeApplicationXML">
+         <soap:operation soapAction=""/>
+         <input>
+            <soap:body use="literal" namespace="http://org.jboss.ws/samples/mtom"/>
+         </input>
+         <output>
+            <soap:body use="literal" namespace="http://org.jboss.ws/samples/mtom"/>
+         </output>
+      </operation>
+      <operation name="sendOctets">
+         <soap:operation soapAction=""/>
+         <input>
+            <soap:body use="literal" namespace="http://org.jboss.ws/samples/mtom"/>
+         </input>
+         <output>
+            <soap:body use="literal" namespace="http://org.jboss.ws/samples/mtom"/>
+         </output>
+      </operation>
+   </binding>
+
+   <service name="XOPTest">
+      <port name="XOPTestPort" binding="tns:XOPTestBinding">
+         <soap:address location="REPLACE_WITH_ACTUAL_URL"/>
+      </port>
+   </service>
+</definitions>

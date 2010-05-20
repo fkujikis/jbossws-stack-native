@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect1 id="dii-clients">
+  
+  <title>Dynamic Invocation Interface</title>
+  
+  <para><command>An unconfigured DII client</command></para>
+  
+  <para>In the case of DII the client sets up the call object manually. This involves setting 
+  the operation name and in/out parameters explicitly. There is no WSDL as abstract 
+  contract for the web service communication involved. Of all the web service client 
+  technologies, this is the least favorable.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+   public void testEchoString() throws Exception
+   {
+      ServiceFactory factory = ServiceFactory.newInstance();
+      Service service = factory.createService(new QName("ANY_SERVICE_NAME"));
+
+      Call call = service.createCall();
+      call.setOperationName(new QName(TARGET_NAMESPACE, "echoString"));
+      call.addParameter("String_1", Constants.TYPE_LITERAL_STRING, ParameterMode.IN);
+      call.addParameter("String_2", Constants.TYPE_LITERAL_STRING, ParameterMode.IN);
+      call.setReturnType(Constants.TYPE_LITERAL_STRING);
+
+      call.setTargetEndpointAddress(TARGET_ENDPOINT_ADDRESS);
+
+      String hello = "Hello";
+      String world = "world!";
+      Object retObj = call.invoke(new Object[]{hello, world});
+      assertEquals(hello + world, retObj);
+   }
+      ]]></programlisting></para>
+  
+  <para><command>A configured DII client</command></para>
+  
+  <para>A DII client can be configured from WSDL</para>
+  
+  <para>
+    <programlisting><![CDATA[
+     public void testEchoString() throws Exception
+     {
+        ServiceFactory factory = ServiceFactory.newInstance();
+        URL wsdlLocation = new URL(TARGET_ENDPOINT_ADDRESS + "?wsdl");
+        QName serviceName = new QName(TARGET_NAMESPACE, "TestService");
+        ServiceImpl service = (ServiceImpl)factory.createService(wsdlLocation, serviceName);
+        call = service.createCall();
+      
+        QName operationName = new QName(TARGET_NAMESPACE, "echoString");
+        call.setOperationName(operationName);
+        assertFalse(call.isParameterAndReturnSpecRequired(operationName));
+  
+        String hello = "Hello";
+        String world = "world!";
+        Object retObj = call.invoke(new Object[]{hello, world});
+        assertEquals(hello + world, retObj);
+     }
+      ]]></programlisting></para>
+  
+  <para>Note however, that the above example does not have a notion of JAXRPC mapping. The abstract contract is given as an 
+    URL to the WSDL, but it is not expicitly said how the various types in XML schema map to Java types. It works, because 
+    above we only use strings. It would not work if complex user types were involved. Prior to standard J2EE-1.4 web services
+    frameworks fell back to Java reflection to provide the mapping meta data.
+  </para>
+  
+  <para>With JSR109 we have a standard mapping metadata format usually provided through jaxrpc-mapping.xml. The name of the 
+    file is however not standardized. Unfortunately the standard JAXRPC API does not accommodate this mapping information because 
+    it predates JSR109. In JBossWS you have the option to use a propriatary API method or rely on autodiscovery of META-INF/jaxrpc-mapping.xml.
+  </para>
+  
+  <para>Here the propriatary API methods that we provide in org.jboss.ws.jaxrpc.ServiceFactoryImpl
+  </para>
+  
+  <para>
+    <programlisting><![CDATA[
+   /**
+    * Create a <code>Service</code> instance.
+    *
+    * @param wsdlURL URL for the WSDL document location
+    * @param serviceName  QName for the service.
+    * @param mappingURL URL for the jaxrpc-mapping.xml document location
+    */
+   public Service createService(URL wsdlURL, QName serviceName, URL mappingURL) throws ServiceException
+   {
+      ...
+   }
+
+   /**
+    * Create a <code>Service</code> instance.
+    *
+    * @param wsdlURL URL for the WSDL document location
+    * @param serviceName  QName for the service.
+    * @param mappingURL URL for the jaxrpc-mapping.xml document location
+    * @param securityURL URL for the jbossws-security.xml file
+    */
+   public Service createService(URL wsdlURL, QName serviceName, URL mappingURL, URL securityURL) throws ServiceException
+   {
+      ...
+   }
+      ]]></programlisting></para>
+  
+</sect1>

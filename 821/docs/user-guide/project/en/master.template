@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding="iso-8859-1"?>
+
+<!-- $Id: master.xml 118 2006-04-06 14:44:24Z thomas.diesler@jboss.com $ -->
+
+<!DOCTYPE book PUBLIC
+  "-//OASIS//DTD DocBook XML V4.3CR3//EN"
+  "../../../docbook-support/support/docbook-dtd/docbookx.dtd"
+[
+<!ENTITY ch-introduction           SYSTEM "modules/introduction.xml">
+<!ENTITY ch-installation           SYSTEM "modules/installation/installation.xml">
+<!ENTITY s-install-jboss           SYSTEM "modules/installation/install-jboss.xml">
+<!ENTITY s-install-tomcat          SYSTEM "modules/installation/install-tomcat.xml">
+<!ENTITY ch-installation           SYSTEM "modules/installation/installation.xml">
+<!ENTITY ch-getting-started        SYSTEM "modules/getting-started/getting-started.xml">
+<!ENTITY s-rpc-endpoints           SYSTEM "modules/getting-started/rpc-endpoints.xml">
+<!ENTITY s-doc-endpoints           SYSTEM "modules/getting-started/doc-endpoints.xml">
+<!ENTITY s-message-style           SYSTEM "modules/getting-started/message-endpoints.xml">
+<!ENTITY ch-endpoints              SYSTEM "modules/endpoints/endpoints.xml">
+<!ENTITY s-jsr109-endpoints        SYSTEM "modules/endpoints/jsr109-endpoints.xml">
+<!ENTITY s-jsr109-pojo-endpoint    SYSTEM "modules/endpoints/jsr109-pojo-endpoint.xml">
+<!ENTITY s-jsr109-ejb-endpoint     SYSTEM "modules/endpoints/jsr109-ejb-endpoint.xml">
+<!ENTITY s-jsr181-endpoints        SYSTEM "modules/endpoints/jsr181-endpoints.xml">
+<!ENTITY s-jsr181-pojo-endpoint    SYSTEM "modules/endpoints/jsr181-pojo-endpoint.xml">
+<!ENTITY s-jsr181-ejb3-endpoint    SYSTEM "modules/endpoints/jsr181-ejb3-endpoint.xml">
+<!ENTITY s-service-lifecycle       SYSTEM "modules/endpoints/service-lifecycle.xml">
+<!ENTITY s-templates               SYSTEM "modules/endpoints/template-config.xml">
+<!ENTITY ch-clients                SYSTEM "modules/clients/clients.xml">
+<!ENTITY s-jsr109-clients          SYSTEM "modules/clients/jsr109-clients.xml">
+<!ENTITY s-dii-clients             SYSTEM "modules/clients/dii-clients.xml">
+<!ENTITY s-stub-properties         SYSTEM "modules/clients/stub-properties.xml">
+<!ENTITY ch-headers-handlers       SYSTEM "modules/headers-handlers/headers-handlers.xml">
+<!ENTITY s-headers                 SYSTEM "modules/headers-handlers/headers.xml">
+<!ENTITY s-handlers                SYSTEM "modules/headers-handlers/handlers.xml">
+<!ENTITY s-dynamic-handlers        SYSTEM "modules/headers-handlers/dynamic-handlers.xml">
+<!ENTITY ch-holders                SYSTEM "modules/holders/inout-parameters.xml">
+<!ENTITY ch-exceptions             SYSTEM "modules/exceptions/exceptions.xml">
+<!ENTITY ch-oneway                 SYSTEM "modules/oneway/oneway.xml">
+<!ENTITY ch-attachments            SYSTEM "modules/attachments/attachments.xml">
+<!ENTITY ch-mtom-xop               SYSTEM "modules/mtom-xop/mtom-xop.xml">
+<!ENTITY ch-jms-transport          SYSTEM "modules/jmstransport/jms-transport.xml">
+<!ENTITY s-jms-endpoint            SYSTEM "modules/jmstransport/jms-endpoint.xml">
+<!ENTITY s-jms-client              SYSTEM "modules/jmstransport/jms-client.xml">
+<!ENTITY ch-secure-ejb             SYSTEM "modules/secureejb/secure-ejb.xml">
+<!ENTITY ch-wssecurity             SYSTEM "modules/wssecurity/wssecurity.xml">
+<!ENTITY ch-wsaddressing           SYSTEM "modules/wsaddressing/wsaddressing.xml">
+<!ENTITY ch-wseventing             SYSTEM "modules/wseventing/wseventing.xml">
+<!ENTITY ch-wstransaction          SYSTEM "modules/wstransaction/wstransaction.xml">
+<!ENTITY ch-xmlregistry            SYSTEM "modules/xmlregistry/xmlregistry.xml">
+<!ENTITY appendix-a                SYSTEM "modules/appendix-a.xml">
+]>
+
+
+<book lang="en">
+
+  <bookinfo>
+    <title>JBossWS User Guide</title>
+    <subtitle>jbossws-@version.id@</subtitle>
+    <releaseinfo>@build.date@</releaseinfo>
+    <releaseinfo>
+        <ulink url="http://labs.jboss.com/jbossws/user-guide/en/html/index.html">[Multiple Pages]</ulink>, 
+        <ulink url="http://labs.jboss.com/jbossws/user-guide/en/html_single/index.html">[Single Page]</ulink>, 
+        <ulink url="http://labs.jboss.com/jbossws/user-guide/en/pdf/jbossws-userguide.pdf">[PDF]</ulink>
+    </releaseinfo>
+  </bookinfo>
+  
+  <toc/>
+  
+  <preface id="preface" revision="1">
+    <title>Preface</title>
+    <para> After JBoss J2EE-1.4 certification in Jun/2004 we have decided to develop our 
+      own JAXRPC SOAP stack that fits better in the overall JBoss architecture and is 
+      generally more suiteable for the specific J2EE requirements for web services. 
+      JBossWS is our new implementation of J2EE compatible web services. 
+      This document describes the JBossWS feature set and its usage.
+      </para>
+    <para> If you have questions regarding JBossWS, please feel to ask the JBossWS team.</para>
+    
+    <para>Web Service Lead - Thomas Diesler</para>
+    <para>WS-Security, WSTools - Jason Greene</para>
+    <para>WS-Eventing, Standards - Heiko Braun</para>
+    
+  </preface>
+
+  &ch-introduction;
+  &ch-installation;
+  &ch-getting-started;
+  &ch-endpoints;
+  &ch-clients;
+  &ch-headers-handlers;
+  &ch-holders;
+  &ch-exceptions;
+  &ch-oneway;
+  &ch-attachments;
+  &ch-mtom-xop; 
+  &ch-jms-transport; 
+  &ch-secure-ejb; 
+  &ch-wssecurity;
+  &ch-wsaddressing;
+  &ch-wseventing;
+  &ch-wstransaction;
+  &ch-xmlregistry;
+  &appendix-a; 
+  
+</book>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect1 id="jsr109-clients">
+  
+  <title>JSR-109 Clients</title>
+  
+  <para><command>A web service client connecting to an endpoint</command></para>
+  
+  <para>The web service client programming model for J2EE is about accessing a remote web service from a J2EE component. 
+    Please remember that with web services the client and the server are fundamentally disconnected. There are server side issues
+    and client side issues. In other words, if you setup a web service endpoint any client that adhers to the abstract contract 
+    in WSDL can talk to that endpoint.
+  </para>
+  <para>
+    If you want to implement a WS client using JBossWS (to what server impl it talks to does not matter) you use wstools to generate the
+    WS4EE required artifacts from WSDL. The artifacts are
+  </para>
+  
+  <para>
+    <itemizedlist>
+        <listitem>
+            Required Service Endpoint Interface (SEI)
+        </listitem>
+        <listitem>
+            Optional User Types
+        </listitem>
+        <listitem>
+            Optional User Exceptions
+        </listitem>
+        <listitem>
+            Required WSDL/Java mapping meta data (jaxrpc-mapping.xml)
+        </listitem>
+    </itemizedlist>
+  </para>
+  
+  <para>Here a wstools config file that generates the client side artifacts from WSDL</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <configuration ...>
+      <wsdl-java file="resources/samples/jsr181pojo/META-INF/wsdl/TestService.wsdl">
+        <mapping file="jaxrpc-mapping.xml" />
+      </wsdl-java>
+    </configuration>
+      ]]></programlisting></para>
+  
+  <para>
+    This chapter uses a J2EE-1.4 client, but for all intents and purposes, this could also be 
+    a Servlet, JSP, or EJB component. All of these J2EE components support &lt;service-ref&gt; 
+    elements in their respective deployment descriptor. </para>
+  
+  <para> The J2EE client deployment model has many advantages over dynamic invocation (DII). 
+    Most Java applications (except the most trivial ones) have a need for registry lookup (JNDI) and
+    management (JMX). A very minimal jboss configuration has a tiny footprint and provides just that. 
+    Therefore, running your client app on jboss and mangage it through JMX and have a layer of
+    indirection for resource lookup through JNDI is recommended pratice. 
+    Additionally, you can leverage the J2EE 1.4 client programming model and obtain preconfigured 
+    web service clients fromJNDI.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <service-ref>
+      <service-ref-name>service/TrivialService</service-ref-name>
+      <service-interface>javax.xml.rpc.Service</service-interface>
+      <wsdl-file>META-INF/wsdl/SampleService.wsdl</wsdl-file>
+      <jaxrpc-mapping-file>META-INF/jaxrpc-mapping.xml</jaxrpc-mapping-file>
+      <port-component-ref>
+        <service-endpoint-interface>
+            org.jboss.test.ws.samples.rpcstyle.TrivialService
+         </service-endpoint-interface>
+      </port-component-ref>
+    </service-ref>
+      ]]></programlisting></para>
+  
+  <para> With the configuration given above, the SampleService.wsdl must contain the correct SOAP target address. 
+    JBoss provides an override mechanism for the WSDL in jboss-client.xml.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <jboss-client>
+      <jndi-name>jbossws-client</jndi-name>
+      <service-ref>
+        <service-ref-name>service/TrivialService</service-ref-name>
+        <wsdl-override>
+            http://jbosstesthost:8080/jbossws-samples-rpcstyle?wsdl
+         </wsdl-override>
+      </service-ref>
+    </jboss-client>
+      ]]></programlisting></para>
+  
+  <para>When the WSDL is obtained from the server, the server has already performed all the necessary address rewrites</para>
+  
+  <para> Once the J2EE application client jar is deployed on a JBoss instance, it can be accessed by a separate standalone Java process.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+     public void testTrivialAccess() throws Exception
+     {
+        InitialContext iniCtx = getInitialContext();
+        Service service = (Service)iniCtx.lookup("java:comp/env/service/TrivialService");
+        TrivialService port = (TrivialService)service.getPort(TrivialService.class);
+        String person = "Kermit";
+        String product = "Ferrari";
+        String status = port.purchase(person, product);
+        assertEquals("ok" + person + product, status);
+     }
+    
+     protected InitialContext getInitialContext() throws NamingException
+     {
+        InitialContext iniCtx = new InitialContext();
+        Hashtable env = iniCtx.getEnvironment();
+        env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming.client");
+        env.put("j2ee.clientName", "jbossws-client");
+        return new InitialContext(env);
+     }
+   ]]></programlisting></para>
+  
+</sect1>

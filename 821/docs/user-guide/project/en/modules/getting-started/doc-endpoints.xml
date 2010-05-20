@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect1 id="doc-endpoints">
+  <title>Document Style Endpoints</title>
+  
+  <para> With document style web services two business partners agree on the exchange of complex business documents 
+    that are well defined in XML schema. For example, one party sends a document describing a
+    purchase order, the other responds (immediately or later) with a document that describes 
+    the status of the purchase order. No need to agree on such low level details as operation names and their
+    associated parameters.</para>
+  
+  <para> The payload of the SOAP message is an XML document that can be validated against XML schema. No wrapping RPC element, no individual parameters. </para>
+  
+  <para>
+    In chapter we develop a document/literal wrapped service endpoint that uses the same service endpoint interface (SEI) as for 
+    <link linkend="rpc-endpoints">RPC Style Endpoints</link> example. 
+  
+    <programlisting><![CDATA[
+    public interface TrivialService extends Remote
+    {
+       String purchase (String person, String product) throws RemoteException;
+    }
+      ]]></programlisting>
+  </para>
+  
+  <para><command>Generating required deployment artifacts</command></para>
+  
+  <para>
+    Run wstools on a document/literal configuration:
+    <orderedlist>
+      <listitem><para>The wsdlStyle attribute is set to 'document'</para></listitem>   
+    </orderedlist>
+  </para>
+  
+  <para>
+    <programlisting><![CDATA[
+  <configuration ...>
+    <java-wsdl>
+      <service name="SampleService" style="document" 
+        endpoint="org.jboss.test.ws.samples.docstyle.wrapped.TrivialService" />
+    
+      <namespaces target-namespace="http://org.jboss.ws/samples/docstyle/wrapped" 
+         type-namespace="http://org.jboss.ws/samples/docstyle/wrapped/types"/>
+    
+      <mapping file="jaxrpc-mapping.xml"/>
+      <webservices servlet-link="TrivialEndpoint"/>
+    </java-wsdl>
+  </configuration>
+      ]]></programlisting></para>
+  
+  <para>The generated WSDL contains complex type definitions for the request/response payloads, 
+    which are referenced from the WSDL messages</para>
+  
+  <para>
+    <programlisting><![CDATA[
+      <complexType name="purchase">
+        <sequence>
+          <element name="String_1" type="string" nillable="true"/>
+          <element name="String_2" type="string" nillable="true"/>
+        </sequence>
+      </complexType>
+    
+      <complexType name="purchaseResponse">
+        <sequence>
+          <element name="result" type="string" nillable="true"/>
+        </sequence>
+      </complexType>
+      ]]></programlisting></para>
+  
+  <para>WSTools also generates request/response java objects that correspond to these schema types. 
+    These java wrapper beans are mapped in jaxrpc-mapping.xml</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <java-xml-type-mapping>
+      <java-type>
+        org.jboss.test.ws.samples.docstyle.wrapped.TrivialService_purchase_RequestStruct
+      </java-type>
+      <root-type-qname xmlns:typeNS="http://org.jboss.ws/samples/docstyle/wrapped/types">
+        typeNS:purchase
+      </root-type-qname>
+      <qname-scope>complexType</qname-scope>
+      <variable-mapping>
+        <java-variable-name>String_1</java-variable-name>
+        <xml-element-name>String_1</xml-element-name>
+      </variable-mapping>
+      <variable-mapping>
+        <java-variable-name>String_2</java-variable-name>
+        <xml-element-name>String_2</xml-element-name>
+      </variable-mapping>
+    </java-xml-type-mapping>
+    
+    <java-xml-type-mapping>
+      <java-type>
+        org.jboss.test.ws.samples.docstyle.wrapped.TrivialService_purchase_ResponseStruct
+      </java-type>
+      <root-type-qname xmlns:typeNS="http://org.jboss.ws/samples/docstyle/wrapped/types">
+        typeNS:purchaseResponse
+      </root-type-qname>
+      <qname-scope>complexType</qname-scope>
+      <variable-mapping>
+        <java-variable-name>result</java-variable-name>
+        <xml-element-name>result</xml-element-name>
+      </variable-mapping>
+    </java-xml-type-mapping>
+      ]]></programlisting></para>
+  
+  <para><command>SOAP message exchange</command></para>
+  
+  <para>Below you see the SOAP messages that are beeing exchanged. </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Incomming SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:purchase xmlns:ns1='http://org.jboss.ws/samples/docstyle/wrapped/types'>
+       <String_1>Kermit</String_1>
+       <String_2>Ferrari</String_2>
+      </ns1:purchase>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Outgoing SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:purchaseResponse xmlns:ns1='http://org.jboss.ws/samples/docstyle/wrapped/types'>
+       <result>okKermitFerrari</result>
+      </ns1:purchaseResponse>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+  <para>On the wire the message structure is no different to rpc/literal.</para>
+  
+  <para><command>Document Bare Endpoints</command></para>
+  
+  <para>What we have seen above is a document/literal (wrapped) endpoint. The endpoint operation paramters and return are automatically wrapped in request/response structures. The SEI methods
+    deal with the individual properties from these request/response structures.</para>
+  
+  <para>Whith document/literal (bare), the SEI methods deal directly with the request/response structures.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    public interface TrivialService extends Remote
+    {
+       TrivialOrderResponse purchase(TrivialOrder order) throws RemoteException;
+    }
+  ]]></programlisting></para>
+  
+  <para>Run wstools with the following configuration</para>
+  
+  <para>
+    <programlisting><![CDATA[
+  <configuration ...>
+    <java-wsdl>
+      <service name="SampleService" style="document" parameter-style="bare" 
+        endpoint="org.jboss.test.ws.samples.docstyle.bare.TrivialService" />
+    
+      <namespaces target-namespace="http://org.jboss.ws/samples/docstyle/bare" 
+        type-namespace="http://org.jboss.ws/samples/docstyle/bare/types"/>
+    
+      <mapping file="jaxrpc-mapping.xml"/>
+      <webservices servlet-link="TrivialEndpoint"/>
+    </java-wsdl>
+  </configuration>
+      ]]></programlisting>
+  </para>
+  
+  <para><command>SOAP message exchange</command></para>
+  
+  <para>Below you see the SOAP messages that are beeing exchanged. </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Incomming SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:purchase xmlns:ns1='http://org.jboss.ws/samples/docstyle/bare/types'>
+       <person>Kermit</person>
+       <product>Ferrari</product>
+      </ns1:purchase>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting>
+  </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Outgoing SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:purchaseResponse xmlns:ns1='http://org.jboss.ws/samples/docstyle/bare/types'>
+       <result>okKermitFerrari</result>
+      </ns1:purchaseResponse>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+  <para>On the wire the message structure is no different to document/literal wrapped. That the implementation 
+  deals with the wrapper beans directly is an implementation detail.</para>
+  
+</sect1>

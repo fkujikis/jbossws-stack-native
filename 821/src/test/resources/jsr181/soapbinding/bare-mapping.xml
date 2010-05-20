@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java-wsdl-mapping xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.1" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee    http://www.ibm.com/webservices/xsd/j2ee_jaxrpc_mapping_1_1.xsd">
+<package-mapping>
+<package-type>org.jboss.test.ws.jsr181.soapbinding</package-type>
+<namespaceURI>http://soapbinding.jsr181.ws.test.jboss.org/jaws</namespaceURI>
+</package-mapping>
+<java-xml-type-mapping>
+<java-type>org.jboss.test.ws.jsr181.soapbinding.SubmitBareResponse</java-type>
+<root-type-qname xmlns:typeNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">typeNS:SubmitBareResponse</root-type-qname>
+<qname-scope>complexType</qname-scope>
+<variable-mapping>
+<java-variable-name>product</java-variable-name>
+<xml-element-name>product</xml-element-name>
+</variable-mapping>
+</java-xml-type-mapping>
+<java-xml-type-mapping>
+<java-type>org.jboss.test.ws.jsr181.soapbinding.SubmitBareRequest</java-type>
+<root-type-qname xmlns:typeNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">typeNS:SubmitBareRequest</root-type-qname>
+<qname-scope>complexType</qname-scope>
+<variable-mapping>
+<java-variable-name>product</java-variable-name>
+<xml-element-name>product</xml-element-name>
+</variable-mapping>
+</java-xml-type-mapping>
+<service-interface-mapping>
+<service-interface>org.jboss.test.ws.jsr181.soapbinding.DocBareServiceService</service-interface>
+<wsdl-service-name xmlns:serviceNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">serviceNS:DocBareServiceService</wsdl-service-name>
+<port-mapping>
+<port-name>DocBareServicePort</port-name>
+<java-port-name>DocBareServicePort</java-port-name>
+</port-mapping>
+</service-interface-mapping>
+<service-endpoint-interface-mapping>
+<service-endpoint-interface>org.jboss.test.ws.jsr181.soapbinding.DocBareService</service-endpoint-interface>
+<wsdl-port-type xmlns:portTypeNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">portTypeNS:DocBareService</wsdl-port-type>
+<wsdl-binding xmlns:bindingNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">bindingNS:DocBareServiceBinding</wsdl-binding>
+<service-endpoint-method-mapping>
+<java-method-name>submitNamespacedPO</java-method-name>
+<wsdl-operation>SubmitNamespacedPO</wsdl-operation>
+<method-param-parts-mapping>
+<param-position>0</param-position>
+<param-type>org.jboss.test.ws.jsr181.soapbinding.SubmitBareRequest</param-type>
+<wsdl-message-mapping>
+<wsdl-message xmlns:wsdlMsgNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">wsdlMsgNS:DocBareService_SubmitNamespacedPO</wsdl-message>
+<wsdl-message-part-name>parameters</wsdl-message-part-name>
+<parameter-mode>IN</parameter-mode>
+</wsdl-message-mapping>
+</method-param-parts-mapping>
+<wsdl-return-value-mapping>
+<method-return-value>org.jboss.test.ws.jsr181.soapbinding.SubmitBareResponse</method-return-value>
+<wsdl-message xmlns:wsdlMsgNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">wsdlMsgNS:DocBareService_SubmitNamespacedPOResponse</wsdl-message>
+<wsdl-message-part-name>result</wsdl-message-part-name>
+</wsdl-return-value-mapping>
+</service-endpoint-method-mapping>
+<service-endpoint-method-mapping>
+<java-method-name>submitPO</java-method-name>
+<wsdl-operation>SubmitPO</wsdl-operation>
+<method-param-parts-mapping>
+<param-position>0</param-position>
+<param-type>org.jboss.test.ws.jsr181.soapbinding.SubmitBareRequest</param-type>
+<wsdl-message-mapping>
+<wsdl-message xmlns:wsdlMsgNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">wsdlMsgNS:DocBareService_SubmitPO</wsdl-message>
+<wsdl-message-part-name>parameters</wsdl-message-part-name>
+<parameter-mode>IN</parameter-mode>
+</wsdl-message-mapping>
+</method-param-parts-mapping>
+<wsdl-return-value-mapping>
+<method-return-value>org.jboss.test.ws.jsr181.soapbinding.SubmitBareResponse</method-return-value>
+<wsdl-message xmlns:wsdlMsgNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">wsdlMsgNS:DocBareService_SubmitPOResponse</wsdl-message>
+<wsdl-message-part-name>result</wsdl-message-part-name>
+</wsdl-return-value-mapping>
+</service-endpoint-method-mapping>
+</service-endpoint-interface-mapping>
+</java-wsdl-mapping>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id="clients">
+    <title>Consuming web services</title>
+    
+    &s-jsr109-clients;
+    &s-dii-clients;
+    &s-stub-properties;
+</chapter>
+

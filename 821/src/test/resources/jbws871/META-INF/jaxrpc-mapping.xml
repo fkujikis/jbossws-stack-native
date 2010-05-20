@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?><java-wsdl-mapping version='1.1' xmlns='http://java.sun.com/xml/ns/j2ee' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://java.sun.com/xml/ns/j2ee http://www.ibm.com/webservices/xsd/j2ee_jaxrpc_mapping_1_1.xsd'>
+ <package-mapping>
+  <package-type>org.jboss.test.ws.jbws871</package-type>
+  <namespaceURI>http://jbws871.ws.test.jboss.org/jaws</namespaceURI>
+ </package-mapping>
+ <service-interface-mapping>
+  <service-interface>org.jboss.test.ws.jbws871.RpcArrayEndpointService</service-interface>
+  <wsdl-service-name xmlns:serviceNS='http://jbws871.ws.test.jboss.org/jaws'>serviceNS:RpcArrayEndpointService</wsdl-service-name>
+  <port-mapping>
+   <port-name>RpcArrayEndpointPort</port-name>
+   <java-port-name>RpcArrayEndpointPort</java-port-name>
+  </port-mapping>
+ </service-interface-mapping>
+ <service-endpoint-interface-mapping>
+  <service-endpoint-interface>org.jboss.test.ws.jbws871.RpcArrayEndpoint</service-endpoint-interface>
+  <wsdl-port-type xmlns:portTypeNS='http://jbws871.ws.test.jboss.org/jaws'>portTypeNS:RpcArrayEndpoint</wsdl-port-type>
+  <wsdl-binding xmlns:bindingNS='http://jbws871.ws.test.jboss.org/jaws'>bindingNS:RpcArrayEndpointBinding</wsdl-binding>
+  <service-endpoint-method-mapping>
+   <java-method-name>intArr</java-method-name>
+   <wsdl-operation>intArr</wsdl-operation>
+   <method-param-parts-mapping>
+    <param-position>0</param-position>
+    <param-type>java.lang.String</param-type>
+    <wsdl-message-mapping>
+     <wsdl-message xmlns:wsdlMsgNS='http://jbws871.ws.test.jboss.org/jaws'>wsdlMsgNS:RpcArrayEndpoint_intArr</wsdl-message>
+     <wsdl-message-part-name>String_1</wsdl-message-part-name>
+     <parameter-mode>IN</parameter-mode>
+    </wsdl-message-mapping>
+   </method-param-parts-mapping>
+   <method-param-parts-mapping>
+    <param-position>1</param-position>
+    <param-type>java.lang.Integer[]</param-type>
+    <wsdl-message-mapping>
+     <wsdl-message xmlns:wsdlMsgNS='http://jbws871.ws.test.jboss.org/jaws'>wsdlMsgNS:RpcArrayEndpoint_intArr</wsdl-message>
+     <wsdl-message-part-name>Integer_1</wsdl-message-part-name>
+     <parameter-mode>IN</parameter-mode>
+    </wsdl-message-mapping>
+   </method-param-parts-mapping>
+   <wsdl-return-value-mapping>
+    <method-return-value>java.lang.Integer[]</method-return-value>
+    <wsdl-message xmlns:wsdlMsgNS='http://jbws871.ws.test.jboss.org/jaws'>wsdlMsgNS:RpcArrayEndpoint_intArrResponse</wsdl-message>
+    <wsdl-message-part-name>result</wsdl-message-part-name>
+   </wsdl-return-value-mapping>
+  </service-endpoint-method-mapping>
+ </service-endpoint-interface-mapping>
+</java-wsdl-mapping>

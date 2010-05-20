@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<project default="main" basedir=".." name="JBossWS Examples">
+
+  <property name="chapter" value="docstyle"/>
+  <property name="java.dir" value="${basedir}/${chapter}/java"/>
+  <property name="resources.dir" value="${basedir}/${chapter}/resources"/>
+
+  <import file="${basedir}/common/imported-build.xml"/>
+
+  <target name="generate-sources" depends="compile" description="Generate the deployment resources.">
+    
+    <!-- Define a taskdef for the wstools ant task -->
+    <taskdef name="wstools" classname="org.jboss.ws.tools.ant.wstools">
+        <classpath refid="compile.classpath"/>
+        <classpath path="${build.test.dir}/classes"/>
+    </taskdef>
+    
+    <!-- samples/docstyle/bare -->
+    <wstools dest="${build.test.dir}/wstools/resources/samples/docstyle/bare/WEB-INF" 
+      config="${resources.dir}/bare/wstools-config.xml"/>
+    
+    <!-- samples/docstyle/wrapped -->
+    <wstools dest="${build.test.dir}/wstools/resources/samples/docstyle/wrapped/WEB-INF" 
+      config="${resources.dir}/wrapped/wstools-config.xml"/>
+    <move todir="${build.test.dir}/wstools/java">
+      <fileset dir="${build.test.dir}/wstools/resources/samples/docstyle/wrapped/WEB-INF" 
+        includes="org/jboss/test/ws/samples/docstyle/wrapped/*.java"/>
+    </move>
+    
+  </target>
+      
+  <!--
+  Build the test deployments
+  -->
+  <target name="jars" depends="compile,copy-resources,generate-sources,compile-generated,copy-generated" description="build the deployments">
+
+    <!-- jbossws-samples-docstyle-bare -->
+    <war warfile="${build.test.dir}/libs/jbossws-samples-docstyle-bare.war" webxml="${build.test.dir}/resources/samples/docstyle/bare/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/samples/docstyle/bare/TrivialEndpointJSE.class"/>
+        <include name="org/jboss/test/ws/samples/docstyle/bare/TrivialService.class"/>
+        <include name="org/jboss/test/ws/samples/docstyle/bare/TrivialOrder.class"/>
+        <include name="org/jboss/test/ws/samples/docstyle/bare/TrivialOrderResponse.class"/>
+      </classes>
+      <webinf dir="${build.test.dir}/resources/samples/docstyle/bare/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+      </webinf>
+    </war>
+    <jar jarfile="${build.test.dir}/libs/jbossws-samples-docstyle-bare-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/samples/docstyle/bare/TrivialService.class"/>
+        <include name="org/jboss/test/ws/samples/docstyle/bare/TrivialOrder.class"/>
+        <include name="org/jboss/test/ws/samples/docstyle/bare/TrivialOrderResponse.class"/>
+      </fileset>
+      <metainf dir="${build.test.dir}/resources/samples/docstyle/bare/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+      </metainf>
+      <metainf dir="${build.test.dir}/resources/samples/docstyle/bare/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+    </jar>
+
+    <!-- jbossws-samples-docstyle-wrapped -->
+    <war warfile="${build.test.dir}/libs/jbossws-samples-docstyle-wrapped.war" webxml="${build.test.dir}/resources/samples/docstyle/wrapped/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/samples/docstyle/wrapped/TrivialEndpointJSE.class"/>
+        <include name="org/jboss/test/ws/samples/docstyle/wrapped/TrivialService.class"/>
+        <include name="org/jboss/test/ws/samples/docstyle/wrapped/TrivialService*RequestStruct.class"/>
+        <include name="org/jboss/test/ws/samples/docstyle/wrapped/TrivialService*ResponseStruct.class"/>
+      </classes>
+      <webinf dir="${build.test.dir}/resources/samples/docstyle/wrapped/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+      </webinf>
+    </war>
+    <jar jarfile="${build.test.dir}/libs/jbossws-samples-docstyle-wrapped-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/samples/docstyle/wrapped/TrivialService.class"/>
+        <include name="org/jboss/test/ws/samples/docstyle/wrapped/TrivialService*RequestStruct.class"/>
+        <include name="org/jboss/test/ws/samples/docstyle/wrapped/TrivialService*ResponseStruct.class"/>
+      </fileset>
+      <metainf dir="${build.test.dir}/resources/samples/docstyle/wrapped/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+      </metainf>
+      <metainf dir="${build.test.dir}/resources/samples/docstyle/wrapped/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+    </jar>
+
+  </target>
+
+  <!--
+  Run the testsuite
+  -->
+  <target name="tests" depends="jars" description="run the testsuite">
+    <antcall target="test">
+      <param name="test" value="${chapter}"/>
+    </antcall>
+  </target>
+
+</project>

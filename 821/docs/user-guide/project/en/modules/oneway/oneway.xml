@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<chapter id="oneway">
+  
+  <title>OneWay Invocations</title>
+  
+  <para>This chapter describes an asynchronous one way endpoint invocation</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    public interface OneWayTestService extends Remote
+    {
+       void oneWay(String str1) throws RemoteException;
+    }
+  ]]></programlisting></para>
+  
+  <para><command>Generating required deployment artifacts</command></para>
+  
+  <para>Run wstools with the following configuration</para>
+  
+  <para>
+    <programlisting><![CDATA[
+  <configuration ...>
+    <java-wsdl>
+      <service name="TestService" style="rpc" 
+        endpoint="org.jboss.test.ws.samples.oneway.OneWayTestService">
+        <operation name="oneWay" one-way="true">
+          <parameter type="java.lang.String"/>
+        </operation>
+      </service>
+    
+      <namespaces target-namespace="http://org.jboss.ws/samples/oneway" 
+        type-namespace="http://org.jboss.ws/samples/one-way=/types"/>
+    
+      <mapping file="jaxrpc-mapping.xml"/>
+      <webservices servlet-link="TestService"/>
+    </java-wsdl>
+  </configuration>
+     ]]></programlisting></para>
+  
+  <para>WSTools does not generate output elements in the WSDL portType nor in the binding</para>
+  
+  <para>
+    <programlisting><![CDATA[
+     <portType name='OneWayTestService'>
+      <operation name='oneWay' parameterOrder='String_1'>
+       <input message='tns:OneWayTestService_oneWay'/>
+      </operation>
+     </portType>
+    
+     <binding name='OneWayTestServiceBinding' type='tns:OneWayTestService'>
+      <soap:binding style='rpc' transport='http://schemas.xmlsoap.org/soap/http'/>
+      <operation name='oneWay'>
+       <soap:operation soapAction=''/>
+       <input>
+        <soap:body namespace='http://org.jboss.ws/samples/oneway' use='literal'/>
+       </input>
+      </operation>
+     </binding>
+     ]]></programlisting></para>
+  
+ <para><command>SOAP message exchange</command></para>
+  
+  <para>Below you see the incomming SOAP message. There is no outgoing message.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Incomming SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:oneWay xmlns:ns1='http://org.jboss.ws/samples/oneway'>
+       <String_1>Hello</String_1>
+      </ns1:oneWay>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+</chapter>

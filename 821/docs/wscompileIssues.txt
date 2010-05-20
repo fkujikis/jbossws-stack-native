@@ -1,0 +1,9 @@
+Issues seen using wscompile tool from Sun
+========================================
+1. wscompile tool does not support element groups.  It does not support the presence of <xsd:group> inside a complex type.
+2. wscompile does not support complex type inheritance with restriction.
+3. xsd:choice construct is unsupported.
+4. Complex Types with mixed content.  Does not generate java classes, but does the trick in serializers.
+5. When <xsd:anyAttribute/> is added to a schema type, wscompile will not generate the java type for that schema type.  It generates a literalserializer class instead.
+6. When <xsd:element name="street" substitutionGroup="avenue"/>  substitutionGroup will make wscompile to not generate a Java class but a literalserializer class.
+7. Noticed an issue with Nillable Types where wscompile does not generate accessors for byte. This is the reason for the sole failure in XSDToJavaTestCase.

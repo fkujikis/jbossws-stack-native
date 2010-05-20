@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect1 id="message-endpoints">
+  
+  <title>Message Style Endpoints</title>
+  
+  <para>
+    You may come to the point where RPC/literal or Document/literal is not what you are looking for. 
+    This may be the case for instance, when you want to do the XML processing yourself instead of deferring
+    it to the SOAP stack. JBossWS offers the possiblity to setup message style endpoints that do exchange 
+    raw XML documents mapped to DOM elements or SOAPElements, 
+  </para>
+  
+  <para>
+    This chapter describes a generic endpoint that can process arbitrary DOM elements.      
+  </para>
+
+  <note>
+      <para>In the JAX-RPC specification this is not a permitted java type. 
+      JBossWS extends the standard type support by DOM Element and SOAPElement.  
+      </para>
+  </note>
+  
+  <para>
+    <programlisting><![CDATA[
+    public interface MessageTestService extends Remote
+    {
+       public Element processElement(Element msg) throws RemoteException;
+    }
+  ]]></programlisting></para>
+  
+  <para><command>Generating required deployment artifacts</command></para>
+  
+  <para>Run wstools with the following configuration</para>
+  
+  <para>
+    <programlisting><![CDATA[
+  <configuration ...>
+    <java-wsdl>
+      <service name="MessageService" style="document" parameter-style="bare" 
+        endpoint="org.jboss.test.ws.samples.message.MessageTestService">
+    
+        <operation name="processElement" return-xml-name="Response">
+          <parameter type="javax.xml.soap.SOAPElement" xml-name="Order"/>
+        </operation>
+      </service>
+    
+      <namespaces target-namespace="http://org.jboss.ws/samples/message" 
+        type-namespace="http://org.jboss.ws/samples/message/types"/>
+    
+      <mapping file="jaxrpc-mapping.xml"/>
+      <webservices servlet-link="TestService"/>
+    </java-wsdl>
+  </configuration>
+     ]]>
+    </programlisting></para>
+  
+  <para>WSTools generates schema elements with xsd:anyType</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <schema targetNamespace="http://org.jboss.ws/samples/message" ...>
+      <element name="Order" type="anyType"/>
+      <element name="Response" type="anyType"/>
+    </schema>
+    
+    <message name="Message_processElement">
+      <part name="order" element="tns:Order"/>
+    </message>
+    
+    <message name="Message_processElementResponse">
+      <part name="result" element="tns:Response"/>
+    </message>
+     ]]></programlisting></para>
+  
+  <sect2>
+  <title>SOAPConnection for raw message dispatch</title>
+  
+  <para>It is possible to use the standard javax.xml.soap.SOAPConnection to dispatch a precreated SOAP message to a given endpoint</para>
+  
+  <para>
+    <programlisting><![CDATA[
+     public void testSAAJClientFromEnvelope() throws Exception
+     {
+        MessageFactory mf = MessageFactory.newInstance();
+        SOAPMessage reqMsg = mf.createMessage();
+    
+        String request =
+          "<ns1:Order xmlns:ns1='" + TARGET_NAMESPACE + 
+          "' xmlns:ns2='http://somens' attrval='somevalue'>" +
+          "  <ns2:Customer>Kermit</ns2:Customer>" +
+          "  <Item>Ferrari</Item>" +
+          "</ns1:Order>";
+  
+        DocumentBuilder builder = getDocumentBuilder();
+        Document doc = builder.parse(new ByteArrayInputStream(request.getBytes()));
+        reqMsg.getSOAPBody().addDocument(doc);
+  
+        SOAPConnectionFactory conFactory = SOAPConnectionFactory.newInstance();
+        SOAPConnection con = conFactory.createConnection();
+        SOAPMessage resMsg = con.call(reqMsg, new URL(TARGET_ENDPOINT));
+  
+        SOAPBody soapBody = resMsg.getSOAPBody();
+        SOAPElement soapElement = (SOAPElement)soapBody.getChildElements().next();
+  
+        validateResponse(soapElement);
+     }
+     ]]></programlisting></para>
+
+    <para><command>SOAP message exchange</command></para>
+  
+  <para>Below you see the incomming SOAP messages.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Incomming SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:Order attrval='somevalue' 
+          xmlns:ns1='http://org.jboss.ws/samples/message' xmlns:ns2='http://somens'>
+       <ns2:Customer>Kermit</ns2:Customer>
+       <Item>Ferrari</Item>
+      </ns1:Order>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting>
+  </para>
+  </sect2>
+</sect1>

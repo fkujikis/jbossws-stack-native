@@ -1,0 +1,14 @@
+<project name="Documentation" default="all.doc" basedir=".">
+
+  <property name="pdf.name" value="jbossws-regression-tests.pdf"/>
+  <property name="doc.module.home" value="."/>
+
+  <import file="${docbook-support.home}/support.xml"/>
+  
+  <target name="all.doc" depends="clean">
+      <antcall target="lang.all">
+      <param name="lang" value="en"/>
+    </antcall>
+  </target>
+  
+</project>

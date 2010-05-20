@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect1 id="rpc-endpoints">
+  
+  <title>A simple RPC Style Endpoint</title>
+  <para>
+    With RPC there is a wrapper element that names the endpoint operation. Child elements of the RPC parent are the individual parameters.
+    
+    The SOAP body is constructed based on some simple rules:
+    
+    <itemizedlist>
+      <listitem>
+        <para>The port type operation name defines the endpoint method name</para>
+      </listitem>      
+      <listitem>
+        <para>Message parts are are endpoint method parameters</para>
+      </listitem>         
+    </itemizedlist>
+       
+  </para>
+  
+  <para>
+    This chapter describes portable <link linkend="jsr109-endpoints">J2EE-1.4 web service endpoint development model</link> for plain java endpoints.     
+  </para>
+  
+  <tip><para>The more appropriate method using JSR-181 annotations is described in chapter <link linkend="jsr181-pojo-endpoint">JSR-181 POJO Endpoints</link>.</para></tip> 
+  
+  <para>
+    Let's start with a trivial service endpoint interface (SEI) that has a single operation, which takes two string parameters and returns a string.
+    
+   <programlisting><![CDATA[
+    public interface TrivialService extends Remote
+    {
+       String purchase (String person, String product) throws RemoteException;
+    }
+     ]]></programlisting>
+  </para>
+  
+  <para>There are certain rules you have to follow for a valid SEI. 
+    <itemizedlist>
+      <listitem>
+        <para>The SEI must extend java.rmi.Remote</para>
+      </listitem>
+      
+      <listitem>
+        <para>All methods must include java.rmi.RemoteException in their throws clause</para>
+      </listitem>
+      
+      <listitem>
+        <para>Method parameter types are limited to the ones specified by the JAXRPC-1.1 specification</para>
+      </listitem>
+    </itemizedlist> </para>
+  
+  <para><command>The endpoint implementation bean</command></para>
+  
+  <para>The SEI defines the java contract of the web service. You will also need to provide an implementation bean. Here it is</para>
+  
+  <para>
+    <programlisting><![CDATA[
+  public class TrivialEndpointJSE implements TrivialService
+  {
+     public String purchase (String person, String product)
+     {
+        log.info("purchase: " + person + "," + product);
+        return "ok" + person + product;
+     }
+  }
+  ]]></programlisting></para>
+  
+  <para><command>Generating required deployment artifacts</command></para>
+  
+  <para>JSR-109 requires a number of deployment artifacts, which are:
+    <itemizedlist>
+      <listitem>
+        <para>webservices.xml, the descriptor that identifies a deployment a web service endpoint </para>
+      </listitem>
+      
+      <listitem>
+        <para>wsdl, the abstract webservice contract</para>
+      </listitem>
+      
+      <listitem>
+        <para>jaxrpc-mapping.xml, the mapping desriptor that bridges WSDL to java</para>
+      </listitem>
+    </itemizedlist> 
+  </para>
+  
+  <para>JBossWS comes with a tool collection called WSTools. WSTools that can generate these artifacts from the given SEI. There is a command line version and an Apache Ant task available. Both take a configuration file
+    as input. For details of the wstools configuration, see <link linkend="appendix-a">Apendix A</link></para>
+  
+  <para>
+    
+    
+    <programlisting><![CDATA[
+  <configuration ...>
+    <java-wsdl>
+      <service name="SampleService" style="rpc" 
+        endpoint="org.jboss.test.ws.samples.rpcstyle.TrivialService"/>
+    
+      <namespaces target-namespace="http://org.jboss.ws/samples/rpcstyle" 
+        type-namespace="http://org.jboss.ws/samples/rpcstyle/types"/>
+    
+      <mapping file="jaxrpc-mapping.xml"/>
+      <webservices servlet-link="TrivialEndpoint"/>
+    </java-wsdl>
+  </configuration>      
+    ]]></programlisting></para>
+  
+  <para>You can run WSTools from the command line</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    > jboss-inst/bin/wstools.sh -cp {path to TrivialService.class} -config wstools-config.xml
+  ]]></programlisting>
+  </para>
+
+  <para>or from an ant task</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <!-- Define a taskdef for the wstools ant task -->
+    <taskdef name="wstools" classname="org.jboss.ws.tools.ant.wstools">
+      <classpath refid="library.classpath"/>
+      <classpath refid="test.client.classpath"/>
+      <classpath path="${build.test.classes.dir}"/>
+    </taskdef>
+    
+    <!-- samples/rpcstyle -->
+    <wstools dest="${build.wstools.resources.dir}/samples/rpcstyle/WEB-INF" 
+      config="${test.resources.dir}/samples/rpcstyle/wstools-config.xml"/>
+  ]]></programlisting>
+  </para>
+  
+  <para><command> The endpoint as a web application</command></para>
+  
+  <para>
+    A java service endpoint is deployed as a web application:
+    <orderedlist>
+      <listitem><para>Your service endpoint configured as a servlet</para></listitem>   
+      </orderedlist>
+  
+    <programlisting><![CDATA[
+    <web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee 
+              http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" 
+      version="2.4">
+    
+      <servlet>
+        <servlet-name>TrivialEndpoint</servlet-name>
+ (1)     <servlet-class>org.jboss.test.ws.samples.rpcstyle.TrivialEndpointJSE</servlet-class>
+      </servlet>
+    
+      <servlet-mapping>
+        <servlet-name>TrivialEndpoint</servlet-name>
+        <url-pattern>/*</url-pattern>
+      </servlet-mapping>
+    
+    </web-app>
+      ]]></programlisting>
+    
+    <note><para>The content of &lt;servlet-class&gt; element is not at all a servlet as required by the servlet spec. 
+      It is the endpoint implementation bean that is shown above.</para></note>
+    
+  </para>
+  
+  <para><command>Packaging the endpoint</command></para>
+  
+  <para>A JSR-109 java service endpoint (JSE) is packaged as a web application in a *.war file. Note, that all descriptors are located in the WEB-INF directory with the WSDL in a predefined
+    subdirectory. </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <war warfile="${build.dir}/libs/jbossws-samples-rpcstyle.war" 
+          webxml="${build.resources.dir}/samples/rpcstyle/WEB-INF/web.xml">
+      <classes dir="${build.dir}/classes">
+        <include name="org/jboss/test/ws/samples/rpcstyle/TrivialEndpointJSE.class"/>
+        <include name="org/jboss/test/ws/samples/rpcstyle/TrivialService.class"/>
+      </classes>
+      <webinf dir="${build.resources.dir}/samples/rpcstyle/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+      </webinf>
+    </war>
+      ]]></programlisting></para>
+  
+  <para>How a J2EE-1.4 portable web service client connects to the endpoint is described in <link linkend="jsr109-clients">JSR-109 Clients</link></para>
+  
+  <para><command>SOAP message exchange</command></para>
+  
+  <para>Below you see the SOAP messages that are beeing exchanged. </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Incomming SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:purchase xmlns:ns1='http://org.jboss.ws/samples/rpcstyle'>
+       <String_1>Kermit</String_1>
+       <String_2>Ferrari</String_2>
+      </ns1:purchase>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting>
+    
+    <programlisting><![CDATA[
+    Outgoing SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:purchaseResponse xmlns:ns1='http://org.jboss.ws/samples/rpcstyle'>
+       <result>okKermitFerrari</result>
+      </ns1:purchaseResponse>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+</sect1>

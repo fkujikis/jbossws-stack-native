@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+wscompile -import -f:wsi -f:unwrap -mapping wrapped-mapping.xml wrapped-config.xml
+Modify wrapper types to be DocWrappedService_(wrapper type name)_Request|ResponseStruct.
+-->
+
+<configuration xmlns="http://java.sun.com/xml/ns/jax-rpc/ri/config"> 
+<wsdl location="http://@jbosstest.host.name@:8080/jbossws-jsr181-soapbinding/DocWrappedService?wsdl" packageName="org.jboss.test.ws.jsr181.soapbinding"/>    
+</configuration>

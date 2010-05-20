@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<chapter id="appendix-a">
+  
+    <title>Appendix A - Useful links</title>
+    
+    <itemizedlist>
+        <listitem>
+            <para><ulink url="http://fisheye.jboss.com/viewrep/~raw,r=HEAD/JBossWS/trunk/src/main/resources/schema/jbossws-tool_1_0.xsd">WSTools configuration syntax</ulink></para>
+        </listitem>
+        <listitem>
+            <para><ulink url="http://fisheye.jboss.com/viewrep/~raw,r=HEAD/JBossWS/trunk/src/main/resources/schema/jbossws-config_1_0.xsd">JBossWS configuration syntax</ulink></para>
+        </listitem>
+        <listitem>
+            <para><ulink url="http://fisheye.jboss.com/viewrep/~raw,r=HEAD/JBossWS/trunk/src/main/resources/schema/jboss-ws-security_1_0.xsd">Security configuration syntax</ulink></para>
+        </listitem>
+        <listitem>
+            <para><ulink url="http://java.sun.com/developer/technicalArticles/xml/jaxrpcpatterns/">Patterns and Strategies for Building Document-Based Web Services</ulink></para>
+        </listitem>
+        <listitem>
+            <para><ulink url="http://www-128.ibm.com/developerworks/webservices/library/ws-whichwsdl/">Which style of WSDL should I use?</ulink></para>
+        </listitem>
+        <listitem>
+            <para><ulink url="http://www.jcp.org/en/jsr/detail?id=181">Web Service Metadata (JSR-181)</ulink></para>
+        </listitem>
+    </itemizedlist>
+  
+</chapter>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ============================================================ -->
+<!--  JBoss, the OpenSource J2EE webOS                            -->
+<!--  Distributable under LGPL license.                           -->
+<!--  See terms of license at http://www.gnu.org.                 -->
+<!-- ============================================================ -->
+
+<!-- $Id$ -->
+
+<project name="JBossWS" basedir="./" default="build-benchmark-jars">
+
+  <description>JBossWS test archive builder</description>
+
+   <property name="build.test.dir" value="../../../output/test"/>
+   <property name="build.test.resources.dir" value="${build.test.dir}/resources"/>
+
+  <!-- ================================================================== -->
+  <!-- Building                                                           -->
+  <!-- ================================================================== -->
+  
+  <target name="build-benchmark-jars">
+
+     <echo message="build.test.dir: ${build.test.dir}"/>
+     <echo message="test.resources.dir: ${build.test.resources.dir}"/>
+
+     <!-- jbossws-benchmark -->
+    <war warfile="${build.test.dir}/libs/benchmark-rpclit.war" webxml="${build.test.resources.dir}/benchmark/rpclit/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <exclude name="org/jboss/test/ws/benchmark/*_*.class"/>
+        <exclude name="org/jboss/test/ws/benchmark/*EJBEndpoint.class"/>
+        <exclude name="org/jboss/test/ws/benchmark/*TestCase.class"/>
+      </classes>
+      <webinf dir="${build.test.resources.dir}/benchmark/rpclit/WEB-INF">
+        <include name="jboss-web.xml"/>
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+      </webinf>
+    </war>
+    <jar jarfile="${build.test.dir}/libs/benchmark-rpclit.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <exclude name="org/jboss/test/ws/benchmark/*_*.class"/>
+        <exclude name="org/jboss/test/ws/benchmark/*JSEEndpoint.class"/>
+        <exclude name="org/jboss/test/ws/benchmark/*TestCase.class"/>
+        <include name="org/jboss/test/ws/benchmark/**/*"/>
+      </fileset>
+      <metainf dir="${build.test.resources.dir}/benchmark/rpclit/META-INF">
+        <include name="ejb-jar.xml"/>
+        <include name="jboss.xml"/>
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+    </jar>
+    <jar jarfile="${build.test.dir}/libs/benchmark-rpclit-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <exclude name="org/jboss/test/ws/benchmark/*_*.class"/>
+        <exclude name="org/jboss/test/ws/benchmark/*JSEEndpoint.class"/>
+        <exclude name="org/jboss/test/ws/benchmark/*EJBEndpoint.class"/>
+        <exclude name="org/jboss/test/ws/benchmark/*TestCase.class"/>
+        <include name="org/jboss/test/ws/benchmark/**/*"/>
+      </fileset>
+      <metainf dir="${build.test.resources.dir}/benchmark/rpclit/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+    </jar>
+    <war warfile="${build.test.dir}/libs/benchmark-doclit.war" webxml="${build.test.resources.dir}/benchmark/doclit/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <exclude name="org/jboss/test/ws/benchmark/*_arr*/**"/>
+        <exclude name="org/jboss/test/ws/benchmark/*EJBEndpoint.class"/>
+        <exclude name="org/jboss/test/ws/benchmark/*TestCase.class"/>
+      </classes>
+      <webinf dir="${build.test.resources.dir}/benchmark/doclit/WEB-INF">
+        <include name="jboss-web.xml"/>
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+      </webinf>
+    </war>
+    <jar jarfile="${build.test.dir}/libs/benchmark-doclit.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <exclude name="org/jboss/test/ws/benchmark/*_arr*/**"/>
+        <exclude name="org/jboss/test/ws/benchmark/*JSEEndpoint.class"/>
+        <exclude name="org/jboss/test/ws/benchmark/*TestCase.class"/>
+        <include name="org/jboss/test/ws/benchmark/**/*"/>
+      </fileset>
+      <metainf dir="${build.test.resources.dir}/benchmark/doclit/META-INF">
+        <include name="ejb-jar.xml"/>
+        <include name="jboss.xml"/>
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+    </jar>
+    <jar jarfile="${build.test.dir}/libs/benchmark-doclit-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <exclude name="org/jboss/test/ws/benchmark/*_arr*/**"/>
+        <exclude name="org/jboss/test/ws/benchmark/*JSEEndpoint.class"/>
+        <exclude name="org/jboss/test/ws/benchmark/*EJBEndpoint.class"/>
+        <exclude name="org/jboss/test/ws/benchmark/*TestCase.class"/>
+        <include name="org/jboss/test/ws/benchmark/**/*"/>
+      </fileset>
+      <metainf dir="${build.test.resources.dir}/benchmark/doclit/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+    </jar>
+    
+  </target>
+</project>

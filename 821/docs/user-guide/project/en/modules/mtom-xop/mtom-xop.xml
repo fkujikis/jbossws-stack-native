@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<chapter id="mtom-xop">
+
+   <title>MTOM/XOP</title>
+
+   <para>This chapter describes Message Transmission Optimization Mechanism (MTOM) and XML-binary Optimized Packaging (XOP),
+      a means of more efficiently serializing XML Infosets that have certain types of content.
+      The related specifications are <ulink url=" http://www.w3.org/TR/soap12-mtom/">SOAP Message Transmission Optimization Mechanism (MTOM)</ulink>
+      and <ulink url="http://www.w3.org/TR/xop10/">XML-binary Optimized Packaging (XOP)</ulink>
+   </para>
+
+   <para>The MTOM/XOP example uses a service endpoint interface with the same operations as in <link linkend="attachments">SOAP with Attachments</link>
+   </para>
+
+   <sect1 id="mtom-schema-elements">
+      <title>MTOM schema elements</title>
+
+
+      <para>Currently neither wstools nor wscompile has support for MTOM.
+         Fortunatly a MTOM optimizable element decalaration isn't that difficult to understand
+         and can easily be created manually:</para>
+
+      <para>
+         <programlisting><![CDATA[
+      <schema xmlns="http://www.w3.org/2001/XMLSchema"
+              targetNamespace="http://org.jboss.ws/samples/mtom"
+              xmlns:xmime="http://www.w3.org/2005/05/xmlmime">
+
+         (1) <import schemaLocation="http://www.w3.org/2005/05/xmlmime" namespace="http://www.w3.org/2005/05/xmlmime"/>
+
+         (2) <element name="imagejpeg" xmime:contentType="image/jpeg" type="xmime:base64Binary"/>
+    </schema>
+      ]]></programlisting>
+
+         <orderedlist>
+            <listitem>
+               <para>
+                  Import the xmime schema declarations
+               </para>
+            </listitem>
+            <listitem>
+               <para>
+                  Derive your element declaration from xmime:base64Binary
+               </para>
+            </listitem>
+         </orderedlist>
+
+         The JBossWS MTOM implementation scans the associated schema
+         and will treat any xmime:base64Binary occurance as a MTOM optimizable parameter.
+      </para>
+
+   </sect1>
+
+   <sect1 id="mtom-schema-elements">
+      <title>Supported MTOM parameter types</title>
+      <para>
+         <table frame="all">
+            <title>Java to Mime mapping</title>
+            <tgroup cols="2">
+               <tbody>
+                  <row>
+                     <entry>image/jpeg</entry>
+                     <entry>java.awt.Image</entry>
+                  </row>
+                  <row>
+                     <entry>text/xml</entry>
+                     <entry>javax.xml.transform.Source</entry>
+                  </row>
+                  <row>
+                     <entry>application/xml</entry>
+                     <entry>javax.xml.transform.Source</entry>
+                  </row>
+                  <row>
+                     <entry>*/*</entry>
+                     <entry>javax.activation.DataHandler</entry>
+                  </row>
+               </tbody>
+            </tgroup>
+         </table>
+      </para>
+
+      The above table shows a list of supported endpoint parameter types. The recommended approach is to use
+      the <ulink url="http://java.sun.com/j2ee/1.4/docs/api/javax/activation/DataHandler.html">
+      javax.activation.DataHandler</ulink> classes to represent binary data as service endpoint parameters.
+
+   </sect1>
+
+   <sect1>
+      <title>An example MTOM request</title>
+
+      <para>The incomming message is multipart/related. The first part is the SOAP Envelope.</para>
+
+      <para>
+         <programlisting><![CDATA[
+POST /jbossws-samples-mtom HTTP/1.1
+SOAPAction: ""
+Content-Type: multipart/related; start-info="text/xml";
+   type="application/xop+xml";
+	start="<rootpart@ws.jboss.org>";
+	boundary="----=_Part_2_29441291.1153833579421"
+User-Agent: Java/1.5.0_07
+Host: localhost:8081
+Accept: text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2
+Connection: keep-alive
+Content-Length: 915
+
+
+------=_Part_2_29441291.1153833579421
+Content-Type: application/xop+xml; type="text/xml"
+Content-Transfer-Encoding: 8bit
+Content-ID: <rootpart@ws.jboss.org>
+
+<env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+ <env:Header/>
+ <env:Body>
+  <ns1:sendMimeTextXML xmlns:ns1='http://org.jboss.ws/samples/mtom'>
+   <message>Some text message</message>
+   <ns1:textxml>
+    <xop:Include
+      href='cid:textxml-590c9216-9871-48a8-9239-f73831644442@ws.jboss.org'
+      xmlns:xop='http://www.w3.org/2004/08/xop/include'/>
+   </ns1:textxml>
+  </ns1:sendMimeTextXML>
+ </env:Body>
+</env:Envelope>
+------=_Part_2_29441291.1153833579421
+Content-Type: text/xml
+Content-Transfer-Encoding: binary
+Content-Id: <textxml-590c9216-9871-48a8-9239-f73831644442@ws.jboss.org>
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<mime-message>This is an xml attachment.</mime-message>
+
+------=_Part_2_29441291.1153833579421--
+
+      ]]></programlisting></para>
+
+   </sect1>
+    
+</chapter>

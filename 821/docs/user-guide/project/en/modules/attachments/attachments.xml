@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<chapter id="attachments">
+  
+  <title>SOAP with Attachments</title>
+  
+  <para>This chapter describes SOAP with Attachments. JBossWS conform to the 
+    <ulink url="http://www.ws-i.org/Profiles/AttachmentsProfile-1.0.html">WS-I AttachmentsProfile-1.0</ulink>
+    </para>
+  
+  <para>
+    <table frame="all">
+      <title>MIME mapping required by JAXRPC-1.1</title>
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry>image/gif</entry>
+            <entry>java.awt.Image</entry>
+          </row>
+          <row>
+            <entry>image/jpeg</entry>
+            <entry>java.awt.Image</entry>
+          </row>
+          <row>
+            <entry>text/plain</entry>
+            <entry>java.lang.String</entry>
+          </row>
+          <row>
+            <entry>multipart/*</entry>
+            <entry>javax.mail.internet.MimeMultipart</entry>
+          </row>
+          <row>
+            <entry>text/xml</entry>
+            <entry>javax.xml.transform.Source</entry>
+          </row>
+          <row>
+            <entry>application/xml</entry>
+            <entry>javax.xml.transform.Source</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </para>
+    
+  <para>The sample code uses the following service endpoint interface</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    public interface Attachment extends Remote
+    {
+       /** Service endpoint method for image/gif */
+       String sendMimeImageGIF(String message, Object mimepart) throws RemoteException;
+    
+       /** Service endpoint method for image/jpeg */
+       String sendMimeImageJPEG(String message, Image mimepart) throws RemoteException;
+    
+       /** Service endpoint method for text/plain */
+       String sendMimeTextPlain(String message, String mimepart) throws RemoteException;
+    
+       /** Service endpoint method for multipart/* */
+       String sendMimeMultipart(String message, MimeMultipart mimepart) throws RemoteException;
+    
+       /** Service endpoint method for text/xml */
+       String sendMimeTextXML(String message, Object mimepart) throws RemoteException;
+    
+       /** Service endpoint method for application/xml */
+       String sendMimeApplicationXML(String message, Source mimepart) throws RemoteException;
+    }
+    ]]></programlisting></para>
+
+    <para><command>Generating required deployment artifacts</command></para>
+  
+  <para>Run wstools with the following configuration</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    ]]>
+      
+    <ulink url="http://jira.jboss.org/jira/browse/JBWS-700">FIXME: JBWS-700</ulink>
+    </programlisting></para>
+  
+  <para>WSTools does generate message parts of type xsd:hexBinary and the associated mime bindings</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <message name="Attachment_sendMimeImageGIF">
+      <part name="message" type="xsd:string"/>
+      <part name="mimepart" type="xsd:hexBinary"/>
+    </message>
+      
+    <binding name="AttachmentBinding" type="tns:Attachment">
+      <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc"/>
+      <operation name="sendMimeImageGIF">
+        <soap:operation soapAction=""/>
+        <input>
+          <mime:multipartRelated>
+            <mime:part>
+              <soap:body part="message" use="literal" 
+                namespace="http://org.jboss.ws/samples/swa"/>
+            </mime:part>
+            <mime:part>
+              <mime:content part="mimepart" type="image/gif"/>
+            </mime:part>
+          </mime:multipartRelated>
+        </input>
+        <output>
+          <soap:body use="literal" namespace="http://org.jboss.ws/samples/swa"/>
+        </output>
+      </operation>
+      ...
+    </binding>
+     ]]></programlisting></para>
+  
+  <sect1>
+    <title>Access attachments on the server side</title>
+
+  <para>
+    Your endpoint bean may access the attachment parts using the standard SAAJ API:
+    <programlisting><![CDATA[
+      ServletEndpointContext context = 
+            (ServletEndpointContext)ctxWhichIsSetIn_ServiceLifecycle_init;
+
+      SOAPMessageContext msgContext = (SOAPMessageContext)context.getMessageContext();
+      SOAPMessage soapMessage = msgContext.getMessage();
+
+      Iterator attachments = soapMessage.getAttachments();
+      if (attachments.hasNext())
+      {
+         AttachmentPart ap = (AttachmentPart)attachments.next();
+         String contentType = ap.getContentType();
+
+         if (expContentType.equals("multipart/*"))
+         {
+            MimeMultipart mmp = (MimeMultipart)ap.getContent();
+            int mmpCount = mmp.getCount();
+            for (int i = 0; i < mmpCount; i++)
+            {
+               BodyPart bp = mmp.getBodyPart(i);
+               String bpct = bp.getContentType();
+               Object bpc = bp.getContent();
+               ...   
+            }
+         }
+         else if (expContentType.equals("image/gif"))
+         {
+            Image image = (Image)ap.getContent();
+            ... 
+         }
+         else
+         {
+            ... 
+         }
+      }
+     ]]></programlisting> 
+  </para>
+  </sect1>
+  
+  <sect1>
+    <title>Sending an attachment from a DII client</title>
+
+  <para>
+    To send an image, we can use the standard DII API and make use of the Java activation framework. From the JavaDoc for DataHandler:
+  </para>
+    
+  <para>
+    <emphasis>The DataHandler class provides a consistent interface to data available in many different sources and formats. 
+    It manages simple stream to string conversions and related operations using DataContentHandlers.</emphasis>
+  </para>
+    
+  <para>
+    <programlisting><![CDATA[
+      ServiceFactory factory = ServiceFactory.newInstance();
+      Service service = factory.createService(SERVICE_NAME);
+
+      Call call = service.createCall(PORT_NAME, new QName(NS_URI, rpcMethodName));
+      call.addParameter("message", Constants.XSD_STRING, ParameterMode.IN);
+      call.addParameter("mimepart", Constants.MIME_IMAGE, ParameterMode.IN);
+      call.setReturnType(Constants.XSD_STRING);
+      call.setTargetEndpointAddress("http://" + getServerHost() + ":8080/ws4ee-attachment");
+
+      URL url = new File("resources/webservice/attachment/attach.gif").toURL();
+
+      String message = "Some text message";
+      String value = (String)call.invoke(new Object[]{message, new DataHandler(url)});
+
+      System.out.println(value);
+     ]]></programlisting> 
+  </para>
+  </sect1>
+  
+  <sect1>
+    <title>Building a SOAP multipart message using SAAJ</title>
+
+  <para>
+    Using the SAAJ API directly, you can also construct a MIME multipart message and send it on the wire without using an JAX-RPC client.
+    
+    <programlisting><![CDATA[
+      MessageFactory mf = MessageFactory.newInstance();
+
+      // Create a soap message from the message factory.
+      SOAPMessage msg = mf.createMessage();
+
+      // Message creation takes care of creating the SOAPPart
+      // a required part of the message as per the SOAP 1.1 spec.
+      SOAPPart sp = msg.getSOAPPart();
+
+      // Retrieve the envelope from the soap part to start building the soap message.
+      SOAPEnvelope envelope = sp.getEnvelope();
+
+      // Create a soap body from the envelope.
+      SOAPBody bdy = envelope.getBody();
+
+      // Add a soap body element
+      SOAPBodyElement sbe = 
+            bdy.addBodyElement(envelope.createName(rpcMethodName, NS_PREFIX, NS_URI));
+
+      // Add a some child elements
+      sbe.addChildElement(envelope.createName("message"))
+            .addTextNode("Some text message");
+      sbe.addChildElement(envelope.createName("mimepart"))
+            .addAttribute(envelope.createName("href"), CID_MIMEPART);
+
+      AttachmentPart ap = msg.createAttachmentPart(new DataHandler(url));
+      ap.setContentType("image/gif");
+      ap.setContentId(CID_MIMEPART);
+
+      // Add the attachments to the message.
+      msg.addAttachmentPart(ap);
+
+      SOAPConnectionFactory conFactory = SOAPConnectionFactory.newInstance();
+      SOAPConnection con = conFactory.createConnection();
+      SOAPMessage resMessage = con.call(msg, new URL("http://" + 
+              getServerHost() + 
+              ":8080/ws4ee-attachment")
+       );
+     ]]></programlisting> 
+  </para>
+  </sect1>
+  
+</chapter>

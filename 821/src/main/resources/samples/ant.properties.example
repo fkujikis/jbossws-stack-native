@@ -1,0 +1,20 @@
+# JBossWS samples build properties
+#
+
+# Required JBoss Home
+#jboss.jdk15.home=d:/cvs/jboss-branch/jboss-4.0.x/build/output/jboss-4.0.5.CR1-ejb3
+
+# Optional JBoss Home
+#jboss.jdk14.home=d:/cvs/jboss-archive/jboss-4.0.4/build/output/jboss-4.0.4.GA
+
+# The JBoss server instance
+jboss.server.instance=default
+
+# Tomcat Home
+#tomcat.home=d:/java/apache/apache-tomcat-5.5.17
+#tomcat.manager.username=manager
+#tomcat.manager.password=manager
+
+# The target server the test endpoints are deployed to 
+# This can be [jboss|tomcat]
+jbossws.target.server=jboss

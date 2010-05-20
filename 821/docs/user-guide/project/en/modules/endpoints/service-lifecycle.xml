@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sect1 id="service-lifecycle">
+  
+    <title>Service Lifecycle and MessageContext</title>
+  
+    <para><command>Adding Service Lifecycle</command></para>
+    
+    <para>Your POJO endpoint may implement javax.xml.rpc.server.ServiceLifecycle to 
+        obtain access to the javax.xml.rpc.server.ServletEndpointContext int the init() method.</para>
+    
+    <para>The ServletEndpointContext provides an endpoint context maintained by the underlying
+        servlet container based JAX-RPC runtime system. For service endpoints
+        deployed on a servlet container based JAX-RPC runtime system, the context
+        parameter in the ServiceLifecycle.init method is required to be of the Java
+        type javax.xml.rpc.server.ServletEndpointContext.</para>
+    
+    <para>A servlet container based JAX-RPC runtime system implements the
+        ServletEndpointContext interface. The JAX-RPC runtime system is required to
+        provide appropriate session, message context, servlet context and user
+        principal information per method invocation on the endpoint class.</para>
+    
+    <para>
+        <programlisting><![CDATA[
+    public class JaxRpcJSEEndpoint implements JaxRpcTestService, ServiceLifecycle
+    {
+        ...
+      
+       private ServletEndpointContext context;
+    
+       public String echoString(String str1, String str2)
+       {
+          log.info("echoString: " + str1 + "," + str2);
+          log.info("userPricipal: " + context.getUserPrincipal());
+          return str1 + str2;
+       }
+    
+       public void init(Object context) throws ServiceException
+       {
+          this.context = (ServletEndpointContext)context;
+       }
+    
+       public void destroy()
+       {
+       }
+    }
+   ]]></programlisting></para>
+        
+    <para>Currently, POJO endpoints are not pooled like their EJB counterparts. As a consequence
+      and because WS4EE endpoints are essentially stateless, you will get a new instance of the endpoint 
+      implementation bean for every request. For stateful behaviour see <link linkend="wsaddressing">WS-Addressing</link>.
+    </para>
+</sect1>
+

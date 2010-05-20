@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id="introduction">
+    <title>Introdcution</title>
+    
+    <sect1 id="features">
+        <title>Features</title>
+        <itemizedlist>
+            <listitem>
+                <para>RPC style and Document style endpoints (wrapped and bare)</para>
+            </listitem>
+            <listitem>
+                <para>SOAP header values bound/unbound to endpoint parameters</para>
+            </listitem>
+            <listitem>
+                <para>J2EE endpoint development model for EJB and Java (JSR-109)</para>
+            </listitem>
+            <listitem>
+                <para>J2EE client development model (JSR-109)</para>
+            </listitem>
+            <listitem>
+                <para>Dynamic Invocation Interface (DII)</para>
+            </listitem>
+            <listitem>
+                <para>JAX-RPC client/server side handlers</para>
+            </listitem>
+            <listitem>
+                <para>Holders for INOUT/OUT parameters</para>
+            </listitem>
+            <listitem>
+                <para>Message style endpoints</para>
+            </listitem>
+            <listitem>
+                <para>Attachments Profile Version 1.0</para>
+            </listitem>
+            <listitem>
+                <para>Dynamic client/server side handler injection</para>
+            </listitem>
+            <listitem>
+                <para>Web Service Metadata (JSR-181)</para>
+            </listitem>
+            <listitem>
+                <para>EJB3 Stateless Session endpoints</para>
+            </listitem>
+            <listitem>
+                <para>WS-Security1.0 for XML Encryption/Signature of the SOAP message</para>
+            </listitem>
+            <listitem>
+                <para>WS-Addressing (W3C candidate release) and JSR-261</para>
+            </listitem>            
+            <listitem>
+                <para>WS-Eventing</para>
+            </listitem>
+            <listitem>
+                <para>WS-Policy</para>
+            </listitem>
+            <listitem>
+                <para>MTOM/XOP</para>
+            </listitem>
+        </itemizedlist>
+    </sect1>
+    
+</chapter>
+

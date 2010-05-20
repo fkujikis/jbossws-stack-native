@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect2 id="jsr109-pojo-endpoint">
+  
+  <title>JSR-109 POJO Endpoint</title>
+  
+  <para>This chapter uses a more complex service endpoint interface (SEI) as in <link linkend="doc-endpoints">Document Style Endpoints</link>. 
+    It contains a user defined type as one of the opertion parameters.
+  </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    public interface JaxRpcTestService extends Remote
+    {
+       String echoString(String str1, String str2) throws RemoteException;
+    
+       SimpleUserType echoSimpleUserType(String str1, SimpleUserType msg) 
+            throws RemoteException;
+    }
+  ]]></programlisting></para>
+  
+  <para><command>Generating required deployment artifacts</command></para>
+  
+  <para>Run wstools with the following configuration</para>
+  
+  <para>
+    <programlisting><![CDATA[
+  <configuration ...>
+    <java-wsdl>
+      <service name="TestService" style="rpc" 
+        endpoint="org.jboss.test.ws.samples.jsr109pojo.JaxRpcTestService"/>
+    
+      <namespaces target-namespace="http://org.jboss.ws/samples/jsr109pojo" 
+        type-namespace="http://org.jboss.ws/samples/jsr109pojo/types"/>
+    
+      <mapping file="jaxrpc-mapping.xml"/>
+      <webservices servlet-link="TestService"/>
+    </java-wsdl>
+  </configuration>
+     ]]></programlisting></para>
+ 
+  <para>WSTools generates request/response java objects that correspond to these schema 
+    types and that are mapped in jaxrpc-mapping.xml.</para>
+ 
+  <para><command>SOAP message exchange</command></para>
+  
+  <para>Below you see the SOAP messages that are beeing exchanged. </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Incomming SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:echoSimpleUserType xmlns:ns1='http://org.jboss.ws/samples/jsr109pojo'>
+       <String_1>Hello</String_1>
+       <SimpleUserType_2>
+        <a>1</a>
+        <b>2</b>
+       </SimpleUserType_2>
+      </ns1:echoSimpleUserType>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Outgoing SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:echoSimpleUserTypeResponse xmlns:ns1='http://org.jboss.ws/samples/jsr109pojo'>
+       <result>
+        <a>1</a>
+        <b>2</b>
+       </result>
+      </ns1:echoSimpleUserTypeResponse>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+  
+</sect2>

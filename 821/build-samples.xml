@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ====================================================================== -->
+<!--                                                                        -->
+<!--  JBoss, the OpenSource J2EE webOS                                      -->
+<!--                                                                        -->
+<!--  Distributable under LGPL license.                                     -->
+<!--  See terms of license at http://www.gnu.org.                           -->
+<!--                                                                        -->
+<!-- ====================================================================== -->
+
+<!-- $Id: build.xml 434 2006-06-02 11:36:22Z thomas.diesler@jboss.com $ -->
+
+<project default="build-samples" name="JBossWS Samples">
+
+  <!--
+  |  Build the samples
+  -->
+  <target name="build-samples" description="Builds the samples." depends="jars">
+
+    <property name="samples.target" value="jbossws-samples-${version.id}"/>
+    <property name="build.src.samples.dir" value="${build.dir}/${samples.target}"/>
+
+    <copy todir="${build.src.samples.dir}">
+      <fileset dir="${src.samples.dir}">
+        <include name="common/imported-build.xml"/>
+        <include name="ant.properties.example"/>
+        <include name="**/build.xml"/>
+      </fileset>
+    </copy>
+
+    <!-- samples/common -->
+    <mkdir dir="${build.src.samples.dir}/common/java"/>
+    <mkdir dir="${build.src.samples.dir}/common/resources/overrides"/>
+
+    <copy todir="${build.src.samples.dir}/common/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/*.java"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/common/resources">
+      <fileset dir="${src.samples.dir}/common">
+        <include name="jndi.properties"/>
+        <include name="log4j.xml"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/common/resources/overrides">
+      <fileset dir="${test.resources.dir}/samples-override"/>
+    </copy>
+
+    <!-- samples/docstyle -->
+    <mkdir dir="${build.src.samples.dir}/docstyle/java"/>
+    <mkdir dir="${build.src.samples.dir}/docstyle/resources"/>
+
+    <copy todir="${build.src.samples.dir}/docstyle/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/docstyle/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/docstyle/resources">
+      <fileset dir="${test.resources.dir}/samples/docstyle"/>
+    </copy>
+
+    <!-- samples/dynamichandler -->
+    <mkdir dir="${build.src.samples.dir}/dynamichandler/java"/>
+    <mkdir dir="${build.src.samples.dir}/dynamichandler/resources"/>
+
+    <copy todir="${build.src.samples.dir}/dynamichandler/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/dynamichandler/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/dynamichandler/resources">
+      <fileset dir="${test.resources.dir}/samples/dynamichandler"/>
+    </copy>
+
+    <!-- samples/exception -->
+    <mkdir dir="${build.src.samples.dir}/exception/java"/>
+    <mkdir dir="${build.src.samples.dir}/exception/resources"/>
+
+    <copy todir="${build.src.samples.dir}/exception/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/exception/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/exception/resources">
+      <fileset dir="${test.resources.dir}/samples/exception"/>
+    </copy>
+
+    <!-- samples/handler -->
+    <mkdir dir="${build.src.samples.dir}/handler/java"/>
+    <mkdir dir="${build.src.samples.dir}/handler/resources"/>
+
+    <copy todir="${build.src.samples.dir}/handler/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/handler/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/handler/resources">
+      <fileset dir="${test.resources.dir}/samples/handler"/>
+    </copy>
+
+    <!-- samples/holder -->
+    <mkdir dir="${build.src.samples.dir}/holder/java"/>
+    <mkdir dir="${build.src.samples.dir}/holder/resources"/>
+
+    <copy todir="${build.src.samples.dir}/holder/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/holder/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/holder/resources">
+      <fileset dir="${test.resources.dir}/samples/holder"/>
+    </copy>
+
+    <!-- samples/jmstransport -->
+    <mkdir dir="${build.src.samples.dir}/jmstransport/java"/>
+    <mkdir dir="${build.src.samples.dir}/jmstransport/resources"/>
+
+    <copy todir="${build.src.samples.dir}/jmstransport/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/jmstransport/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/jmstransport/resources">
+      <fileset dir="${test.resources.dir}/samples/jmstransport"/>
+    </copy>
+
+    <!-- samples/jsr109ejb -->
+    <mkdir dir="${build.src.samples.dir}/jsr109ejb/java"/>
+    <mkdir dir="${build.src.samples.dir}/jsr109ejb/resources"/>
+
+    <copy todir="${build.src.samples.dir}/jsr109ejb/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/jsr109ejb/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/jsr109ejb/resources">
+      <fileset dir="${test.resources.dir}/samples/jsr109ejb"/>
+    </copy>
+
+    <!-- samples/jsr109pojo -->
+    <mkdir dir="${build.src.samples.dir}/jsr109pojo/java"/>
+    <mkdir dir="${build.src.samples.dir}/jsr109pojo/resources"/>
+
+    <copy todir="${build.src.samples.dir}/jsr109pojo/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/jsr109pojo/**/*"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/jsr109pojo/resources">
+      <fileset dir="${test.resources.dir}/samples/jsr109pojo"/>
+    </copy>
+
+    <!-- samples/jsr181ejb -->
+    <mkdir dir="${build.src.samples.dir}/jsr181ejb/java"/>
+    <mkdir dir="${build.src.samples.dir}/jsr181ejb/resources"/>
+
+    <copy todir="${build.src.samples.dir}/jsr181ejb/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/jsr181ejb/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/jsr181ejb/resources">
+      <fileset dir="${test.resources.dir}/samples/jsr181ejb"/>
+    </copy>
+
+    <!-- samples/jsr181pojo -->
+    <mkdir dir="${build.src.samples.dir}/jsr181pojo/java"/>
+    <mkdir dir="${build.src.samples.dir}/jsr181pojo/resources"/>
+
+    <copy todir="${build.src.samples.dir}/jsr181pojo/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/jsr181pojo/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/jsr181pojo/resources">
+      <fileset dir="${test.resources.dir}/samples/jsr181pojo"/>
+    </copy>
+
+    <!-- samples/message -->
+    <mkdir dir="${build.src.samples.dir}/message/java"/>
+    <mkdir dir="${build.src.samples.dir}/message/resources"/>
+
+    <copy todir="${build.src.samples.dir}/message/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/message/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/message/resources">
+      <fileset dir="${test.resources.dir}/samples/message"/>
+    </copy>
+
+    <!-- samples/mtom -->
+    <mkdir dir="${build.src.samples.dir}/mtom/java"/>
+    <mkdir dir="${build.src.samples.dir}/mtom/resources"/>
+
+    <copy todir="${build.src.samples.dir}/mtom/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/mtom/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/mtom/resources">
+      <fileset dir="${test.resources.dir}/samples/mtom"/>
+    </copy>
+
+    <!-- samples/oneway -->
+    <mkdir dir="${build.src.samples.dir}/oneway/java"/>
+    <mkdir dir="${build.src.samples.dir}/oneway/resources"/>
+
+    <copy todir="${build.src.samples.dir}/oneway/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/oneway/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/oneway/resources">
+      <fileset dir="${test.resources.dir}/samples/oneway"/>
+    </copy>
+
+    <!-- samples/rpcstyle -->
+    <mkdir dir="${build.src.samples.dir}/rpcstyle/java"/>
+    <mkdir dir="${build.src.samples.dir}/rpcstyle/resources"/>
+
+    <copy todir="${build.src.samples.dir}/rpcstyle/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/rpcstyle/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/rpcstyle/resources">
+      <fileset dir="${test.resources.dir}/samples/rpcstyle"/>
+    </copy>
+
+    <!-- samples/secureejb -->
+    <mkdir dir="${build.src.samples.dir}/secureejb/java"/>
+    <mkdir dir="${build.src.samples.dir}/secureejb/resources"/>
+
+    <copy todir="${build.src.samples.dir}/secureejb/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/secureejb/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/secureejb/resources">
+      <fileset dir="${test.resources.dir}/samples/secureejb"/>
+    </copy>
+
+    <!-- samples/swa -->
+    <mkdir dir="${build.src.samples.dir}/swa/java"/>
+    <mkdir dir="${build.src.samples.dir}/swa/resources"/>
+
+    <copy todir="${build.src.samples.dir}/swa/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/swa/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/swa/resources">
+      <fileset dir="${test.resources.dir}/samples/swa"/>
+    </copy>
+
+    <!-- samples/wsaddressing -->
+    <mkdir dir="${build.src.samples.dir}/wsaddressing/java"/>
+    <mkdir dir="${build.src.samples.dir}/wsaddressing/resources"/>
+
+    <copy todir="${build.src.samples.dir}/wsaddressing/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/wsaddressing/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/wsaddressing/resources">
+      <fileset dir="${test.resources.dir}/samples/wsaddressing"/>
+    </copy>
+
+    <!-- samples/wseventing -->
+    <mkdir dir="${build.src.samples.dir}/wseventing/java"/>
+    <mkdir dir="${build.src.samples.dir}/wseventing/resources"/>
+
+    <copy todir="${build.src.samples.dir}/wseventing/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/wseventing/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/wseventing/resources">
+      <fileset dir="${test.resources.dir}/samples/wseventing"/>
+    </copy>
+
+    <!-- samples/wssecurity -->
+    <mkdir dir="${build.src.samples.dir}/wssecurity/java"/>
+    <mkdir dir="${build.src.samples.dir}/wssecurity/resources"/>
+
+    <copy todir="${build.src.samples.dir}/wssecurity/java">
+      <fileset dir="${test.java.dir}">
+        <include name="org/jboss/test/ws/samples/wssecurity/**"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.src.samples.dir}/wssecurity/resources">
+      <fileset dir="${test.resources.dir}/samples/wssecurity"/>
+    </copy>
+
+    <zip destfile="${build.dir}/${samples.target}.zip">
+      <fileset dir="${build.dir}" includes="${samples.target}/**"/>
+    </zip>
+
+  </target>
+
+</project>

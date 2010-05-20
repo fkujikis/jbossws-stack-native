@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<chapter id="wsaddressing">
+  
+  <title>WS-Addressing</title>
+  
+  <para>This section describes how <ulink url="http://www.w3.org/TR/ws-addr-core">WS-Addressing</ulink> can be used to provide a staful service endpoint.</para>
+  
+  <para><command>Specifications</command></para>
+  
+  <para>WS-Addressing is defined by a combination of the following specifications from the 
+    W3C Candidate Recommendation 17 August 2005. The WS-Addressing API is standardized by <ulink url="http://www.jcp.org/aboutJava/communityprocess/edr/jsr261/">JSR-261</ulink></para>
+
+  <para>
+    <itemizedlist>
+      <listitem>
+        <para><ulink url="http://www.w3.org/TR/ws-addr-core">Web Services Addressing 1.0 - Core</ulink></para>
+      </listitem>
+      <listitem>
+        <para><ulink url="http://www.w3.org/TR/ws-addr-soap">Web Services Addressing 1.0 - SOAP Binding</ulink></para>
+      </listitem>
+      <listitem>
+        <para><ulink url="http://www.jcp.org/aboutJava/communityprocess/edr/jsr261/">JSR-261 - Java API for XML Web Services Addressing 1.0</ulink></para>
+      </listitem>
+    </itemizedlist> </para>
+
+  <para>The following service endpoint interface (SEI) has a set of operation for a typical stateful shopping chart application.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    public interface StatefulEndpoint extends Remote
+    {
+       public void addItem(String item) throws RemoteException;
+    
+       public void checkout() throws RemoteException;
+    
+       public String getItems() throws RemoteException;
+    }
+  ]]></programlisting></para>
+  
+  <para><command>The endpoint implementation bean</command></para>
+  
+  <para>We use JSR-181 annotations for the endpoint implementation bean. The endpoint handler chain is comprised of two 
+  handlers. The first handler (org.jboss.ws.addressing.soap.SOAPServerHandler) processes the incomming WS-Addressing header elements
+  and provides access to them through the JSR-261 API.
+  The second handler (org.jboss.test.ws.samples.wsaddr.ServerHandler) is application specific and assignes/processes stateful client ids.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    @WebService(name = "StatefulEndpoint", 
+        targetNamespace = "http://org.jboss.ws/samples/wsaddr", serviceName = "TestService")
+    @SOAPBinding(style = SOAPBinding.Style.RPC)
+    @SOAPMessageHandlers( { 
+    @SOAPMessageHandler(className = "org.jboss.ws.addressing.soap.SOAPServerHandler"),
+    @SOAPMessageHandler(className = "org.jboss.test.ws.samples.wsaddr.ServerHandler")
+    })
+    public class StatefulEndpointImpl implements StatefulEndpoint, ServiceLifecycle
+    {
+       @WebMethod
+       public void addItem(String item)
+       { ... }
+    
+       @WebMethod
+       public void checkout()
+       { ... }
+    
+       @WebMethod
+       public String getItems()
+       { ... }
+    }
+  ]]></programlisting></para>
+  
+  <para>On the client side there is a simmilar handler that does the reverse. 
+    It uses the <ulink url="http://www.jcp.org/en/jsr/detail?id=261">JavaTM API for XML Web Services Addressing (JSR-261)</ulink> to add WS-Addressing header elements including the clientid association.</para>
+
+  <para>Generating the client side artifacts is equivalent to <link linkend="jsr181-pojo-endpoint">JSR-181 POJO Endpoints</link></para>
+
+  <para><command>Server side handler configuration</command></para>
+  
+  <para>The stateful addressing example uses an JSR-181 endpoinhttp://www.jcp.org/en/jsr/detail?id=261t with the following handler configuration.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    @WebService
+    @SOAPBinding(style = SOAPBinding.Style.RPC)
+    @SOAPMessageHandlers( { 
+       @SOAPMessageHandler(className = "org.jboss.ws.addressing.soap.SOAPServerHandler"),
+       @SOAPMessageHandler(className = "org.jboss.test.ws.samples.wsaddressing.ServerHandler")
+       })
+    public class StatefulEndpointImpl implements StatefulEndpoint, ServiceLifecycle
+    {
+       ...
+    }
+    ]]></programlisting></para>
+  
+  <para>The <ulink url="http://fisheye.jboss.com/viewrep/JBossWS/trunk/src/main/java/org/jboss/ws/addressing/soap/SOAPServerHandler.java?r=HEAD">SOAPServerHandler</ulink> 
+    is provided by JBossWS and <emphasis>reads/writes the addressing properties and puts then into the message context</emphasis>.
+  </para>
+  
+  <para>The <ulink url="http://fisheye.jboss.com/viewrep/JBossWS/trunk/src/test/java/org/jboss/test/ws/samples/wsaddressing/ServerHandler.java?r=HEAD">ServerHandler</ulink> 
+    is implementation specific.</para>
+  
+  <para><command>Client side handler configuration</command></para>
+  
+  <para>The client uses a predifined handler configuration in jboss-client.xml</para>
+  
+  <para>
+    <programlisting><![CDATA[
+  <jboss-client>
+    <jndi-name>jbossws-client</jndi-name>
+    <service-ref>
+      <service-ref-name>service/TestService</service-ref-name>
+      <config-name>Standard Addressing Client</config-name>
+    </service-ref>
+  </jboss-client>
+    ]]></programlisting></para>
+  
+  <para>The standard client configurations are defined in standard-jbossws-client-config.xml</para>
+  
+  <para>
+    <programlisting><![CDATA[
+  <jboss-client>
+    <jndi-name>jbossws-client</jndi-name>
+    <service-ref>
+      <service-ref-name>service/TestService</service-ref-name>
+      <config-name>Standard Addressing Client</config-name>
+    </service-ref>
+  </jboss-client>
+    ]]></programlisting></para>
+  
+  <para>The <ulink url="http://fisheye.jboss.com/viewrep/JBossWS/trunk/src/main/java/org/jboss/ws/addressing/soap/SOAPServerHandler.java?r=HEAD">SOAPServerHandler</ulink> 
+    is provided by JBossWS and <emphasis>reads/writes the addressing properties and puts then into the message context</emphasis>.
+  </para>
+  
+  <para>The <ulink url="http://fisheye.jboss.com/viewrep/JBossWS/trunk/src/test/java/org/jboss/test/ws/samples/wsaddressing/ServerHandler.java?r=HEAD">ServerHandler</ulink> 
+    is implementation specific.</para>
+  
+  <para><command>A client connecting to the stateful endpoint</command></para>
+  
+  <para>
+    <programlisting><![CDATA[
+    public class AddressingStatefulTestCase extends JBossWSTest
+    {
+       ...
+       
+       public void testAddItem() throws Exception
+       {
+          client1.addItem("Ice Cream");
+          client1.addItem("Ferrari");
+          
+          client2.addItem("Mars Bar");
+          client2.addItem("Porsche");
+       }
+       
+       public void testGetItems() throws Exception
+       {
+          String items1 = client1.getItems();
+          assertEquals("[Ice Cream, Ferrari]", items1);
+          
+          String items2 = client2.getItems();
+          assertEquals("[Mars Bar, Porsche]", items2);
+       }
+    }
+    ]]></programlisting></para>
+
+  <para><command>SOAP message exchange</command></para>
+  
+  <para>Below you see the SOAP messages that are beeing exchanged. </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    
+	<env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+	 <env:Header xmlns:wsa='http://schemas.xmlsoap.org/ws/2004/08/addressing'>
+	  <wsa:To>uri:jbossws-samples-wsaddr/TestService</wsa:To>
+	  <wsa:Action>http://org.jboss.ws/addressing/stateful/action</wsa:Action>
+	  <wsa:ReferenceParameters>
+	   <ns1:clientid xmlns:ns1='http://somens'>clientid-1</ns1:clientid>
+	  </wsa:ReferenceParameters>
+	 </env:Header>
+	 <env:Body>
+	  <ns1:addItem xmlns:ns1='http://org.jboss.ws/samples/wsaddr'>
+	   <String_1>Ice Cream</String_1>
+	  </ns1:addItem>
+	 </env:Body>
+	</env:Envelope>
+    
+	<env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+	 <env:Header xmlns:wsa='http://schemas.xmlsoap.org/ws/2004/08/addressing'>
+	  <wsa:To>http://www.w3.org/2005/08/addressing/anonymous</wsa:To>
+	  <wsa:Action>http://org.jboss.ws/addressing/stateful/actionReply</wsa:Action>
+	  <ns1:clientid xmlns:ns1='http://somens'>clientid-1</ns1:clientid>
+	 </env:Header>
+	 <env:Body>
+	  <ns1:addItemResponse xmlns:ns1='http://org.jboss.ws/samples/wsaddr'/>
+	 </env:Body>
+	</env:Envelope>
+        
+    ...
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header xmlns:wsa='http://schemas.xmlsoap.org/ws/2004/08/addressing'>
+      <wsa:To>uri:jbossws-samples-wsaddr/TestService</wsa:To>
+      <wsa:Action>http://org.jboss.ws/addressing/stateful/action</wsa:Action>
+      <wsa:ReferenceParameters>
+       <ns1:clientid xmlns:ns1='http://somens'>clientid-1</ns1:clientid>
+      </wsa:ReferenceParameters>
+     </env:Header>
+     <env:Body>
+      <ns1:getItems xmlns:ns1='http://org.jboss.ws/samples/wsaddr'/>
+     </env:Body>
+    </env:Envelope>
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header xmlns:wsa='http://schemas.xmlsoap.org/ws/2004/08/addressing'>
+      <wsa:To>http://www.w3.org/2005/08/addressing/anonymous</wsa:To>
+      <wsa:Action>http://org.jboss.ws/addressing/stateful/actionReply</wsa:Action>
+      <ns1:clientid xmlns:ns1='http://somens'>clientid-1</ns1:clientid>
+     </env:Header>
+     <env:Body>
+      <ns1:getItemsResponse xmlns:ns1='http://org.jboss.ws/samples/wsaddr'>
+       <result>[Ice Cream, Ferrari]</result>
+      </ns1:getItemsResponse>
+     </env:Body>
+    </env:Envelope>
+    
+      ]]></programlisting></para>
+
+</chapter>

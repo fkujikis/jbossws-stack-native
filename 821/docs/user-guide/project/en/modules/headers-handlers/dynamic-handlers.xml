@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect1 id="dynamic-handlers">
+  
+  <title>Dynamic JAXRPC Handlers</title>
+  
+  <para><command>Modifying the client side handler chain dynamically</command></para>
+  
+  <para>The JSR-109 specification does not allow access to the HandlerRegistry that is associated with the 
+    Service object. JBossWS extends the Service interface to provide full access to the handler chains. 
+    There can be one handler chain per service port.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+   public void testRemoveServerHandlers() throws Exception
+   {
+      MBeanServerConnection server = getServer();
+      ObjectName oname = ObjectNameFactory.create("jboss.ws:service=ServiceEndpointManager");
+      ObjectName serviceID = new ObjectName("jboss.ws:di=jbossws-samples-dynamichandler.war," + 
+        "service=TestService,port=HandlerTestServicePort");
+
+      List<HandlerInfo> infos = (List<HandlerInfo>)
+        server.invoke(oname, "getHandlerInfos", 
+          new Object[]{serviceID}, new String[]{"javax.management.ObjectName"});
+    
+      Iterator<HandlerInfo> it = infos.iterator();
+      while (it.hasNext())
+      {
+         HandlerInfo info = it.next();
+         if (info.getHandlerClass() == ServerSideHandler.class)
+            it.remove();
+      }
+    
+      server.invoke(oname, "stopServiceEndpoint", new Object[]{serviceID}, 
+        new String[]{"javax.management.ObjectName"});
+    
+      server.invoke(oname, "setHandlerInfos", new Object[]{serviceID, infos}, 
+        new String[]{"javax.management.ObjectName", "java.util.List"});
+    
+      server.invoke(oname, "startServiceEndpoint", new Object[]{serviceID}, 
+        new String[]{"javax.management.ObjectName"});
+      
+      String res = endpoint.testHandlers("InitalMessage");
+      assertEquals("InitalMessage", res);
+   }
+      ]]></programlisting></para>
+  
+  <para><command>Modifying the server side handler chain dynamically</command></para>
+  
+  <para>JAXRPC-1.1 does not provide access to the service endpoint handler chain. 
+    JBossWS provides full access to the handler chains through the ServiceEndpointManager.
+    The ServiceEndpointManager is an MBean that manages all service endpoints deployed to the server.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+   public void testRemoveServerHandlers() throws Exception
+   {
+      MBeanServerConnection server = getServer();
+      ObjectName oname = ObjectNameFactory.create("jboss.ws:service=ServiceEndpointManager");
+      String serviceID = 
+             "jbossws-samples-dynamichandler.war#TestService/HandlerTestServicePort";
+
+      List<HandlerInfo> infos = (List<HandlerInfo>)
+             server.invoke(oname, "getHandlerInfos", 
+                      new Object[]{serviceID}, new String[]{"java.lang.String"}
+             );
+      Iterator<HandlerInfo> it = infos.iterator();
+      while (it.hasNext())
+      {
+         HandlerInfo info = it.next();
+         if (info.getHandlerClass() == ServerSideHandler.class)
+            it.remove();
+      }
+      server.invoke(oname, "stopServiceEndpoint", 
+         new Object[]{serviceID}, new String[]{"java.lang.String"});
+    
+      server.invoke(oname, "setHandlerInfos", new Object[]{serviceID, infos}, 
+         new String[]{"java.lang.String", "java.util.List"});
+    
+      server.invoke(oname, "startServiceEndpoint", 
+         new Object[]{serviceID}, new String[]{"java.lang.String"});
+      
+      String res = endpoint.testHandlers("InitalMessage");
+      assertEquals("InitalMessage", res);
+   }
+      ]]></programlisting></para>
+  
+</sect1>

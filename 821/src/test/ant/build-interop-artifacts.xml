@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ============================================================ -->
+<!--  JBoss, the OpenSource J2EE webOS                            -->
+<!--  Distributable under LGPL license.                           -->
+<!--  See terms of license at http://www.gnu.org.                 -->
+<!-- ============================================================ -->
+
+<!-- $Id$ -->
+
+<project name="JBossWS-Interop" default="build-all">
+
+   <description>JBossWS interop artifacts builder</description>
+
+   <import file="build.xml"/>
+
+   <property file="jwsdp.properties"/>
+   <property name="interop.classes.dir" value="${build.dir}/classes"/>
+   <property name="wsdl.update.marker" value="${resources.dir}/interop/wsdl.update"/>
+
+   <path id="jwsdp.classpath">
+      <fileset dir="${jwsdp.home}/jaxrpc/lib"/>
+      <fileset dir="${jwsdp.home}/jwsdp-shared/lib">
+         <include name="activation.jar"/>
+         <include name="mail.jar"/>
+         <include name="jax-qname.jar"/>
+      </fileset>
+      <fileset dir="${jwsdp.home}/saaj/lib"/>
+      <fileset dir="${jwsdp.home}/jaxp/lib"/>
+   </path>
+
+   <path id="wscompile.tools.classpath">
+      <fileset dir="${env.JAVA_HOME}/lib">
+         <include name="*.jar"/>
+      </fileset>
+   </path>
+
+   <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
+      <classpath refid="jwsdp.classpath"/>
+   </taskdef>
+
+   <target name="prepare">
+      <mkdir dir="${interop.classes.dir}"/>
+
+      <uptodate property="build.required" targetfile="${wsdl.update.marker}" >
+         <srcfiles dir= "${resources.dir}/interop" includes="**/WEB-INF/jaxrpc-mapping.xml"/>
+      </uptodate>
+   </target>
+
+   <macrodef name="generate-client">
+
+      <attribute name="company"/>
+      <attribute name="module"/>
+      <attribute name="features"/>
+      <attribute name="config" default="config.xml"/>
+      <attribute name="verbose" default="false"/>
+
+      <sequential>
+
+         <echo>Generating interop/@{company}/@{module}</echo>
+
+         <mkdir dir="${resources.dir}/interop/@{company}/@{module}/META-INF"/>
+
+         <wscompile
+               keep="true"
+               client="true"
+               base="${interop.classes.dir}"
+               sourceBase="${src.dir}"
+               nonClassDir="${src.dir}/org/jboss/test/ws/interop/@{company}/@{module}"
+               mapping="${resources.dir}/interop/@{company}/@{module}/WEB-INF/jaxrpc-mapping.xml"
+               features="@{features}"
+               xPrintStackTrace="true"
+               fork="true"
+               verbose="@{verbose}"
+               debug="true"
+               config="${resources.dir}/interop/@{company}/@{module}/@{config}">
+
+            <classpath>
+               <path refid="wscompile.tools.classpath"/>
+               <path refid="jwsdp.classpath"/>
+               <path refid="build.classpath"/>
+            </classpath>
+         </wscompile>
+      </sequential>
+   </macrodef>
+
+   <macrodef name="generate-server">
+
+      <attribute name="company"/>
+      <attribute name="module"/>
+      <attribute name="features"/>
+      <attribute name="config" default="config.xml"/>
+      <attribute name="verbose" default="false"/>
+
+      <attribute name="import" default="true"/>
+      <attribute name="server" default="false"/>
+
+      <sequential>
+
+         <echo>Generating interop/@{company}/@{module}</echo>
+
+         <mkdir dir="${resources.dir}/interop/@{company}/@{module}/META-INF"/>
+
+         <wscompile
+               keep="true"
+               import="@{import}"
+               server="@{server}"
+               base="${interop.classes.dir}"
+               sourceBase="${src.dir}"
+               nonClassDir="${src.dir}/org/jboss/test/ws/interop/@{company}/@{module}"
+               mapping="${resources.dir}/interop/@{company}/@{module}/WEB-INF/jaxrpc-mapping.xml"
+               features="@{features}"
+               xPrintStackTrace="true"
+               fork="true"
+               verbose="@{verbose}"
+               debug="true"
+               config="${resources.dir}/interop/@{company}/@{module}/@{config}">
+
+            <classpath>
+               <path refid="wscompile.tools.classpath"/>
+               <path refid="jwsdp.classpath"/>
+               <path refid="build.classpath"/>
+            </classpath>
+         </wscompile>
+
+      </sequential>
+   </macrodef>
+
+   <macrodef name="fetch-wsdl">
+      <attribute name="company"/>
+      <attribute name="module"/>
+      <attribute name="source"/>
+      <attribute name="localName" default="service.wsdl"/>
+
+      <sequential>
+
+         <mkdir dir="${resources.dir}/interop/@{company}/@{module}/WEB-INF"/>
+         <mkdir dir="${resources.dir}/interop/@{company}/@{module}/WEB-INF/wsdl"/>
+
+         <get src="@{source}"
+              dest="${resources.dir}/interop/@{company}/@{module}/WEB-INF/wsdl/@{localName}"
+              verbose="true"
+              usetimestamp="true"/>
+      </sequential>
+   </macrodef>
+
+   <!--
+      snyc the local wsdl copies with it's online repositories
+   -->
+   <target name="sync-wsdl-files">
+      <fetch-wsdl
+            source="http://131.107.72.15/SoapWsdl_BaseDataTypes_XmlFormatter_Service_Indigo/BaseDataTypesDocLitB.svc?wsdl"
+            module="soapwsdl/BaseDataTypesDocLitB"
+            company="microsoft"/>
+
+      <fetch-wsdl
+            source="http://131.107.72.15/SoapWsdl_BaseDataTypes_XmlFormatter_Service_Indigo/BaseDataTypesDocLitW.svc?wsdl"
+            module="soapwsdl/BaseDataTypesDocLitW"
+            company="microsoft"/>
+
+      <fetch-wsdl
+            source="http://131.107.72.15/SoapWsdl_BaseDataTypes_XmlFormatter_Service_Indigo/BaseDataTypesRpcLit.svc?wsdl"
+            module="soapwsdl/BaseDataTypesRPCLit"
+            company="microsoft"/>
+
+      <fetch-wsdl
+            source="http://131.107.72.15/SoapWsdl_ComplexDataTypes_XmlFormatter_Service_Indigo/ComplexDataTypesDocLitB.svc?wsdl"
+            module="soapwsdl/ComplexDataTypesDocLitB"
+            company="microsoft"/>
+
+      <fetch-wsdl
+            source="http://131.107.72.15/SoapWsdl_ComplexDataTypes_XmlFormatter_Service_Indigo/ComplexDataTypesDocLitW.svc?wsdl"
+            module="soapwsdl/ComplexDataTypesDocLitW"
+            company="microsoft"/>
+
+      <fetch-wsdl
+            source="http://131.107.72.15/SoapWsdl_ComplexDataTypes_XmlFormatter_Service_Indigo/ComplexDataTypesRpcLit.svc?wsdl"
+            module="soapwsdl/ComplexDataTypesRpcLit"
+            company="microsoft"/>
+
+      <!--  OneWay.svc -->
+      <fetch-wsdl source="http://131.107.72.15/WSAddressingCR_Service_WCF/WSAddressing10.svc?wsdl"
+                  module="addressing/wsa10"
+                  company="microsoft"/>
+
+      <!-- touch the wsdl.update marker -->
+      <touch file="${wsdl.update.marker}"/>
+
+   </target>
+
+   <target name="build-all" depends="prepare, build-client, build-not-required"/>
+
+   <!-- force a rebuild -->
+   <target name="rebuild-all">
+      <property name="build.required" value="true"/>
+      <antcall target="build-all"/>
+   </target>
+
+   <!--
+      generate client artifacts through wscompile
+   -->
+   <target name="build-client" if="build.required"
+           description="builds the client side artifacts">
+
+      <!-- base data types -->
+
+      <!--generate-client
+            company="microsoft" module="soapwsdl/BaseDataTypesDocLitB"
+            features="documentliteral,wsi"/>
+
+      <generate-client
+            company="microsoft" module="soapwsdl/BaseDataTypesDocLitW"
+            features="documentliteral,wsi,unwrap"/>
+
+      <generate-client
+            company="microsoft" module="soapwsdl/BaseDataTypesRPCLit"
+            features="rpcliteral,wsi"/-->
+
+      <!-- complex data types -->
+
+      <!--generate-client
+            company="microsoft" module="soapwsdl/ComplexDataTypesDocLitB"
+            features="documentliteral,wsi"/>
+
+      <generate-client
+            company="microsoft" module="soapwsdl/ComplexDataTypesDocLitW"
+            features="documentliteral,wsi,unwrap"/>
+
+      <generate-client
+            company="microsoft" module="soapwsdl/ComplexDataTypesRpcLit"
+            features="rpcliteral,wsi"/-->
+
+
+      <antcall target="generate-addressing"/>
+
+   </target>
+
+   <target name="build-server" description="builds the server side artifacts">
+
+      <!--generate-server
+            features="documentliteral,wsi"
+            module="addressing/wsaTestService"
+            company="microsoft" verbose="true"/-->
+
+      <!--generate-server
+            features="documentliteral,wsi"
+            module="soapwsdl/BaseDataTypesDocLitB_Service"
+            company="microsoft" verbose="true"/-->
+
+      <!--generate-server
+            features="documentliteral,wsi,unwrap"
+            module="soapwsdl/BaseDataTypesDocLitW_Service"
+            company="microsoft" verbose="true"
+            import="false" server="true"/-->
+
+       <generate-server
+            features="rpcliteral,wsi"
+            module="soapwsdl/BaseDataTypesRpcLit_Service"
+            company="microsoft" verbose="true"
+            import="false" server="true"/>
+
+   </target>
+
+   <target name="build-not-required" unless="build.required">
+      <echo>Local WSDL copies seem to be uptodate. No build required.</echo>
+   </target>
+
+   <target name="generate-addressing">
+      <!--generate-client
+            company="microsoft" module="addressing/wsa10"
+            features="documentliteral,wsi,useonewayoperations,unwrap,novalidation"
+            verbose="true"/-->
+   </target>
+
+   <target name="compile">
+      <javac srcdir="${src.dir}" destdir="${build.dir}/classes"
+             classpathref="build.classpath"
+             source="1.5"
+             nowarn="off"
+             debug="on"
+             fork="yes">
+         <classpath refid="jwsdp.classpath"/>
+         <include name="org/jboss/test/ws/interop/**/*"/>
+      </javac>
+   </target>
+
+   <target name="deploy-services" depends="prepare">
+      <copy todir="${jboss.home}/server/default/deploy/">
+         <fileset dir="${build.dir}/libs">
+            <include name="*interop*.war"/>
+         </fileset>
+      </copy>
+   </target>
+</project>

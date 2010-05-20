@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<project default="main" basedir=".." name="JBossWS Examples">
+
+  <property name="chapter" value="dynamichandler"/>
+  <property name="java.dir" value="${basedir}/${chapter}/java"/>
+  <property name="resources.dir" value="${basedir}/${chapter}/resources"/>
+
+  <import file="${basedir}/common/imported-build.xml"/>
+
+  <target name="generate-sources" depends="compile" description="Generate the deployment resources.">
+    
+    <!-- Define a taskdef for the wstools ant task -->
+    <taskdef name="wstools" classname="org.jboss.ws.tools.ant.wstools">
+        <classpath refid="compile.classpath"/>
+        <classpath path="${build.test.dir}/classes"/>
+    </taskdef>
+    
+    <!-- samples/dynaminchandler -->
+    <wstools dest="${build.test.dir}/wstools/resources/samples/dynamichandler/WEB-INF" 
+      config="${resources.dir}/wstools-config.xml"/>
+    
+  </target>
+  
+  <!--
+  Build the test deployments
+  -->
+  <target name="jars" depends="compile,copy-resources,generate-sources,compile-generated,copy-generated" description="build the deployments">
+    
+    <!-- jbossws-samples-dynamichandler -->
+    <war warfile="${build.test.dir}/libs/jbossws-samples-dynamichandler.war" webxml="${build.test.dir}/resources/samples/dynamichandler/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/samples/dynamichandler/*Service.class"/>
+        <include name="org/jboss/test/ws/samples/dynamichandler/*ServiceBean.class"/>
+        <include name="org/jboss/test/ws/samples/dynamichandler/*Handler.class"/>
+      </classes>
+      <webinf dir="${build.test.dir}/resources/samples/dynamichandler/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+      </webinf>
+    </war>
+    <jar jarfile="${build.test.dir}/libs/jbossws-samples-dynamichandler-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/samples/dynamichandler/*Service.class"/>
+        <include name="org/jboss/test/ws/samples/dynamichandler/*Handler.class"/>
+      </fileset>
+      <metainf dir="${build.test.dir}/resources/samples/dynamichandler/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+      <metainf dir="${build.test.dir}/resources/samples/dynamichandler/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+      </metainf>
+    </jar>
+    
+  </target>
+
+  <!--
+  Run the testsuite
+  -->
+  <target name="tests" depends="jars" description="run the testsuite" if="only-on-jboss">
+    <antcall target="test">
+      <param name="test" value="${chapter}"/>
+    </antcall>
+  </target>
+
+</project>

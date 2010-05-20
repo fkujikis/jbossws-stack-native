@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<chapter id="wseventing">
+    <title>WS-Eventing</title>
+
+    <sect1 id="eventing-welcome">
+        <title>Introduction</title>
+
+        <para>WS-Eventing specifies a set of operations that allow an event consumer to register (subscribe)
+            with an event producer (source) to receive events (notifications) in an asynchronous fashion.
+        </para>
+
+        <para><command>Specifications</command></para>
+
+        <para>WS-Eventing is defined by the combination of the following specifications:</para>
+
+        <para>
+            <itemizedlist>
+                <listitem>
+                    <para><ulink url="ftp://www6.software.ibm.com/software/developer/library/ws-eventing/WS-Eventing.pdf">WS-Eventing specification</ulink></para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <ulink url="http://www.w3.org/TR/ws-addr-core">WS-Addressing Specifications</ulink>
+                        <para>
+                            <emphasis role="bold">NOTE:</emphasis>The original eventing specification builds upon WS-Addressing 2004/08.
+                            JBossWS however decided to stick to the latest version, which is the W3C candidate release.
+                            Eventing was submitted to the W3C in March 2006 and it's expected that the TC will follow this path as well.
+                        </para>
+                    </para>
+                </listitem>
+            </itemizedlist>
+        </para>
+    </sect1>
+
+    <sect1 id="eventing-introduction">
+        <title>Eventing collaboration</title>
+
+        <para>
+            The following section will introduce the main eventing actors and their responsiblities.
+        </para>
+
+        <para>
+            <figure id="EventingCollaboration.fig">
+                <title>Eventing collaboration</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata align="center" fileref="images/EventingCollaboration.gif"/>
+                    </imageobject>
+                </mediaobject>
+            </figure>
+
+            <para>
+                <orderedlist>
+                    <listitem>
+                        <para>
+                            An event sink (web service client) sends a subscribtion request to the event source endpoint.
+                            This includes the event sink endpoint address where notifications should delivered.
+                            Upon successful subscription the sink receives a leased subscription ID that can be used to identify the client
+                            in subsequent requests.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            A successfully registered event sink directs management requests (Renew, GetStatus, Unsubscribe)
+                            to the subscription manager endpoint using the previously received subscription ID.
+                            The subscription manager endpoint address was returned as part of the subscription response
+                            in the first place.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            The actual event sink (application) emits notification messages through the JBossWS-Eventing module.
+                            JBossWS-Eventing dispatches the notification to any subscriber endpoint
+                            that is registered with a particular event source.s
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            Besides notifications JBossWS-Eventing may emit lifecycle events at any time,
+                            i.e. to inform an event sink that a subscription was canceled.
+                            This can be the case when the subscription expired or the event source was undeployed.
+                        </para>
+                    </listitem>
+                </orderedlist>
+            </para>
+        </para>
+
+    </sect1>
+
+    <sect1 id="eventing-deployment">
+        <title>Event source deployment</title>
+
+        <para>
+            It is the users responsibilty to supply the web service endpoints (EventSourceEndpoint, SubscriptionManagerEndpoint)
+            that are required for a complete event source deployment.
+            Fortunatly JBossWS-Eventing already ships with a implementation that can be used right away.
+            All that's left todo is packaging of standard JSR-109 deployment archive that includes
+            the event source specific WSDL and points to the JBossWS-Eventing endpoint implementations.
+        </para>
+
+        <para>
+            The relevant steps are:
+
+            <itemizedlist>
+                <listitem>
+                    <para>
+                        Create a custom WSDL that describes your event source, in respect to the notification schema (1)
+                        and the fact that is actually contains an event source port (2)</para>
+                </listitem>
+                <listitem>
+                    <para>Use the JBossWS SEI (3) and endpoint (4) implementations (webservices.xml, web.xml).</para>
+                </listitem>
+            </itemizedlist>
+        </para>
+
+        <para><command>The WSDL that describes an event source</command></para>
+
+        <para>
+
+            The following excerpt shows the relevant WSDL details that describe an event source.
+
+            <orderedlist>
+                <listitem>
+                    <para>Import the default eventing WSDL, that includes service and port declarations.</para>
+                </listitem>
+                <listitem>
+                    <para>Include the default eventing Types</para>
+                </listitem>
+                <listitem>
+                    <para>Specifiy the notitification message schema.</para>
+                </listitem>
+                <listitem>
+                    <para>
+                        Declare a port type, attributed "wse:EventSource='true'"
+                        that points to your notification message schema.
+                    </para>
+                </listitem>
+            </orderedlist>
+
+            <programlisting><![CDATA[
+
+  <?xml version="1.0" encoding="UTF-8"?>
+
+   <wsdl:definitions
+      targetNamespace="http://www.jboss.org/sysmon"
+      xmlns:tns="http://www.jboss.org/sysmon"
+      xmlns:wse='http://schemas.xmlsoap.org/ws/2004/08/eventing'
+      xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'
+      xmlns:wsa10='http://www.w3.org/2005/08/addressing'
+      xmlns:xs='http://www.w3.org/2001/XMLSchema'
+      xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+   <wsdl:import
+(1)        namespace='http://schemas.xmlsoap.org/ws/2004/08/eventing'
+           location='jbwse.wsdl' />
+
+   <wsdl:types>
+
+      <xs:schema targetNamespace='http://schemas.xmlsoap.org/ws/2004/08/eventing'>
+(2)      <xs:include schemaLocation='jbwse.xsd'/>
+      </xs:schema>
+
+(3)   <xs:schema
+            targetNamespace="http://www.jboss.org/sysmon"
+            elementFormDefault="qualified"
+            blockDefault="#all">
+         <xs:element name="SystemStatus">
+            <xs:complexType>
+               <xs:sequence>
+                  <xs:element name="Time " type="xs:dateTime"/>
+                  <xs:element name="HostName" type="xs:string"/>
+                  <xs:element name="HostAddress" type="xs:string"/>
+                  <xs:element name="ActiveThreadCount" type="xs:int"/>
+                  <xs:element name="FreeMemory" type="xs:string"/>
+                  <xs:element name="MaxMemory" type="xs:string"/>
+               </xs:sequence>
+            </xs:complexType>
+         </xs:element>
+      </xs:schema>
+
+   </wsdl:types>
+
+   <wsdl:message name='SystemInfoMsg'>
+      <wsdl:part name='body' element='tns:SystemStatus'/>
+   </wsdl:message>
+
+(4) <wsdl:portType name='SystemInfo' wse:EventSource='true'>
+       <wsdl:operation name='SysmonOp'>
+          <wsdl:output message='tns:SystemInfoMsg'/>
+       </wsdl:operation>
+    </wsdl:portType>
+
+   <wsdl:binding name="SystemInfoBinding" type="tns:SystemInfo">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+      <wsdl:operation name="SysmonOp">
+         <soap:operation soapAction=""/>
+         <wsdl:output>
+            <soap:body use="literal"/>
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+
+</wsdl:definitions>
+      ]]></programlisting>
+
+        </para>
+
+
+        <para><command>The JBossWS service endpoint interface</command></para>
+        <para>
+            Within webservices.xml simply refer to the JBossWS-Eventing SEI that ships with JBossWS.
+
+            <programlisting><![CDATA[
+            <port-component>
+                 <port-component-name>SubscriptionManagerPort</port-component-name>
+                 <wsdl-port>wsdl:SubscriptionManagerPort</wsdl-port>
+(3)               <service-endpoint-interface>
+                            org.jboss.ws.eventing.SubscriptionManagerEndpoint
+                    </service-endpoint-interface>
+                 <service-impl-bean>
+                     <servlet-link>SubscriptionManagerServlet</servlet-link>
+                 </service-impl-bean>
+
+                 <handler>
+                     <handler-name>
+                            org.jboss.ws.addressing.soap.SOAPServerHandler
+                      </handler-name>
+                     <handler-class>
+                            org.jboss.ws.addressing.soap.SOAPServerHandler
+                      </handler-class>
+                 </handler>
+
+             </port-component>
+
+             <port-component>
+                 <port-component-name>EventSourcePort</port-component-name>
+                 <wsdl-port>wsdl:EventSourcePort</wsdl-port>
+(3)                <service-endpoint-interface>
+                        org.jboss.ws.eventing.EventSourceEndpoint
+                     </service-endpoint-interface>
+                 <service-impl-bean>
+                     <servlet-link>EventSourceServlet</servlet-link>
+                 </service-impl-bean>
+
+                 <handler>
+                     <handler-name>
+                            org.jboss.ws.addressing.soap.SOAPServerHandler
+                      </handler-name>
+                     <handler-class>
+                            org.jboss.ws.addressing.soap.SOAPServerHandler
+                        </handler-class>
+                 </handler>
+
+             </port-component>
+         ]]></programlisting>
+        </para>
+
+        <para><command>The JBossWS service endpoint implementation</command></para>
+        <para>
+            Within web.xml use the endpoint implementations that ship with JBossWS.
+
+            <programlisting><![CDATA[
+            <servlet>
+               <servlet-name>EventSourceServlet</servlet-name>
+(4)              <servlet-class>
+                        org.jboss.ws.eventing.EventSourceEndpointImpl
+                    </servlet-class>
+               <load-on-startup>0</load-on-startup>
+            </servlet>
+            <servlet-mapping>
+               <servlet-name>EventSourceServlet</servlet-name>
+               <url-pattern>/subscribe</url-pattern>
+            </servlet-mapping>
+
+            <servlet>
+               <servlet-name>SubscriptionManagerServlet</servlet-name>
+(4)             <servlet-class>
+                        org.jboss.ws.eventing.SubscriptionManagerEndpointImpl
+                  </servlet-class>
+               <load-on-startup>0</load-on-startup>
+            </servlet>
+            <servlet-mapping>
+               <servlet-name>SubscriptionManagerServlet</servlet-name>
+               <url-pattern>/manage</url-pattern>
+            </servlet-mapping>
+         ]]></programlisting>
+        </para>
+
+    </sect1>
+
+    <sect1 id="eventing-notification">
+        <title>Sending notifications from applications</title>
+        <para>
+            JBossWS-Eventing registeres a event dispatcher within local JNDI tree
+            that can be used to emit notifications from applications.
+            <programlisting><![CDATA[
+           java:/EventDispatcher
+          ]]></programlisting>
+        </para>
+
+        <para>
+            The event dispatcher interface:
+            <programlisting><![CDATA[
+           public interface EventDispatcher
+            {
+               void dispatch(URI eventSourceNS, Element payload);
+            }
+          ]]></programlisting>
+        </para>
+
+        <para>
+            <command>Example notification</command>:
+            <orderedlist>
+                <listitem>
+                    <para>Address your event source correctly (TargetNamespace+PortTypeName)</para>
+                </listitem>
+                <listitem>
+                    <para>Create your payload</para>
+                </listitem>
+                <listitem>
+                    <para>Lookup dispatcher from JNDI</para>
+                </listitem>
+                <listitem>
+                    <para>Dispatch notification.</para>
+                </listitem>
+            </orderedlist>
+
+
+            <programlisting><![CDATA[
+
+(1)   URI eventSourceURI = new URI("http://http://www.jboss.org/sysmon/SystemInfo");
+(2)   Element payload = DOMUtils.parse("SOME XML STRING");
+      try
+      {
+         InitialContext iniCtx = getInitialContext();
+(3)      EventDispatcher delegate = (EventDispatcher)
+               iniCtx.lookup(EventingConstants.DISPATCHER_JNDI_NAME);
+(4)      delegate.dispatch(eventSourceURI, payload);
+      }
+      catch (Exception e)
+      {
+         //
+      }
+
+        ]]></programlisting>
+        </para>
+
+    </sect1>
+
+    <sect1 id="eventing-manager">
+        <title>The SubscriptionManager MBean</title>
+        <para>
+            The SubscriptionManager MBean is the actual core component that drives the JBossWS-Eventing implementation.
+            It can be accessed through the jmx-console.
+            <programlisting><![CDATA[
+            jboss.ws.eventing:service=SubscriptionManager
+          ]]></programlisting>
+
+        </para>
+
+        <para>
+            Management operations exist to monitor and maintain active subscritions and deployed event sources.
+            The current implementation is backed by a ThreadPoolExecutor, that asynchronously delivers messages to event sink endpoints.
+            It can be configured through the following attributes:
+
+            <itemizedlist>
+                <listitem>
+                    <para>corePoolSize - average number of idle threads</para>
+                </listitem>
+                <listitem>
+                    <para>maximumPoolSize - maximum number of threads</para>
+                </listitem>
+                <listitem>
+                    <para>eventKeepAlive - keep alive before an undelivered event message is discarded.</para>
+                </listitem>
+            </itemizedlist>
+
+        </para>
+    </sect1>
+</chapter>

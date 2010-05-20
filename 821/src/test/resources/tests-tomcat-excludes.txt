@@ -1,0 +1,6 @@
+org/jboss/test/ws/samples/dynamichandler/**
+org/jboss/test/ws/samples/jmstransport/**
+org/jboss/test/ws/samples/jsr109ejb/**
+org/jboss/test/ws/samples/jsr181ejb/**
+org/jboss/test/ws/samples/secureejb/**
+org/jboss/test/ws/jbws1011/**

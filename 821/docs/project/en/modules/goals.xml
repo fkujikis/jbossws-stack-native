@@ -1,0 +1,71 @@
+<!-- $Id$ -->
+
+<chapter id="goals">
+  <title>Goals</title>
+
+  <para>
+    It is a primary goal of JBossWS to provide an implementation that is compatible with the emerging JAXRPC-2.0 specification.
+    The goals stated in this section relate to the goals defined in the JAXRPC-2.0 specification and clarify those with
+    respect to JBossWS where necessary.
+  </para>
+
+  <para>
+    <command>JAXB</command> With the release of JAXB 2.0 there is no reason to maintain two separate sets of XML mapping rules in the
+    Java platform. JBossWS will delegate data binding-related tasks to the JAXB 2.0 specification that is being
+    developed in parallel with JAX-RPC 2.0.
+  </para>
+
+  <para>
+    JAXB 2.0 will add support for Java to XML mapping, additional support for less used XML schema constructs,
+    and provide bidirectional customization of Java XML data binding.
+  </para>
+
+  <para>
+    <command>Pluggable data binding</command> JBossWS will defer data binding to JAXB unless there is a data binding
+    plugin provided. The idea is to optimize the data binding algorithm based on the nature of expected data.
+  </para>
+
+  <para>
+    <command>SOAP 1.2</command> Whilst SOAP 1.1 is still widely deployed, it is expected that services will migrate to SOAP 1.2 now that it
+    is a W3C Recommendation. JBossWS will add support for SOAP 1.2 whilst continuing support for SOAP 1.1.
+  </para>
+
+  <para>
+    <command>WSDL 2.0</command> TheW3C is expected to progress WSDL 2.0 to Recommendation. JBossWS will add support for WSDL 2.0 whilst
+    continuing support for WSDL 1.1.
+  </para>
+
+  <para>
+    <command>WS-I Basic Profile 1.1</command> WS-I Basic Profile 1.1 is expected to supersede 1.0 during the lifetime of
+    JAX-RPC 2.0. JBossWS will add support for the additional clarifications it provides.
+  </para>
+
+  <para>
+    <command>Metadata Facility (JSR 175)</command> JBossWS will make use of Java annotations to simplify the most common
+    development scenarios for both clients and servers.
+  </para>
+
+  <para>
+    <command>Web Services Metadata (JSR 181)</command> JBossWS will align with and complement the annotations defined by JSR 181.
+  </para>
+
+  <para>
+    <command>Enterprise Web Services (JSR 109)</command> The JSR 109 defined jaxrpc-mapping-info
+    deployment descriptor provides deployment time Java , WSDL mapping functionality. In conjunction with JSR 181,
+    JBossWS will implement mapping functionality with development time Java annotations that control Java?WSDL mapping.
+  </para>
+
+  <para>
+    <command>Asynchrony</command> JBossWS will have support for client side asynchronous operations.
+  </para>
+
+  <para>
+    <command>Non-HTTP Transports</command> JBossWS will leverage the JBoss Remoting framework to improve the separation between
+    the XML based RPC framework and the underlying transport mechanism to simplify use of JAX-RPC with non-HTTP transports.
+  </para>
+
+  <para>
+    <command>Message Access</command> JBossWS will simplify client and service access to the messages underlying an exchange.
+  </para>
+
+</chapter>
