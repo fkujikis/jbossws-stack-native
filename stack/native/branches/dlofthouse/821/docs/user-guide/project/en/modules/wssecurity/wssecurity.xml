@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<chapter id="wssecurity">
+
+   <title>WS-Security</title>
+
+   <para>WS-Security standardizes authorization, encryption, and digital signature processing of web services.
+      Unlike transport security models, such as SSL, WS-Security applies security directly to the elements of the web service message.
+      This increases the flexibility of your web services, by allowing any message model to be used (point to point, multi-hop relay, etc).
+   </para>
+
+   <para>This chapter describes how to use WS-Security to sign and encrypt a simple SOAP message.</para>
+
+   <para><command>Specifications</command></para>
+
+   <para>WS-Security is defined by the combination of the following specifications:</para>
+
+   <para>
+      <itemizedlist>
+         <listitem>
+            <para><ulink url="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0.pdf">SOAP Message Security 1.0</ulink></para>
+         </listitem>
+         <listitem>
+            <para><ulink url="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0.pdf">Username Token Profile 1.0</ulink></para>
+         </listitem>
+         <listitem>
+            <para><ulink url="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0.pdf">X.509 Token Profile 1.0</ulink></para>
+         </listitem>
+         <listitem>
+            <para><ulink url="http://www.w3.org/TR/xmlenc-core">W3C XML Encryption</ulink></para>
+         </listitem>
+         <listitem>
+            <para><ulink url="http://www.w3.org/TR/xmldsig-core">W3C XML Signature</ulink></para>
+         </listitem>
+         <listitem>
+            <para><ulink url="http://www.ws-i.org/Profiles/BasicSecurityProfile-1.0.html">Basic Security Profile 1.0 (Still in Draft)</ulink></para>
+         </listitem>
+      </itemizedlist> </para>
+
+   <sect1>
+      <title>Generating required deployment artifacts</title>
+
+      <para> Lets start with a trivial service endpoint interface (SEI) that echos a user defined type.</para>
+
+      <para>
+         <programlisting><![CDATA[
+    public interface Hello extends Remote
+    {
+       public UserType echoUserType(UserType in0) throws RemoteException;
+    }
+  ]]></programlisting></para>
+
+
+      <para>Run wstools with the following configuration</para>
+
+      <para>
+         <programlisting><![CDATA[
+  <configuration ...>
+    <java-wsdl>
+      <service name="HelloService" style="rpc" 
+        endpoint="org.jboss.test.ws.samples.wssecurity.Hello"/>
+    
+      <namespaces target-namespace="http://org.jboss.ws/samples/wssecurity" 
+        type-namespace="http://org.jboss.ws/samples/wssecurity/types"/>
+    
+      <mapping file="jaxrpc-mapping.xml"/>
+      <webservices servlet-link="HelloService"/>
+    </java-wsdl>
+  </configuration>
+    ]]></programlisting></para>
+   </sect1>
+
+   <sect1>
+      <title>Configuration and setup</title>
+
+      <sect2>
+         <title>Enable security processing</title>
+         <para>
+            JBossWS uses generic <link linkend="handlers">JAXRPC handlers</link> to identify ws-security encoded requests
+            and invoke the security components to sign and encrypt messages. In order to enable security processing,
+            the client and server side need to include a corressponding handler configuration. The preferred way is to reference
+            a <link linkend="template-config">predefined endpoint configuration</link> (excerpt from WEB-INF/web.xml):
+
+            <programlisting><![CDATA[
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+  version="2.4">
+
+  <context-param>
+ (1)  <param-name>jbossws-config-name</param-name>>
+ (2)  <param-value>Standard Secure Endpoint</param-value>
+  </context-param>
+
+  <servlet>
+    <servlet-name>HelloService</servlet-name>
+    <servlet-class>org.jboss.test.ws.samples.wssecurity.HelloJavaBean</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>HelloService</servlet-name>
+    <url-pattern>/*</url-pattern>
+  </servlet-mapping>
+</web-app>         ]]></programlisting>
+
+            <orderedlist>
+               <listitem>
+                  <para>
+                     JBossWS specific context param
+                  </para>
+               </listitem>
+               <listitem>
+                  <para>
+                     Point it to 'Standard Secure Endpoint'
+                  </para>
+               </listitem>
+            </orderedlist>
+         </para>
+
+         <para>
+            Or the equivalent on the client side (excerpt from META-INF/jboss-client.xml):
+            <programlisting><![CDATA[
+<jboss-client>
+  <jndi-name>jbossws-client</jndi-name>
+
+  <service-ref>
+       <service-ref-name>service/HelloService</service-ref-name>
+	(1) <config-name>Standard Secure Client</config-name>
+       <wsdl-override>http://@jbosstest.host.name@:8080/jbossws-samples-wssecurity-encrypt?wsdl</wsdl-override>
+  </service-ref>
+
+</jboss-client>
+ ]]></programlisting>
+
+            <orderedlist>
+               <listitem>
+                  <para>
+                     JBossWS configuration. Point it to 'Standard Secure Client'
+                  </para>
+               </listitem>
+            </orderedlist>
+         </para>
+
+         <sect3>
+            <title>Security processing with JSR-181 endpoints</title>
+            <para>
+               With JSR-181 endpoints we can't directly reference a predefined endpoint configuration,
+               therefore we have to reference the necessary handlers directly to be able to process WSSE messages:
+
+               <programlisting><![CDATA[
+[...]
+(1) @HandlerChain(file = "resource://config/ServerHandlers.xml", name = "SecureHandlerChain")
+public class EJB3Bean01 implements EJB3RemoteInterface
+{
+   @WebMethod
+   public String echo(String input)
+   {
+      return input;
+   }
+}
+     ]]></programlisting>
+
+               <orderedlist>
+                  <listitem>
+                     <para>
+                        Reference to handler configuration file that specifies the WSSE handlers needed
+                     </para>
+                  </listitem>
+               </orderedlist>
+
+               <note><para>These excerpts are taken from the JSR181 ejb endpoint examples shipped with the distribution</para></note>
+
+               Contents of the ServerHandler.xml file referenced above:
+                <programlisting><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+
+<handler-config>
+   <handler-chain>
+      <handler-chain-name>SecureHandlerChain</handler-chain-name>
+      <handler>
+         <handler-name>WSSecurityHandlerInbound</handler-name>
+         <handler-class>org.jboss.ws.wsse.WSSecurityHandlerInbound</handler-class>
+      </handler>
+   </handler-chain>
+</handler-config>
+     ]]></programlisting>
+
+            </para>
+         </sect3>
+      </sect2>
+
+      <sect2>
+         <title>Configure the WS-Security implementation</title>
+         Once you enabled security processing, it's time configure the ws-security implementation.
+         Both client and server require configuration files that specify key-store, trust-store
+         and various other ws-security specific options.
+
+         <para><command>Server side configuration (jboss-wsse-server.xml)</command></para>
+
+         <para>In this example we configure both the client and the server to sign the message body.
+            Both also require this from each other. So, if you remove either the client or the server security deployment descriptor,
+            you will notice that the other party will throw a fault explaining that the message did not conform to the proper security requirements.</para>
+
+         <para>
+            <programlisting><![CDATA[
+    <jboss-ws-security xmlns="http://www.jboss.com/ws-security/config" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.jboss.com/ws-security/config 
+                    http://www.jboss.com/ws-security/schema/jboss-ws-security_1_0.xsd">
+  (1)  <key-store-file>WEB-INF/wsse.keystore</key-store-file>
+  (2)  <key-store-password>jbossws</key-store-password>
+  (3)  <trust-store-file>WEB-INF/wsse.truststore</trust-store-file>
+  (4)  <trust-store-password>jbossws</trust-store-password>
+  (5)  <config>
+  (6)    <sign type="x509v3" alias="wsse"/>
+  (7)    <requires>
+  (8)      <signature/>
+        </requires>
+      </config>
+    </jboss-ws-security>
+      ]]></programlisting></para>
+
+         <para>
+            <orderedlist>
+               <listitem>
+                  <para>This specifies that the key store we wish to use is WEB-INF/wsse.keystore, which is located in our war file.</para>
+               </listitem>
+               <listitem>
+                  <para>This specifies that the store password is "jbossws". Password can be encypted using the {EXT} and {CLASS} commands. Please see samples for their usage.</para>
+               </listitem>
+               <listitem>
+                  <para>This specifies that the trust store we wish to use is WEB-INF/wsse.truststore, which is located in our war file.</para>
+               </listitem>
+               <listitem>
+                  <para>This specifies that the trust store password is also "jbossws". Password can be encypted using the {EXT} and {CLASS} commands. Please see samples for their usage.</para>
+               </listitem>
+               <listitem>
+                  <para>Here we start our root config block. The root config block is the default configuration for all services in this war file.</para>
+               </listitem>
+               <listitem>
+                  <para>This means that the server must sign the message body of all responses. Type means that we are to use a X.509v3 certificate (a standard certificate). The alias option says that the certificate/key pair to use for signing is in the key store under the "wsse" alias</para>
+               </listitem>
+               <listitem>
+                  <para>Here we start our optional requires block. This block specifies all security requirements that must be met when the server receives a message.</para>
+               </listitem>
+               <listitem>
+                  <para> This means that all web services in this war file require the message body to be siged.</para>
+               </listitem>
+            </orderedlist>
+         </para>
+      </sect2>
+
+
+      <para><command>Client configuration (jboss-wsse-client.xml)</command></para>
+
+      <para>
+         <programlisting><![CDATA[
+    <jboss-ws-security xmlns="http://www.jboss.com/ws-security/config" 
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.jboss.com/ws-security/config 
+            http://www.jboss.com/ws-security/schema/jboss-ws-security_1_0.xsd">
+  (1)  <config>
+  (2)    <sign type="x509v3" alias="wsse"/>
+  (3)    <requires>
+  (4)      <signature/>
+        </requires>
+      </config>
+    </jboss-ws-security>
+      ]]></programlisting></para>
+
+      <para>
+         <orderedlist>
+            <listitem>
+               <para>Here we start our root config block. The root config block is the default configuration for all web service clients (Call, Proxy objects).</para>
+            </listitem>
+            <listitem>
+               <para>This means that the client must sign the message body of all requests it sends. Type means that we are to use a X.509v3 certificate (a standard certificate). The alias option says that the certificate/key pair to use for signing is in the key store under the "wsse" alias</para>
+            </listitem>
+            <listitem>
+               <para>Here we start our optional requires block. This block specifies all security requirements that must be met when the client receives a response.</para>
+            </listitem>
+            <listitem>
+               <para> This means that all web service clients must receive signed response messages.</para>
+            </listitem>
+         </orderedlist>
+      </para>
+
+      <para>We did not specify a key store or trust store, because client apps instead use the wsse System properties instead. If this was a web or ejb client (meaning a webservice client in a war or ejb jar file), then we would have specified them in the client descriptor.</para>
+
+   </sect1>
+
+   <sect1>
+      <title>SOAP message exchange</title>
+
+      <para>Below you see the incomming SOAP message with the details of the security headers ommited. The idea is, that the SOAP body is still
+         plain text, but it is signed in the security header and can therefore not manipulated in transit.</para>
+
+      <para>
+         <programlisting><![CDATA[
+    Incomming SOAPMessage
+    
+    <env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+      <env:Header>
+        <wsse:Security env:mustUnderstand="1" ...>
+          <wsu:Timestamp wsu:Id="timestamp">...</wsu:Timestamp>
+          <wsse:BinarySecurityToken ...>
+          ...
+          </wsse:BinarySecurityToken>
+          <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+          ...
+          </ds:Signature>
+        </wsse:Security>
+      </env:Header>
+      <env:Body wsu:Id="element-1-1140197309843-12388840" ...>
+        <ns1:echoUserType xmlns:ns1="http://org.jboss.ws/samples/wssecurity">
+          <UserType_1 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <msg>Kermit</msg>
+          </UserType_1>
+        </ns1:echoUserType>
+      </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+
+   </sect1>
+
+   <sect1>
+      <title>Installing the BouncyCastle JCE provider (JDK 1.4)</title>
+
+      <para>
+         The information below has originaly been provided by <ulink url="http://www.bouncycastle.org/specifications.html#install">The Legion of the Bouncy Castle</ulink>.
+      </para>
+
+      <para>
+         The provider can be configured as part of your environment via static registration by adding an
+         entry to the java.security properties file (found in $JAVA_HOME/jre/lib/security/java.security,
+         where $JAVA_HOME is the location of your JDK/JRE distribution).
+         You'll find detailed instructions in the file but basically it comes down to adding a line:
+      </para>
+
+      <para>
+         <programlisting><![CDATA[
+  security.provider.<n>=org.bouncycastle.jce.provider.BouncyCastleProvider
+      ]]></programlisting></para>
+
+      <para>
+         Where &lt;n&gt; is the preference you want the provider at.
+         <note><para>Issues may arise if the Sun provided providers are not first.</para></note>
+      </para>
+
+      <para>
+         Where you put the jar is up to mostly up to you, although with jdk1.4 the best
+         (and in some cases only) place to have it is in $JAVA_HOME/jre/lib/ext.
+         Under Windows there will normally be a JRE and a JDK install of Java if you think you have installed it
+         correctly and it still doesn't work chances are you have added the provider to the installation not being used.
+      </para>
+   </sect1>
+</chapter>

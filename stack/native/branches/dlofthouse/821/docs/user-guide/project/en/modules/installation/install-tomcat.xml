@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect1 id="install-tomcat">
+  
+  <title>Install on Apache Tomcat</title>
+  
+  <para>If you have an existing application on Tomcat that has a need for web service support, you can still use JBossWS. This 
+  allows you to develop standard portable J2EE-1.4 web service endpoints in Tomcat that can be moved unmodified to JBossAS when needed.
+  New applications should consider JBoss with ebedded Tomcat for a number of good reasons. </para>
+  
+  <para>For additional information, see <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=TomcatStandalonevsEmbedded">Tomcat Standalone vs Embedded</ulink>.</para>
+  
+  <para>JBoss Inc. provides subscription support contracts for both Tomcat Standalone and JBoss embedded Tomcat.</para>
+  
+  <para>To install JBossWS on Tomcat you need to</para>
+  
+    <itemizedlist>
+        <listitem>
+            <para>
+              Copy serializer.jar, xalan.jar, xercesImpl.jar to ${tomcat.home}/common/endorsed. This overrides the XML parser that comes with
+              the JDK with a more recent version that is compatible with JBossWS.
+            </para>
+        </listitem>
+        <listitem>
+            <para>
+              Copy activation.jar, mailapi.jar, log4j.jar to ${tomcat.home}/common/lib. 
+            </para>
+        </listitem>
+        <listitem>
+            <para>
+              Copy jbossws-core.jar, jbossws-tomcat-integration.jar, jbossws-thirdparty.jar to ${tomcat.home}/common/lib. 
+            </para>
+        </listitem>
+        <listitem>
+            <para>
+              Copy jbossws.war to ${tomcat.home}/webapps. 
+            </para>
+        </listitem>
+    </itemizedlist>
+  
+  <para>There is no jdk1.4 version available for Tomcat.</para>
+  
+  <para>When the jbossws web application context stats up, it creates a ${tomcat.home}/jbossws-deploy directory next to ${tomcat.home}/webapps.
+  This is the hot deployment directory equivalent to ${jboss.home}/server/default/deploy. Web service endpoints that you drop in ${tomcat.home}/jbossws-deploy
+  are converted into valid web applications and copied over to ${tomcat.home}/webapps</para>
+  
+  <para>Only POJO endpoints are supported. EJB endpoints are not supported in Tomcat standalone for obvious resons. Also note, that POJO endpoints
+    are currently not pooled, hence you get a new instance for ever invocation. The packaging of a standard portable J2EE-1.4 web service endpoints 
+    is defined by the JSR109 specification. JBossWS also supports JSR181 endpoints, which are significantly easier to develop and maintain.</para>
+  
+  <para>To run the samples that come with this JBossWS release against Tomcat, you must enable access to the Tomcat Manager in ${tomcat.home}/conf/tomcat-users.xml
+  For details of this see <ulink url="http://tomcat.apache.org/tomcat-5.5-doc/manager-howto.html#Configuring%20Manager%20Application%20Access">Configuring Manager Application Access</ulink>
+  in the Tomcat documentation.</para>
+  
+  <para>Here is a example</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <tomcat-users>
+      <role rolename="manager"/>
+      <user username="manager" password="manager" roles="manager"/>
+    </tomcat-users>
+      ]]></programlisting></para>
+  
+</sect1>

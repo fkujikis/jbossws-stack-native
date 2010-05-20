@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding="iso-8859-1"?>
+
+<!-- $Id$ -->
+
+<!DOCTYPE book PUBLIC
+  "-//OASIS//DTD DocBook XML V4.3CR3//EN"
+  "../../../docbook-support/support/docbook-dtd/docbookx.dtd"
+[
+<!ENTITY install   SYSTEM "modules/install.xml">
+<!ENTITY usage  SYSTEM "modules/usage.xml">
+<!ENTITY scope  SYSTEM "modules/scope.xml">
+]>
+
+<book lang="en">
+  <bookinfo>
+    <title>JBossWS Regression test suite</title>
+    <!--subtitle>J2EE compatible Web Services</subtitle-->
+    <releaseinfo>1.0 draft</releaseinfo>
+  </bookinfo>
+
+  <toc/>
+
+  <preface id="preface" revision="1">
+    <title>Preface</title> 
+    <para>
+      Thanks to Anders Hedstrom for providing the benchmark service endpoint implementations. 
+      </para>
+      
+    <para>
+      If you have questions, please feel free to contact Heiko Braun (heiko.braun@jboss.org) for more information.
+    </para>
+  </preface>
+
+  &install;
+
+  &usage;
+
+</book>

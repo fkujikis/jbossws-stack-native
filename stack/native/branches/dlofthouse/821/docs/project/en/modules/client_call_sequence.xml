@@ -1,0 +1,126 @@
+<!-- $Id$ -->
+
+<chapter id="client_call_sequence">
+  <title>Client Side</title>
+
+  <para>
+    This section describes the sequence of actions on the client side and the objects being involved. A JAXRPC client
+    Call can either be configured using the Dynamic Invocation Interface (DII) or via a WSDL. For this discussion it is
+    not relevant how the Call is configured, let's focus on how it collaborates with the other JBossWs components to send
+    and receive the actual SOAP message.
+  </para>
+
+  <para>
+    <figure id="ClientSideCallSequence.fig">
+      <title>Client side call sequence</title>
+      <mediaobject>
+        <imageobject>
+          <imagedata align="center" fileref="images/ClientSideCallSequence.png"/>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+  </para>
+
+  <para>
+    The diagram shows how a client uses various DII calls to setup the JAXRPC Call object. This usually involves adding
+    call parameters, setting the return type if any, specifying the target endpoint address, etc. In short, the information
+    that is normally contained in the WSDL is given to the Call programaticaly.
+  </para>
+
+  <para>
+    Once the Call is setup properly, the client may invoke it with an array objects representing input parameters.
+    In case of a document style service this will be just one complex type, in case of a rpc service there may be more
+    than one input parameters. JAXRPC supports the notion of INOUT parameters, which must be given to the Call as Holders.
+    Currently the JAXRPC API has no support for header values nor SOAP attachments, these must be dealt with seperately.
+  </para>
+
+  <para>
+    A central player in the JBossWS architecture is the BindingProvider interface.
+
+    <programlisting>
+    public interface BindingProvider
+    {
+       /** Generate the SOAPMessage from IN parameters. */
+       SOAPMessage bindRequestMessage(OperationDesc opDesc, Object[] inParams);
+
+       /** Extract the IN parameters from the SOAPMessage and populate an Invocation */
+       Invocation unbindRequestMessage(OperationDesc opDesc, SOAPMessage reqMessage);
+
+       /** Generate the SOAPMessage from OUT parameters. */
+       SOAPMessage bindResponseMessage(OperationDesc opDesc, Invocation result);
+
+       /** Extract the OUT parameters from the SOAPMessage */
+       Object[] unbindResponseMessage(OperationDesc opDesc, SOAPMessage resMessage);
+    }
+    </programlisting>
+
+    An implementation of this interface generates a javax.xml.soap.SOAPMessage from the input parameters given by the
+    client. The Java to XML mapping is defined in the OperationDesc. In JBossWS we support SOAP-1.1 and SOAP-1.2.
+    Therefore we have an implementation for each SOAP standard. The SOAPMessage is the root class for all SOAP messages.
+    As transmitted on the "wire", a SOAP message is an XML document or a MIME message whose first body part is an
+    XML/SOAP document. JBossWS uses JBossXB, a JAXB implementation maintained by Alexey Loubyansky, as marshalling
+    layer for complex types. This is a requirement by the JAXRPC-2.0 specification.
+  </para>
+
+  <para>
+    Once the Call has obtained the SOAPMessage from the BindingProvider it uses the JBoss Remoting framework maintained
+    by Tom Elrod to put the message on the wire. Part of the Call setup is the target endpoint address as URL.
+    JBoss Remoting uses this URL to locate the appropriate remoting client.
+  </para>
+
+  <para>
+    JBoss Remoting uses Interceptors (Chain of Responsibilities Pattern) to process the payload before it puts it on the wire.
+    JAXRPC also has a notion of interceptors in the form of JAXRPC request/response handlers. A request Handler may
+    inspect and modify the SOAPMessage before it is sent on the wire. Typically a Handler would process SOAPHeaderElements
+    or apply some sort of transformation to the message (e.g. to encrypt the message).
+  </para>
+
+  <para>
+    [TODO] Explain how the Call uses the Remoting API to setup the request/response interceptos and how the
+    marshaller/deserializer is given to Remoting. Encoding these details in the target endpoint address as URL
+    parameters does not seem a good idea to me. I would like to see a public API that Remoting clients may use
+    if necessary.
+  </para>
+
+  <para>
+    The last Interceptor is the Remoting Marshaller that writes the SOAPMessage that may have been modified
+    by the client request handlers to an OutputStream. Remoting delegates marshalling to the SOAPMarshaller that has
+    previously been setup by the Call before the invocation was made.
+  </para>
+
+  <para>
+    Remoting now puts the bytes on the wire, where they will be processed by a remote Web Service. It is important to
+    realize, that the receiving side might not be a JBossWS server it might not even be a Java based Web Service
+    implementation. In case of a synchronous invocation, the Remoting client will receive a byte stream that represents
+    the Web Service response in form of an XML document or MIME message.
+  </para>
+
+  <para>
+    On the response path, Remoting delegates to the pre-configured Unmarshaller, which transforms the incomming bytes into
+    a response SOAPMessage. A SOAPMessage provides access to the mandatory SOAPEnvelope which is a sub class of SOAPElement,
+    which in turn is a org.w3c.dom.Element. Without further consideration, that means that every SOAP message must be
+    transformed into a DOM tree. Luckily, this processing step is not always necessary because there may not be a Handler
+    that uses the SAAJ API to access SOAPElements. JBossWS comes with the notion of lazy SOAPElements, which simply hold
+    the unprocessed XML fragment, that will be transformed into a DOM tree on demand. Chapter ??? contains an extended
+    discussion on lazy SOAP elements and their relation to the JAXB marshalling layer. [TODO]
+  </para>
+
+  <para>
+    Remoting then feeds the response SOAPMessage through Interceptors that represent the pre-configured response handlers.
+    Again, these JAXRPC handlers may modify the SOAPMessage (e.g. to decrypt the message). Finally, Remoting returns the
+    response SOAPMessage to the Call that made the invocation.
+  </para>
+
+  <para>
+    The Call now delegates to the BindingProvider to unbind the response message and returns to the client. In case there
+    are more than one OUT parameters, the response objects will be assigned to their corresponding Holder values. That's
+    it, now lwts look at what happens on a JBossWS server.
+  </para>
+
+</chapter>
+
+
+
+
+

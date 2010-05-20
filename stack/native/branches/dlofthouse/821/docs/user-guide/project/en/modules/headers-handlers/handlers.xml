@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect1 id="handlers">
+  
+  <title>Message handler</title>
+  
+  <para>
+    JAX-RPC handler provide a convinient solution to intercept SOAP message processing 
+    both inbound and outbound on the client and the server side:   
+  </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    package javax.xml.rpc.handler;
+    public interface Handler 
+    {
+       boolean handleRequest(MessageContext context);
+    
+       boolean handleResponse(MessageContext context);
+    
+       boolean handleFault(MessageContext context);
+    }
+    ]]></programlisting></para>
+  
+  <para>A Handler implementation class is required to provide a default constructor. The methods handleRequest and handleResponse perform the actual processing work for a handler. The method handleRequest processes the request SOAP message, while the method handleResponse processes the response SOAP message. The method handleFault performs the SOAP fault processing.
+  The MessageContext parameter provides access to the message context (for example: a SOAP message that carries an RPC request or response) that is processed by a handler.</para>
+  
+  <para>
+    In the following chapter we will implement a simple JAX-RPC handler and see how to configure the 
+    handler chain for JSR-109 clients and web service endpoints.
+  </para>
+
+  <para>Run wstools with the following configuration</para>
+  
+  <para>
+    <programlisting><![CDATA[
+  <configuration ...>
+    <java-wsdl>
+      <service name="TestService" style="rpc" 
+        endpoint="org.jboss.test.ws.samples.handler.HeaderTestService">
+        <operation name="testInHeader">
+          <parameter type="java.lang.String"/>
+          <parameter type="java.lang.String" xml-name="headerMsg" header="true"/>
+        </operation>
+        <operation name="testInOutHeader">
+          <parameter type="java.lang.String"/>
+          <parameter type="javax.xml.rpc.holders.StringHolder" 
+            xml-name="headerMsg" header="true" mode="INOUT"/>
+        </operation>
+        <operation name="testOutHeader">
+          <parameter type="java.lang.String"/>
+          <parameter type="javax.xml.rpc.holders.StringHolder" 
+            xml-name="headerMsg" header="true" mode="OUT"/>
+        </operation>
+      </service>
+    
+      <namespaces target-namespace="http://org.jboss.ws/samples/handler" 
+        type-namespace="http://org.jboss.ws/samples/handler/types"/>
+    
+      <mapping file="jaxrpc-mapping.xml"/>
+      <webservices servlet-link="TestService"/>
+    </java-wsdl>
+  </configuration>
+  ]]></programlisting></para>
+  
+  <para>The handlers must be defined manualy in webservices.xml. WSTools does not generate client/server side handler configurations.</para>
+
+  <para>
+    <programlisting><![CDATA[
+  <webservices ...>
+   <webservice-description>
+    ...
+    <port-component>
+      ...
+      <handler>
+        <handler-name>HeaderTestHandler</handler-name>
+        <handler-class>org.jboss.test.ws.samples.handler.ServerSideHandler</handler-class>
+      </handler>
+    </port-component>
+   </webservice-description>
+  </webservices>  
+    ]]></programlisting></para>
+  
+  <para><command>Generic Handler</command></para>
+
+  <para>
+    The javax.xml.rpc.handler.GenericHandler class is an abstract class that implements the Handler interface. 
+    Developers typically subclass the GenericHandler class unless the Handler implementation class needs another class as its superclass.
+  </para>
+
+  <para>
+    The GenericHandler class is a convenience abstract class that makes writing handlers easy. 
+    This class provides default implementations of the lifecycle methods init and destroy and also different handle methods. 
+    A handler developer should only override methods that it needs to specialize as part of the derived Handler implementation class.
+  </para>
+
+  <title>Handler message processing</title>
+
+  <para>
+    <itemizedlist>
+      <listitem>
+        <para>On the client side, a request handler is invoked before an RPC request is communicated to the target service endpoint.</para>
+      </listitem>
+      
+      <listitem>
+        <para>On the client side, a response or fault handler is invoked before an RPC response is returned to the service client from the target service endpoint.</para>
+      </listitem>
+    </itemizedlist> </para>
+ 
+  
+  
+  <para>On the endpoint a JAX-RPC handler may be configured and used as follows:</para>
+
+  <para>
+    <itemizedlist>
+      <listitem>
+        <para>On the service endpoint side, a request handler is invoked before an RPC request is dispatched to the target service endpoint.</para>
+      </listitem>
+      
+      <listitem>
+        <para>On the service endpoint side, a response or fault handler is invoked before communication back to the service client from the target service endpoint.</para>
+      </listitem>
+    </itemizedlist> </para>
+  
+  <para><command>Configuring a client side handler</command></para>
+
+  <para>Client side JAXRPC handlers are configured as part of the &lt;service-ref&gt; element 
+    that is available in application-client.xml, ejb-jar.xml and web.xml.
+  </para>
+
+    <para>
+    <programlisting><![CDATA[
+    <service-ref>
+      <service-ref-name>service/TestService</service-ref-name>
+      <service-interface>javax.xml.rpc.Service</service-interface>
+      <wsdl-file>META-INF/wsdl/TestService.wsdl</wsdl-file>
+      <jaxrpc-mapping-file>META-INF/jaxrpc-mapping.xml</jaxrpc-mapping-file>
+      <port-component-ref>
+        <service-endpoint-interface>
+          org.jboss.test.ws.samples.handler.HeaderTestService
+        </service-endpoint-interface>
+      </port-component-ref>
+      <handler>
+        <handler-name>HeaderTestHandler</handler-name>
+        <handler-class>org.jboss.test.ws.samples.handler.ClientSideHandler</handler-class>
+      </handler>
+    </service-ref>
+    ]]></programlisting></para>
+
+  </sect1>
+  

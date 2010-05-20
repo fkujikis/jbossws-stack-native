@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id="installation">
+  
+    <title>Installation</title>
+  
+    <para>
+      JBossWS is based on the <ulink url="http://labs.jboss.com/portal/jbossmc">JBoss Microcontainer</ulink>, which
+      supports direct POJO deployment and standalone use outside the JBoss application server. Currently, we have integration 
+      layers for the JBoss application server and Apache Tomcat.
+     </para>  
+  
+    &s-install-jboss;
+    &s-install-tomcat;
+    
+</chapter>
+

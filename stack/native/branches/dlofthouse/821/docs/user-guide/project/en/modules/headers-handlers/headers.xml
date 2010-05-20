@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect1 id="headers">
+  
+    <title>Bound and unbound SOAP Headers</title>
+
+    <para><command>Bound SOAP Headers </command></para>
+    
+  <para>Bound SOAP header elements are visible on the SEI as operation parameters, unbound SOAP headers
+  are not. Both, bound and unbound headers are visible to JAXRPC handlers. Here is an example that uses bound 
+  headers on three SEI methods.</para>
+  
+    <para>
+    <programlisting><![CDATA[
+    public interface HeaderTestService extends Remote
+    {
+       void testInHeader(String bodyMsg, String headerMsg) throws RemoteException;
+    
+       void testInOutHeader(String bodyMsg, StringHolder headerMsg) throws RemoteException;
+    
+       void testOutHeader(String bodyMsg, StringHolder headerMsg) throws RemoteException;
+    }
+    ]]></programlisting></para>
+
+  <para>A bound header is a message part that is explicitly bound with the &lt;soap:header&gt; element
+  in the WSDL binding.</para>
+  
+    <para>
+    <programlisting><![CDATA[
+    <message name="HeaderTestService_testInHeader">
+      <part name="String_1" type="xsd:string"/>
+      <part name="String_2" type="xsd:string"/>
+    </message>
+      
+    <portType name="HeaderTestService">
+      <operation name="testInHeader" parameterOrder="String_1 String_2">
+        <input message="tns:HeaderTestService_testInHeader"/>
+        <output message="tns:HeaderTestService_testInHeaderResponse"/>
+      </operation>
+      ...
+    </portType>
+      
+    <binding name="HeaderTestServiceBinding" type="tns:HeaderTestService">
+      <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc"/>
+      <operation name="testInHeader">
+        <soap:operation soapAction=""/>
+        <input>
+          <soap:body use="literal" namespace="http://org.jboss.ws/samples/handler"/>
+          <soap:header message="tns:HeaderTestService_testInHeader" 
+              part="String_2" use="literal" namespace="http://somens"/>
+        </input>
+        <output>
+          <soap:body use="literal" namespace="http://org.jboss.ws/samples/handler"/>
+        </output>
+      </operation>
+      ...
+    </binding>
+    ]]></programlisting></para>
+  
+  <para><command>SOAP message exchange</command></para>
+  
+  <para>Below you see the SOAP messages that are beeing exchanged. </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Incomming SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header>
+      <ns2:String_2 xmlns:ns2='http://somens'>IN header message</ns2:String_2>
+     </env:Header>
+     <env:Body>
+      <ns1:testInHeader xmlns:ns1='http://org.jboss.ws/samples/handler'>
+       <String_1>Hello world!</String_1>
+      </ns1:testInHeader>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Outgoing SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:testInHeaderResponse xmlns:ns1='http://org.jboss.ws/samples/handler'/>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+  <para><command>Unbound SOAP Headers</command></para>
+
+  <para>Unbound SOAP header elements are not visible on SEI methods, but in JAXRPC handlers through the SAAJ API.</para>
+  
+    <para>
+    <programlisting><![CDATA[
+    public class ServerSideHandler extends GenericHandler
+    {
+       ... 
+    
+       public boolean handleResponse(MessageContext msgContext)
+       {
+          log.info("handleResponse");
+    
+          try
+          {
+               SOAPMessage soapMessage = ((SOAPMessageContext)msgContext).getMessage();
+               SOAPHeader soapHeader = soapMessage.getSOAPHeader();
+      
+               SOAPBody soapBody = soapMessage.getSOAPBody();
+               SOAPBodyElement soapBodyElement = 
+                          (SOAPBodyElement)soapBody.getChildElements().next();
+               String rpcName = soapBodyElement.getElementName().getLocalName();
+    
+               SOAPFactory soapFactory = SOAPFactory.newInstance();
+               Name headerName = 
+                          soapFactory.createName("HeaderValue", "ns2", "http://otherns");
+               SOAPHeaderElement she = soapHeader.addHeaderElement(headerName);
+               she.setValue("Unbound OUT header message");
+          }
+          catch (SOAPException e)
+          {
+             throw  new JAXRPCException(e);
+          }
+    
+          return true;
+       }
+    }
+    ]]></programlisting></para>
+  
+  <para><command>Unbound SOAP Headers on the client proxy</command></para>
+  
+  <para>The web service client has access to unbound headers through the proxy</para>
+  
+  <para>
+    <programlisting><![CDATA[
+   public void testUnboundInHeader() throws Exception
+   {
+      // Add a header to the stub
+      StubExt stub = (StubExt)endpoint;
+      QName xmlName = new QName("http://otherns", "HeaderValue");
+      stub.addUnboundHeader(
+              xmlName, Constants.TYPE_LITERAL_STRING, 
+              String.class, ParameterMode.IN
+      );
+      stub.setUnboundHeaderValue(xmlName, "Unbound IN header message");
+
+      endpoint.testInHeader("Hello world!", "IN header message");
+      
+      String unboundRet = (String)stub.getUnboundHeaderValue(xmlName);
+      assertEquals("Unbound OUT header message", unboundRet);
+   }
+      ]]></programlisting></para>
+  
+  <para><command>SOAP message exchange</command></para>
+  
+  <para>Below you see the SOAP messages that are beeing exchanged. </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Incomming SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header>
+      <ns2:String_2 xmlns:ns2='http://somens'>INOUT header message</ns2:String_2>
+      <ns3:HeaderValue 
+          xmlns:ns3='http://otherns'>Unbound INOUT header message</ns3:HeaderValue>
+     </env:Header>
+     <env:Body>
+      <ns1:testInOutHeader xmlns:ns1='http://org.jboss.ws/samples/handler'>
+       <String_1>Hello world!</String_1>
+      </ns1:testInOutHeader>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Outgoing SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header>
+      <ns2:String_2 
+            xmlns:ns2='http://somens'>INOUT header message - response</ns2:String_2>
+      <ns2:HeaderValue 
+            xmlns:ns2='http://otherns'>Unbound OUT header message</ns2:HeaderValue>
+     </env:Header>
+     <env:Body>
+      <ns1:testInOutHeaderResponse xmlns:ns1='http://org.jboss.ws/samples/handler'/>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+  </sect1>

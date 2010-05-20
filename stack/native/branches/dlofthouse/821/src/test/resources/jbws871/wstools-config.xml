@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  wstools -dest ./META-INF -config wstools-config.xml
+-->
+
+<configuration xmlns="http://www.jboss.org/jbossws-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.jboss.org/jbossws-tools http://www.jboss.org/jbossws-tools/schema/jbossws-tool_1_0.xsd">
+  
+  <global>
+    <package-namespace package="org.jboss.test.ws.jbws871" namespace="http://jbws871.ws.test.jboss.org/jaws"/>
+  </global>
+  <wsdl-java file="META-INF/wsdl/TestEndpoint.wsdl">
+    <mapping file="jaxrpc-mapping.xml"/>
+  </wsdl-java>
+  
+</configuration>
+
+<!--
+  org.jboss.test.ws.jbws871.Integer.Array -> org.jboss.test.ws.jbws871.IntegerArray
+  
+ <java-xml-type-mapping>
+  <java-type>org.jboss.test.ws.jbws871.IntegerArray</java-type>
+  <root-type-qname xmlns:typeNS='http://jbws871.ws.test.jboss.org/jaws'>typeNS:Integer.Array</root-type-qname>
+  <qname-scope>complexType</qname-scope>
+  <variable-mapping>
+   <java-variable-name>value</java-variable-name>
+   <xml-element-name>value</xml-element-name>
+  </variable-mapping>
+ </java-xml-type-mapping>
+ -->

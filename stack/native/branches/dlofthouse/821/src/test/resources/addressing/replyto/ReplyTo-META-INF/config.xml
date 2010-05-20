@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+NOTE: manual editing must be done because of the naming convention differences for wrapper beansbetween wscompile and JSR-181
+
+wscompile -import -f:wsi -f:unwrap -mapping jaxrpc-mapping.xml config.xml
+
+-->
+
+<configuration xmlns="http://java.sun.com/xml/ns/jax-rpc/ri/config"> 
+<wsdl location="http://@jbosstest.host.name@:8080/jbossws-addressing-replyto/ReplyToService?wsdl" packageName="org.jboss.test.ws.addressing.replyto"/>    
+</configuration>

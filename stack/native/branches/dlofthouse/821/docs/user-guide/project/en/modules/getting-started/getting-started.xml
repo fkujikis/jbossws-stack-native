@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id="getting-started">
+    <title>Getting started</title>
+     <para>
+         In order to get started we will begin with some simple endpoint implementations.
+         This chapter will walk you through the standard J2EE 1.4 development model and explore the different style/use models
+         to bind your endpoint implementations.
+         A WSDL binding describes how the service is bound to a messaging protocol, particularly the SOAP messaging protocol.
+         JBossWS conforms to the WS-I basic profile, which eliminates the encoded use. This leaves you with the following style/use models:
+         
+         <itemizedlist>
+             <listitem>
+                 <para>RPC/literal</para>
+             </listitem>
+             <listitem>
+                 <para>Document/literal</para>
+             </listitem>
+             <listitem>
+                 <para>Message style</para>
+             </listitem>
+         </itemizedlist>
+     </para>  
+         
+     <para>  
+         Let's begin with a simple RPC web service endpoint implementation.
+     </para>  
+  
+    &s-rpc-endpoints;
+    &s-doc-endpoints;
+    &s-message-style;
+</chapter>
+

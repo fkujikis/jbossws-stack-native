@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sect1 id="template-config">
+
+   <title>Endpoint configuration templates</title>
+   <para>
+
+      Configuration templates provide a convenient way to setup a handler configuration for JBossWS endpoints.
+      A configuration basically includes a list of <link linkend="handlers">JAXRPC handlers</link> that are
+      registered with a web service endpoint upon deployment.
+
+      <programlisting><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+
+<jbossws-config xmlns="urn:jboss:jbossws-config:5.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:j2ee="http://java.sun.com/xml/ns/j2ee"
+  xsi:schemaLocation="urn:jboss:jbossws-config:5.0 http://www.jboss.com/xml/jbossws-config_1_0.xsd">
+
+  <endpoint-config>
+    <config-name>Standard Endpoint</config-name>
+  </endpoint-config>
+
+  <endpoint-config>
+    <config-name>Standard Secure Endpoint</config-name>
+    <pre-handler-chain>
+      <handler-chain-name>PreHandlerChain</handler-chain-name>
+      <handler>
+        <j2ee:handler-name>WSSecurityHandlerInbound</j2ee:handler-name>
+        <j2ee:handler-class>org.jboss.ws.wsse.WSSecurityHandlerInbound</j2ee:handler-class>
+      </handler>
+    </pre-handler-chain>
+   </endpoint-config>
+
+</jbossws-config>
+ ]]></programlisting>
+
+   </para>
+
+   <para>
+         These template configurations can be referenced from any jboss specific deplyoment descriptor, i.e:
+
+         <programlisting><![CDATA[
+   <jboss-client>
+     <jndi-name>jbossws-client</jndi-name>
+
+     <service-ref>
+          <service-ref-name>service/HelloService</service-ref-name>
+        (1) <config-name>Standard Secure Client</config-name>
+          <wsdl-override>http://@jbosstest.host.name@:8080/jbossws-samples-wssecurity-encrypt?wsdl</wsdl-override>
+     </service-ref>
+
+   </jboss-client>
+    ]]></programlisting>
+
+         <orderedlist>
+            <listitem>
+               <para>
+                  An example configuration reference from a client deployment descriptor.
+               </para>
+            </listitem>
+         </orderedlist>
+
+
+         <note>
+            <para>This is a proprietary configuration mechanism.
+               In order to stay portable it's recommended to use the default JAXRPC handler configuration.</para>
+         </note>
+
+      </para>
+
+   <para>
+      <command>Configuration reference from web.xml</command>
+      <para>
+      Within web.xml the same approach can be taken, with the difference that it uses a predefined servlet context
+      parameter (1) to specfiy the chosen endpoint config (2):
+
+      <programlisting><![CDATA[
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+  version="2.4">
+
+  <context-param>
+ (1)  <param-name>jbossws-config-name</param-name>>
+ (2)  <param-value>Standard Secure Endpoint</param-value>
+  </context-param>
+
+  <servlet>
+    <servlet-name>HelloService</servlet-name>
+    <servlet-class>org.jboss.test.ws.samples.wssecurity.HelloJavaBean</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>HelloService</servlet-name>
+    <url-pattern>/*</url-pattern>
+  </servlet-mapping>
+</web-app>         ]]></programlisting>
+         </para>
+   </para>
+    
+</sect1>

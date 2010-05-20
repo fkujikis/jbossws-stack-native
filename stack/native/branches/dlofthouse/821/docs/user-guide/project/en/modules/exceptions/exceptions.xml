@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<chapter id="exceptions">
+	
+	<title>Custom Exceptions</title>
+	
+	<para> Custom exceptions in JAXRPC are about definig SOAP faults in your abstract
+		contract and mapping them to java exceptions. The SOAP message contains a
+		&lt;soap:fault&gt; element that contains information about the cause of the fault.
+		Java specifics like stack traces, exception class names, etc. are usually not
+		transported because they maybe meaningless to the non-java receiver. </para>
+	
+	<para> A good article about 
+		<ulink url="http://www-128.ibm.com/developerworks/xml/library/ws-tip-jaxrpc.html">
+		Exception Handling with JAX-RPC</ulink> can be found at IBM's developerworks.
+		</para>
+	
+	<para> 
+		Lets use a service endpoint interface (SEI) that throws various user exception
+	</para>
+	
+	<para>
+		<programlisting><![CDATA[
+	public interface ExceptionServiceInterface extends Remote
+	{
+	   void throwException() 
+       throws UserException, RemoteException;
+
+	   void throwExceptionWithMessage(String message) 
+       throws UserMessageException, RemoteException;
+
+	   void throwComplexUserException(String message, int code) 
+       throws ComplexUserException, RemoteException;
+
+	   void throwComplexUserArrayException(String message, int[] code) 
+       throws ComplexUserArrayException, RemoteException;
+	}
+     ]]></programlisting></para>
+	
+	<para><command>Generating required deployment artifacts</command></para>
+	
+	<para>Run wstools with the following configuration</para>
+	
+	<para>
+		<programlisting><![CDATA[
+	<configuration ...>
+	  <java-wsdl>
+		<service name="ExceptionService" style="rpc" 
+      endpoint="org.jboss.test.ws.samples.exception.ExceptionServiceInterface"/>
+    
+		<namespaces target-namespace="http://org.jboss.ws/samples/exception" 
+      type-namespace="http://org.jboss.ws/samples/exception/types"/>
+    
+		<mapping file="jaxrpc-mapping.xml"/>
+		<webservices ejb-link="ExceptionBean"/>
+	  </java-wsdl>
+	</configuration>
+	]]></programlisting></para>
+	
+	<para>wstools produces the following abstract contract (WSDL)</para>
+	
+	<para>
+		<programlisting><![CDATA[
+  <definitions targetNamespace='http://org.jboss.ws/samples/exception' ...>
+   ...
+   <portType name='ExceptionServiceInterface'>
+    <operation name='throwComplexUserArrayException'>
+     ...
+     <fault message='tns:ComplexUserArrayException'/>
+    </operation>
+    <operation name='throwComplexUserException'>
+     ...
+     <fault message='tns:ComplexUserException' name='ComplexUserException'/>
+    </operation>
+    <operation name='throwException'>
+     ...
+     <fault message='tns:UserException' name='UserException'/>
+    </operation>
+    <operation name='throwExceptionWithMessage'>
+     ...
+     <fault message='tns:UserMessageException' name='UserMessageException'/>
+    </operation>
+   </portType>
+   ...
+  </definitions>
+	]]></programlisting></para>
+	
+	<para>
+		Note the various fault elements and how they are linked to XML schema complex
+		types. The WSDL does not contain any information about the java mapping. This is
+		defined in jaxrpc-maping.xml, for which I will only show the exception relevant
+		parts. </para>
+	
+	<para>
+		<programlisting><![CDATA[
+  <exception-mapping>
+   <exception-type>org.jboss.test.ws.samples.exception.UserException</exception-type>
+   <wsdl-message>exMsgNS:UserException</wsdl-message>
+  </exception-mapping>
+  <exception-mapping>
+   <exception-type>org.jboss.test.ws.samples.exception.UserMessageException</exception-type>
+   <wsdl-message>exMsgNS:UserMessageException</wsdl-message>
+   <constructor-parameter-order>
+    <element-name>message</element-name>
+   </constructor-parameter-order>
+  </exception-mapping>
+  <exception-mapping>
+   <exception-type>org.jboss.test.ws.samples.exception.ComplexUserException</exception-type>
+   <wsdl-message>exMsgNS:ComplexUserException</wsdl-message>
+   <constructor-parameter-order>
+    <element-name>message</element-name>
+    <element-name>errorCode</element-name>
+   </constructor-parameter-order>
+  </exception-mapping>
+  <exception-mapping>
+   <exception-type>org.jboss.test.ws.samples.exception.ComplexUserArrayException</exception-type>
+   <wsdl-message>exMsgNS:ComplexUserArrayException</wsdl-message>
+   <constructor-parameter-order>
+    <element-name>message</element-name>
+    <element-name>errorCodes</element-name>
+   </constructor-parameter-order>
+  </exception-mapping>
+	]]></programlisting></para>
+	
+	<para><command>SOAP message exchange</command></para>
+	
+	<para> Here some SOAP messages as they would appear on the wire </para>
+	
+	<para>
+		<programlisting><![CDATA[
+  <soapenv:Envelope ...>
+   <soapenv:Body>
+    <soapenv:Fault>
+     <faultcode>soapenv:Client</faultcode>
+     <faultstring>org.jboss.test.webservice.exception.UserException</faultstring>
+     <detail>
+    <ns1:UserException xmlns:ns1="http://org.jboss.webservice/exception/types">
+     <message xsi:nil="1"/>
+    </ns1:UserException>
+     </detail>
+    </soapenv:Fault>
+   </soapenv:Body>
+  </soapenv:Envelope>
+  
+  <soapenv:Envelope ...>
+   <soapenv:Body>
+    <soapenv:Fault>
+     <faultcode>soapenv:Client</faultcode>
+     <faultstring>Don't worry it's just a test</faultstring>
+     <detail>
+    <ns1:UserMessageException xmlns:ns1="http://org.jboss.webservice/exception/types">
+     <message>Don't worry it's just a test</message>
+    </ns1:UserMessageException>
+     </detail>
+    </soapenv:Fault>
+   </soapenv:Body>
+  </soapenv:Envelope>
+  
+  <soapenv:Envelope ...>
+   <soapenv:Body>
+    <soapenv:Fault>
+     <faultcode>soapenv:Client</faultcode>
+     <faultstring>Don't worry it's just a test</faultstring>
+     <detail>
+    <ns1:ComplexUserException xmlns:ns1="http://org.jboss.webservice/exception/types">
+     <message>Don't worry it's just a test</message>
+     <errorCode>200</errorCode>
+    </ns1:ComplexUserException>
+     </detail>
+    </soapenv:Fault>
+   </soapenv:Body>
+  </soapenv:Envelope>
+  
+  <soapenv:Envelope ...>
+   <soapenv:Body>
+    <soapenv:Fault>
+     <faultcode>soapenv:Client</faultcode>
+     <faultstring>Don't worry it's just a test</faultstring>
+     <detail>
+    <ns1:ComplexUserArrayException xmlns:ns1="http://org.jboss.webservice/exception/types">
+     <message>Don't worry it's just a test</message>
+     <errorCodes>100</errorCodes>
+     <errorCodes>200</errorCodes>
+    </ns1:ComplexUserArrayException>
+     </detail>
+    </soapenv:Fault>
+   </soapenv:Body>
+  </soapenv:Envelope>
+	]]></programlisting></para>
+	
+</chapter>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java-wsdl-mapping xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.1" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee    http://www.ibm.com/webservices/xsd/j2ee_jaxrpc_mapping_1_1.xsd">
+<package-mapping>
+<package-type>org.jboss.test.ws.jsr181.soapbinding</package-type>
+<namespaceURI>http://soapbinding.jsr181.ws.test.jboss.org/jaws</namespaceURI>
+</package-mapping>
+<java-xml-type-mapping>
+<java-type>org.jboss.test.ws.jsr181.soapbinding.DocWrappedService_SubmitNamespacedPO_RequestStruct</java-type>
+<root-type-qname xmlns:typeNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">typeNS:SubmitNamespacedPO</root-type-qname>
+<qname-scope>complexType</qname-scope>
+<variable-mapping>
+<java-variable-name>namespacedPurchaseOrder</java-variable-name>
+<xml-element-name>NamespacedPurchaseOrder</xml-element-name>
+</variable-mapping>
+<variable-mapping>
+<java-variable-name>namespacedString</java-variable-name>
+<xml-element-name>NamespacedString</xml-element-name>
+</variable-mapping>
+</java-xml-type-mapping>
+<java-xml-type-mapping>
+<java-type>org.jboss.test.ws.jsr181.soapbinding.DocWrappedService_SubmitNamespacedPO_ResponseStruct</java-type>
+<root-type-qname xmlns:typeNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">typeNS:SubmitNamespacedPOResponse</root-type-qname>
+<qname-scope>complexType</qname-scope>
+<variable-mapping>
+<java-variable-name>namespacedPurchaseOrderAck</java-variable-name>
+<xml-element-name>NamespacedPurchaseOrderAck</xml-element-name>
+</variable-mapping>
+</java-xml-type-mapping>
+<java-xml-type-mapping>
+<java-type>org.jboss.test.ws.jsr181.soapbinding.DocWrappedService_SubmitPO_ResponseStruct</java-type>
+<root-type-qname xmlns:typeNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">typeNS:SubmitPOResponse</root-type-qname>
+<qname-scope>complexType</qname-scope>
+<variable-mapping>
+<java-variable-name>purchaseOrderAck</java-variable-name>
+<xml-element-name>PurchaseOrderAck</xml-element-name>
+</variable-mapping>
+</java-xml-type-mapping>
+<java-xml-type-mapping>
+<java-type>org.jboss.test.ws.jsr181.soapbinding.DocWrappedService_SubmitPO_RequestStruct</java-type>
+<root-type-qname xmlns:typeNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">typeNS:SubmitPO</root-type-qname>
+<qname-scope>complexType</qname-scope>
+<variable-mapping>
+<java-variable-name>purchaseOrder</java-variable-name>
+<xml-element-name>PurchaseOrder</xml-element-name>
+</variable-mapping>
+</java-xml-type-mapping>
+<java-xml-type-mapping>
+<java-type>org.jboss.test.ws.jsr181.soapbinding.PurchaseOrderAck</java-type>
+<root-type-qname xmlns:typeNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">typeNS:PurchaseOrderAck</root-type-qname>
+<qname-scope>complexType</qname-scope>
+<variable-mapping>
+<java-variable-name>product</java-variable-name>
+<xml-element-name>product</xml-element-name>
+</variable-mapping>
+</java-xml-type-mapping>
+<java-xml-type-mapping>
+<java-type>org.jboss.test.ws.jsr181.soapbinding.PurchaseOrder</java-type>
+<root-type-qname xmlns:typeNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">typeNS:PurchaseOrder</root-type-qname>
+<qname-scope>complexType</qname-scope>
+<variable-mapping>
+<java-variable-name>product</java-variable-name>
+<xml-element-name>product</xml-element-name>
+</variable-mapping>
+</java-xml-type-mapping>
+<service-interface-mapping>
+<service-interface>org.jboss.test.ws.jsr181.soapbinding.DocWrappedServiceService</service-interface>
+<wsdl-service-name xmlns:serviceNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">serviceNS:DocWrappedServiceService</wsdl-service-name>
+<port-mapping>
+<port-name>DocWrappedServicePort</port-name>
+<java-port-name>DocWrappedServicePort</java-port-name>
+</port-mapping>
+</service-interface-mapping>
+<service-endpoint-interface-mapping>
+<service-endpoint-interface>org.jboss.test.ws.jsr181.soapbinding.DocWrappedService</service-endpoint-interface>
+<wsdl-port-type xmlns:portTypeNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">portTypeNS:DocWrappedService</wsdl-port-type>
+<wsdl-binding xmlns:bindingNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">bindingNS:DocWrappedServiceBinding</wsdl-binding>
+<service-endpoint-method-mapping>
+<java-method-name>submitNamespacedPO</java-method-name>
+<wsdl-operation>SubmitNamespacedPO</wsdl-operation>
+<wrapped-element/>
+<method-param-parts-mapping>
+<param-position>0</param-position>
+<param-type>org.jboss.test.ws.jsr181.soapbinding.PurchaseOrder</param-type>
+<wsdl-message-mapping>
+<wsdl-message xmlns:wsdlMsgNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">wsdlMsgNS:DocWrappedService_SubmitNamespacedPO</wsdl-message>
+<wsdl-message-part-name>NamespacedPurchaseOrder</wsdl-message-part-name>
+<parameter-mode>IN</parameter-mode>
+</wsdl-message-mapping>
+</method-param-parts-mapping>
+<method-param-parts-mapping>
+<param-position>1</param-position>
+<param-type>java.lang.String</param-type>
+<wsdl-message-mapping>
+<wsdl-message xmlns:wsdlMsgNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">wsdlMsgNS:DocWrappedService_SubmitNamespacedPO</wsdl-message>
+<wsdl-message-part-name>NamespacedString</wsdl-message-part-name>
+<parameter-mode>IN</parameter-mode>
+</wsdl-message-mapping>
+</method-param-parts-mapping>
+<wsdl-return-value-mapping>
+<method-return-value>org.jboss.test.ws.jsr181.soapbinding.PurchaseOrderAck</method-return-value>
+<wsdl-message xmlns:wsdlMsgNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">wsdlMsgNS:DocWrappedService_SubmitNamespacedPOResponse</wsdl-message>
+<wsdl-message-part-name>NamespacedPurchaseOrderAck</wsdl-message-part-name>
+</wsdl-return-value-mapping>
+</service-endpoint-method-mapping>
+<service-endpoint-method-mapping>
+<java-method-name>submitPO</java-method-name>
+<wsdl-operation>SubmitPO</wsdl-operation>
+<wrapped-element/>
+<method-param-parts-mapping>
+<param-position>0</param-position>
+<param-type>org.jboss.test.ws.jsr181.soapbinding.PurchaseOrder</param-type>
+<wsdl-message-mapping>
+<wsdl-message xmlns:wsdlMsgNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">wsdlMsgNS:DocWrappedService_SubmitPO</wsdl-message>
+<wsdl-message-part-name>PurchaseOrder</wsdl-message-part-name>
+<parameter-mode>IN</parameter-mode>
+</wsdl-message-mapping>
+</method-param-parts-mapping>
+<wsdl-return-value-mapping>
+<method-return-value>org.jboss.test.ws.jsr181.soapbinding.PurchaseOrderAck</method-return-value>
+<wsdl-message xmlns:wsdlMsgNS="http://soapbinding.jsr181.ws.test.jboss.org/jaws">wsdlMsgNS:DocWrappedService_SubmitPOResponse</wsdl-message>
+<wsdl-message-part-name>PurchaseOrderAck</wsdl-message-part-name>
+</wsdl-return-value-mapping>
+</service-endpoint-method-mapping>
+</service-endpoint-interface-mapping>
+</java-wsdl-mapping>

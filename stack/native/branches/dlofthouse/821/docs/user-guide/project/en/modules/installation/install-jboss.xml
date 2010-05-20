@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect1 id="install-jboss">
+  
+  <title>Install on JBoss Application Server</title>
+  
+  <para>To take advantage of optimum integration it is best to install JBossWS on the appserver with embedded Tomcat. 
+    In this way you get access to the full set of advanced J2EE features (JMS, JAAS, EJB, etc.) advanced class loading,
+    better integration with managment and security. Contrary to common believe JBossAS with embedded Tomcat is 
+    as lightweight and easy to administer as standalone Tomcat.</para>
+  
+  <para>For additional information, see <ulink url="http://wiki.jboss.org/wiki/Wiki.jsp?page=TomcatStandalonevsEmbedded">Tomcat Standalone vs Embedded</ulink>.</para>
+  
+  <para>Installing JBossWS on JBoss is a matter of two simple steps.</para>
+  
+    <itemizedlist>
+        <listitem>
+            <para>
+              Deploy jbossws.sar to ${jboss.home}/server/default/deploy. 
+              Recommended is an expanded deployment for easy access to JBossWS configuration files.
+            </para>
+        </listitem>
+        <listitem>
+            <para>
+              Copy jbossws-client.jar to ${jboss.home}/client.
+            </para>
+        </listitem>
+    </itemizedlist>
+  
+  <para>If you are running JBoss on jdk1.4, you need to deploy jbossws14.sar and jbossws14-client.jar respectivly.</para>
+  
+  <para>The integration layer hooks into the JBoss deployer architecture and allows you to hot-deploy POJO and EJB endpoints. The
+  packaging of a standard portable J2EE-1.4 web service endpoints is defined by the JSR109 specification. JBossWS also supports
+  JSR181 endpoints, which are significantly easier to develop and maintain.</para>
+  
+</sect1>

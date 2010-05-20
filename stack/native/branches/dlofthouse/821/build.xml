@@ -1,0 +1,702 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ====================================================================== -->
+<!--                                                                        -->
+<!--  JBoss, the OpenSource J2EE webOS                                      -->
+<!--                                                                        -->
+<!--  Distributable under LGPL license.                                     -->
+<!--  See terms of license at http://www.gnu.org.                           -->
+<!--                                                                        -->
+<!-- ====================================================================== -->
+
+<!-- $Id$ -->
+
+<project default="main" name="JBossWS">
+
+
+  <import file="${basedir}/build-thirdparty.xml"/>
+  <import file="${basedir}/build-samples.xml"/>
+
+  <!-- ================================================================== -->
+  <!-- Setup                                                              -->
+  <!-- ================================================================== -->
+
+  <property file="ant.properties"/>
+  <property file="version.properties"/>
+
+  <property environment="env"/>
+  <property name="build.dir" value="${basedir}/output"/>
+  <property name="build.classes.dir" value="${build.dir}/classes"/>
+  <property name="build.classes14.dir" value="${build.dir}/classes14"/>
+  <property name="build.etc.dir" value="${build.dir}/etc"/>
+  <property name="build.lib.dir" value="${build.dir}/lib"/>
+  <property name="build.resources.dir" value="${build.dir}/resources"/>
+  <property name="build.samples.dir" value="${build.dir}/samples"/>
+  <property name="build.dist.dir" value="${build.dir}/dist"/>
+  <property name="docs.userguide.dir" value="${basedir}/docs/user-guide/project"/>
+  <property name="src.dir" value="${basedir}/src/main"/>
+  <property name="src.etc.dir" value="${src.dir}/etc"/>
+  <property name="src.java.dir" value="${src.dir}/java"/>
+  <property name="src.resources.dir" value="${src.dir}/resources"/>
+  <property name="src.dist.dir" value="${src.resources.dir}/dist"/>
+  <property name="src.samples.dir" value="${src.resources.dir}/samples"/>
+  <property name="test.dir" value="${basedir}/src/test"/>
+  <property name="test.etc.dir" value="${test.dir}/etc"/>
+  <property name="test.java.dir" value="${test.dir}/java"/>
+  <property name="test.resources.dir" value="${test.dir}/resources"/>
+
+  <property name="thirdparty.dir" value="${basedir}/thirdparty"/>
+
+  <property name="jboss.home" value="${jboss.jdk15.home}"/>
+  <property name="jboss.lib" value="${jboss.home}/lib"/>
+  <property name="jboss.client" value="${jboss.home}/client"/>
+  <property name="jboss.server" value="${jboss.home}/server/${jboss.server.instance}"/>
+  <property name="jboss.server.lib" value="${jboss.server}/lib"/>
+  <property name="jboss.server.deploy" value="${jboss.server}/deploy"/>
+  <property name="jboss.thirdparty" value="${jboss.home}/../../../thirdparty"/>
+
+  <property name="tomcat.webapps.dir" value="${tomcat.home}/webapps"/>
+  <property name="tomcat.common.dir" value="${tomcat.home}/common"/>
+
+  <!-- ================================================================== -->
+  <!-- Initialization                                                     -->
+  <!-- ================================================================== -->
+
+  <target name="prepare">
+
+    <echo message="jboss.home  = ${jboss.home}"/>
+    <echo message="tomcat.home = ${tomcat.home}"/>
+    <echo/>
+
+    <available property="jboss.source.dist.available" file="${jboss.thirdparty}" type="dir"/>
+    <available property="jboss.ejb3.available" file="${jboss.client}/jboss-ejb3-client.jar"/>
+    <available property="jbossws.thirdparty.available" file="${build.lib.dir}/jbossws-thirdparty.jar"/>
+
+    <condition property="force.thirdparty.get">
+      <not>
+        <available file="${thirdparty.dir}" type="dir"/>
+      </not>
+    </condition>
+
+    <fail message="Not available: ${jboss.client}/jboss-ejb3-client.jar" unless="jboss.ejb3.available"/>
+
+    <tstamp>
+      <format property="build.id" pattern="yyyyMMddHHmm"/>
+    </tstamp>
+
+  </target>
+
+  <target name="init" depends="prepare, thirdparty">
+
+    <!-- The combined compile classpath -->
+    <path id="core.classpath">
+      <path refid="library.classpath"/>
+      <path refid="jboss.core.classpath"/>
+    </path>
+
+    <!-- The combined integration classpath -->
+    <path id="integration.classpath">
+      <path refid="library.classpath"/>
+      <path refid="jboss.core.classpath"/>
+      <path refid="jboss.integration.classpath"/>
+    </path>
+
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Compile                                                            -->
+  <!-- ================================================================== -->
+
+  <!--
+  | Compile everything.
+  |
+  | This target should depend on other compile-* targets for each
+  | different type of compile that needs to be performed, short of
+  | documentation compiles.
+  -->
+
+  <target name="compile" depends="init,compile-classes,compile-etc,compile-resources" description="Compile all source files."/>
+
+  <!-- Compile java sources -->
+  <target name="compile-classes" depends="compile-interfaces,compile-core,compile-integration"/>
+
+  <!-- Compile core java sources -->
+  <target name="compile-interfaces" depends="init">
+    <mkdir dir="${build.classes14.dir}"/>
+    <javac srcdir="${src.java.dir}" destdir="${build.classes14.dir}" debug="${javac.debug}" verbose="${javac.verbose}"
+           deprecation="${javac.deprecation}" failonerror="${javac.fail.onerror}" source="1.4" target="1.4">
+      <include name="javax/xml/rpc/**"/>
+      <include name="javax/xml/soap/**"/>
+      <classpath refid="core.classpath"/>
+    </javac>
+  </target>
+
+  <!-- Compile core java sources -->
+  <target name="compile-core" depends="init">
+    <mkdir dir="${build.classes.dir}"/>
+    <javac srcdir="${src.java.dir}" destdir="${build.classes.dir}" debug="${javac.debug}" verbose="${javac.verbose}"
+           deprecation="${javac.deprecation}" failonerror="${javac.fail.onerror}">
+      <include name="javax/xml/ws/**"/>
+      <include name="javax/jws/**"/>
+      <include name="org/jboss/ws/**"/>
+      <exclude name="org/jboss/ws/integration/**"/>
+      <exclude name="org/jboss/ws/transport/jms/**"/>
+      <exclude name="org/jboss/ws/server/ServiceEndpointInterceptor.java"/>
+      <classpath location="build.classes14.dir"/>
+      <classpath refid="core.classpath"/>
+    </javac>
+  </target>
+
+  <!-- Compile interation java sources -->
+  <target name="compile-integration" depends="init">
+    <mkdir dir="${build.classes.dir}"/>
+    <javac srcdir="${src.java.dir}" destdir="${build.classes.dir}" debug="${javac.debug}" verbose="${javac.verbose}"
+      deprecation="${javac.deprecation}" failonerror="${javac.fail.onerror}">
+      <include name="org/jboss/ws/integration/**"/>
+      <include name="org/jboss/ws/transport/jms/**"/>
+      <include name="org/jboss/ws/server/ServiceEndpointInterceptor.java"/>
+      <classpath location="build.classes14.dir"/>
+      <classpath refid="integration.classpath"/>
+    </javac>
+  </target>
+
+  <!-- Compile etc files (manifests and such) -->
+  <target name="compile-etc" depends="init">
+    <mkdir dir="${build.etc.dir}"/>
+    <copy todir="${build.etc.dir}" filtering="yes" overwrite="yes">
+      <fileset dir="${src.etc.dir}"/>
+      <filterset>
+        <filter token="java.vm.version" value="${java.vm.version}"/>
+        <filter token="java.vm.vendor" value="${java.vm.vendor}"/>
+        <filter token="build.id" value="${build.id}"/>
+        <filter token="implementation.version" value="jbossws-${version.id}"/>
+        <filtersfile file="version.properties"/>
+      </filterset>
+    </copy>
+  </target>
+
+  <!-- Compile resource files -->
+  <target name="compile-resources" depends="init">
+    <mkdir dir="${build.resources.dir}"/>
+    <copy todir="${build.resources.dir}" filtering="yes" overwrite="yes">
+      <fileset dir="${src.resources.dir}"/>
+    </copy>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Archives                                                           -->
+  <!-- ================================================================== -->
+
+  <!--
+  | Build all jar files.
+  -->
+  <target name="jars" description="Builds all jar files." depends="compile,module-jars">
+  </target>
+
+  <!--
+  |  Build all jar files.
+  -->
+  <target name="module-jars">
+
+    <!-- Build jboss-jaxrpc.jar -->
+    <mkdir dir="${build.lib.dir}"/>
+    <jar jarfile="${build.lib.dir}/jboss-jaxrpc.jar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.classes14.dir}">
+        <include name="javax/xml/rpc/**"/>
+      </fileset>
+    </jar>
+
+    <!-- Build jboss-saaj.jar -->
+    <mkdir dir="${build.lib.dir}"/>
+    <jar jarfile="${build.lib.dir}/jboss-saaj.jar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.classes14.dir}">
+        <include name="javax/xml/soap/**"/>
+      </fileset>
+    </jar>
+
+    <!-- Build jboss-jaxws.jar -->
+    <mkdir dir="${build.lib.dir}"/>
+    <jar jarfile="${build.lib.dir}/jboss-jaxws.jar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.classes.dir}">
+        <include name="javax/jws/**"/>
+        <include name="javax/xml/ws/**"/>
+      </fileset>
+    </jar>
+
+    <!-- Build jbossws-core.jar -->
+    <mkdir dir="${build.lib.dir}"/>
+    <jar jarfile="${build.lib.dir}/jbossws-core.jar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.classes.dir}">
+        <include name="org/jboss/ws/**"/>
+        <exclude name="org/jboss/ws/integration/**"/>
+        <exclude name="org/jboss/ws/transport/jms/**"/>
+        <exclude name="org/jboss/ws/server/ServiceEndpointInterceptor.class"/>
+      </fileset>
+      <fileset dir="${build.resources.dir}">
+        <include name="schema/**"/>
+        <include name="dtd/**"/>
+      </fileset>
+    </jar>
+
+    <!-- Build jbossws-jboss-integration.jar -->
+    <jar jarfile="${build.lib.dir}/jbossws-jboss-integration.jar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.classes.dir}">
+        <include name="org/jboss/ws/integration/*.class"/>
+        <include name="org/jboss/ws/integration/jboss/**"/>
+        <include name="org/jboss/ws/transport/jms/**"/>
+        <include name="org/jboss/ws/server/ServiceEndpointInterceptor.class"/>
+      </fileset>
+    </jar>
+
+    <!-- Build jbossws-tomcat-integration.jar -->
+    <jar jarfile="${build.lib.dir}/jbossws-tomcat-integration.jar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.classes.dir}">
+        <include name="org/jboss/ws/integration/other/**"/>
+      </fileset>
+    </jar>
+
+    <!-- Build jbossws.beans -->
+    <jar jarfile="${build.lib.dir}/jbossws.beans" manifest="${build.etc.dir}/default.mf">
+      <metainf dir="${build.resources.dir}/jbossws.beans/META-INF">
+        <include name="jboss-beans.xml"/>
+      </metainf>
+    </jar>
+
+    <!-- Build jbossws-client.jar -->
+    <jar jarfile="${build.lib.dir}/jbossws-client.jar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.classes.dir}">
+        <include name="javax/**"/>
+        <include name="org/jboss/ws/**"/>
+        <exclude name="org/jboss/ws/integration/jboss/**"/>
+        <exclude name="org/jboss/ws/integration/other/**"/>
+        <exclude name="org/jboss/ws/transport/jms/**"/>
+      </fileset>
+      <fileset dir="${build.resources.dir}/jbossws.sar">
+        <include name="META-INF/standard-jbossws-client-config.xml"/>
+      </fileset>
+      <fileset dir="${build.resources.dir}">
+        <include name="schema/**"/>
+        <include name="dtd/**"/>
+      </fileset>
+      <fileset dir="${build.etc.dir}">
+        <include name="wstools.sh"/>
+        <include name="wstools.bat"/>
+        <include name="wstools-log4j.xml"/>
+      </fileset>
+    </jar>
+
+    <!-- Build jbossws-context.war -->
+    <war warfile="${build.lib.dir}/jbossws-context.war" webxml="${build.resources.dir}/jbossws.war/JBoss/WEB-INF/web.xml">
+      <fileset dir="${build.resources.dir}/jbossws.war">
+        <include name="index.html"/>
+        <include name="styles.css"/>
+      </fileset>
+      <webinf dir="${build.resources.dir}/jbossws.war/JBoss/WEB-INF">
+        <include name="jboss-web.xml"/>
+      </webinf>
+    </war>
+
+    <!-- Build jbossws.war -->
+    <war warfile="${build.lib.dir}/jbossws.war" webxml="${build.resources.dir}/jbossws.war/Tomcat/WEB-INF/web.xml">
+      <fileset dir="${build.resources.dir}/jbossws.war">
+        <include name="index.html"/>
+        <include name="styles.css"/>
+      </fileset>
+      <fileset dir="${build.resources.dir}/jbossws.war/Tomcat">
+        <include name="META-INF/jboss-beans.xml"/>
+      </fileset>
+      <fileset dir="${build.resources.dir}/jbossws.sar">
+        <include name="META-INF/standard-jbossws-client-config.xml"/>
+        <include name="META-INF/standard-jbossws-endpoint-config.xml"/>
+      </fileset>
+    </war>
+
+    <!-- Build jbossws.sar -->
+    <jar jarfile="${build.lib.dir}/jbossws.sar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.lib.dir}">
+        <include name="jbossws-jboss-integration.jar"/>
+        <include name="jbossws-context.war"/>
+        <include name="jbossws-core.jar"/>
+        <include name="jboss-jaxrpc.jar"/>
+        <include name="jboss-jaxws.jar"/>
+        <include name="jboss-saaj.jar"/>
+        <include name="jbossws.beans"/>
+      </fileset>
+      <fileset dir="${thirdparty.dir}">
+        <include name="jaxb-api.jar"/>
+        <include name="jaxb-impl.jar"/>
+        <include name="policy-1.0.jar"/>
+        <include name="sjsxp.jar"/>
+        <include name="stax-api-1.0.jar"/>
+        <include name="wsdl4j.jar"/>
+        <include name="wstx-lgpl-2.9.3.jar"/>
+        <include name="xmlsec.jar"/>
+      </fileset>
+      <fileset dir="${build.resources.dir}/jbossws.sar">
+        <include name="META-INF/standard-jbossws-client-config.xml"/>
+        <include name="META-INF/standard-jbossws-endpoint-config.xml"/>
+        <include name="META-INF/jboss-service.xml"/>
+      </fileset>
+    </jar>
+
+  </target>
+
+  <target name="module-jars14" depends="jbossretro">
+
+    <!-- Build jboss-jaxws14.jar -->
+    <mkdir dir="${build.lib.dir}"/>
+    <jar jarfile="${build.lib.dir}/jboss-jaxws14.jar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.classes14.dir}">
+        <include name="javax/jws/**"/>
+        <include name="javax/xml/ws/**"/>
+      </fileset>
+    </jar>
+
+    <!-- Build jbossws14-core.jar -->
+    <mkdir dir="${build.lib.dir}"/>
+    <jar jarfile="${build.lib.dir}/jbossws14-core.jar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.classes14.dir}">
+        <include name="org/jboss/ws/**"/>
+        <exclude name="org/jboss/ws/integration/**"/>
+        <exclude name="org/jboss/ws/transport/jms/**"/>
+        <exclude name="org/jboss/ws/server/ServiceEndpointInterceptor.class"/>
+      </fileset>
+      <fileset dir="${build.resources.dir}">
+        <include name="schema/**"/>
+        <include name="dtd/**"/>
+      </fileset>
+    </jar>
+
+    <!-- Build jbossws-jboss-integration.jar -->
+    <jar jarfile="${build.lib.dir}/jbossws14-jboss-integration.jar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.classes14.dir}">
+        <include name="org/jboss/ws/integration/*.class"/>
+        <include name="org/jboss/ws/integration/jboss/**"/>
+        <include name="org/jboss/ws/transport/jms/**"/>
+        <include name="org/jboss/ws/server/ServiceEndpointInterceptor.class"/>
+      </fileset>
+    </jar>
+
+    <!-- Build jbossws14-client.jar -->
+    <jar jarfile="${build.lib.dir}/jbossws14-client.jar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.classes14.dir}">
+        <include name="javax/**"/>
+        <include name="org/jboss/ws/**"/>
+        <exclude name="org/jboss/ws/integration/jboss/**"/>
+        <exclude name="org/jboss/ws/integration/other/**"/>
+        <exclude name="org/jboss/ws/transport/jms/**"/>
+      </fileset>
+      <fileset dir="${build.resources.dir}/jbossws.sar">
+        <include name="META-INF/standard-jbossws-client-config.xml"/>
+      </fileset>
+      <fileset dir="${build.resources.dir}">
+        <include name="schema/**"/>
+        <include name="dtd/**"/>
+      </fileset>
+      <fileset dir="${build.etc.dir}">
+        <include name="wstools.sh"/>
+        <include name="wstools.bat"/>
+        <include name="wstools-log4j.xml"/>
+      </fileset>
+    </jar>
+
+    <!-- Build jbossws14.sar -->
+    <jar jarfile="${build.lib.dir}/jbossws14.sar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.lib.dir}">
+        <include name="jbossws14-jboss-integration.jar"/>
+        <include name="jbossws14-core.jar"/>
+        <include name="jbossws-context.war"/>
+        <include name="jboss-jaxrpc.jar"/>
+        <include name="jboss-jaxws14.jar"/>
+        <include name="jboss-saaj.jar"/>
+        <include name="jbossws.beans"/>
+      </fileset>
+      <fileset dir="${thirdparty.dir}">
+        <include name="wsdl4j.jar"/>
+        <include name="xmlsec.jar"/>
+      </fileset>
+      <fileset dir="${build.resources.dir}/jbossws.sar">
+        <include name="META-INF/standard-jbossws-client-config.xml"/>
+        <include name="META-INF/standard-jbossws-endpoint-config.xml"/>
+      </fileset>
+      <fileset dir="${build.resources.dir}/jbossws14.sar">
+        <include name="META-INF/jboss-service.xml"/>
+      </fileset>
+    </jar>
+
+  </target>
+
+  <!--
+  Retrotranslation
+  -->
+
+  <target name="jbossretro" depends="compile">
+
+    <!-- Weave the build.classes to build.classes14 -->
+    <taskdef name="retro" classname="org.jboss.ant.tasks.retro.Retro">
+      <classpath>
+        <pathelement location="${thirdparty.dir}/javassist.jar"/>
+        <pathelement location="${thirdparty.dir}/jbossretro.jar"/>
+      </classpath>
+    </taskdef>
+
+    <mkdir dir="${build.classes14.dir}"/>
+
+    <retro destdir="${build.classes14.dir}">
+      <classpath>
+        <pathelement location="${thirdparty.dir}/javassist.jar"/>
+        <pathelement location="${thirdparty.dir}/jbossretro.jar"/>
+        <pathelement location="${thirdparty.dir}/jboss-backport-concurrent.jar"/>
+        <pathelement location="${thirdparty.dir}/ant.jar"/>
+        <pathelement path="${build.classes.dir}"/>
+      </classpath>
+      <classpath refid="core.classpath"/>
+      <classpath refid="integration.classpath"/>
+      <src path="${build.classes.dir}"/>
+    </retro>
+
+    <copy todir="${build.classes14.dir}">
+      <fileset dir="${build.resources.dir}">
+        <include name="schema/**"/>
+        <include name="dtd/**"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Documentation                                                      -->
+  <!-- ================================================================== -->
+
+  <!-- Generate the JavaDoc -->
+  <target name="javadoc" depends="init" description="Generate the Javadoc">
+    <javadoc destdir="${build.api}" author="true" version="true" use="true" windowtitle="JBossWS API">
+      <packageset dir="${src.java.dir}" defaultexcludes="yes">
+        <include name="org/jboss/ws/**"/>
+      </packageset>
+      <packageset dir="${jboss.server.root}/../src/main" defaultexcludes="yes">
+        <include name="org/jboss/webservice/metadata/**"/>
+      </packageset>
+    </javadoc>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Deployment                                                         -->
+  <!-- ================================================================== -->
+
+  <!-- Deploy jbossws to the server -->
+  <target name="deploy-jbossws" depends="main" description="Deploy jbossws">
+    <antcall target="deploy-to-server">
+      <param name="jboss.deploy.home" value="${jboss.jdk15.home}"/>
+      <param name="jbossws" value="jbossws"/>
+    </antcall>
+    <antcall target="deploy-to-thirdparty">
+      <param name="jboss.deploy.home" value="${jboss.jdk15.home}"/>
+      <param name="jbossws" value="jbossws"/>
+    </antcall>
+  </target>
+
+  <!-- Deploy jbossws14 to the server -->
+
+  <target name="module-jars14-assert" unless="jboss.jdk14.home">
+     <echo>ERROR: 'jboss.jdk14.home' is not set. </echo>
+     <echo>Make sure to point it to your jboss confiuguration thagt should run under jdk 1.4</echo>
+  </target>
+
+  <target name="deploy-jbossws14" depends="main,module-jars14, module-jars14-assert" description="Deploy jbossws14" if="jboss.jdk14.home">
+    <antcall target="deploy-to-server">
+      <param name="jboss.deploy.home" value="${jboss.jdk14.home}"/>
+      <param name="jbossws" value="jbossws14"/>
+    </antcall>
+    <antcall target="deploy-to-thirdparty">
+      <param name="jboss.deploy.home" value="${jboss.jdk14.home}"/>
+      <param name="jbossws" value="jbossws14"/>
+    </antcall>
+  </target>
+
+  <!-- Deploy to jboss -->
+  <target name="deploy-to-server">
+    <copy todir="${jboss.deploy.home}/client" file="${thirdparty.dir}/jboss-xml-binding.jar" overwrite="true"/>
+    <copy todir="${jboss.deploy.home}/lib" file="${thirdparty.dir}/jboss-xml-binding.jar" overwrite="true"/>
+    <copy todir="${jboss.deploy.home}/client" file="${build.lib.dir}/${jbossws}-client.jar" overwrite="true"/>
+    <delete dir="${jboss.deploy.home}/server/${jboss.server.instance}/deploy/${jbossws}.sar"/>
+    <mkdir dir="${jboss.deploy.home}/server/${jboss.server.instance}/deploy/${jbossws}.sar"/>
+    <unjar dest="${jboss.deploy.home}/server/${jboss.server.instance}/deploy/${jbossws}.sar" src="${build.lib.dir}/${jbossws}.sar"/>
+  </target>
+
+  <!-- Deploy to jboss/thirdparty -->
+  <target name="deploy-to-thirdparty" if="jboss.source.dist.available">
+    <copy todir="${jboss.deploy.home}/../../../thirdparty/jboss/${jbossws}/lib" file="${build.lib.dir}/${jbossws}-client.jar" overwrite="true"/>
+    <copy todir="${jboss.deploy.home}/../../../thirdparty/jboss/${jbossws}/lib" file="${build.lib.dir}/${jbossws}.sar" overwrite="true"/>
+  </target>
+
+  <!-- Deploy to Tomcat -->
+  <target name="deploy-tomcat" depends="main,jbossws-thirdparty-jar" description="Deploy JBossWS to Tomcat">
+    <copy todir="${tomcat.common.dir}/endorsed" file="${thirdparty.dir}/serializer.jar"/>
+    <copy todir="${tomcat.common.dir}/endorsed" file="${thirdparty.dir}/xalan.jar"/>
+    <copy todir="${tomcat.common.dir}/endorsed" file="${thirdparty.dir}/xercesImpl.jar"/>
+    <copy todir="${tomcat.common.dir}/lib" file="${thirdparty.dir}/activation.jar"/>
+    <copy todir="${tomcat.common.dir}/lib" file="${thirdparty.dir}/log4j.jar"/>
+    <copy todir="${tomcat.common.dir}/lib" file="${thirdparty.dir}/mailapi.jar"/>
+    <copy todir="${tomcat.common.dir}/lib" file="${build.lib.dir}/jbossws-core.jar" overwrite="true"/>
+    <copy todir="${tomcat.common.dir}/lib" file="${build.lib.dir}/jbossws-tomcat-integration.jar" overwrite="true"/>
+    <copy todir="${tomcat.common.dir}/lib" file="${build.lib.dir}/jbossws-thirdparty.jar" overwrite="true"/>
+    <copy todir="${tomcat.webapps.dir}" file="${build.lib.dir}/jbossws.war" overwrite="true"/>
+    <delete dir="${tomcat.webapps.dir}/jbossws"/>
+  </target>
+
+  <target name="jbossws-thirdparty-jar" unless="jbossws.thirdparty.available">
+    <!-- Build jbossws-thirdparty.jar -->
+    <mkdir dir="${build.lib.dir}/build"/>
+    <unjar dest="${build.lib.dir}/build" src="${jboss.lib}/jboss-common.jar"/>
+    <unjar dest="${build.lib.dir}/build" src="${jboss.server.lib}/jboss-j2ee.jar"/>
+    <unjar dest="${build.lib.dir}/build" src="${thirdparty.dir}/jboss-container.jar"/>
+    <unjar dest="${build.lib.dir}/build" src="${thirdparty.dir}/jboss-dependency.jar"/>
+    <unjar dest="${build.lib.dir}/build" src="${thirdparty.dir}/jboss-microcontainer.jar"/>
+    <unjar dest="${build.lib.dir}/build" src="${thirdparty.dir}/jboss-remoting.jar"/>
+    <unjar dest="${build.lib.dir}/build" src="${thirdparty.dir}/jboss-xml-binding.jar"/>
+    <unjar dest="${build.lib.dir}/build" src="${thirdparty.dir}/javassist.jar"/>
+    <unjar dest="${build.lib.dir}/build" src="${thirdparty.dir}/concurrent.jar"/>
+    <unjar dest="${build.lib.dir}/build" src="${thirdparty.dir}/wsdl4j.jar"/>
+    <unjar dest="${build.lib.dir}/build" src="${thirdparty.dir}/xmlsec.jar"/>
+    <jar jarfile="${build.lib.dir}/jbossws-thirdparty.jar" manifest="${build.etc.dir}/default.mf">
+      <fileset dir="${build.lib.dir}/build"/>
+    </jar>
+    <delete dir="${build.lib.dir}/build"/>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Release                                                            -->
+  <!-- ================================================================== -->
+
+  <!-- Deploy jbossws to the server specified like this: -Dserver=default -->
+  <target name="release" depends="all" description="Release to jboss.local.repository">
+
+    <!-- jbossws -->
+    <property name="jbossws.dir" value="${jboss.local.repository}/jboss/jbossws/${repository.id}"/>
+    <mkdir dir="${jbossws.dir}/lib"/>
+    <copy todir="${jbossws.dir}/lib" overwrite="true">
+      <fileset dir="${build.lib.dir}">
+        <include name="jbossws.sar"/>
+        <include name="jbossws-client.jar"/>
+        <include name="jboss-jaxrpc.jar"/>
+        <include name="jboss-jaxws.jar"/>
+        <include name="jboss-saaj.jar"/>
+      </fileset>
+    </copy>
+    <copy tofile="${jbossws.dir}/component-info.xml" file="${src.etc.dir}/jbossws-component-info.xml" filtering="true" overwrite="true">
+      <filterset>
+        <filtersfile file="version.properties"/>
+      </filterset>
+    </copy>
+
+    <!-- jbossws14 -->
+    <property name="jbossws14.dir" value="${jboss.local.repository}/jboss/jbossws14/${repository.id}"/>
+    <mkdir dir="${jbossws14.dir}/lib"/>
+    <copy todir="${jbossws14.dir}/lib" overwrite="true">
+      <fileset dir="${build.lib.dir}">
+        <include name="jbossws14.sar"/>
+        <include name="jbossws14-client.jar"/>
+        <include name="jboss-jaxws14.jar"/>
+        <include name="jboss-jaxrpc.jar"/>
+        <include name="jboss-saaj.jar"/>
+      </fileset>
+    </copy>
+    <copy tofile="${jbossws14.dir}/component-info.xml" file="${src.etc.dir}/jbossws14-component-info.xml" filtering="true" overwrite="true">
+      <filterset>
+        <filtersfile file="version.properties"/>
+      </filterset>
+    </copy>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Misc.                                                              -->
+  <!-- ================================================================== -->
+
+  <!-- Clean up all build output -->
+  <target name="clean" depends="prepare" description="Cleans up most generated files.">
+    <delete dir="${build.dir}"/>
+  </target>
+
+  <target name="main" description="Executes the default target (most)." depends="most"/>
+
+  <target name="most" description="Builds almost everything." depends="jars"/>
+
+  <target name="all" description="Create a distribution zip file" depends="main,module-jars14,jbossws-thirdparty-jar,build-samples,build-docs">
+
+    <mkdir dir="${build.dist.dir}"/>
+    <mkdir dir="${build.dist.dir}/bin"/>
+    <mkdir dir="${build.dist.dir}/samples"/>
+    <mkdir dir="${build.dist.dir}/docs/html"/>
+    <mkdir dir="${build.dist.dir}/lib/jboss-jdk1.5"/>
+    <mkdir dir="${build.dist.dir}/lib/jboss-jdk1.4"/>
+    <mkdir dir="${build.dist.dir}/lib/tomcat/common/endorsed"/>
+    <mkdir dir="${build.dist.dir}/lib/tomcat/common/lib"/>
+    <mkdir dir="${build.dist.dir}/lib/tomcat/webapps"/>
+
+    <copy todir="${build.dist.dir}" filtering="true" overwrite="true">
+      <fileset dir="${src.dist.dir}"/>
+      <filterset>
+        <filtersfile file="version.properties"/>
+      </filterset>
+    </copy>
+    <copy todir="${build.dist.dir}/bin">
+      <fileset dir="${src.etc.dir}">
+        <include name="wstools.bat"/>
+        <include name="wstools.sh"/>
+      </fileset>
+    </copy>
+
+    <!-- samples -->
+    <copy todir="${build.dist.dir}" file="${build.dir}/${samples.target}.zip" overwrite="true"/>
+
+    <!-- documentation -->
+    <copy todir="${build.dist.dir}/docs/html" overwrite="true">
+      <fileset dir="${docs.userguide.dir}/build/en/html"/>
+    </copy>
+    <copy todir="${build.dist.dir}/docs" overwrite="true">
+      <fileset dir="${docs.userguide.dir}/build/en/pdf"/>
+    </copy>
+
+    <!-- lib/jdk1.5 -->
+    <copy todir="${build.dist.dir}/lib/jboss-jdk1.5" overwrite="true">
+      <fileset dir="${build.lib.dir}" includes="jbossws-client.jar,jbossws.sar"/>
+    </copy>
+
+    <!-- lib/jdk1.4 -->
+    <copy todir="${build.dist.dir}/lib/jboss-jdk1.4" overwrite="true">
+      <fileset dir="${build.lib.dir}" includes="jbossws14-client.jar,jbossws14.sar"/>
+    </copy>
+
+    <!-- lib/tomcat -->
+    <copy todir="${build.dist.dir}/lib/tomcat/common/endorsed" overwrite="true">
+      <fileset dir="${thirdparty.dir}">
+        <include name="serializer.jar"/>
+        <include name="xalan.jar"/>
+        <include name="xercesImpl.jar"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.dist.dir}/lib/tomcat/common/lib" overwrite="true">
+      <fileset dir="${thirdparty.dir}">
+        <include name="activation.jar"/>
+        <include name="log4j.jar"/>
+        <include name="mailapi.jar"/>
+      </fileset>
+      <fileset dir="${build.lib.dir}">
+        <include name="jbossws-core.jar"/>
+        <include name="jbossws-tomcat-integration.jar"/>
+        <include name="jbossws-thirdparty.jar"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.dist.dir}/lib/tomcat/webapps" overwrite="true">
+      <fileset dir="${build.lib.dir}" includes="jbossws.war"/>
+    </copy>
+
+    <!-- zip it -->
+    <zip destfile="${build.dir}/jbossws-${version.id}.zip" basedir="${build.dist.dir}"/>
+  </target>
+
+  <target name="build-docs" description="build the documentation">
+    <ant antfile="${docs.userguide.dir}/build.xml" dir="${docs.userguide.dir}" target="all.doc"/>
+  </target>
+
+</project>

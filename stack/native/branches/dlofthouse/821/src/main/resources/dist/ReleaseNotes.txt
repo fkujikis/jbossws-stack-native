@@ -1,0 +1,39 @@
+
+@implementation.title@
+@implementation.url@
+
+Version: jbossws-@version.id@
+
+Release Notes
+=============
+
+The UserGuide can be found in the docs directory and is usally a good starting point
+A list of examples that accompany the UserGuide can be found in the samples
+
+If you have any questions, please post to the JBossWS User Forum
+http://www.jboss.org/index.html?module=bb&op=viewforum&f=200
+
+What's new in jbossws-@version.id@
+----------------------------------
+
+* [JBWS-852] Integration with Mikrocontainer
+* [JBWS-865] Support security annotations for EJB3 endpoints
+* [JBWS-871] Arrays with JSR181 endpoints  
+* [JBWS-923] Complete MTOM for rpc/literal
+* [JBWS-776] WSDLToJava Support wildcards
+* Bug fixes
+
+For details see the change log. 
+http://jira.jboss.com/jira/browse/JBWS?report=com.atlassian.jira.plugin.system.project:changelog-panel
+
+Errata
+------
+
+* None
+
+For issues that are scheduled for future versions see the road map.
+http://jira.jboss.com/jira/browse/JBWS?report=com.atlassian.jira.plugin.system.project:roadmap-panel
+
+
+Enjoy,
+The JBossWS Team

@@ -1,0 +1,13 @@
+<project name="Documentation" default="all.doc" basedir=".">
+
+  <property name="pdf.name" value="jbossws-project.pdf"/>
+
+  <import file="${docbook-support.home}/support.xml"/>
+  
+  <target name="all.doc" depends="clean">
+    <antcall target="lang.all">
+      <param name="lang" value="en"/>
+    </antcall>
+  </target>
+  
+</project>

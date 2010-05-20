@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<chapter id="jms-transport">
+
+  <title>JMS Transport</title>
+  
+  <para>JBossWS supports J2EE-1.4 message driven beans (MDB) as service endpoints. 
+    A JMS message that is targeted to MDB may contain a SOAP envelope that is then dispatched to the same MDB. 
+    The MDB implements the methods on the Service Endpoint Interface (SEI), onMessage() is implemented 
+    by a base class that we provide.
+  </para>
+
+  &s-jms-endpoint;  
+  &s-jms-client;  
+</chapter>

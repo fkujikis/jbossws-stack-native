@@ -1,0 +1,34 @@
+#
+# A sample ant properties file
+#
+
+# Required JBoss Home
+#jboss.jdk15.home=/home/tdiesler/svn/jboss/jbossas/branches/Branch_4_0/build/output/jboss-4.0.5.CR1-ejb3
+
+# Optional JBoss Home
+#jboss.jdk14.home=/home/tdiesler/svn/jboss/jbossas/tags/JBoss_4_0_4_GA/build/output/jboss-4.0.4.GA
+
+# The JBoss server instance
+jboss.server.instance=default
+
+# Tomcat Home
+#tomcat.home=d:/java/apache/apache-tomcat-5.5.17
+#tomcat.manager.username=manager
+#tomcat.manager.password=manager
+
+# The target server the test endpoints are deployed to 
+# This can be [jboss|tomcat]
+jbossws.target.server=jboss
+
+# JBoss Repository
+jboss.local.repository=/home/tdiesler/cvs/jboss.local.repository
+jboss.repository=http://repository.jboss.com
+
+# Force thirdparty HTTP get
+#force.thirdparty.get=true
+
+# Java Compiler options
+javac.debug=yes
+javac.deprecation=yes
+javac.fail.onerror=yes
+javac.verbose=no

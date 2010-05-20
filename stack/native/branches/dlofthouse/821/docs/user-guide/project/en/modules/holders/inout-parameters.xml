@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<chapter id="inout-parameters">
+  
+  <title>Holders for INOUT parameters</title>
+  
+  <para>This chapter describes how a BigDecimalHolder can be used as an in/out parameter.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    public interface HolderTestService extends Remote
+    {
+       void echoBigDecimal(BigDecimalHolder val) throws RemoteException;
+       ... 
+    }
+  ]]></programlisting></para>
+  
+  <para><command>Generating required deployment artifacts</command></para>
+  
+  <para>Run wstools with the following configuration</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <configuration xmlns="http://www.jboss.org/jbossws-tools">
+      <javaToWSDL>
+        <service name="TestService" wsdlStyle="rpc" 
+              endpoint="org.jboss.test.ws.samples.holder.HolderTestService"/>
+        <namespaces targetNamespace="http://org.jboss.ws/samples/holder" 
+              typeNamespace="http://org.jboss.ws/samples/holder/types"/>
+        <mapping fileName="jaxrpc-mapping.xml"/>
+        <wsxml servletLink="TestService"/>
+      </javaToWSDL>
+    </configuration>
+     ]]></programlisting></para>
+  
+  <para>WSTools generates WSDL messages with identical part names.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+     <message name='HolderTestService_echoBigDecimal'>
+      <part name='BigDecimal_1' type='xsd:decimal'/>
+     </message>
+        
+     <message name='HolderTestService_echoBigDecimalResponse'>
+      <part name='BigDecimal_1' type='xsd:decimal'/>
+     </message>
+    
+     <portType name='HolderTestService'>
+      <operation name='echoBigDecimal' parameterOrder='BigDecimal_1'>
+       <input message='tns:HolderTestService_echoBigDecimal'/>
+       <output message='tns:HolderTestService_echoBigDecimalResponse'/>
+      </operation>
+      ...
+     </portType>
+     ]]></programlisting></para>
+  
+  <para>The &lt;service-endpoint-method-mapping&gt; declares the parameter mode as INOUT.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <service-endpoint-method-mapping>
+     <java-method-name>echoBigDecimal</java-method-name>
+     <wsdl-operation>echoBigDecimal</wsdl-operation>
+     <method-param-parts-mapping>
+      <param-position>0</param-position>
+      <param-type>java.math.BigDecimal</param-type>
+      <wsdl-message-mapping>
+       <wsdl-message xmlns:wsdlMsgNS='http://org.jboss.ws/samples/holder'>
+           wsdlMsgNS:HolderTestService_echoBigDecimal
+        </wsdl-message>
+       <wsdl-message-part-name>BigDecimal_1</wsdl-message-part-name>
+       <parameter-mode>INOUT</parameter-mode>
+      </wsdl-message-mapping>
+     </method-param-parts-mapping>
+    </service-endpoint-method-mapping>
+     ]]></programlisting></para>
+  
+  <para><command>SOAP message exchange</command></para>
+  
+  <para>Below you see the SOAP messages that are beeing exchanged. </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Incomming SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:echoBigDecimal xmlns:ns1='http://org.jboss.ws/samples/holder'>
+       <BigDecimal_1>1000</BigDecimal_1>
+      </ns1:echoBigDecimal>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Outgoing SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:echoBigDecimalResponse xmlns:ns1='http://org.jboss.ws/samples/holder'>
+       <BigDecimal_1>1001</BigDecimal_1>
+      </ns1:echoBigDecimalResponse>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+</chapter>

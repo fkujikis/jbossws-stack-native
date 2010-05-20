@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<chapter id="wstransaction">
+  
+  <title>WS-Transaction</title>
+  
+  <para>Support for the WS-Coordination, WS-AtomicTransaction and WS-BusinessActivity specifications will be provided by technology 
+    recently acquired from Arjuna Technologies Ltd. This technology will be present within the JBoss Transactions 4.2.1 release.
+    Further information can be obtained from the <ulink url="http://labs.jboss.org/portal/jbosstm">JBoss Transactions Project</ulink>
+    
+  </para>
+  
+</chapter>

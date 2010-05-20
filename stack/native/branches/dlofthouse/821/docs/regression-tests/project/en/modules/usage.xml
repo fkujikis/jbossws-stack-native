@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id="usage">
+    <title>Basic usage</title>
+    <sect1>
+        <title>Testdriver configuration</title>
+        <para>                        
+            JMeter ships with numerous config elements to tweak a test sceanrio. 
+            The the regression test suite was designed to ship with reasonable defaults. 
+ 
+            <para><command>Throttling thread groups</command></para>
+            <para>
+                A testdriver consists of several thread groups, that contain SOAP requests. 
+                Each thread group is throttled by number of threads and a timer element. 
+                <link linkend="testdriver.fig">Figure 2.1</link> shows an example that uses 8 Threads 
+                with a ramp-up time of 1 sec. The 'Gaussian Random Timer' shedules a SOAP request every 1000ms 
+                with a slight deviation. With these setting you will end up with round about 8 req/sec.
+            </para>
+            <note>
+                <para>
+                    It is recommanded to keep the requests distribution simple. 
+                    Usally the default values for delay and deviation are apropriate for most scenarios.
+                </para>
+            </note>
+            
+            <para><command>Response assertion</command></para>
+            <para>
+                The default testdriver contains response assertions for HTTP status codes and SOAP response envelopes.
+                This is usally sufficient for most of the test scenarios and is necessary in order to keep track of the error quote when the load increases.
+            </para>               
+            
+            <figure id="testdriver.fig">
+                <title>Test configuration</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata align="center" fileref="images/testdriver.jpg"/>
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>               
+    </sect1>
+    
+    <sect1>
+        <title>Understanding test results</title>     
+        <para>
+            Test reports  are collected by 'Aggregate Report' listener, that collects statistics of all thread groups.
+            
+                As you can see, it collects statistics for each usecase. The most interesting figures are probably :
+                <itemizedlist>
+                    <listitem><para>90% line</para></listitem>
+                    <listitem><para>Error quote</para></listitem>
+                    <listitem><para>Throughput</para></listitem>
+                </itemizedlist>
+            
+            <figure id="testreport.fig">
+                <title>Test reports</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata align="center" fileref="images/report.jpg"/>
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>    
+        
+        <note>
+            <para>
+                Why are we looking at the 90% line not the average? Only a few samples with high deviation can have a huge 
+                impact on the average. In order to minimize this impact, it's better to regard the value range that 90% of all samples are within.
+            </para>
+        </note>
+    </sect1>
+</chapter>
+
+<chapter id="composition">
+    <title>Test composition</title>    
+        <para>
+            The default testdriver contains the base configuration for various test scenarios. Each of them contains different usecases. 
+            With JMeter it's easy to compose different regression tests by activating/deactivating either complete scenarios (thread groups)
+            or nested usecases (SOAP requests).
+        </para>    
+    
+    <sect1>
+        <title>Composition methology</title>
+    
+    <para>
+        Probably the hardest part in regression testing is reproducibility. It's useless to point out flaws in your system
+        when you can't reproduce the error. If you can't reproduce it, you can never be sure that it's really fixed. That simple.
+    </para>
+    <para>
+        We are trying to archieve reproducibility by composability. Every test scenario represents a well encapsulated endpoint invocation.
+        Take a document/literal/bare request for instance. You can be sure that the same piece of code will be invoked in the same order for all requests 
+        within this scenario.               
+    </para>
+    <para>
+        Each scenario is allowed to contain different usecases. A usecases should only be minor variation to the main scenario.
+        Replacing a POJO invocation with a EJB invocation is such a case for instance. 
+    </para>
+    <note>
+        <para>
+            When we refer to usecases, we actually mean a particular SOAP request that embodies a usecase.
+        </para>
+    </note>
+    </sect1>
+    
+    <sect1>
+        <title>Test identification</title>
+        
+        <para>
+            In order to refer to a certain regression test composition, which (ideally) points out a particular error, a naming convention is required.
+            As you can see in <link linkend="testdriver.fig">Figure 2.1</link>, test sceanrios and usecases are basically an ordered list of items. 
+            For instance you can refer to a particular usecase:
+            <programlisting>
+                DOC1.1
+            </programlisting>
+            
+            Or to complete test scenario:
+            <programlisting>
+                DOC3
+            </programlisting>
+            
+            Or various combinations:
+            
+            <programlisting>
+                DOC1.1, RPC3, RPC4.1
+            </programlisting>
+                        
+        </para>
+               
+        <tip>
+            <para>
+                Use this naming convention in JIRA. 
+            </para>
+        </tip>
+    </sect1>
+</chapter>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sect1 id="stub-properties">
+    <title>Stub properties</title>
+    
+  <para><command>Standard JAXRPC Stub properties</command></para>
+  
+  <para>
+    <programlisting><![CDATA[
+   /** User name for authentication. */
+   public static final String USERNAME_PROPERTY = "javax.xml.rpc.security.auth.username";
+    
+   /** Password for authentication. */
+   public static final String PASSWORD_PROPERTY = "javax.xml.rpc.security.auth.password";
+    
+   /** Target service endpoint address.  */
+   public static final String ENDPOINT_ADDRESS_PROPERTY = "javax.xml.rpc.service.endpoint.address";
+    
+   /** 
+    This boolean property is used by a service client to indicate 
+    whether or not it wants to participate in a session with a service endpoint. 
+   */
+   public static final String SESSION_MAINTAIN_PROPERTY = "javax.xml.rpc.session.maintain";
+      ]]></programlisting></para>
+  
+  <para><command>JBossWS propriatary Stub properties</command></para>
+
+  <para>The propriatary properties are defined in org.jboss.ws.jaxrpc.StubExt</para>
+  
+  <para>
+    <programlisting><![CDATA[
+   /** ClientTimeout property: org.jboss.ws.timeout */
+   static final String PROPERTY_CLIENT_TIMEOUT = "org.jboss.ws.timeout";
+    
+   /** KeyStore property: org.jboss.ws.keyStore */
+   static final String PROPERTY_KEY_STORE = "org.jboss.ws.keyStore";
+
+   /** KeyStorePassword property: org.jboss.ws.keyStorePassword */
+   static final String PROPERTY_KEY_STORE_PASSWORD = "org.jboss.ws.keyStorePassword";
+    
+   /** KeyStoreType property: org.jboss.ws.keyStoreType */
+   static final String PROPERTY_KEY_STORE_TYPE = "org.jboss.ws.keyStoreType";
+    
+   /** TrustStore property: org.jboss.ws.trustStore */
+   static final String PROPERTY_TRUST_STORE = "org.jboss.ws.trustStore";
+    
+   /** TrustStorePassword property: org.jboss.ws.trustStorePassword */
+   static final String PROPERTY_TRUST_STORE_PASSWORD = "org.jboss.ws.trustStorePassword";
+    
+   /** TrustStoreType property: org.jboss.ws.trustStoreType */
+   static final String PROPERTY_TRUST_STORE_TYPE = "org.jboss.ws.trustStoreType";
+    
+   /** Authentication type, used to specify basic, etc) */
+   static final String PROPERTY_AUTH_TYPE = "org.jboss.ws.authType";
+    
+   /** Authentication type, BASIC */
+   static final String PROPERTY_AUTH_TYPE_BASIC = "org.jboss.ws.authType.basic";
+    
+   /** Authentication type, WSEE */
+   static final String PROPERTY_AUTH_TYPE_WSSE = "org.jboss.ws.authType.wsse";
+      ]]></programlisting></para>
+  
+</sect1>
+

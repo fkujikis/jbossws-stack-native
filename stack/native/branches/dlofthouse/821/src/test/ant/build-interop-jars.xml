@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ============================================================ -->
+<!--  JBoss, the OpenSource J2EE webOS                            -->
+<!--  Distributable under LGPL license.                           -->
+<!--  See terms of license at http://www.gnu.org.                 -->
+<!-- ============================================================ -->
+
+<!-- $Id$ -->
+
+<project name="JBossWS">
+  
+  <description>JBossWS test archive builder</description>
+  
+  <!-- ================================================================== -->
+  <!-- Building                                                           -->
+  <!-- ================================================================== -->
+  
+  <target name="build-interop-jars" if="interop">
+    
+    <!-- BaseDataTypesDocLitB client -->
+    <jar jarfile="${build.test.dir}/libs/jbossws-interop-BaseDataTypesDocLitB-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/**/*.class"/>
+      </fileset>
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/*.class"/>
+      </fileset>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesDocLitB/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesDocLitB/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+      </metainf>
+    </jar>
+    
+    <!-- BaseDataTypesDocLitW client -->
+    <jar jarfile="${build.test.dir}/libs/jbossws-interop-BaseDataTypesDocLitW-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/**/*.class"/>
+      </fileset>
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/*.class"/>
+      </fileset>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesDocLitW/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesDocLitW/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+      </metainf>
+    </jar>
+    
+    <!-- BaseDataTypesRpcLit client -->
+    <jar jarfile="${build.test.dir}/libs/jbossws-interop-BaseDataTypesRpcLit-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/**/*.class"/>
+      </fileset>
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/*.class"/>
+      </fileset>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesRpcLit/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesRpcLit/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+      </metainf>
+    </jar>
+    
+    <!-- ComplexDataTypesDocLitB client -->
+    <jar jarfile="${build.test.dir}/libs/jbossws-interop-ComplexDataTypesDocLitB-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/**/*.class"/>
+      </fileset>
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/*.class"/>
+      </fileset>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesDocLitB/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesDocLitB/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+      </metainf>
+    </jar>
+    
+    <!-- ComplexDataTypesDocLitW client -->
+    <jar jarfile="${build.test.dir}/libs/jbossws-interop-ComplexDataTypesDocLitW-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/**/*.class"/>
+      </fileset>
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/*.class"/>
+      </fileset>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesDocLitW/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesDocLitW/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+      </metainf>
+    </jar>
+    
+    <!-- ComplexDataTypesRpcLit client -->
+    <jar jarfile="${build.test.dir}/libs/jbossws-interop-ComplexDataTypesRpcLit-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/**/*.class"/>
+      </fileset>
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/*.class"/>
+      </fileset>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesRpcLit/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesRpcLit/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+      </metainf>
+    </jar>
+    
+    <!-- wsa10 client -->
+    <jar jarfile="${build.test.dir}/libs/jbossws-interop-wsa10-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/**/*.class"/>
+      </fileset>
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/*.class"/>
+      </fileset>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/addressing/wsa10/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+      <metainf dir="${build.test.resources.dir}/interop/microsoft/addressing/wsa10/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+      </metainf>
+    </jar>
+    
+    <!-- wsaTestService.war -->
+    <war warfile="${build.test.dir}/libs/jbossws-interop-wsa10-service.war"
+      webxml="${build.test.resources.dir}/interop/microsoft/addressing/wsaTestService/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/microsoft/addressing/wsaTestService/**/*.class"/>
+      </classes>
+      <webinf dir="${build.test.resources.dir}/interop/microsoft/addressing/wsaTestService/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+        <include name="jboss-web.xml"/>
+      </webinf>
+      <fileset dir="${build.test.resources.dir}/interop/microsoft/addressing/wsaTestService">
+        <include name="*.*"/>
+      </fileset>
+    </war>
+    
+    <!-- BaseDataTypesDocLitB_Service.war -->
+    <war warfile="${build.test.dir}/libs/jbossws-interop-BaseDataTypesDocLitB_Service.war"
+      webxml="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesDocLitB_Service/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/microsoft/soapwsdl/BaseDataTypesDocLitB_Service/**/*.class"/>
+      </classes>
+      <webinf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesDocLitB_Service/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+        <include name="jboss-web.xml"/>
+      </webinf>
+      <fileset dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesDocLitB_Service">
+        <include name="*.*"/>
+      </fileset>
+    </war>
+    
+    <!-- BaseDataTypesDocLitW_Service.war -->
+    <war warfile="${build.test.dir}/libs/jbossws-interop-BaseDataTypesDocLitW_Service.war"
+      webxml="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesDocLitW_Service/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/microsoft/soapwsdl/BaseDataTypesDocLitW_Service/**/*.class"/>
+      </classes>
+      <webinf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesDocLitW_Service/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+        <include name="jboss-web.xml"/>
+      </webinf>
+      <fileset dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesDocLitW_Service">
+        <include name="*.*"/>
+      </fileset>
+    </war>
+    
+    <!-- BaseDataTypesRpcLit_Service.war -->
+    <war warfile="${build.test.dir}/libs/jbossws-interop-BaseDataTypesRpcLit_Service.war"
+      webxml="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesRpcLit_Service/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/microsoft/soapwsdl/BaseDataTypesRpcLit_Service/**/*.class"/>
+      </classes>
+      <webinf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesRpcLit_Service/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+        <include name="jboss-web.xml"/>
+      </webinf>
+      <fileset dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/BaseDataTypesRpcLit_Service">
+        <include name="*.*"/>
+      </fileset>
+    </war>
+    
+    <!-- ComplexDataTypesDocLitB_Service.war -->
+    <war warfile="${build.test.dir}/libs/jbossws-interop-ComplexDataTypesDocLitB_Service.war"
+      webxml="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesDocLitB_Service/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/microsoft/soapwsdl/ComplexDataTypesDocLitB_Service/**/*.class"/>
+      </classes>
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/microsoft/soapwsdl/ComplexDataTypesShared/**/*.class"/>
+      </classes>
+      <webinf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesDocLitB_Service/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+        <include name="jboss-web.xml"/>
+      </webinf>
+      <fileset dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesDocLitB_Service">
+        <include name="*.*"/>
+      </fileset>
+    </war>
+    
+    <!-- ComplexDataTypesDocLitW_Service.war -->
+    <war warfile="${build.test.dir}/libs/jbossws-interop-ComplexDataTypesDocLitW_Service.war"
+      webxml="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesDocLitW_Service/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/microsoft/soapwsdl/ComplexDataTypesDocLitW_Service/**/*.class"/>
+      </classes>
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/microsoft/soapwsdl/ComplexDataTypesShared/**/*.class"/>
+      </classes>
+      <webinf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesDocLitW_Service/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+        <include name="jboss-web.xml"/>
+      </webinf>
+      <fileset dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesDocLitW_Service">
+        <include name="*.*"/>
+      </fileset>
+    </war>
+    
+    <!-- ComplexDataTypesRpcLit_Service.war -->
+    <war warfile="${build.test.dir}/libs/jbossws-interop-ComplexDataTypesRpcLit_Service.war"
+      webxml="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesRpcLit_Service/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/microsoft/soapwsdl/ComplexDataTypesRpcLit_Service/**/*.class"/>
+      </classes>
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/interop/microsoft/soapwsdl/ComplexDataTypesShared/**/*.class"/>
+      </classes>
+      <webinf dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesRpcLit_Service/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+        <include name="jboss-web.xml"/>
+      </webinf>
+      <fileset dir="${build.test.resources.dir}/interop/microsoft/soapwsdl/ComplexDataTypesRpcLit_Service">
+        <include name="*.*"/>
+      </fileset>
+    </war>
+    
+  </target>
+  
+</project>

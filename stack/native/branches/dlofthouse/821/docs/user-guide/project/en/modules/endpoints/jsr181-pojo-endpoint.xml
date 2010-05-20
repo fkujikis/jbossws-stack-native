@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect2 id="jsr181-pojo-endpoint">
+  
+  <title>JSR-181 POJO Endpoint</title>
+  
+  <para>
+      Let's take alook at simple POJO endpoint implementation.
+      All endpoint associated metadata is provided via JSR-181 annotations:
+  </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    @WebService(
+      name = "EndpointInterface", 
+      targetNamespace = "http://org.jboss.ws/samples/jsr181pojo", 
+      serviceName = "TestService")
+    @SOAPBinding(style = SOAPBinding.Style.RPC)
+    public class JSEBean01
+    {
+       @WebMethod
+       public String echo(String input)
+       {
+          return input;
+       }
+    }
+  ]]></programlisting></para>
+  
+  <para>Strictly speaking you only need the @WebService and @WebMethod annotations without any parameters. 
+    Everything else has sensible defaults and is provided here mainly for more control over WSDL generation.
+    The service endpoint interface is optional. If given, the JSR-181 annotations must be set on the service endpoint interface.
+  </para>
+  
+  <para><command> The endpoint as a web application</command></para>
+  
+  <para>A JSR-181 java service endpoint is deployed as a web application. This is equivalent to <link linkend="rpc-endpoints">JSR-109 Style Endpoints</link>.
+    
+    </para>
+  
+  <para>
+    <programlisting><![CDATA[
+  <web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+                    http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+    version="2.4">
+  
+    <servlet>
+      <servlet-name>TestService</servlet-name>
+      <servlet-class>org.jboss.test.ws.samples.jsr181pojo.JSEBean01</servlet-class>
+    </servlet>
+  
+    <servlet-mapping>
+      <servlet-name>TestService</servlet-name>
+      <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+  
+  </web-app>
+      ]]></programlisting></para>
+  
+  <para><command>Packaging the endpoint</command></para>
+  
+  <para>A JSR-181 java service endpoint (JSE) is packaged as a web application in a *.war file. </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <war warfile="${build.dir}/libs/jbossws-samples-jsr181pojo.war" 
+          webxml="${build.resources.dir}/samples/jsr181pojo/WEB-INF/web.xml">
+      <classes dir="${build.dir}/classes">
+        <include name="org/jboss/test/ws/samples/jsr181pojo/JSEBean01.class"/>
+      </classes>
+    </war>
+    ]]></programlisting></para>
+  
+  <para>Note, only the endpoint implementation bean and web.xml are required.</para>
+  
+  <para><command>Generating the client side artifacts</command></para>
+  
+  <para>Run wstools with the following configuration</para>
+  
+  <para>
+    <programlisting><![CDATA[
+  <configuration ...>
+    <wsdl-java file="resources/samples/jsr181pojo/META-INF/wsdl/TestService.wsdl">
+      <mapping file="jaxrpc-mapping.xml" />
+    </wsdl-java>
+  </configuration>
+    ]]>
+    <ulink url="http://jira.jboss.org/jira/browse/JBWS-701">FIXME: JBWS-701</ulink>
+    </programlisting></para>
+ 
+  <para>WSTools generates the service endpoint interface and the mapping file</para>
+
+  <para>How a J2EE-1.4 protable web service client connects to the endpoint is described in <link linkend="jsr109-clients">JSR-109 Clients</link></para>
+  
+  <para><command>SOAP message exchange</command></para>
+  
+  <para>Below you see the SOAP messages that are beeing exchanged. </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Incomming SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:echo xmlns:ns1='http://org.jboss.ws/samples/jsr181pojo'>
+       <String_1>Hello world!</String_1>
+      </ns1:echo>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+  <para>
+    <programlisting><![CDATA[
+    Outgoing SOAPMessage
+    
+    <env:Envelope xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+     <env:Header/>
+     <env:Body>
+      <ns1:echoResponse xmlns:ns1='http://org.jboss.ws/samples/jsr181pojo'>
+       <result>Hello world!</result>
+      </ns1:echoResponse>
+     </env:Body>
+    </env:Envelope>
+      ]]></programlisting></para>
+  
+</sect2>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions name="ActionDocService" targetNamespace="http://org.jboss.ws/addressing/action" xmlns:tns="http://org.jboss.ws/addressing/action"
+  xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <types>
+    <schema targetNamespace="http://org.jboss.ws/addressing/action" xmlns:tns="http://org.jboss.ws/addressing/action"
+      xmlns:soap11-enc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+      xmlns="http://www.w3.org/2001/XMLSchema">
+      <complexType name="bar">
+        <sequence>
+          <element name="String_1" type="string" nillable="true"/>
+        </sequence>
+      </complexType>
+      <complexType name="barResponse">
+        <sequence>
+          <element name="result" type="string" nillable="true"/>
+        </sequence>
+      </complexType>
+      <!--
+      <complexType name="foo">
+        <sequence>
+          <element name="String_1" type="string" nillable="true"/>
+        </sequence>
+      </complexType>
+      <complexType name="fooResponse">
+        <sequence>
+          <element name="result" type="string" nillable="true"/>
+        </sequence>
+      </complexType>
+      -->
+      <element name="bar" type="tns:bar"/>
+      <element name="barResponse" type="tns:barResponse"/>
+      <element name="foo" type="tns:bar"/>
+      <element name="fooResponse" type="tns:barResponse"/>
+    </schema>
+  </types>
+  <message name="ActionEndpoint_bar">
+    <part name="parameters" element="tns:bar"/>
+  </message>
+  <message name="ActionEndpoint_barResponse">
+    <part name="result" element="tns:barResponse"/>
+  </message>
+  <message name="ActionEndpoint_foo">
+    <part name="parameters" element="tns:foo"/>
+  </message>
+  <message name="ActionEndpoint_fooResponse">
+    <part name="result" element="tns:fooResponse"/>
+  </message>
+  <portType name="ActionEndpoint">
+    <operation name="bar">
+      <input message="tns:ActionEndpoint_bar"/>
+      <output message="tns:ActionEndpoint_barResponse"/>
+    </operation>
+    <operation name="foo">
+      <input message="tns:ActionEndpoint_foo"/>
+      <output message="tns:ActionEndpoint_fooResponse"/>
+    </operation>
+  </portType>
+  <binding name="ActionEndpointBinding" type="tns:ActionEndpoint">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="bar">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="foo">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="ActionDocService">
+    <port name="ActionEndpointPort" binding="tns:ActionEndpointBinding">
+      <soap:address location="http://@jbosstest.host.name@:8080/jbossws-addressing-action-doc/ActionDocService"/>
+    </port>
+  </service>
+</definitions>

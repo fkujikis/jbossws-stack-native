@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id="install">
+    <title>Installation</title>
+        <para><command>Requirements</command></para>
+        <itemizedlist>
+            <listitem><para>JBossWS source distribution (CR6 and above)</para></listitem>
+            <listitem><para>Apache JMeter 2.1.1</para></listitem>
+        </itemizedlist>
+    
+            <para><command>JMeter binaries</command></para>           
+        <para>
+            The regression test suite is build upon Apache JMeter, that simplifies test scenario creation and modification a lot.
+            Get the <ulink url="http://jakarta.apache.org/site/downloads/downloads_jmeter.cgi">JMeter 2.1.1 binary</ulink> 
+            and unpack it to directory of your choice.  
+        </para>
+    
+    <para><command>JBossWS test driver</command></para>    
+        <para>
+            The JMeter test drivers (*.jmx) are shipped with the JBossWS source distribution and are located in the test directory:
+            <itemizedlist>
+                <listitem>test/resources/benchmark/jmeter/</listitem>
+            </itemizedlist>            
+        </para>
+ 
+        <title>Service endpoints</title>
+        <para>
+            There are currently four service endpoints for DOC/lit and RPC/lit scenarios,
+            each backed by either by a POJO or an EJB implementation. 
+            They are located in the JBossWS test suite and realize the BenchmarkService interface.            
+            <programlisting><![CDATA[
+ /**
+ * BenchmarkService.
+ * 
+ * @author <a href="anders.hedstrom@home.se">Anders Hedstrom</a>
+ */
+public interface BenchmarkService extends Remote {
+   
+	public SimpleUserType echoSimpleType(SimpleUserType simpleUserType)
+                throws RemoteException;
+	
+	public SimpleUserType[] echoArrayOfSimpleUserType(SimpleUserType[] array) 
+                throws RemoteException;
+	
+	public Synthetic echoSynthetic(Synthetic synthetic) throws RemoteException;
+	
+	public Order getOrder(int orderId, int customerId) throws RemoteException;
+}
+
+      ]]></programlisting>
+        </para>
+</chapter>
+

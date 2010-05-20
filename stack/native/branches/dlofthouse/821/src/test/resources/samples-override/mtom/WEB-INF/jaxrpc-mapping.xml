@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java-wsdl-mapping xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.1"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee    http://www.ibm.com/webservices/xsd/j2ee_jaxrpc_mapping_1_1.xsd">
+  <package-mapping>
+    <package-type>org.jboss.test.ws.samples.mtom</package-type>
+    <namespaceURI>http://org.jboss.ws/samples/mtom</namespaceURI>
+  </package-mapping>
+  <service-interface-mapping>
+    <service-interface>org.jboss.test.ws.samples.mtom.XOPTest_Service</service-interface>
+    <wsdl-service-name xmlns:serviceNS="http://org.jboss.ws/samples/mtom">serviceNS:XOPTest</wsdl-service-name>
+    <port-mapping>
+      <port-name>XOPTestPort</port-name>
+      <java-port-name>XOPTestPort</java-port-name>
+    </port-mapping>
+  </service-interface-mapping>
+  <service-endpoint-interface-mapping>
+    <service-endpoint-interface>org.jboss.test.ws.samples.mtom.XOPTest</service-endpoint-interface>
+    <wsdl-port-type xmlns:portTypeNS="http://org.jboss.ws/samples/mtom">portTypeNS:XOPTest</wsdl-port-type>
+    <wsdl-binding xmlns:bindingNS="http://org.jboss.ws/samples/mtom">bindingNS:XOPTestBinding</wsdl-binding>
+
+    <service-endpoint-method-mapping>
+      <java-method-name>sendMimeImageJPEG</java-method-name>
+      <wsdl-operation>sendMimeImageJPEG</wsdl-operation>
+      <method-param-parts-mapping>
+        <param-position>0</param-position>
+        <param-type>java.lang.String</param-type>
+        <wsdl-message-mapping>
+          <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeImageJPEG</wsdl-message>
+          <wsdl-message-part-name>message</wsdl-message-part-name>
+          <parameter-mode>IN</parameter-mode>
+        </wsdl-message-mapping>
+      </method-param-parts-mapping>
+
+      <!-- BEGIN manual modification -->
+      <method-param-parts-mapping>
+        <param-position>1</param-position>
+        <param-type>javax.activation.DataHandler</param-type>
+        <wsdl-message-mapping>
+          <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeImageJPEG</wsdl-message>
+          <wsdl-message-part-name>xoppart</wsdl-message-part-name>
+          <parameter-mode>IN</parameter-mode>
+        </wsdl-message-mapping>
+      </method-param-parts-mapping>
+      <!-- END manual modification -->
+
+      <wsdl-return-value-mapping>
+        <method-return-value>javax.activation.DataHandler</method-return-value>
+        <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeImageJPEGResponse</wsdl-message>
+        <wsdl-message-part-name>result</wsdl-message-part-name>
+      </wsdl-return-value-mapping>
+    </service-endpoint-method-mapping>
+
+    <service-endpoint-method-mapping>
+      <java-method-name>sendMimeTextPlain</java-method-name>
+      <wsdl-operation>sendMimeTextPlain</wsdl-operation>
+      <method-param-parts-mapping>
+        <param-position>0</param-position>
+        <param-type>java.lang.String</param-type>
+        <wsdl-message-mapping>
+          <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeTextPlain</wsdl-message>
+          <wsdl-message-part-name>message</wsdl-message-part-name>
+          <parameter-mode>IN</parameter-mode>
+        </wsdl-message-mapping>
+      </method-param-parts-mapping>
+
+      <!-- BEGIN manual modification -->
+      <method-param-parts-mapping>
+        <param-position>1</param-position>
+        <param-type>java.lang.String</param-type>
+        <wsdl-message-mapping>
+          <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeTextPlain</wsdl-message>
+          <wsdl-message-part-name>xoppart</wsdl-message-part-name>
+          <parameter-mode>IN</parameter-mode>
+        </wsdl-message-mapping>
+      </method-param-parts-mapping>
+      <!-- END manual modification -->
+
+      <wsdl-return-value-mapping>
+        <method-return-value>java.lang.String</method-return-value>
+        <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeTextPlainResponse</wsdl-message>
+        <wsdl-message-part-name>result</wsdl-message-part-name>
+      </wsdl-return-value-mapping>
+    </service-endpoint-method-mapping>
+
+    <service-endpoint-method-mapping>
+      <java-method-name>sendMimeTextXML</java-method-name>
+      <wsdl-operation>sendMimeTextXML</wsdl-operation>
+      <method-param-parts-mapping>
+        <param-position>0</param-position>
+        <param-type>java.lang.String</param-type>
+        <wsdl-message-mapping>
+          <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeTextXML</wsdl-message>
+          <wsdl-message-part-name>message</wsdl-message-part-name>
+          <parameter-mode>IN</parameter-mode>
+        </wsdl-message-mapping>
+      </method-param-parts-mapping>
+
+      <!-- BEGIN manual modification -->
+      <method-param-parts-mapping>
+        <param-position>1</param-position>
+        <param-type>javax.activation.DataHandler</param-type>
+        <wsdl-message-mapping>
+          <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeTextXML</wsdl-message>
+          <wsdl-message-part-name>xoppart</wsdl-message-part-name>
+          <parameter-mode>IN</parameter-mode>
+        </wsdl-message-mapping>
+      </method-param-parts-mapping>
+      <!-- END manual modification -->
+
+      <wsdl-return-value-mapping>
+        <method-return-value>javax.xml.transform.Source</method-return-value>
+        <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeTextXMLResponse</wsdl-message>
+        <wsdl-message-part-name>result</wsdl-message-part-name>
+      </wsdl-return-value-mapping>
+    </service-endpoint-method-mapping>
+
+    <service-endpoint-method-mapping>
+      <java-method-name>sendMimeApplicationXML</java-method-name>
+      <wsdl-operation>sendMimeApplicationXML</wsdl-operation>
+      <method-param-parts-mapping>
+        <param-position>0</param-position>
+        <param-type>java.lang.String</param-type>
+        <wsdl-message-mapping>
+          <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeApplicationXML</wsdl-message>
+          <wsdl-message-part-name>message</wsdl-message-part-name>
+          <parameter-mode>IN</parameter-mode>
+        </wsdl-message-mapping>
+      </method-param-parts-mapping>
+
+      <!-- BEGIN manual modification -->
+      <method-param-parts-mapping>
+        <param-position>1</param-position>
+        <param-type>javax.xml.transform.Source</param-type>
+        <wsdl-message-mapping>
+          <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeApplicationXML</wsdl-message>
+          <wsdl-message-part-name>xoppart</wsdl-message-part-name>
+          <parameter-mode>IN</parameter-mode>
+        </wsdl-message-mapping>
+      </method-param-parts-mapping>
+      <!-- END manual modification -->
+
+      <wsdl-return-value-mapping>
+        <method-return-value>javax.activation.DataHandler</method-return-value>
+        <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeApplicationXMLResponse</wsdl-message>
+        <wsdl-message-part-name>result</wsdl-message-part-name>
+      </wsdl-return-value-mapping>
+    </service-endpoint-method-mapping>
+
+     <service-endpoint-method-mapping>
+        <java-method-name>sendOctets</java-method-name>
+        <wsdl-operation>sendOctets</wsdl-operation>
+        <method-param-parts-mapping>
+           <param-position>0</param-position>
+           <param-type>java.lang.String</param-type>
+           <wsdl-message-mapping>
+              <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeApplicationXML</wsdl-message>
+              <wsdl-message-part-name>message</wsdl-message-part-name>
+              <parameter-mode>IN</parameter-mode>
+           </wsdl-message-mapping>
+        </method-param-parts-mapping>
+
+        <!-- BEGIN manual modification -->
+        <method-param-parts-mapping>
+           <param-position>1</param-position>
+           <param-type>javax.activation.DataHandler</param-type>
+           <wsdl-message-mapping>
+              <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeApplicationXML</wsdl-message>
+              <wsdl-message-part-name>xoppart</wsdl-message-part-name>
+              <parameter-mode>IN</parameter-mode>
+           </wsdl-message-mapping>
+        </method-param-parts-mapping>
+        <!-- END manual modification -->
+
+        <wsdl-return-value-mapping>
+           <method-return-value>javax.activation.DataHandler</method-return-value>
+           <wsdl-message xmlns:wsdlMsgNS="http://org.jboss.ws/samples/mtom">wsdlMsgNS:XOPTest_sendMimeApplicationXMLResponse</wsdl-message>
+           <wsdl-message-part-name>result</wsdl-message-part-name>
+        </wsdl-return-value-mapping>
+     </service-endpoint-method-mapping>
+
+  </service-endpoint-interface-mapping>
+
+
+</java-wsdl-mapping>

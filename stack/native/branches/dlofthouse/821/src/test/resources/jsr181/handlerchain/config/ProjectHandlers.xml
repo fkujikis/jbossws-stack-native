@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<handler-config>
+	<handler-chain>
+		<handler-chain-name>StandardHandlerChain</handler-chain-name>
+		<handler>
+			<handler-name> LogHandler </handler-name>
+			<handler-class> org.jboss.test.ws.jsr181.handlerchain.LogHandler </handler-class>
+			<init-param>
+				<param-name>logCategory</param-name>
+				<param-value>MyService</param-value>
+			</init-param>
+		</handler>
+    <handler>
+      <handler-name> AuthorizationHandler </handler-name>
+      <handler-class> org.jboss.test.ws.jsr181.handlerchain.AuthorizationHandler </handler-class>
+      <soap-role>SecurityProvider</soap-role>
+      <soap-header xmlns:ns2='http://openuri.org/examples/security'>ns2:SecurityHeader</soap-header> 
+    </handler>
+		<handler>
+			<handler-name> RoutingHandler </handler-name>
+			<handler-class> org.jboss.test.ws.jsr181.handlerchain.RoutingHandler </handler-class>
+		</handler>
+	</handler-chain>
+</handler-config>

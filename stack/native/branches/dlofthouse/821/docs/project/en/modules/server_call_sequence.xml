@@ -1,0 +1,64 @@
+<!-- $Id$ -->
+
+<chapter id="server_call_sequence">
+  <title>Server Side</title>
+
+  <para>
+    This section describes the sequence of actions on the server side and the objects being involved. A JAXRPC endpoint
+    can be configured using a WSDL that abstractly describes the Web Service endpoint.
+  </para>
+
+  <para>
+    <figure id="ServerSideCallSequence.fig">
+      <title>Server side call sequence</title>
+      <mediaobject>
+        <imageobject>
+          <imagedata align="center" fileref="images/ServerSideCallSequence.png"/>
+        </imageobject>
+      </mediaobject>
+    </figure>
+  </para>
+
+  <para>
+    The diagram shows how a SOAPReceiver receives incomming bytes that represent the request SOAPMessage as an XML
+    document or MIME message. [TODO] Describe how Remoting is used on the server side or give a valid explanation
+    of why it cannot be used.
+  </para>
+
+  <para>
+    The server side handling of the incomming request is symetrical to what we have seen on the client side in the
+    previous chapter. Remoting delegates to the pre-configured Unmarshaller, which transforms the incomming bytes into
+    a request SOAPMessage for further processing by the request Interceptors. The request interceptors represent the
+    JAXRPC request Handlers.
+  </para>
+
+  <para>
+    The SOAPMessage is then unbound by the BindingProvider into a JBoss Invocation object. The Invocation object
+    contains all necessary information needed for invocation dispatching through the JBoss micro container.
+    [TODO] Describe how the new JBoss-5.0 micro container is used.
+  </para>
+
+  <para>
+    The Web Service endpoint returns the Invocation which is then transformed into a response SOAPMessage by the
+    BindingProvider. Lazy SOAPElements hold the return objects, which will be marshalled into XML fragments that are
+    accessible through the SAAJ API on demand. Chapter ??? contains an extended discussion on lazy SOAP elements
+    and their relation to the JAXB marshalling layer. [TODO]
+  </para>
+
+  <para>
+    Remoting then feeds the response SOAPMessage through the server side response Interceptors, which represent the
+    JAXRPC response Hanlers. [TODO] is it possible to have different interceptors on the request/response path?
+  </para>
+
+  <para>
+    The last Interceptor is the Remoting Marshaller that writes the SOAPMessage that may have been modified
+    by the server response handlers to an OutputStream. Remoting delegates marshalling to the SOAPMarshaller that has
+    been setup during endpoint deployment.
+  </para>
+
+</chapter>
+
+
+
+
+

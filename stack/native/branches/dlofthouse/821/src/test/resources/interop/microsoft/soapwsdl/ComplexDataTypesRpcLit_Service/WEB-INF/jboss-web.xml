@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<jboss-web>
+    <context-root>/ComplexDataTypesRpcLit_Service</context-root>
+   <depends>jboss.ws:service=WebServiceDeployerJSE</depends>
+</jboss-web>

@@ -1,0 +1,18 @@
+<project name="Documentation" default="all.doc" basedir=".">
+
+  <property name="docbook-support.home" value="../../docbook-support"/>
+  <property name="doc.module.home" value="."/>
+
+  <available property="docbook-support.available" file="${docbook-support.home}/support.xml"/>
+
+  <target name="all.doc" depends="get-docbook-support">
+    <ant antfile="${doc.module.home}/build-docbook.xml" inheritall="false">
+        <property name="docbook-support.home" value="${docbook-support.home}"/>
+    </ant>
+  </target>
+  
+  <target name="get-docbook-support" unless="docbook-support.available">
+    <cvs command="export -r HEAD" cvsRoot=":pserver:anonymous:@anoncvs.forge.jboss.com:/cvsroot/jboss" package="docbook-support" dest="${docbook-support.home}/.."/>
+  </target>
+  
+</project>

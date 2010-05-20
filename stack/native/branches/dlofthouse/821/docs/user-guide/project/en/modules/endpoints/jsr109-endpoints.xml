@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sect1 id="jsr109-endpoints">
+    <title>JSR-109 Endpoints</title>
+    <para>
+        JSR-109 promotes building portable web services in the J2EE 1.4 environment. 
+        It leverages J2EE technologies to provide a standard for developing and deploying web 
+        services on the J2EE platform.
+        If you already have followed the <link linkend="getting-started">Getting Started Chapter</link>
+        you can proceed with <link linkend="jsr109-ejb-endpoint">EJB endpoints</link> right away.
+    </para>
+    &s-jsr109-pojo-endpoint;    
+    &s-jsr109-ejb-endpoint;    
+</sect1>
+

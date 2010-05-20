@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<chapter id="xmlregistry">
+  <title>XML Registries</title>
+
+  <para>J2EE 1.4 mandates support for Java API for XML Registries (JAXR).
+  Inclusion of a XML Registry with the J2EE 1.4 certified Application Server
+  is optional. Starting jboss-4.0.2, JBoss ships a UDDI v2.0 compliant
+  registry, the Apache jUDDI registry. We also provide support for JAXR
+  Capability Level 0 (UDDI Registries) via integration of Apache Scout.</para>
+
+  <para>This chapter describes how to configure the jUDDI registry in JBoss
+  and some sample code outlines for using JAXR API to publish and query the
+  jUDDI registry.</para>
+
+  <para><command>Apache jUDDI Configuration</command></para>
+
+  <para>Configuration of the jUDDI registry happens via an MBean Service that
+  is deployed in the juddi-service.sar archive in the "all" configuration. The
+  configuration of this service can be done in the jboss-service.xml of the
+  META-INF directory in the juddi-service.sar</para>
+
+  <para>Let us look at the individual configuration items that can be
+  changed.</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>DataSources configuration</para>
+
+      <programlisting>&lt;!-- Datasource to Database--&gt;
+&lt;attribute name="DataSourceUrl"&gt;java:/DefaultDS&lt;/attribute&gt;</programlisting>
+    </listitem>
+
+    <listitem>
+      <para>Database Tables (Should they be created on start, Should they be
+      dropped on stop, Should they be dropped on start etc)</para>
+
+      <programlisting>&lt;!-- Should all tables be created on Start--&gt;
+&lt;attribute name="CreateOnStart"&gt;false&lt;/attribute&gt;
+&lt;!-- Should all tables be dropped on Stop--&gt;
+&lt;attribute name="DropOnStop"&gt;true&lt;/attribute&gt;
+&lt;!-- Should all tables be dropped on Start--&gt;
+&lt;attribute name="DropOnStart"&gt;false&lt;/attribute&gt;</programlisting>
+    </listitem>
+
+    <listitem>
+      <para>JAXR Connection Factory to be bound in JNDI. (Should it be bound?
+      and under what name?)</para>
+
+      <programlisting>&lt;!-- Should I bind a Context to which JaxrConnectionFactory bound--&gt;
+&lt;attribute name="ShouldBindJaxr"&gt;true&lt;/attribute&gt;
+
+&lt;!-- Context to which JaxrConnectionFactory to bind to.
+       If you have remote clients, please bind it to the global
+      namespace(default behavior). To just cater to clients running
+      on the same VM as JBoss, change to java:/JAXR --&gt;
+&lt;attribute name="BindJaxr"&gt;JAXR&lt;/attribute&gt;</programlisting>
+    </listitem>
+  </itemizedlist>
+
+  <para>Other common configuration:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>Add authorized users to access the jUDDI registry. (Add a sql
+      insert statement in a single line)</para>
+
+      <programlisting>Look at the script META-INF/ddl/juddi_data.ddl for more details. Example for a user 'jboss'
+
+INSERT INTO PUBLISHER (PUBLISHER_ID,PUBLISHER_NAME,
+EMAIL_ADDRESS,IS_ENABLED,IS_ADMIN) 
+VALUES ('jboss','JBoss User','jboss@xxx','true','true');</programlisting>
+    </listitem>
+  </itemizedlist>
+
+  <para><command>JBoss JAXR Configuration</command></para>
+
+  <para>In this section, we will discuss the configuration needed to run the
+  JAXR API. The JAXR configuration relies on System properties passed to the
+  JVM. The System properties that are needed are:</para>
+
+  <para><programlisting>javax.xml.registry.ConnectionFactoryClass=org.apache.ws.scout.registry.ConnectionFactoryImpl 
+jaxr.query.url=http://localhost:8080/juddi/inquiry 
+jaxr.publish.url=http://localhost:8080/juddi/publish
+juddi.proxy.transportClass=org.jboss.jaxr.juddi.transport.SaajTransport</programlisting></para>
+
+  <para>Please remember to change the hostname from "localhost" to the
+  hostname of the UDDI service/JBoss Server.</para>
+
+  <para>You can pass the System Properties to the JVM in the following
+  ways:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>When the client code is running inside JBoss (maybe a servlet or
+      an EJB). Then you will need to pass the System properties in the
+      run.sh/run.bat scripts to the java process via the "-D" option.</para>
+    </listitem>
+
+    <listitem>
+      <para>When the client code is running in an external JVM. Then you can
+      pass the properties either as "-D" options to the java process or
+      explicitly set them in the client code(not recommended).</para>
+
+      <programlisting>System.setProperty(propertyname, propertyvalue);</programlisting>
+    </listitem>
+  </itemizedlist>
+
+  <para><command>JAXR Sample Code</command></para>
+
+  <para>There are two categories of API: JAXR Publish API and JAXR Inquiry
+  API. The important JAXR interfaces that any JAXR client code will use are
+  the following.</para>
+
+  <itemizedlist>
+    <listitem>
+      <para><ulink
+      url="http://java.sun.com/j2ee/1.4/docs/api/javax/xml/registry/RegistryService.html">javax.xml.registry.RegistryService</ulink></para>
+
+      <para>From J2EE 1.4 JavaDoc: "This is the principal interface
+      implemented by a JAXR provider. A registry client can get this interface
+      from a Connection to a registry. It provides the methods that are used
+      by the client to discover various capability specific interfaces
+      implemented by the JAXR provider."</para>
+    </listitem>
+
+    <listitem>
+      <para><ulink
+      url="http://java.sun.com/j2ee/1.4/docs/api/javax/xml/registry/BusinessLifeCycleManager.html">javax.xml.registry.BusinessLifeCycleManager</ulink></para>
+
+      <para>From J2EE 1.4 JavaDoc: "The BusinessLifeCycleManager interface,
+      which is exposed by the Registry Service, implements the life cycle
+      management functionality of the Registry as part of a business level
+      API. Note that there is no authentication information provided, because
+      the Connection interface keeps that state and context on behalf of the
+      client."</para>
+    </listitem>
+
+    <listitem>
+      <para><ulink
+      url="http://java.sun.com/j2ee/1.4/docs/api/javax/xml/registry/BusinessQueryManager.html">javax.xml.registry.BusinessQueryManager</ulink></para>
+
+      <para>From J2EE 1.4 JavaDoc: "The BusinessQueryManager interface, which
+      is exposed by the Registry Service, implements the business style query
+      interface. It is also referred to as the focused query
+      interface."</para>
+    </listitem>
+  </itemizedlist>
+
+  <para>Let us now look at some of the common programming tasks performed
+  while using the JAXR API:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>Getting a JAXR Connection to the registry.</para>
+
+      <programlisting>String queryurl = System.getProperty("jaxr.query.url");
+String puburl = System.getProperty("jaxr.publish.url");
+
+//Standard JAXR ConnectionFactory properties
+Properties props = new Properties();
+props.setProperty("javax.xml.registry.queryManagerURL",
+          queryurl);
+props.setProperty("javax.xml.registry.lifeCycleManagerURL",
+          puburl);
+
+//JBoss JAXR property
+String transportClass = System.getProperty("juddi.proxy.transportClass", 
+               "org.jboss.jaxr.juddi.transport.SaajTransport");
+System.setProperty("juddi.proxy.transportClass", transportClass);
+
+ConnectionFactory factory = null;
+        
+try
+{
+    // Create the connection, passing it the configuration properties
+    factory = ConnectionFactory.newInstance();
+    factory.setProperties(props);
+    connection = factory.createConnection();
+}catch(JAXRException je){}</programlisting>
+    </listitem>
+
+    <listitem>
+      <para>Authentication with the registry.</para>
+
+      <programlisting>/**
+ * Does authentication with the uddi registry
+ */
+ protected void login()
+ {
+    PasswordAuthentication passwdAuth = new PasswordAuthentication(userid,
+                passwd.toCharArray());
+    Set creds = new HashSet();
+    creds.add(passwdAuth);
+
+    try
+    {
+       //Set the credentials on the connection
+       connection.setCredentials(creds);
+    } catch (JAXRException e)
+    {
+    }
+ }</programlisting>
+    </listitem>
+
+    <listitem>
+      <para>Save a Business</para>
+
+      <programlisting>//Method that creates a Test JAXR Organization
+protected Organization createOrganization(String orgname)
+throws JAXRException
+{
+        Organization org = blm.createOrganization(getIString(orgname));
+        org.setDescription(getIString("JBoss Inc"));
+        Service service = blm.createService(getIString("JBOSS JAXR Service"));
+        service.setDescription(getIString("Services of XML Registry"));
+        //Create serviceBinding
+        ServiceBinding serviceBinding = blm.createServiceBinding();
+        serviceBinding.setDescription(blm.
+               createInternationalString("Test Service Binding"));
+ 
+        //Turn validation of URI off
+        serviceBinding.setValidateURI(false);
+        serviceBinding.setAccessURI("http://testjboss.org");
+ 
+        // Add the serviceBinding to the service
+        service.addServiceBinding(serviceBinding); 
+        
+        User user = blm.createUser();
+        org.setPrimaryContact(user);
+        PersonName personName = blm.createPersonName("Anil S");
+        TelephoneNumber telephoneNumber = blm.createTelephoneNumber();
+        telephoneNumber.setNumber("111-111-7777");
+        telephoneNumber.setType(null);
+        PostalAddress address
+                = blm.createPostalAddress("111",
+                        "My Drive", "BuckHead",
+                        "GA", "USA", "1111-111", "");
+        Collection postalAddresses = new ArrayList();
+        postalAddresses.add(address);
+        Collection emailAddresses = new ArrayList();
+        EmailAddress emailAddress = blm.createEmailAddress("anil@jboss.com");
+        emailAddresses.add(emailAddress);
+
+        Collection numbers = new ArrayList();
+        numbers.add(telephoneNumber);
+        user.setPersonName(personName);
+        user.setPostalAddresses(postalAddresses);
+        user.setEmailAddresses(emailAddresses);
+        user.setTelephoneNumbers(numbers);
+
+        ClassificationScheme cScheme = getClassificationScheme("ntis-gov:naics", "");
+        Key cKey = blm.createKey("uuid:C0B9FE13-324F-413D-5A5B-2004DB8E5CC2");
+        cScheme.setKey(cKey);
+        Classification classification = blm.createClassification(cScheme,
+                "Computer Systems Design and Related Services",
+                "5415");
+        org.addClassification(classification);
+        ClassificationScheme cScheme1 = getClassificationScheme("D-U-N-S", "");
+        Key cKey1 = blm.createKey("uuid:3367C81E-FF1F-4D5A-B202-3EB13AD02423");
+        cScheme1.setKey(cKey1);
+        ExternalIdentifier ei =
+                blm.createExternalIdentifier(cScheme1, "D-U-N-S number",
+                        "08-146-6849");
+        org.addExternalIdentifier(ei);
+        org.addService(service);
+        return org;
+}
+
+/**Method that saves the JAXR Organization in the UDDI registry */
+protected void saveTestBusiness() throws Exception
+{ 
+       String keyid = "";
+       login();
+       try
+       {
+           //Obtain the BusinessLifeCycleManager
+           getJAXREssentials(); 
+           Collection orgs = new ArrayList();
+           Organization org = createOrganization("JBOSS");
+
+           orgs.add(org);
+           BulkResponse br = blm.saveOrganizations(orgs);
+           if (br.getStatus() == JAXRResponse.STATUS_SUCCESS)
+           { 
+               Collection coll = br.getCollection();
+               Iterator iter = coll.iterator();
+               while (iter.hasNext())
+               {
+                   Key key = (Key) iter.next();
+                   keyid = key.getId(); 
+                   assertNotNull(keyid);
+                   orgKey = key;
+               }//end while
+           } else
+           { 
+               Collection exceptions = br.getExceptions();
+               Iterator iter = exceptions.iterator();
+               while (iter.hasNext())
+               {
+                   Exception e = (Exception) iter.next(); 
+                   fail(e.toString());
+               }
+           }
+       } catch (JAXRException e)
+       {  
+       } 
+}</programlisting>
+    </listitem>
+
+    <listitem>
+      <para>Query a Business</para>
+
+      <programlisting>public void searchBusiness(String bizname) 
+throws JAXRException
+{
+  try
+  {
+     // Get registry service and business query manager
+     rs = connection.getRegistryService();
+     bqm = rs.getBusinessQueryManager();
+
+      // Define find qualifiers and name patterns
+     Collection findQualifiers = new ArrayList();
+     findQualifiers.add(FindQualifier.SORT_BY_NAME_ASC);
+     Collection namePatterns = new ArrayList();
+     namePatterns.add("%" + bizname + "%");
+
+     // Find based upon qualifier type and values
+     BulkResponse response =
+         bqm.findOrganizations(findQualifiers,
+                        namePatterns,
+                        null,
+                        null,
+                        null,
+                        null);
+
+     // check how many organisation we have matched
+     Collection orgs = response.getCollection();
+     if (orgs == null)
+     {
+          if ("true".equalsIgnoreCase(debugProp))
+               System.out.println(" -- Matched 0 orgs");
+     } else
+     {
+        if ("true".equalsIgnoreCase(debugProp))
+             System.out.println(" -- Matched " + orgs.size() + " organizations -- ");
+         // then step through them
+         for (Iterator orgIter = orgs.iterator(); orgIter.hasNext();)
+         {
+            Organization org = (Organization) orgIter.next();
+            if ("true".equalsIgnoreCase(debugProp))
+            {
+                System.out.println("Org name: " + getName(org));
+                System.out.println("Org description: " + getDescription(org));
+                System.out.println("Org key id: " + getKey(org));
+            } .....</programlisting>
+    </listitem>
+  </itemizedlist>
+
+  <para>For more examples of code using the JAXR API, please refer to the
+  resources in the Resources Section.</para>
+
+  <para><command>Trouble Shooting</command></para>
+
+  <itemizedlist>
+    <listitem>
+      <para>I cannot connect to the registry from JAXR.</para>
+
+      <para>Please check the inquiry and publish url passed to the JAXR
+      ConnectionFactory.</para>
+    </listitem>
+
+    <listitem>
+      <para>I cannot connect to the jUDDI registry.</para>
+
+      <para>Please check the jUDDI configuration and see if there are any
+      errors in the server.log. And also remember that the jUDDI registry is
+      available only in the "all" configuration.</para>
+    </listitem>
+
+    <listitem>
+      <para>I cannot authenticate to the jUDDI registry.</para>
+
+      <para>Have you added an authorized user to the jUDDI database, as
+      described earlier in the chapter?</para>
+    </listitem>
+
+    <listitem>
+      <para>I would like to view the SOAP messages in transit between the
+      client and the UDDI Registry.</para>
+
+      <para>Please use the tcpmon tool to view the messages in transit. <ulink
+      url="https://tcpmon.dev.java.net/">TCPMon</ulink></para>
+    </listitem>
+  </itemizedlist>
+
+  <para><command>Resources</command></para>
+
+  <itemizedlist>
+    <listitem>
+      <para><ulink
+      url="http://java.sun.com/webservices/jaxr/learning/tutorial/index.html">JAXR
+      Tutorial and Code Camps</ulink></para>
+    </listitem>
+
+    <listitem>
+      <para><ulink url="http://java.sun.com/j2ee/1.4/docs/tutorial/doc/">J2EE
+      1.4 Tutorial</ulink></para>
+    </listitem>
+
+    <listitem>
+      <para>J2EE Web Services by Richard Monson-Haefel</para>
+    </listitem>
+  </itemizedlist>
+</chapter>

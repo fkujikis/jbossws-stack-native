@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sect1 id="jsr181-endpoints">
+  
+  <title>JSR-181 Endpoints</title>
+  
+  <para> The web service metadata specification reduces the amount of information required to setup a web service a great deal. 
+    Service operations and attributes are specified declaratively by
+    annotating java source files that implement your web service. </para>
+  
+  <tip>
+    <para> Please consult the
+      <ulink url="http://www.jcp.org/en/jsr/detail?id=181">JSR-181 specification</ulink> for a complete list of all supported annotations. </para>
+  </tip>
+  
+  &s-jsr181-pojo-endpoint;
+  &s-jsr181-ejb3-endpoint; 
+</sect1>

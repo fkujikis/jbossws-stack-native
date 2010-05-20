@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<project default="main" basedir=".." name="JBossWS Examples">
+
+  <property name="chapter" value="wsaddressing"/>
+  <property name="java.dir" value="${basedir}/${chapter}/java"/>
+  <property name="resources.dir" value="${basedir}/${chapter}/resources"/>
+
+  <import file="${basedir}/common/imported-build.xml"/>
+
+  <target name="generate-sources" depends="compile15" 
+    description="Generate the deployment resources." if="HAVE_JDK_1.5">
+
+    <!-- Define a taskdef for the wstools ant task -->
+    <taskdef name="wstools" classname="org.jboss.ws.tools.ant.wstools">
+        <classpath refid="compile.classpath"/>
+        <classpath path="${build.test.dir}/classes"/>
+        <classpath path="${build.test.dir}"/>
+    </taskdef>
+
+    <!-- samples/wsaddressing -->
+    <wstools dest="${build.test.dir}/wstools/resources/samples/wsaddressing/META-INF"
+      config="${resources.dir}/wstools-config.xml"/>
+  </target>
+
+  <!--
+  Build the test deployments
+  -->
+  <target name="jars" depends="compile15,copy-resources,generate-sources,compile-generated,copy-generated" 
+    description="build the deployments" if="HAVE_JDK_1.5">
+
+    <!-- jbossws-samples-wsaddressing -->
+    <war warfile="${build.test.dir}/libs/jbossws-samples-wsaddressing.war" webxml="${build.test.dir}/resources/samples/wsaddressing/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/samples/wsaddressing/StatefulEndpointImpl.class"/>
+        <include name="org/jboss/test/ws/samples/wsaddressing/StatefulEndpoint.class"/>
+        <include name="org/jboss/test/ws/samples/wsaddressing/ServerHandler.class"/>
+      </classes>
+    </war>
+    <jar destfile="${build.test.dir}/libs/jbossws-samples-wsaddressing-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/samples/wsaddressing/StatefulEndpoint.class"/>
+        <include name="org/jboss/test/ws/samples/wsaddressing/ClientHandler.class"/>
+      </fileset>
+      <metainf dir="${build.test.dir}/resources/samples/wsaddressing/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+        <include name="jbossws-client-config.xml"/>
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+    </jar>
+
+  </target>
+
+  <!--
+  Run the testsuite
+  -->
+  <target name="tests" depends="jars" 
+    description="run the testsuite" if="HAVE_JDK_1.5">
+    <antcall target="test">
+      <param name="test" value="${chapter}"/>
+    </antcall>
+  </target>
+
+</project>

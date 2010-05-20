@@ -1,0 +1,31 @@
+<!-- $Id$ -->
+
+<chapter id="non-goals">
+  <title>Non-Goals</title>
+
+  <para>
+    The following are non-goals.
+  </para>
+
+  <para>
+    <command>SOAP Encoding Support</command> Use of the SOAP encoding is essentially deprecated in the web services
+    community, e.g., the WS-I Basic Profile excludes SOAP encoding. Instead, literal usage is preferred,
+    either in the RPC or document style.
+  </para>
+
+  <para>
+    <command>Support for Java versions prior to J2SE 1.5</command> JAX-RPC 2.0 relies on many of the Java language
+    features added in J2SE 1.5. It is not a goal to support JBossWS on Java versions prior to J2SE 1.5.
+  </para>
+
+  <para>
+    <command>Service Registration and Discovery</command> It is not a goal of JBossWS to support registration and
+    discovery of services via UDDI or ebXML RR. This capability is provided independently by JAXR.
+  </para>
+
+</chapter>
+
+
+
+
+

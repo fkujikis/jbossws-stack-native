@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+WS-I Mode prevents unwrapping (what we wante for bare)
+
+wscompile -import -f:wsi -mapping bare-mapping.xml bare-config.xml
+-->
+
+<configuration xmlns="http://java.sun.com/xml/ns/jax-rpc/ri/config"> 
+<wsdl location="http://@jbosstest.host.name@:8080/jbossws-jsr181-soapbinding/DocBareService?wsdl" packageName="org.jboss.test.ws.jsr181.soapbinding"/>    
+</configuration>

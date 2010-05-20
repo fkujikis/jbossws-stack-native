@@ -1,0 +1,43 @@
+<project name="jboss/jbossws-component-info">
+
+   <component id="jboss/jbossws14"
+              licenseType="lgpl"
+              version="@repository.id@"
+              description="JBossWS an implementation of J2EE Web Services">
+
+      <artifact id="jbossws14.sar"/>
+      <artifact id="jbossws14-client.jar"/>
+      <artifact id="jboss-jaxws14.jar"/>
+      <artifact id="jboss-jaxrpc.jar"/>
+      <artifact id="jboss-saaj.jar"/>
+
+      <import componentref="apache-xmlsec">
+      	<compatible version="@apache-xmlsec@"/>
+      </import>
+      <import componentref="javassist">
+      	<compatible version="@javassist@"/>
+      </import>
+      <import componentref="ibm-wsdl4j">
+      	<compatible version="@ibm-wsdl4j@"/>
+      </import>
+      <import componentref="jboss/jbossxb">
+      	<compatible version="@jboss-jbossxb@"/>
+      </import>
+      <import componentref="jboss/remoting">
+      	<compatible version="@jboss-remoting@"/>        
+      </import>
+      <import componentref="jboss/jbossretro-rt">
+      	<compatible version="@jboss-jbossretro@"/>
+      </import>
+
+      <export>
+         <include input="jbossws14.sar"/>
+         <include input="jbossws14-client.jar"/>
+         <include input="jboss-jaxws14.jar"/>
+         <include input="jboss-jaxrpc.jar"/>
+         <include input="jboss-saaj.jar"/>
+      </export>
+
+   </component>
+
+</project>

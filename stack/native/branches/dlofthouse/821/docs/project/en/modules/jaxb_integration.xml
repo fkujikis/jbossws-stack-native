@@ -1,0 +1,362 @@
+<!-- $Id$ -->
+
+<chapter id="jaxb_integration">
+  <title>JAXB Integration</title>
+
+  <para>
+    A SOAP envelope targeted to JBossWS or emitted from JBossWS can either be of RPC or DOCUMENT style.
+    The encoding is always literal.
+  </para>
+
+  <para>
+    <command>DOCUMENT style</command>
+
+    <programlisting><![CDATA[
+   <soap:Envelope>
+     <soap:Header> +
+       <header-element> *
+     </soap:Header>
+     <soap:Body>
+       <single-document-element>
+     </soap:Body>
+   </soap:Envelope>
+    ]]></programlisting>
+  </para>
+
+  <para>
+    The body contains a single complex element, which is completely defined in XML schema.
+    The optional header elements may be simple or complex types. In case of complex types, they must be defined in schema.
+  </para>
+
+  <para>
+    Here is an example
+
+    <programlisting><![CDATA[
+   <soap:Envelope>
+     <soap:Header>
+       <tns:SimpleHeader>123456</tns:SimpleHeader>
+       <tns:ComplexHeader>
+         <name>Tom</name>
+         <age>3</age>
+       </tns:ComplexHeader>
+     </soap:Header>
+     <soap:Body>
+       <tns:PurchaseOrder>
+         <item>Ferrari</item>
+         <address>
+           <street>Wall Street 102</street>
+           <city>New York</city>
+         </address>
+       </tns:PurchaseOrder>
+     </soap:Body>
+   </soap:Envelope>
+     ]]></programlisting>
+  </para>
+
+  <para>
+    The corresponding schema may look as follows
+
+    <programlisting><![CDATA[
+   <schema>
+     <complexType name="ComplexHeaderType">
+       <sequence>
+         <element name="name" type="xsd:string"/>
+         <element name="age" type="xsd:int"/>
+       </sequence>
+     </complexType>
+     <element name="ComplexHeader" type="tns:ComplexHeaderType">
+
+     <complexType name="PurchaseOrderType">
+       <sequence>
+         <element name="item" type="xsd:string"/>
+         <element name="address">
+           <complexType>
+             <sequence>
+               <element name="street" type="xsd:string"/>
+               <element name="city" type="xsd:string"/>
+             </sequence>
+           </complexType>
+         </element>
+       </sequence>
+     </complexType>
+     <element name="PurchaseOrder" type="tns:PurchaseOrderType">
+   <schema>
+   ]]></programlisting>
+  </para>
+
+  <para>
+    Note, the schema does not contain a definition for &lt;tns:SimpleHeader/&gt; which would be defined in the WSDL.
+    The JAXB marshalling layer can only unmarshall the xml fragments that are defined in schema.
+    The other fragments must be handled in the JBossWS layer, which is WSDL aware.
+  </para>
+
+  <para>
+    <command>RPC style</command>
+
+    <programlisting><![CDATA[
+   <soap:Envelope>
+     <soap:Header> +
+       <header-element> *
+     </soap:Header>
+     <soap:Body>
+       <rpc-wrapper-element>
+         <rpc-parameter> *
+       </rpc-wrapper-element>
+     </soap:Body>
+   </soap:Envelope>
+   ]]></programlisting>
+  </para>
+
+  <para>
+    The body contains a RPC wrapper element, which indentifies the RPC operation. Optional child elements of the
+ rpc-wrapper-element may be simple or complex types. In case of complex types, they must be defined in schema.
+    The optional header elements may be simple or complex types. In case of complex types, they must be defined in schema.
+  </para>
+
+  <para>
+    Here is an example
+
+    <programlisting><![CDATA[
+   <soap:Envelope>
+     <soap:Header>
+       <tns:SimpleHeader>123456</tns:SimpleHeader>
+       <tns:ComplexHeader>
+         <name>Tom</name>
+         <age>3</age>
+       </tns:ComplexHeader>
+     </soap:Header>
+     <soap:Body>
+       <tns:PurchaseOrder>
+         <tns:item>Ferrari</tns:item>
+         <tns:address>
+           <street>Wall Street 102</street>
+           <city>New York</city>
+         </tns:address>
+       </tns:PurchaseOrder>
+     </soap:Body>
+   </soap:Envelope>
+    ]]></programlisting>
+  </para>
+
+  <para>
+    The corresponding schema may look as follows
+
+    <programlisting><![CDATA[
+   <schema>
+     <complexType name="ComplexHeaderType">
+       <sequence>
+         <element name="name" type="xsd:string"/>
+         <element name="age" type="xsd:int"/>
+       </sequence>
+     </complexType>
+     <element name="ComplexHeader" type="tns:ComplexHeaderType">
+
+     <complexType name="AddressType">
+        <sequence>
+            <element name="street" type="xsd:string"/>
+          <element name="city" type="xsd:string"/>
+        </sequence>
+     </complexType>
+     <element name="address" type="tns:AddressType">
+   <schema>
+     ]]></programlisting>
+  </para>
+
+  <para>
+    Note, the schema does not contain a definition for &lt;tns:SimpleHeader/&gt; nor &lt;tns:PurchaseOrder/&gt; nor &lt;tns:item&gt;
+These would be defined in the WSDL.
+
+The JAXB marshalling layer can only unmarshall the xml fragments that are defined in schema. The other fragments must be
+ handled in the JBossWS layer, which is WSDL aware.
+  </para>
+
+  <para>
+    <command>SOAPContentElement</command>
+  </para>
+
+  <para>
+    The SAAJ API offers a DOM based object view of the SOAP envelope. For this dicussion we look at the following
+    interfaces SOAPEnvelope, SOAPHeader, SOAPHeaderElement, SOAPBody, SOAPBodyElement. They all extend SOAPElement,
+    which implements org.w3c.dom.Element. When unmarshalling a SOAP message, JBossWS first chops the message into fragments.
+    Here the XML fragments resulting from the DOCUMENT message.
+  </para>
+
+  <para>
+    <programlisting><![CDATA[
+       <tns:SimpleHeader>123456</tns:SimpleHeader>
+    ]]></programlisting>
+
+    <programlisting><![CDATA[
+       <tns:ComplexHeader>
+         <name>Tom</name>
+         <age>3</age>
+       </tns:ComplexHeader>
+    ]]></programlisting>
+
+    <programlisting><![CDATA[
+       <tns:PurchaseOrder>
+         <item>Ferrari</item>
+         <address>
+           <street>Wall Street 102</street>
+           <city>New York</city>
+         </address>
+       </tns:PurchaseOrder>
+    ]]></programlisting>
+  </para>
+
+  <para>
+    and here the XML fragments resulting from the RPC message.
+
+    <programlisting><![CDATA[
+       <tns:SimpleHeader>123456</tns:SimpleHeader>
+    ]]></programlisting>
+
+    <programlisting><![CDATA[
+       <tns:ComplexHeader>
+         <name>Tom</name>
+         <age>3</age>
+       </tns:ComplexHeader>
+    ]]></programlisting>
+
+    <programlisting><![CDATA[
+         <tns:item>Ferrari</tns:item>
+    ]]></programlisting>
+
+    <programlisting><![CDATA[
+         <tns:address>
+           <street>Wall Street 102</street>
+           <city>New York</city>
+         </tns:address>
+    ]]></programlisting>
+  </para>
+
+  <para>
+    XML framents can be marshalled into Java objects and vice versa.
+    The SAAJ object tree (it is not a graph) is constructed with object instances of the above interfaces.
+    The XML fragments are assigened to JBossWS specific instances of SOAPContentElement.
+    There are no deep elements created for the content of the XML fragments.
+  </para>
+
+  <para>
+
+    <ulink url="http://cvs.sourceforge.net/viewcvs.py/jboss/webservice/src/main/org/jboss/ws/soap/SOAPContentElement.java?view=markup"
+      type="alternate">org.jboss.ws.soap.SOAPContentElement</ulink>
+
+    <programlisting><![CDATA[
+   /**
+    * A SOAPElement that gives access to its content as XML fragment or Java object.
+    *
+    * The SOAPContentElement has three content representations, which may exist in parallel.
+    * The getter and setter of the content properties perform the conversions.
+    * It is the responsibility of this objects to keep the representations in sync.
+    *
+    * +---------+         +-------------+          +-------------+
+    * | Object  | <-----> | XMLFragment |  <-----> | DOMTree     |
+    * +---------+         +-------------+          +-------------+
+    *
+    * The idea is, that jaxrpc handlers can work with both the object and the DOM view of this SOAPElement.
+    * Note, that state transitions may be expensive.
+    *
+    * @author Thomas.Diesler@jboss.org
+    * @since 13-Dec-2004
+    */
+    ]]></programlisting>
+  </para>
+
+  <para>
+    After the SOAPContentElemets have been constructed, they are not yet associated with an xmlType nor its corresponding Java type.
+    In a previous design it was the responsiblity of the BindingProvider to perform marshalling/unmarshalling of the entire SOAPMessage.
+    This has now changed such that the SOAPContentElement performs marshalling/unmarshalling of its xmlFragment into a Java object and vice versa on demand.
+  </para>
+
+  <para>
+    JAXRPC compliant handlers access the SAAJ or DOM API of the SOAPContentElement, walking trees and accessing text content.
+    JBossWS however provides the handlers access to the assocciated Java object, which is much more intuitive.
+    This functionality may become part of JAXRPC-2.0.
+  </para>
+
+  <para>
+    <command>JBossWS Serializer/Deserializer</command>
+  </para>
+
+  <para>
+    JBossWS defines the following signature in Serializer/Deserializer implementations
+
+    <programlisting><![CDATA[
+      String serialize(QName xmlName, QName xmlType, Object value, SerializationContextImpl serContext);
+
+      Object deserialize(QName xmlName, QName xmlType, String xmlFragment, SerializationContextImpl serContext);
+    ]]></programlisting>
+  </para>
+
+  <para>
+    The SerializationContext gives access to these properties
+
+    <programlisting><![CDATA[
+      // The type mapping that is valid for this serialization context
+      private LiteralTypeMapping typeMapping;
+
+      // The namespace registry that is valid for this serialization context
+      private NamespaceRegistry namespaceRegistry;
+
+      // A registry of xmlType to schema location URL
+      private SchemaLocationRegistry xsdRegistry;
+        ]]></programlisting>
+  </para>
+
+  <para>
+    There are number of simple type Serializer/Deserializers defined in package
+
+    <ulink url="http://cvs.sourceforge.net/viewcvs.py/jboss/webservice/src/main/org/jboss/ws/jaxrpc/encoding"
+      type="alternate">org.jboss.ws.jaxrpc.encoding</ulink>
+
+    which deal with the standard XSD schema types. All other types will be handled by JAXBSerializer/JAXBDeserializer
+  </para>
+
+  <para>
+    <command>JBossWS / JAXB contract</command>
+  </para>
+
+  <para>
+    JAXB will be used to marshall/unmarshall XML fragments that are defined by complex schema types into Java objects and vice versa.
+  </para>
+
+  <para>
+    JBossWS provides:
+
+    <orderedlist>
+      <listitem>The xmlName of the root element, as QName </listitem>
+
+      <listitem>The xmlType of the complex schema type, as QName</listitem>
+
+      <listitem>The xmlFragment for unmarshalling</listitem>
+
+      <listitem>The Java object for marshalling</listitem>
+
+      <listitem>The URL to the schema that contains an element definition for xmlName</listitem>
+
+      <listitem>A registry of previously definied prefix/namespaceURI mappings</listitem>
+    </orderedlist>
+    </para>
+
+  <para>
+    JAXB will not be required to do schema less marshalling/unmarshalling. Instead, if there is no user defined schema,
+    JBossWS uses its internal tools for on-the-fly schema generation of complex types.
+  </para>
+
+  <para>
+    Since JAXB will marshall/unmarshall simple types as well, it is important that the JBossWS Serializer/Deserializer and
+    JAXB share the same codebase for that functionality.
+  </para>
+
+  <para>
+    In case JAXB provides schema less marshalling/unmarshallin, it should share the code base for on-the-fly schema generation.
+    Standalone JAXB marshalling/unmarshalling should not yield to different results than going through the JBossWS layer for the same functionality.
+  </para>
+
+</chapter>
+
+
+
+
+

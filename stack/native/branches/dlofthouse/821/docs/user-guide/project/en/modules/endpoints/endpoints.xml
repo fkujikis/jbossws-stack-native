@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id="endpoints">
+    <title>Developing web service endpoints</title>
+    <para>
+        In the previous chapter we have seen how to package and deploy simple endpoints
+        that were all based on POJO implementations. If you really want to leverage J2EE technologies
+        it might be more appropriate to use EJB endpoint implementations. In this chapter we will use EJB-2.1 
+        and EJB-3.0 stateless session beans and explore the
+        <ulink url="http://www.jcp.org/en/jsr/detail?id=181">Web Services Metadata specification</ulink>,
+        which allows you to expose classes as a webservice through the use of JDK 5 annotations.
+        
+    </para>
+    &s-jsr109-endpoints;
+    &s-jsr181-endpoints;
+    &s-service-lifecycle;
+    &s-templates;
+</chapter>
+

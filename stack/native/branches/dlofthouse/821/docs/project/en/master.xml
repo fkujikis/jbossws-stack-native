@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding="iso-8859-1"?>
+
+<!-- $Id$ -->
+
+<!DOCTYPE book PUBLIC
+  "-//OASIS//DTD DocBook XML V4.3CR3//EN"
+  "../../docbook-support/support/docbook-dtd/docbookx.dtd"
+[
+<!ENTITY goals                  SYSTEM "modules/goals.xml">
+<!ENTITY non-goals              SYSTEM "modules/non-goals.xml">
+<!ENTITY client_call_sequence   SYSTEM "modules/client_call_sequence.xml">
+<!ENTITY server_call_sequence   SYSTEM "modules/server_call_sequence.xml">
+<!ENTITY jaxb_integration       SYSTEM "modules/jaxb_integration.xml">
+]>
+
+<book lang="en">
+  <bookinfo>
+    <title>JBossWS</title>
+    <subtitle>J2EE compatible Web Services</subtitle>
+    <releaseinfo>1.0</releaseinfo>
+  </bookinfo>
+
+  <toc/>
+
+  <preface id="preface" revision="1">
+    <title>Preface</title>
+    <para>
+      JBossWS is our new implementation of J2EE compatible web services. This document describes the design principal
+      and objectives of the JBoss SOAP stack that we aim to be part of the JBoss-5.0 release.
+    </para>
+    <para>
+      Within the JBoss-4.x series we have a J2EE-1.4 compatible Web Service (WS4EE) implementation that relies on a
+      modified version of the Apache Axis-1.1 release. JBossWS is targeted to replace the Axis based SOAP implementation
+      with a solution that fits better in the overall JBoss architecture and is suitable for the specific Web Service
+      requirements in J2EE.
+    </para>
+    <para>
+      If you have questions, please feel free to contact Thomas Diesler (thomas.diesler@jboss.org) for more information.
+    </para>
+  </preface>
+
+  &goals;
+
+  &non-goals;
+
+  &client_call_sequence;
+
+  &server_call_sequence;
+
+  &jaxb_integration;
+
+</book>

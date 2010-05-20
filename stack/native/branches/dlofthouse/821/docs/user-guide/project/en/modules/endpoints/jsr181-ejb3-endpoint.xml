@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect2 id="jsr181-ejb3-endpoint">
+  
+  <title>JSR-181 EJB Endpoint</title>
+  
+  <para>EJB endpoints that use the <ulink url="http://www.jcp.org/en/jsr/detail?id=181">JSR-181 Web Services Metadata</ulink>
+    programming model support the same set of JSR-181 annotations as <link linkend="jsr181-pojo-endpoint">JSR-181 POJO Endpoint</link>.
+    JBossWS supports JSR-181 annotations on EJB-2.1 and EJB-3.0 stateless session beans. 
+  </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    @WebService(name = "EndpointInterface", 
+      targetNamespace = "http://org.jboss.ws/samples/jsr181ejb", 
+      serviceName = "TestService")
+    
+    @SOAPBinding(style = SOAPBinding.Style.RPC)
+    
+    @Stateless
+    @Remote(EJB3RemoteInterface.class)
+    @RemoteBinding(jndiBinding = "/ejb3/EJB3EndpointInterface")
+    public class EJB3Bean01 implements EJB3RemoteInterface
+    {
+       @WebMethod
+       public String echo(String input)
+       {
+          return input;
+       }
+    }
+  ]]></programlisting></para>
+  
+  <para>Above you see an EJB-3.0 stateless session bean that exposes one method both on the remote 
+    interface and on and as an endpoint operation.
+  </para>
+  
+  <para><command>Packaging the endpoint</command></para>
+  
+  <para>A JSR-181 EJB service endpoint is packaged as an ordinary ejb deployment. </para>
+  
+  <para>
+    <programlisting><![CDATA[
+    <jar jarfile="${build.dir}/libs/jbossws-samples-jsr181ejb.ejb3">
+      <fileset dir="${build.dir}/classes">
+        <include name="org/jboss/test/ws/samples/jsr181ejb/EJB3Bean01.class"/>
+        <include name="org/jboss/test/ws/samples/jsr181ejb/EJB3RemoteInterface.class"/>
+      </fileset>
+    </jar>
+    ]]></programlisting></para>
+  
+  <para>Generating the client side artifacts and the SOAP message exchange are equivalent to <link linkend="jsr181-pojo-endpoint">JSR-181 POJO Endpoints</link></para>
+  
+</sect2>

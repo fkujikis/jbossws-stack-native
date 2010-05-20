@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<project default="main" basedir=".." name="JBossWS Examples">
+
+  <property name="chapter" value="exception"/>
+  <property name="java.dir" value="${basedir}/${chapter}/java"/>
+  <property name="resources.dir" value="${basedir}/${chapter}/resources"/>
+
+  <import file="${basedir}/common/imported-build.xml"/>
+
+  <target name="generate-sources" depends="compile" description="Generate the deployment resources.">
+    
+    <!-- Define a taskdef for the wstools ant task -->
+    <taskdef name="wstools" classname="org.jboss.ws.tools.ant.wstools">
+        <classpath refid="compile.classpath"/>
+        <classpath path="${build.test.dir}/classes"/>
+    </taskdef>
+    
+    <!-- samples/exception -->
+    <wstools dest="${build.test.dir}/wstools/resources/samples/exception/WEB-INF" 
+      config="${resources.dir}/wstools-config.xml"/>
+    
+  </target>
+  
+  <!--
+  Build the test deployments
+  -->
+  <target name="jars" depends="compile,copy-resources,generate-sources,compile-generated,copy-generated" description="build the deployments">
+    
+    <!-- jbossws-samples-exception -->
+    <war destfile="${build.test.dir}/libs/jbossws-samples-exception.war" webxml="${build.test.dir}/resources/samples/exception/WEB-INF/web.xml">
+      <classes dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/samples/exception/*Exception.class"/>
+        <include name="org/jboss/test/ws/samples/exception/ServerHandler.class"/>
+        <include name="org/jboss/test/ws/samples/exception/ExceptionServiceInterface.class"/>
+        <include name="org/jboss/test/ws/samples/exception/ExceptionBeanImpl.class"/>
+      </classes>
+      <webinf dir="${build.test.dir}/resources/samples/exception/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="wsdl/**"/>
+      </webinf>
+    </war>
+    <jar destfile="${build.test.dir}/libs/jbossws-samples-exception-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/samples/exception/*Exception.class"/>
+        <include name="org/jboss/test/ws/samples/exception/ExceptionServiceInterface.class"/>
+      </fileset>
+      <metainf dir="${build.test.dir}/resources/samples/exception/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+      </metainf>
+      <metainf dir="${build.test.dir}/resources/samples/exception/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+    </jar>
+    
+  </target>
+
+  <!--
+  Run the testsuite
+  -->
+  <target name="tests" depends="jars" description="run the testsuite">
+    <antcall target="test">
+      <param name="test" value="${chapter}"/>
+    </antcall>
+  </target>
+
+</project>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<project default="main" basedir=".." name="JBossWS Examples">
+
+  <property name="chapter" value="secureejb"/>
+  <property name="java.dir" value="${basedir}/${chapter}/java"/>
+  <property name="resources.dir" value="${basedir}/${chapter}/resources"/>
+
+  <import file="${basedir}/common/imported-build.xml"/>
+
+  <target name="generate-sources" depends="compile" description="Generate the deployment resources.">
+    
+    <!-- Define a taskdef for the wstools ant task -->
+    <taskdef name="wstools" classname="org.jboss.ws.tools.ant.wstools">
+      <classpath refid="compile.classpath"/>
+      <classpath path="${build.test.dir}/classes"/>
+    </taskdef>
+    
+    <!-- samples/secureejb -->
+    <wstools dest="${build.test.dir}/wstools/resources/samples/secureejb/META-INF" 
+      config="${resources.dir}/wstools-config.xml"/>
+    
+  </target>
+  
+  <!--
+  Build the test deployments
+  -->
+  <target name="jars" depends="compile,copy-resources,generate-sources,compile-generated,copy-generated" description="build the deployments">
+    
+    <!-- jbossws-samples-secureejb -->
+    <jar jarfile="${build.test.dir}/libs/jbossws-samples-secureejb.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/samples/secureejb/OrganizationService.class"/>
+        <include name="org/jboss/test/ws/samples/secureejb/OrganizationHome.class"/>
+        <include name="org/jboss/test/ws/samples/secureejb/OrganizationRemote.class"/>
+        <include name="org/jboss/test/ws/samples/secureejb/OrganizationImpl.class"/>
+      </fileset>
+      <metainf dir="${build.test.dir}/resources/samples/secureejb/META-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="webservices.xml"/>
+        <include name="ejb-jar.xml"/>
+        <include name="jboss.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+    </jar>
+    <jar jarfile="${build.test.dir}/libs/jbossws-samples-secureejb-client.jar">
+      <fileset dir="${build.test.dir}/classes">
+        <include name="org/jboss/test/ws/samples/secureejb/OrganizationService.class"/>
+        <include name="org/jboss/test/ws/samples/secureejb/OrganizationHome.class"/>
+        <include name="org/jboss/test/ws/samples/secureejb/OrganizationRemote.class"/>
+      </fileset>
+      <metainf dir="${build.test.dir}/resources/samples/secureejb/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+    </jar>
+    
+  </target>
+
+  <!--
+  Run the testsuite
+  -->
+  <target name="tests" depends="jars" description="run the testsuite" if="only-on-jboss">
+    <antcall target="test">
+      <param name="test" value="${chapter}"/>
+    </antcall>
+  </target>
+
+</project>

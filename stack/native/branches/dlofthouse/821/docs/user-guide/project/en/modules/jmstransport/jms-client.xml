@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id$ -->
+
+<sect1 id="jms-client">
+  
+  <title>JMS Client</title>
+  
+  <para>To send a SOAP message to a JMS endpoint you use the normal JMS message producer metodology. Here is an example:</para>
+  
+  <para>There is not yet transparent JMS transport available for web service clients. 
+    Please monitor <ulink url="http://jira.jboss.com/jira/browse/JBWS-670">JBWS-670</ulink> for progress on this.</para>
+  
+  <para>
+    <programlisting><![CDATA[
+      InitialContext context = new InitialContext();
+      QueueConnectionFactory connectionFactory = 
+        (QueueConnectionFactory)context.lookup("ConnectionFactory");
+    
+      Queue reqQueue = (Queue)context.lookup("queue/RequestQueue");
+      Queue resQueue = (Queue)context.lookup("queue/ResponseQueue");
+
+      QueueConnection con = connectionFactory.createQueueConnection();
+      QueueSession session = con.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+      QueueReceiver receiver = session.createReceiver(resQueue);
+      ResponseListener responseListener = new ResponseListener();
+      receiver.setMessageListener(responseListener);
+      con.start();
+
+      TextMessage message = session.createTextMessage(reqMessage);
+      message.setJMSReplyTo(resQueue);
+
+      QueueSender sender = session.createSender(reqQueue);
+      sender.send(message);
+      sender.close();
+
+      done.acquire();
+      
+      assertNotNull("Expected response message", responseListener.resMessage);
+      assertEquals(DOMUtils.parse(resMessage), DOMUtils.parse(responseListener.resMessage));
+      
+      con.stop();
+      session.close();
+      con.close();
+  ]]></programlisting></para>
+  
+</sect1>
