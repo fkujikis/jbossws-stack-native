@@ -117,13 +117,12 @@ public class NativeServiceRefBinderJAXWS implements ServiceRefBinder
 
       String targetClassName = (targetClass != null ? targetClass.getName() : null);
       String externalName = encCtx.getNameInNamespace() + "/" + encName;
-      if (log.isDebugEnabled())
-         log.debug("setupServiceRef [jndi=" + externalName + ",target=" + targetClassName + "]");
+      log.debug("setupServiceRef [jndi=" + externalName + ",target=" + targetClassName + "]");
 
       String serviceImplClass = null;
 
       // #1 Use the explicit @WebServiceRef.value
-      if (wsref != null && wsref.value() != Service.class)
+      if (wsref != null && wsref.value() != Object.class)
          serviceImplClass = wsref.value().getName();
 
       // #2 Use the target ref type
@@ -192,11 +191,6 @@ public class NativeServiceRefBinderJAXWS implements ServiceRefBinder
             {
                WebServiceClient clientDecl = (WebServiceClient)serviceClass.getAnnotation(WebServiceClient.class);
                serviceRef.setServiceQName(new QName(clientDecl.targetNamespace(), clientDecl.name()));
-               //use the @WebServiceClien(wsdlLocation=...) if the service ref wsdl location returned at this time would be null
-               if (clientDecl.wsdlLocation().length() > 0 && serviceRef.getWsdlLocation() == null)
-               {
-                  serviceRef.setWsdlOverride(clientDecl.wsdlLocation());
-               }
             }
          }
          catch (ClassNotFoundException e)

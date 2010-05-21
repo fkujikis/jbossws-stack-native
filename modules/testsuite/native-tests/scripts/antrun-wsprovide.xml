@@ -7,60 +7,27 @@
 <!-- ============================================================ -->
 
 <project>
+  
+  <!-- ================================================================== -->
+  <!-- Generating sources                                                 -->
+  <!-- ================================================================== -->
 
   <target name="wsprovide" description="Provide the JAX-WS contracts.">
 
+    <!-- Define the JAX-WS wsprovide task -->
     <taskdef name="wsprovide" classname="org.jboss.wsf.spi.tools.ant.WSProvideTask">
       <classpath>
         <pathelement path="${maven.test.classpath}"/>
       </classpath>
-      <classpath location="${tests.output.dir}/test-resources/jaxws/samples/wssecurityAnnotatedpolicy"/>
     </taskdef>
 
-    <wsprovide-macro
+    <wsprovide
+      resourcedestdir="${tests.output.dir}/test-resources/wsprovide/jaxws/samples/wssecurity"
+      genwsdl="true"
       sei="org.jboss.test.ws.jaxws.samples.wssecurity.HelloJavaBean"
-      destDir=""
-      jbossHome="${jboss.home}"
-      outputDir="${tests.output.dir}"
-      loggingDir="${log4j.output.dir}"
-      resourcesDir="wsprovide/jaxws/samples/wssecurity"
-    />
-
-    <wsprovide-macro
-      sei="org.jboss.test.ws.jaxws.samples.wssecurityAnnotatedpolicy.HelloJavaBean"
-      destDir=""
-      jbossHome="${jboss.home}"
-      outputDir="${tests.output.dir}"
-      loggingDir="${log4j.output.dir}"
-      resourcesDir="wsprovide/jaxws/samples/wssecurityAnnotatedpolicy"
-    />
+      destdir="${tests.output.dir}/test-classes"
+      verbose="false"/>
 
   </target>
-
-  <macrodef name="wsprovide-macro">
-
-    <attribute name="sei"/>
-    <attribute name="destDir"/>
-    <attribute name="jbossHome"/>
-    <attribute name="outputDir"/>
-    <attribute name="loggingDir"/>
-    <attribute name="resourcesDir"/>
-
-    <sequential>
-      <wsprovide
-        sei="@{sei}"
-        fork="true"
-        genwsdl="true"
-        verbose="false"
-        classpath="@{outputDir}/test-classes"
-        destdir="@{outputDir}/test-classes/@{destDir}"
-        resourcedestdir="@{outputDir}/test-resources/@{resourcesDir}"
-      >
-        <jvmarg line="-Djava.endorsed.dirs=@{jbossHome}/lib/endorsed"/>
-        <jvmarg line="-Dlog4j.output.dir=@{loggingDir}"/>
-      </wsprovide>
-    </sequential>
-
-  </macrodef>
 
 </project>

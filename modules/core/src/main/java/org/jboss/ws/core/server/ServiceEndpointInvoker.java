@@ -62,7 +62,6 @@ import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
 import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.core.soap.SOAPBodyImpl;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
-import org.jboss.ws.extensions.wsrm.RMConstant;
 import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -79,6 +78,7 @@ import org.jboss.wsf.spi.invocation.InvocationHandler;
 import org.jboss.wsf.spi.invocation.InvocationType;
 import org.jboss.wsf.spi.invocation.WebServiceContextFactory;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+import org.jboss.wsf.spi.serviceref.ServiceRefHandler.Type;
 
 /** An implementation handles invocations on the endpoint
  *
@@ -230,7 +230,7 @@ public class ServiceEndpointInvoker
                      }
                   }
                }
-
+               
                // Invoke an instance of the SEI implementation bean 
                Invocation inv = setupInvocation(endpoint, sepInv, invContext);
                InvocationHandler invHandler = endpoint.getInvocationHandler();
@@ -238,6 +238,7 @@ public class ServiceEndpointInvoker
                try
                {
                   invHandler.invoke(endpoint, inv);
+                  
                }
                catch (InvocationTargetException th)
                {
@@ -280,8 +281,7 @@ public class ServiceEndpointInvoker
             msgContext.setMessageAbstraction(resMessage);
          }
 
-         boolean isWsrmMessage = msgContext.get(RMConstant.RESPONSE_CONTEXT) != null;
-         if ((oneway == false) || (isWsrmMessage)) // RM hack
+         if (oneway == false)
          {
             // call the  response handler chain, removing the fault type entry will not call handleFault for that chain 
             handlersPass = callResponseHandlerChain(sepMetaData, handlerType[2]);
@@ -300,6 +300,7 @@ public class ServiceEndpointInvoker
          CommonBinding binding = bindingProvider.getCommonBinding();
          try
          {
+            MessageContextAssociation.peekMessageContext().put("Exception", ex);
             binding.bindFaultMessage(ex);
 
             // call the fault handler chain

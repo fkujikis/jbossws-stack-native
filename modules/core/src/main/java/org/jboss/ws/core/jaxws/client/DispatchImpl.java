@@ -29,7 +29,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPException;
@@ -158,13 +157,17 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
             handlerResolver.initHandlerChain(ecmd, HandlerType.PRE, true);
             handlerResolver.initHandlerChain(ecmd, HandlerType.ENDPOINT, true);
             handlerResolver.initHandlerChain(ecmd, HandlerType.POST, true);
-
+            
             PortInfo portInfo = epMetaData.getPortInfo();
-            this.appendHandlers(HandlerType.PRE, portInfo, binding);
-            this.appendHandlers(HandlerType.ENDPOINT, portInfo, binding);
-            this.appendHandlers(HandlerType.POST, portInfo, binding);
+            List<Handler> preChain = handlerResolver.getHandlerChain(portInfo, HandlerType.PRE);
+            List<Handler> epChain = handlerResolver.getHandlerChain(portInfo, HandlerType.ENDPOINT);
+            List<Handler> postChain = handlerResolver.getHandlerChain(portInfo, HandlerType.POST);
+            
+            binding.setHandlerChain(preChain, HandlerType.PRE);
+            binding.setHandlerChain(epChain, HandlerType.ENDPOINT);
+            binding.setHandlerChain(postChain, HandlerType.POST);
          }
-
+         
          retObj = invokeInternalSOAP(obj);
       }
       else
@@ -172,21 +175,6 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
          retObj = invokeInternalNonSOAP(obj);
       }
       return retObj;
-   }
-   
-   private void appendHandlers(final HandlerType handlerType, final PortInfo portInfo, final BindingExt binding)
-   {
-      final List<Handler> resolverHandlerChain = this.handlerResolver.getHandlerChain(portInfo, handlerType);
-      final List<Handler> bindingHandlerChain = binding.getHandlerChain(handlerType);
-      
-      if (bindingHandlerChain == null || bindingHandlerChain.size() == 0)
-      {
-         binding.setHandlerChain(resolverHandlerChain, handlerType);
-      }
-      else
-      {
-         bindingHandlerChain.addAll(resolverHandlerChain);
-      }
    }
 
    private Object invokeInternalSOAP(Object obj) throws Exception
@@ -273,8 +261,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
 
             if (handlerPass)
             {
-               boolean unwrap = !(obj instanceof JAXBElement);
-               retObj = getReturnObject(resMsg, unwrap);
+               retObj = getReturnObject(resMsg);
             }
          }
          catch (Exception ex)
@@ -312,8 +299,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
          targetAddress = (String) callProps.get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY);
       }
       MessageAbstraction resMsg = getRemotingConnection().invoke(reqMsg, targetAddress, false);
-      boolean unwrap = !(obj instanceof JAXBElement);
-      Object retObj = getReturnObject(resMsg, unwrap);
+      Object retObj = getReturnObject(resMsg);
       return retObj;
    }
 
@@ -466,7 +452,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
       return message;
    }
 
-   private Object getReturnObject(MessageAbstraction resMsg, boolean unwrap)
+   private Object getReturnObject(MessageAbstraction resMsg)
    {
       String bindingID = bindingProvider.getBinding().getBindingID();
       if (EndpointMetaData.SUPPORTED_BINDINGS.contains(bindingID) == false)
@@ -481,7 +467,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
       else
       {
          DispatchSOAPBinding helper = new DispatchSOAPBinding(mode, type, jaxbContext);
-         retObj = helper.getReturnObject(resMsg, unwrap);
+         retObj = helper.getReturnObject(resMsg);
       }
       return retObj;
    }
@@ -653,7 +639,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
          log.debug("Cannot find the right operation metadata!");
       return opMetaData;
    }
-
+   
    public EndpointMetaData getEndpointMetaData()
    {
       return epMetaData;
