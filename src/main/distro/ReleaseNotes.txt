@@ -28,32 +28,6 @@ What's new in jbossws-native-${project.version}
 
 Feature Request
 
-    TODO: enumerate
-
-Bug
-
-    TODO: enumerate
-
-Task
-
-    TODO: enumerate
-
-Errata
-
-    See: TODO: reference to associated JIRA issue
-    
-Enjoy,
-The JBossWS Team
-
-
-Previous Releases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
------------------------
-jbossws-native-3.3.0.GA
------------------------
-
-Feature Request
-
     * [JBWS-3022] - Respect @Addressing.responses attribute
     * [JBWS-3024] - Implement endorsing support for JBossWS ANT tools
     * [JBWS-3031] - Use addressing meta data from WSDL if addressing related annotations are missing on SEI
@@ -156,7 +130,12 @@ Task
 Errata
 
     See: https://jira.jboss.org/browse/JBWS-3044
+    
+Enjoy,
+The JBossWS Team
 
+
+Previous Releases ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -----------------------
 jbossws-native-3.2.2.GA
