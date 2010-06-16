@@ -50,7 +50,7 @@ public class SendUsernameOperation implements EncodingOperation
    private SecurityHeader header;
 
    private SecurityStore store;
-
+   
    public SendUsernameOperation(SecurityHeader header, SecurityStore store)
    {
       this.header = header;
@@ -60,11 +60,10 @@ public class SendUsernameOperation implements EncodingOperation
    public void process(Document message, List<Target> targets, String username, String credential, String algorithm, boolean digest, boolean useNonce, boolean useTimestamp) throws WSSecurityException
    {
       String created = useTimestamp ? getCurrentTimestampAsString() : null;
-      String nonce = useNonce ? Util.generateNonce() : null;
+      String nonce = useNonce ? store.getNonceGenerator().generateNonce() : null;
       String password = digest ? createPasswordDigest(nonce, created, credential) : credential;
       header.addToken(new UsernameToken(username, password, message, digest, nonce, created));
    }
-   
    
    private static String getCurrentTimestampAsString()
    {
