@@ -38,6 +38,7 @@ import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.CommonSOAPFaultException;
+<<<<<<< .working
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
@@ -45,6 +46,23 @@ import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.wsse.Authenticate;
 import org.jboss.ws.metadata.wsse.Authorize;
+=======
+import org.jboss.ws.extensions.security.exception.InvalidSecurityHeaderException;
+import org.jboss.ws.extensions.security.exception.WSSecurityException;
+import org.jboss.ws.extensions.security.nonce.DefaultNonceFactory;
+import org.jboss.ws.extensions.security.nonce.NonceFactory;
+import org.jboss.ws.extensions.security.nonce.NonceGenerator;
+import org.jboss.ws.extensions.security.operation.EncodingOperation;
+import org.jboss.ws.extensions.security.operation.EncryptionOperation;
+//import org.jboss.ws.extensions.security.operation.OperationDescription;
+import org.jboss.ws.extensions.security.operation.RequireEncryptionOperation;
+import org.jboss.ws.extensions.security.operation.RequireOperation;
+import org.jboss.ws.extensions.security.operation.RequireSignatureOperation;
+import org.jboss.ws.extensions.security.operation.RequireTimestampOperation;
+import org.jboss.ws.extensions.security.operation.SendUsernameOperation;
+import org.jboss.ws.extensions.security.operation.SignatureOperation;
+import org.jboss.ws.extensions.security.operation.TimestampOperation;
+>>>>>>> .merge-right.r5945
 import org.jboss.ws.metadata.wsse.Config;
 import org.jboss.ws.metadata.wsse.Encrypt;
 import org.jboss.ws.metadata.wsse.Operation;
@@ -176,7 +194,8 @@ public class WSSecurityDispatcher
    {
       SecurityStore securityStore = new SecurityStore(configuration.getKeyStoreURL(), configuration.getKeyStoreType(), configuration.getKeyStorePassword(),
             configuration.getKeyPasswords(), configuration.getTrustStoreURL(), configuration.getTrustStoreType(), configuration.getTrustStorePassword());
-
+      NonceFactory factory = Util.loadFactory(NonceFactory.class, configuration.getNonceFactory(), DefaultNonceFactory.class);
+      
       Authenticate authenticate = null;
 
       if (operationConfig != null)
@@ -184,7 +203,7 @@ public class WSSecurityDispatcher
          authenticate = operationConfig.getAuthenticate();
       }
 
-      SecurityDecoder decoder = new SecurityDecoder(securityStore, configuration.getTimestampVerification(), authenticate);
+      SecurityDecoder decoder = new SecurityDecoder(securityStore, factory, configuration.getTimestampVerification(), authenticate);
 
       decoder.decode(message.getSOAPPart(), secHeaderElement);
 
@@ -311,7 +330,6 @@ public class WSSecurityDispatcher
          //we fall back to the port wsse config (if available) or the default config.
          Config portConfig = port.getDefaultConfig();
          return (portConfig == null) ? configuration.getDefaultConfig() : portConfig;
-
       }
       return operation.getConfig();
    }
@@ -381,6 +399,7 @@ public class WSSecurityDispatcher
          operations.add(new OperationDescription<EncodingOperation>(TimestampOperation.class, null, null, timestamp.getTtl(), null));
       }
 
+      NonceGenerator nonceGenerator = null;
       Username username = opConfig.getUsername();
       if (username != null)
       {
@@ -398,6 +417,9 @@ public class WSSecurityDispatcher
             operations.add(new OperationDescription<EncodingOperation>(SendUsernameOperation.class, null, user.toString(), pass.toString(), null,username.isDigestPassword(), username.isUseNonce(), username.isUseCreated()));
             ctx.put(StubExt.PROPERTY_AUTH_TYPE, StubExt.PROPERTY_AUTH_TYPE_WSSE);
          }
+
+         NonceFactory factory = Util.loadFactory(NonceFactory.class, config.getNonceFactory(), DefaultNonceFactory.class);
+         nonceGenerator = factory.getGenerator();
       }
 
       Sign sign = opConfig.getSign();
@@ -432,7 +454,7 @@ public class WSSecurityDispatcher
       try
       {
          SecurityStore securityStore = new SecurityStore(config.getKeyStoreURL(), config.getKeyStoreType(), config.getKeyStorePassword(), config.getKeyPasswords(),
-               config.getTrustStoreURL(), config.getTrustStoreType(), config.getTrustStorePassword());
+               config.getTrustStoreURL(), config.getTrustStoreType(), config.getTrustStorePassword(), nonceGenerator);
          SecurityEncoder encoder = new SecurityEncoder(operations, securityStore);
          encoder.encode(soapMessage.getSOAPPart());
       }
