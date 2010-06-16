@@ -39,7 +39,7 @@ public class TimestampOperation implements EncodingOperation
       this.store = store;
    }
 
-   public void process(Document message, List<Target> targets, String alias, String credential, String algorithm) throws WSSecurityException
+   public void process(Document message, List<Target> targets, String alias, String credential, String algorithm, boolean digest, boolean useNonce, boolean useTimestamp) throws WSSecurityException
    {
       Integer ttl = null;
 
