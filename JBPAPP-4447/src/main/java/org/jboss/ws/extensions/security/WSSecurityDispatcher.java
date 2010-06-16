@@ -55,6 +55,7 @@ import org.jboss.ws.metadata.wsse.RequireTimestamp;
 import org.jboss.ws.metadata.wsse.Requires;
 import org.jboss.ws.metadata.wsse.Sign;
 import org.jboss.ws.metadata.wsse.Timestamp;
+import org.jboss.ws.metadata.wsse.Username;
 import org.jboss.ws.metadata.wsse.WSSecurityConfiguration;
 import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
@@ -380,7 +381,8 @@ public class WSSecurityDispatcher
          operations.add(new OperationDescription<EncodingOperation>(TimestampOperation.class, null, null, timestamp.getTtl(), null));
       }
 
-      if (opConfig.getUsername() != null)
+      Username username = opConfig.getUsername();
+      if (username != null)
       {
          Object user = ctx.get(Stub.USERNAME_PROPERTY);
          Object pass = ctx.get(Stub.PASSWORD_PROPERTY);
@@ -393,7 +395,7 @@ public class WSSecurityDispatcher
 
          if (user != null && pass != null)
          {
-            operations.add(new OperationDescription<EncodingOperation>(SendUsernameOperation.class, null, user.toString(), pass.toString(), null));
+            operations.add(new OperationDescription<EncodingOperation>(SendUsernameOperation.class, null, user.toString(), pass.toString(), null,username.isDigestPassword(), username.isUseNonce(), username.isUseCreated()));
             ctx.put(StubExt.PROPERTY_AUTH_TYPE, StubExt.PROPERTY_AUTH_TYPE_WSSE);
          }
       }
