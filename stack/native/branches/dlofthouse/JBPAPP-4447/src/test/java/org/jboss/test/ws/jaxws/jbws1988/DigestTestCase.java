@@ -21,7 +21,7 @@
  */
 package org.jboss.test.ws.jaxws.jbws1988;
 
-import org.jboss.ws.extensions.security.operation.SendUsernameOperation;
+import org.jboss.ws.extensions.security.SendUsernameOperation;
 import org.jboss.wsf.test.JBossWSTest;
 
 /**
