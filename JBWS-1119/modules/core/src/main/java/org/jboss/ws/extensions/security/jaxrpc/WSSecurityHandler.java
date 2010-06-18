@@ -27,11 +27,11 @@ import javax.xml.namespace.QName;
 import javax.xml.rpc.Stub;
 import javax.xml.rpc.handler.GenericHandler;
 import javax.xml.rpc.handler.MessageContext;
-import javax.xml.soap.SOAPException;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonMessageContext;
+import org.jboss.ws.core.CommonSOAPFaultException;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.extensions.security.Constants;
 import org.jboss.ws.extensions.security.WSSecurityDispatcher;
@@ -52,13 +52,22 @@ public abstract class WSSecurityHandler extends GenericHandler
    // provide logging
    private static Logger log = Logger.getLogger(WSSecurityHandler.class);
 
+   protected static final String FAULT_THROWN = "org.jboss.ws.wsse.faultThrown";
+   
    public QName[] getHeaders()
    {
       return new QName[] {Constants.WSSE_HEADER_QNAME};
    }
+   
+   protected boolean thrownByMe(MessageContext msgContext)
+   {
+      Boolean bool = (Boolean) msgContext.getProperty(FAULT_THROWN);
+      return bool != null && bool.booleanValue();
+   }   
 
    protected boolean handleInboundSecurity(MessageContext msgContext)
    {
+      Exception exception = null;
       try
       {
          WSSecurityConfiguration configuration = getSecurityConfiguration(msgContext);
@@ -70,16 +79,28 @@ public abstract class WSSecurityHandler extends GenericHandler
             new WSSecurityDispatcher().decodeMessage(configuration, soapMessage, null);
          }
       }
-      catch (SOAPException ex)
+      catch (Exception ex)
       {
-         log.error("Cannot handle inbound ws-security", ex);
+         exception = ex;
+      }
+
+      if (exception != null)
+      {
+         msgContext.setProperty(FAULT_THROWN, true);
+         if (exception instanceof CommonSOAPFaultException)
+            throw (CommonSOAPFaultException)exception;
+
+         // Unexpected exception, log it
+         log.error("Cannot handle inbound ws-security", exception);
          return false;
       }
+
       return true;
    }
 
    protected boolean handleOutboundSecurity(MessageContext msgContext)
    {
+      Exception exception = null;
       try
       {
          WSSecurityConfiguration configuration = getSecurityConfiguration(msgContext);
@@ -93,11 +114,22 @@ public abstract class WSSecurityHandler extends GenericHandler
             new WSSecurityDispatcher().encodeMessage(configuration, soapMessage, null, user, pass);
          }
       }
-      catch (SOAPException ex)
+      catch (Exception ex)
       {
-         log.error("Cannot handle outbound ws-security", ex);
+         exception = ex;
+      }
+
+      if (exception != null)
+      {
+         msgContext.setProperty(FAULT_THROWN, true);
+         if (exception instanceof CommonSOAPFaultException)
+            throw (CommonSOAPFaultException)exception;
+
+         // Unexpected exception, log it
+         log.error("Cannot handle outbound ws-security", exception);
          return false;
       }
+
       return true;
    }
 

@@ -50,7 +50,7 @@ public class WSSecurityOMFactory implements ObjectModelFactory
 
    public static final String CLIENT_RESOURCE_NAME = "jboss-wsse-client.xml";
 
-   private static HashMap options = new HashMap(7);
+   private static HashMap<String, String> options = new HashMap<String, String>(6);
 
    static
    {
@@ -93,6 +93,7 @@ public class WSSecurityOMFactory implements ObjectModelFactory
       }
       catch (JBossXBException e)
       {
+         log.error("Could not parse " + configURL + ":", e);
          IOException ioex = new IOException("Cannot parse: " + configURL);
          Throwable cause = e.getCause();
          if (cause != null)
@@ -261,17 +262,26 @@ public class WSSecurityOMFactory implements ObjectModelFactory
       if ("sign".equals(localName))
       {
          // By default, we alwyas include a timestamp
-         Boolean include = new Boolean(true);
-         String timestamp = attrs.getValue("", "includeTimestamp");
-         if (timestamp != null)
-            include = (Boolean)SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, timestamp, null);
+         boolean includeTimestamp = true;
+         String value = attrs.getValue("", "includeTimestamp");
+         if (value != null)
+            includeTimestamp = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
 
-         return new Sign(attrs.getValue("", "type"), attrs.getValue("", "alias"), include.booleanValue(), attrs.getValue("", "tokenReference"));
+         boolean includeFaults = false;
+         value = attrs.getValue("", "includeFaults");
+         if (value != null)
+            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
+         
+         return new Sign(attrs.getValue("", "type"), attrs.getValue("", "alias"), includeTimestamp, attrs.getValue("", "tokenReference"), includeFaults);
       }
       else if ("encrypt".equals(localName))
       {
-         return new Encrypt(attrs.getValue("", "type"), attrs.getValue("", "alias"), attrs.getValue("", "algorithm"), attrs.getValue("", "keyWrapAlgorithm"), attrs
-               .getValue("", "tokenReference"));
+         boolean includeFaults = false;
+         String value = attrs.getValue("", "includeFaults");
+         if (value != null)
+            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
+        
+         return new Encrypt(attrs.getValue("", "type"), attrs.getValue("", "alias"), attrs.getValue("", "algorithm"), attrs.getValue("", "keyWrapAlgorithm"), attrs.getValue("", "tokenReference"),includeFaults);
       }
       else if ("timestamp".equals(localName))
       {
@@ -452,11 +462,21 @@ public class WSSecurityOMFactory implements ObjectModelFactory
       log.trace("newChild: " + localName);
       if ("signature".equals(localName))
       {
-         return new RequireSignature();
+         boolean includeFaults = false;
+         String value = attrs.getValue("", "includeFaults");
+         if (value != null)
+            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
+
+         return new RequireSignature(includeFaults);
       }
       else if ("encryption".equals(localName))
       {
-         return new RequireEncryption();
+         boolean includeFaults = false;
+         String value = attrs.getValue("", "includeFaults");
+         if (value != null)
+            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
+
+         return new RequireEncryption(includeFaults);
       }
       else if ("timestamp".equals(localName))
       {
