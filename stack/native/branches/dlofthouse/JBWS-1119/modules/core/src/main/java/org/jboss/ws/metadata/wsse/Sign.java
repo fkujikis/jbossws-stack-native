@@ -35,13 +35,15 @@ public class Sign extends Targetable
    private String alias;
    private boolean includeTimestamp;
    private String tokenRefType;
+   private boolean includeFaults;
 
-   public Sign(String type, String alias, boolean includeTimestamp, String tokenRefType)
+   public Sign(String type, String alias, boolean includeTimestamp, String tokenRefType, boolean includeFaults)
    {
       this.type = type;
       this.alias = alias;
       this.includeTimestamp = includeTimestamp;
       this.tokenRefType = tokenRefType;
+      this.includeFaults = includeFaults;
    }
 
    public String getAlias()
@@ -57,6 +59,16 @@ public class Sign extends Targetable
    public String getType()
    {
       return type;
+   }
+
+   public boolean isIncludeFaults()
+   {
+      return includeFaults;
+   }
+
+   public void setIncludeFaults(boolean includeFaults)
+   {
+      this.includeFaults = includeFaults;
    }
 
    public void setType(String type)

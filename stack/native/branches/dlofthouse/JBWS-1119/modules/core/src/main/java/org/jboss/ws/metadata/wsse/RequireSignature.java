@@ -22,12 +22,28 @@
 package org.jboss.ws.metadata.wsse;
 
 /**
- * <code>Sign</code> represents the sign tag, which declares that a message
- * should be signed.
+ * <code>RequireSignature</code> indicates that a message received from a peer must be signed.
  *
  * @author <a href="mailto:jason.greene@jboss.com">Jason T. Greene</a>
  */
 public class RequireSignature extends Targetable
 {
    private static final long serialVersionUID = -3854930944550152309L;
+
+   private boolean includeFaults;
+
+   public RequireSignature(boolean includeFaults)
+   {
+      this.includeFaults = includeFaults;
+   }
+
+   public boolean isIncludeFaults()
+   {
+      return includeFaults;
+   }
+
+   public void setIncludeFaults(boolean includeFaults)
+   {
+      this.includeFaults = includeFaults;
+   }
 }

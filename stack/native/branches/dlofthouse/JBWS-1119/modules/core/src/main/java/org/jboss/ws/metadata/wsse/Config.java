@@ -75,6 +75,11 @@ public class Config implements Serializable
       return username;
    }
 
+   public boolean includesFaults()
+   {
+      return (sign != null && sign.isIncludeFaults()) || (encrypt != null && encrypt.isIncludeFaults());
+   }
+
    public void setUsername(Username username)
    {
       this.username = username;
