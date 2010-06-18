@@ -34,6 +34,7 @@ import javax.security.auth.callback.CallbackHandler;
 import org.jboss.crypto.digest.DigestCallback;
 import org.jboss.security.Base64Encoder;
 import org.jboss.security.auth.callback.MapCallback;
+import org.jboss.util.Base64;
 import org.jboss.ws.WSException;
 
 /**
@@ -68,7 +69,10 @@ public class UsernameTokenCallback implements DigestCallback
       {
          String nonce = (String)info.getInfo(NONCE);
          if (nonce != null)
-            digest.update(nonce.getBytes("UTF-8"));
+         {
+            byte[] rawNonce = Base64.decode(nonce);
+            digest.update(rawNonce);
+         }
          String created = (String)info.getInfo(CREATED);
          if (created != null)
             digest.update(created.getBytes("UTF-8"));
