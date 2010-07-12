@@ -211,7 +211,7 @@
             <groupId>com.sun.xml.stream</groupId>
             <artifactId>sjsxp</artifactId>
           </exclusion>
-        </exclusions>
+        </exclusions> 
       </dependency>
       <dependency>
         <groupId>sun-jaxb</groupId>
