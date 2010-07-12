@@ -22,19 +22,15 @@
 package org.jboss.ws.core.utils;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.ImageOutputStream;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.ParseException;
@@ -45,6 +41,10 @@ import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.wsf.common.IOUtils;
 import org.jboss.wsf.common.JavaUtils;
+
+import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGImageDecoder;
+import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 /**
  * Generic mime utility class.
@@ -186,9 +186,7 @@ public class MimeUtils
          converter = new StringConverter();
       else if (JavaUtils.isAssignableFrom(java.io.InputStream.class, targetClazz))
          converter = new StreamConverter();
-      else if (JavaUtils.isAssignableFrom(byte[].class, targetClazz))
-         converter = new RealByteArrayConverter();
-      
+
       if(null == converter)
          throw new WSException("No ByteArrayConverter for class: " + targetClazz.getName());
 
@@ -220,18 +218,15 @@ public class MimeUtils
    {
       public Object readFrom(InputStream in) {
          Object converted = null;
-         
          try
          {
-            ImageReader decoder = ImageIO.getImageReadersByFormatName("JPEG").next();
-            ImageInputStream iis = ImageIO.createImageInputStream(in);
-            decoder.setInput(iis);
-            BufferedImage bim = decoder.read(0);
+            JPEGImageDecoder dec = JPEGCodec.createJPEGDecoder(in);
+            BufferedImage bim = dec.decodeAsBufferedImage();
             converted = bim;
          }
          catch (Exception e)
          {
-            e.printStackTrace();
+            // ignore
          }
 
          return converted;
@@ -240,12 +235,10 @@ public class MimeUtils
       public void writeTo(Object obj, OutputStream out) {
          if(obj instanceof BufferedImage)
          {
-            ImageWriter encoder = ImageIO.getImageWritersByFormatName("JPEG").next();
+            JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(out);
             try
             {
-               ImageOutputStream ios = ImageIO.createImageOutputStream(out);
-               encoder.setOutput(ios);
-               encoder.write((BufferedImage)obj);
+               enc.encode((BufferedImage)obj);
             }
             catch (IOException e)
             {
@@ -328,49 +321,6 @@ public class MimeUtils
       }
    }
 
-   public static class RealByteArrayConverter implements ByteArrayConverter
-   {
-      public Object readFrom(InputStream in)
-      {
-         Object converted = null;
-         try
-         {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IOUtils.copyStream(baos, in);
-
-            in.close();
-
-            converted = baos.toByteArray();
-         }
-         catch (IOException e)
-         {
-            throw new WSException("Failed to convert byte[]");
-         }
-
-         return converted;
-      }
-
-      public void writeTo(Object obj, OutputStream out)
-      {
-         if (obj instanceof byte[])
-         {
-            byte[] bytes = (byte[])obj;
-            try
-            {
-               out.write(bytes);
-            }
-            catch (IOException e)
-            {
-               throw new WSException("Failed to convert " + obj.getClass());
-            }
-         }
-         else
-         {
-            throw new WSException("Unable to convert " + obj.getClass());
-         }
-      }
-   }   
-   
    public static class StreamConverter implements ByteArrayConverter
    {
       public Object readFrom(InputStream in) {

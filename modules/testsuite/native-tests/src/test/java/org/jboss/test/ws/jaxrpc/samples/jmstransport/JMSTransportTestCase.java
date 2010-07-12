@@ -33,12 +33,11 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import junit.framework.Test;
-
-import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.test.JBossWSTest;
-import org.jboss.wsf.test.JBossWSTestHelper;
 import org.jboss.wsf.test.JBossWSTestSetup;
+import org.jboss.wsf.common.DOMUtils;
+
+import junit.framework.Test;
 
 
 /**
@@ -53,9 +52,9 @@ public class JMSTransportTestCase extends JBossWSTest
    
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JMSTransportTestCase.class, JBossWSTestHelper.isTargetJBoss6() ? "jaxrpc-samples-jmstransport-as6.sar" : "jaxrpc-samples-jmstransport.sar");
+      return new JBossWSTestSetup(JMSTransportTestCase.class, "jaxrpc-samples-jmstransport.sar");
    }
-   
+
    /**
     * Send the message to the specified queue
     */
@@ -111,8 +110,6 @@ public class JMSTransportTestCase extends JBossWSTest
       assertNotNull("Expected response message", responseListener.resMessage);
       assertEquals(DOMUtils.parse(resMessage), DOMUtils.parse(responseListener.resMessage));
 
-      sender.close();
-      receiver.close();
       con.stop();
       session.close();
       con.close();

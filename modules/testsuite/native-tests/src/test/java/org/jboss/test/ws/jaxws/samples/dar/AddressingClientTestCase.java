@@ -30,7 +30,6 @@ import junit.framework.Test;
 
 import org.jboss.wsf.common.ObjectNameFactory;
 import org.jboss.wsf.test.JBossWSTest;
-import org.jboss.wsf.test.JBossWSTestHelper;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
 /**
@@ -45,28 +44,15 @@ public class AddressingClientTestCase extends JBossWSTest
    
    public static Test suite()
    {
-      return new JBossWSTestSetup(AddressingClientTestCase.class, JBossWSTestHelper.isTargetJBoss6()
-          ? "jaxws-samples-dar-queue-as6.sar,jaxws-samples-dar-addressing-client.war,jaxws-samples-dar-addressing.jar"
-          : "jaxws-samples-dar-queue.sar,jaxws-samples-dar-addressing-client.war,jaxws-samples-dar-addressing.jar");
+      return new JBossWSTestSetup(AddressingClientTestCase.class, "jaxws-samples-dar-addressing-client.war,jaxws-samples-dar-addressing.jar");
    }
-   
+
    public void testSync() throws Exception
    {
       URL wsdlURL = new URL("http://" + getServerHost() + ":8080/dar?wsdl");
       AddressingClient client = new AddressingClient(wsdlURL, getServerHost());
       Date start = new Date();
-      try
-      {
-         client.run(true);
-      }
-      catch (Exception e)
-      {
-         if (e.getMessage().indexOf("return value can not be null") == -1)
-         {
-            throw e ;
-         }
-         // do nothing, ingore the expected WebServiceException, See JBWS2969
-      }
+      client.run(false);
       Date stop = new Date();
       assertTrue(stop.getTime() - start.getTime() > TEST_RUN_TIME / 2);
    }
@@ -76,18 +62,7 @@ public class AddressingClientTestCase extends JBossWSTest
       URL wsdlURL = new URL("http://" + getServerHost() + ":8080/dar?wsdl");
       AddressingClient client = new AddressingClient(wsdlURL, getServerHost());
       Date start = new Date();
-      try
-      {
-         client.run(true);
-      }
-      catch (Exception e)
-      {
-         if (e.getMessage().indexOf("return value can not be null") == -1)
-         {
-            throw e ;
-         }
-         //do nothing, ingore the expected WebServiceException, See JBWS2969
-      }
+      client.run(true);
       Date stop = new Date();
       assertTrue(stop.getTime() - start.getTime() > TEST_RUN_TIME / 2);
    }
