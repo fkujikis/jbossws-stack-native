@@ -63,7 +63,6 @@ public class DarJMSEndpoint extends JMSTransportSupportEJB3
    }
 
    @Override
-   @WebMethod(exclude=true)
    public void onMessage(Message message)
    {
       log.debug("onMessage: " + message);

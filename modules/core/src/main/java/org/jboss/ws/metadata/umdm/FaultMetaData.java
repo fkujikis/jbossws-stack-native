@@ -113,11 +113,6 @@ public class FaultMetaData implements InitalizableMetaData
 
       this.xmlType = xmlType;
    }
-   
-   public void setJavaTypeName(String javaTypeName)
-   {
-      this.javaTypeName = javaTypeName;
-   }
 
    public String getJavaTypeName()
    {
@@ -399,8 +394,7 @@ public class FaultMetaData implements InitalizableMetaData
             for (int i = 0; i < propertyCount; i++)
                propertyValues[i] = faultBeanProperties[i].accessor().get(faultBean);
 
-            if (log.isDebugEnabled())
-               log.debug("constructing " + javaType.getSimpleName() + ": " + Arrays.toString(propertyValues));
+            log.debug("constructing " + javaType.getSimpleName() + ": " + Arrays.toString(propertyValues));
             serviceException = (Exception)serviceExceptionConstructor.newInstance(propertyValues);
          }
       }

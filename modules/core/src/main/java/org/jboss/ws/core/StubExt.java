@@ -72,6 +72,7 @@ public interface StubExt extends ConfigProvider, EndpointMetadataProvider
    /** HTTP chunk size */
    static final String PROPERTY_CHUNKED_ENCODING_SIZE = "http://org.jboss.ws/http#chunksize";
 
+   
    /**
     * Add a header that is not bound to an input parameter.
     * A propriatory extension, that is not part of JAXRPC.
