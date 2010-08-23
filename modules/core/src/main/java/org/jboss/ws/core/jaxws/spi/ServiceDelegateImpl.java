@@ -24,7 +24,6 @@ package org.jboss.ws.core.jaxws.spi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Proxy;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.jws.HandlerChain;
 import javax.jws.WebService;
 import javax.xml.bind.JAXBContext;
 import javax.xml.namespace.QName;
@@ -54,7 +52,6 @@ import javax.xml.ws.handler.HandlerResolver;
 import javax.xml.ws.spi.ServiceDelegate;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.core.EndpointMetadataProvider;
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.core.jaxws.client.ClientFeatureProcessor;
 import org.jboss.ws.core.jaxws.client.ClientImpl;
@@ -64,13 +61,10 @@ import org.jboss.ws.core.jaxws.client.ServiceObjectFactoryJAXWS;
 import org.jboss.ws.core.jaxws.handler.HandlerResolverImpl;
 import org.jboss.ws.core.jaxws.wsaddressing.EndpointReferenceUtil;
 import org.jboss.ws.core.jaxws.wsaddressing.NativeEndpointReference;
-import org.jboss.ws.extensions.wsrm.api.RMProvider;
 import org.jboss.ws.metadata.builder.jaxws.JAXWSClientMetaDataBuilder;
 import org.jboss.ws.metadata.builder.jaxws.JAXWSMetaDataBuilder;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.metadata.umdm.FeatureAwareClientEndpointMetaDataAdapter;
-import org.jboss.ws.metadata.umdm.FeatureAwareEndpointMetaData;
 import org.jboss.ws.metadata.umdm.HandlerMetaDataJAXWS;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
@@ -99,7 +93,7 @@ import org.w3c.dom.Element;
 public class ServiceDelegateImpl extends ServiceDelegate
 {
    // provide logging
-   private static final Logger log = Logger.getLogger(ServiceDelegateImpl.class);
+   private final Logger log = Logger.getLogger(ServiceDelegateImpl.class);
 
    // The executor service
    private static ExecutorService defaultExecutor = Executors.newCachedThreadPool();
@@ -111,17 +105,9 @@ public class ServiceDelegateImpl extends ServiceDelegate
    private HandlerResolver handlerResolver;
    // The executor service
    private ExecutorService executor;
-   // The features
-   private WebServiceFeature[] features;
 
    // A list of annotated ports
    private List<QName> annotatedPorts = new ArrayList<QName>();
-
-   public ServiceDelegateImpl(URL wsdlURL, QName serviceName, Class serviceClass, WebServiceFeature[] features)
-   {
-      this(wsdlURL, serviceName, serviceClass);
-      this.features = features;
-   }
 
    public ServiceDelegateImpl(URL wsdlURL, QName serviceName, Class serviceClass)
    {
@@ -152,15 +138,13 @@ public class ServiceDelegateImpl extends ServiceDelegate
       }
       else
       {
-         ClassLoader cl = serviceClass.getClassLoader();
-         UnifiedMetaData wsMetaData = cl == null ? new UnifiedMetaData(vfsRoot) : new UnifiedMetaData(vfsRoot, cl);
+         UnifiedMetaData wsMetaData = new UnifiedMetaData(vfsRoot);
          serviceMetaData = new ServiceMetaData(wsMetaData, serviceName);
          wsMetaData.addService(serviceMetaData);
       }
 
       handlerResolver = new HandlerResolverImpl();
 
-      String filename = null;
       if (usRef != null)
       {
          serviceMetaData.setServiceRefName(usRef.getServiceRefName());
@@ -168,37 +152,91 @@ public class ServiceDelegateImpl extends ServiceDelegate
          // Setup the service handlers
          if (usRef.getHandlerChain() != null)
          {
-            filename = usRef.getHandlerChain();
+            String filename = usRef.getHandlerChain();
+            UnifiedHandlerChainsMetaData handlerChainsMetaData = JAXWSMetaDataBuilder.getHandlerChainsMetaData(serviceClass, filename);
+            for (UnifiedHandlerChainMetaData UnifiedHandlerChainMetaData : handlerChainsMetaData.getHandlerChains())
+            {
+               for (UnifiedHandlerMetaData uhmd : UnifiedHandlerChainMetaData.getHandlers())
+               {
+                  HandlerMetaDataJAXWS hmd = HandlerMetaDataJAXWS.newInstance(uhmd, HandlerType.ENDPOINT);
+                  serviceMetaData.addHandler(hmd);
+               }
+            }
+            ((HandlerResolverImpl)handlerResolver).initServiceHandlerChain(serviceMetaData);
          }
       }
-      
-      if (serviceClass != null && serviceClass.getAnnotation(HandlerChain.class) != null)
+   }
+
+   /**
+    * The getPort method returns a stub. A service client uses this stub to invoke operations on the target service endpoint.
+    * The serviceEndpointInterface specifies the service endpoint interface that is supported by the created dynamic proxy or stub instance.
+    */
+   @Override
+   public <T> T getPort(QName portName, Class<T> seiClass)
+   {
+      assertSEIConstraints(seiClass);
+
+      if (serviceMetaData == null)
+         throw new WebServiceException("Service meta data not available");
+
+      // com/sun/ts/tests/jaxws/api/javax_xml_ws/Service#GetPort1NegTest1WithWsdl
+      EndpointMetaData epMetaData = serviceMetaData.getEndpoint(portName);
+      if (epMetaData == null && serviceMetaData.getEndpoints().size() > 0)
+         throw new WebServiceException("Cannot get port meta data for: " + portName);
+
+      // This is the case when the service could not be created from wsdl
+      if (serviceMetaData.getEndpoints().size() == 0)
       {
-         HandlerChain anHandlerChain = (HandlerChain)serviceClass.getAnnotation(HandlerChain.class);
-         if (anHandlerChain != null && anHandlerChain.file().length() > 0) {
-            filename = anHandlerChain.file();
-            try
-            {
-               new URL(filename);
-            }
-            catch (MalformedURLException ex)
-            {
-               filename = serviceClass.getPackage().getName().replace('.', '/') + "/" + filename;
-            }         
-         }     
+         log.warn("Cannot get port meta data for: " + portName);
+
+         QName portType = getPortTypeName(seiClass);
+         epMetaData = new ClientEndpointMetaData(serviceMetaData, portName, portType, Type.JAXWS);
       }
-      if (filename != null) {
-         UnifiedHandlerChainsMetaData handlerChainsMetaData = JAXWSMetaDataBuilder.getHandlerChainsMetaData(serviceClass, filename);
-         for (UnifiedHandlerChainMetaData UnifiedHandlerChainMetaData : handlerChainsMetaData.getHandlerChains())
+
+      String seiClassName = seiClass.getName();
+      epMetaData.setServiceEndpointInterfaceName(seiClassName);
+
+      return getPortInternal(epMetaData, seiClass);
+   }
+
+   /**
+    * The getPort method returns a stub. A service client uses this stub to invoke operations on the target service endpoint.
+    * The serviceEndpointInterface specifies the service endpoint interface that is supported by the created dynamic proxy or stub instance.
+    */
+   @Override
+   public <T> T getPort(Class<T> seiClass)
+   {
+      assertSEIConstraints(seiClass);
+
+      if (serviceMetaData == null)
+         throw new WebServiceException("Service meta data not available");
+
+      String seiClassName = seiClass.getName();
+      EndpointMetaData epMetaData = serviceMetaData.getEndpointByServiceEndpointInterface(seiClassName);
+
+      if (epMetaData == null && serviceMetaData.getEndpoints().size() == 1)
+      {
+         epMetaData = serviceMetaData.getEndpoints().get(0);
+         epMetaData.setServiceEndpointInterfaceName(seiClassName);
+      }
+      else
+      {
+         QName portTypeName = getPortTypeName(seiClass);
+         for (EndpointMetaData epmd : serviceMetaData.getEndpoints())
          {
-            for (UnifiedHandlerMetaData uhmd : UnifiedHandlerChainMetaData.getHandlers())
+            if (portTypeName.equals(epmd.getPortTypeName()))
             {
-               HandlerMetaDataJAXWS hmd = HandlerMetaDataJAXWS.newInstance(uhmd, HandlerType.ENDPOINT);
-               serviceMetaData.addHandler(hmd);
+               epmd.setServiceEndpointInterfaceName(seiClass.getName());
+               epMetaData = epmd;
+               break;
             }
          }
-         ((HandlerResolverImpl)handlerResolver).initServiceHandlerChain(serviceMetaData);
       }
+
+      if (epMetaData == null)
+         throw new WebServiceException("Cannot get port meta data for: " + seiClassName);
+
+      return getPortInternal(epMetaData, seiClass);
    }
 
    private <T> QName getPortTypeName(Class<T> seiClass)
@@ -237,14 +275,7 @@ public class ServiceDelegateImpl extends ServiceDelegate
          }
       }
 
-      T port = (T)createProxy(seiClass, epMetaData);
-      EndpointReference epr = epMetaData.getEndpointReference();
-      if (epr != null)
-      {
-         initAddressingProperties((BindingProvider)port, epr);
-      }
-      initWebserviceFeatures(port, epMetaData.getFeatures().getFeatures());
-      return port; 
+      return (T)createProxy(seiClass, epMetaData);
    }
 
    private void assertSEIConstraints(Class seiClass)
@@ -279,9 +310,8 @@ public class ServiceDelegateImpl extends ServiceDelegate
    {
       ExecutorService executor = (ExecutorService)getExecutor();
       EndpointMetaData epMetaData = getEndpointMetaData(portName);
-      FeatureAwareClientEndpointMetaDataAdapter clientMetaDataAdapter = new FeatureAwareClientEndpointMetaDataAdapter((ClientEndpointMetaData)epMetaData);
-
-      return new DispatchImpl(executor, clientMetaDataAdapter, type, mode);
+      DispatchImpl dispatch = new DispatchImpl(executor, epMetaData, type, mode);
+      return dispatch;
    }
 
    @Override
@@ -289,9 +319,8 @@ public class ServiceDelegateImpl extends ServiceDelegate
    {
       ExecutorService executor = (ExecutorService)getExecutor();
       EndpointMetaData epMetaData = getEndpointMetaData(portName);
-      FeatureAwareClientEndpointMetaDataAdapter clientMetaDataAdapter = new FeatureAwareClientEndpointMetaDataAdapter((ClientEndpointMetaData)epMetaData);
-
-      return new DispatchImpl(executor, clientMetaDataAdapter, jbc, mode);
+      DispatchImpl dispatch = new DispatchImpl(executor, epMetaData, jbc, mode);
+      return dispatch;
    }
 
    private EndpointMetaData getEndpointMetaData(QName portName)
@@ -367,14 +396,13 @@ public class ServiceDelegateImpl extends ServiceDelegate
       try
       {
          ExecutorService executor = (ExecutorService)getExecutor();
-         FeatureAwareClientEndpointMetaDataAdapter clientMetaDataAdapter = new FeatureAwareClientEndpointMetaDataAdapter((ClientEndpointMetaData)epMetaData);
-         ClientProxy handler = new ClientProxy(executor, new ClientImpl(clientMetaDataAdapter, handlerResolver));
+         ClientProxy handler = new ClientProxy(executor, new ClientImpl(epMetaData, handlerResolver));
          ClassLoader cl = epMetaData.getClassLoader();
 
          T proxy;
          try
          {
-            proxy = (T)Proxy.newProxyInstance(cl, new Class[] { seiClass, RMProvider.class, BindingProvider.class, StubExt.class, FeatureAwareEndpointMetaData.class }, handler);
+            proxy = (T)Proxy.newProxyInstance(cl, new Class[] { seiClass, BindingProvider.class, StubExt.class }, handler);
          }
          catch (RuntimeException rte)
          {
@@ -441,7 +469,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    public <T> Dispatch<T> createDispatch(QName portName, Class<T> type, Mode mode, WebServiceFeature... features)
    {
       Dispatch<T> dispatch = createDispatch(portName, type, mode);
-      initWebserviceFeatures(dispatch, this.features);
       initWebserviceFeatures(dispatch, features);
       return dispatch;
    }
@@ -455,7 +482,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
       
       Dispatch<T> dispatch = createDispatch(portName, type, mode);
       initAddressingProperties(dispatch, epr);
-      initWebserviceFeatures(dispatch, this.features);
       initWebserviceFeatures(dispatch, features);
       return dispatch;
    }
@@ -464,7 +490,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    public Dispatch<Object> createDispatch(QName portName, JAXBContext context, Mode mode, WebServiceFeature... features)
    {
       Dispatch<Object> dispatch = createDispatch(portName, context, mode);
-      initWebserviceFeatures(dispatch, this.features);
       initWebserviceFeatures(dispatch, features);
       return dispatch;
    }
@@ -478,7 +503,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
 
       Dispatch<Object> dispatch = createDispatch(portName, context, mode);
       initAddressingProperties(dispatch, epr);
-      initWebserviceFeatures(dispatch, this.features);
       initWebserviceFeatures(dispatch, features);
       return dispatch;
    }
@@ -487,7 +511,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    public <T> T getPort(QName portName, Class<T> sei, WebServiceFeature... features)
    {
       T port = getPort(portName, sei);
-      initWebserviceFeatures(port, this.features);
       initWebserviceFeatures(port, features);
       return port;
    }
@@ -497,7 +520,6 @@ public class ServiceDelegateImpl extends ServiceDelegate
    {
       T port = getPort(sei);
       initAddressingProperties((BindingProvider)port, epr);
-      initWebserviceFeatures(port, this.features);
       initWebserviceFeatures(port, features);
       return port;
    }
@@ -506,88 +528,15 @@ public class ServiceDelegateImpl extends ServiceDelegate
    public <T> T getPort(Class<T> sei, WebServiceFeature... features)
    {
       T port = getPort(sei);
-      initWebserviceFeatures(port, this.features);
       initWebserviceFeatures(port, features);
       return port;
-   }
-
-   /**
-    * The getPort method returns a stub. A service client uses this stub to invoke operations on the target service endpoint.
-    * The serviceEndpointInterface specifies the service endpoint interface that is supported by the created dynamic proxy or stub instance.
-    */
-   @Override
-   public <T> T getPort(QName portName, Class<T> seiClass)
-   {
-      assertSEIConstraints(seiClass);
-
-      if (serviceMetaData == null)
-         throw new WebServiceException("Service meta data not available");
-
-      // com/sun/ts/tests/jaxws/api/javax_xml_ws/Service#GetPort1NegTest1WithWsdl
-      EndpointMetaData epMetaData = serviceMetaData.getEndpoint(portName);
-      if (epMetaData == null && serviceMetaData.getEndpoints().size() > 0)
-         throw new WebServiceException("Cannot get port meta data for: " + portName);
-
-      // This is the case when the service could not be created from wsdl
-      if (serviceMetaData.getEndpoints().size() == 0)
-      {
-         log.warn("Cannot get port meta data for: " + portName);
-
-         QName portType = getPortTypeName(seiClass);
-         epMetaData = new ClientEndpointMetaData(serviceMetaData, portName, portType, Type.JAXWS);
-      }
-
-      String seiClassName = seiClass.getName();
-      epMetaData.setServiceEndpointInterfaceName(seiClassName);
-
-      return getPortInternal(epMetaData, seiClass);
-   }
-
-   /**
-    * The getPort method returns a stub. A service client uses this stub to invoke operations on the target service endpoint.
-    * The serviceEndpointInterface specifies the service endpoint interface that is supported by the created dynamic proxy or stub instance.
-    */
-   @Override
-   public <T> T getPort(Class<T> seiClass)
-   {
-      assertSEIConstraints(seiClass);
-
-      if (serviceMetaData == null)
-         throw new WebServiceException("Service meta data not available");
-
-      String seiClassName = seiClass.getName();
-      EndpointMetaData epMetaData = serviceMetaData.getEndpointByServiceEndpointInterface(seiClassName);
-
-      if (epMetaData == null && serviceMetaData.getEndpoints().size() == 1)
-      {
-         epMetaData = serviceMetaData.getEndpoints().get(0);
-         epMetaData.setServiceEndpointInterfaceName(seiClassName);
-      }
-      else
-      {
-         QName portTypeName = getPortTypeName(seiClass);
-         for (EndpointMetaData epmd : serviceMetaData.getEndpoints())
-         {
-            if (portTypeName.equals(epmd.getPortTypeName()))
-            {
-               epmd.setServiceEndpointInterfaceName(seiClass.getName());
-               epMetaData = epmd;
-               break;
-            }
-         }
-      }
-
-      if (epMetaData == null)
-         throw new WebServiceException("Cannot get port meta data for: " + seiClassName);
-
-      return getPortInternal(epMetaData, seiClass);
    }
 
    private <T> void initWebserviceFeatures(T stub, WebServiceFeature... features)
    {
       if (features != null)
       {
-         EndpointMetaData epMetaData = ((EndpointMetadataProvider)stub).getEndpointMetaData();
+         EndpointMetaData epMetaData = ((StubExt)stub).getEndpointMetaData();
          for (WebServiceFeature feature : features)
          {
             ClientFeatureProcessor.processFeature(feature, epMetaData, stub);

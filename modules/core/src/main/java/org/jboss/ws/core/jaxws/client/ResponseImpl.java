@@ -42,11 +42,11 @@ public class ResponseImpl implements Response
 {
    private Future delegate;
    private Object result;
-   private Exception exception;
+   private WebServiceException exception;
    private Map<String, Object> context = new HashMap<String, Object>();
 
 
-   public void setException(Exception ex)
+   public void setException(WebServiceException ex)
    {
       this.exception = ex;
    }
@@ -57,26 +57,9 @@ public class ResponseImpl implements Response
          throw new IllegalStateException("Future not available");
 
       if (exception != null)
-      {
-         if (exception instanceof WebServiceException)
-         {
-            throw (WebServiceException)exception;
-         }
-         else
-         {
-            throw new WebServiceException(exception);
-         }
-      }
+         throw exception;
       
       return delegate;
-   }
-   
-   private Future getFutureInternal()
-   {
-      if (delegate == null)
-         throw new IllegalStateException("Future not available");      
-      
-      return delegate;      
    }
 
    public void setFuture(Future delegate)
@@ -96,14 +79,14 @@ public class ResponseImpl implements Response
    
    public boolean cancel(boolean mayInterruptIfRunning)
    {
-      return getFutureInternal().cancel(mayInterruptIfRunning);
+      return getFuture().cancel(mayInterruptIfRunning);
    }
 
    public Object get() throws InterruptedException, ExecutionException
    {
       if (result == null)
       {
-         getFutureInternal().get();
+         getFuture().get();
       }
       
       if (exception != null)
@@ -116,7 +99,7 @@ public class ResponseImpl implements Response
    {
       if (result == null)
       {
-         getFutureInternal().get(timeout, unit);
+         getFuture().get(timeout, unit);
       }
 
       if (exception != null)
@@ -127,11 +110,11 @@ public class ResponseImpl implements Response
 
    public boolean isCancelled()
    {
-      return getFutureInternal().isCancelled();
+      return getFuture().isCancelled();
    }
 
    public boolean isDone()
    {
-      return getFutureInternal().isDone();
+      return getFuture().isDone();
    }
 }

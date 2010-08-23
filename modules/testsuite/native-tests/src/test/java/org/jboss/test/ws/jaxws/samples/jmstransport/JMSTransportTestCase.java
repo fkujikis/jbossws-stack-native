@@ -43,7 +43,6 @@ import junit.framework.Test;
 
 import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.test.JBossWSTest;
-import org.jboss.wsf.test.JBossWSTestHelper;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
 /**
@@ -58,7 +57,7 @@ public class JMSTransportTestCase extends JBossWSTest
    
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JMSTransportTestCase.class, JBossWSTestHelper.isTargetJBoss6() ? "jaxws-samples-jmstransport-as6.jar" : "jaxws-samples-jmstransport.sar");
+      return new JBossWSTestSetup(JMSTransportTestCase.class, "jaxws-samples-jmstransport.sar");
    }
    
    public void testPublishedContract() throws Exception
@@ -77,7 +76,7 @@ public class JMSTransportTestCase extends JBossWSTest
 
    public void testJMSEndpointPort() throws Exception
    {
-      URL wsdlURL = getResourceURL("jaxws/samples/jmstransport/META-INF/wsdl/jmsservice.wsdl");
+      URL wsdlURL = getResourceURL("jaxws/samples/jmstransport/jmsservice.wsdl");
       QName serviceName = new QName("http://org.jboss.ws/samples/jmstransport", "OrganizationJMSEndpointService");
       QName portName = new QName("http://org.jboss.ws/samples/jmstransport", "OrganizationJMSEndpointPort");
       
@@ -90,7 +89,7 @@ public class JMSTransportTestCase extends JBossWSTest
 
    public void testHTTPEndpointPort() throws Exception
    {
-      URL wsdlURL = getResourceURL("jaxws/samples/jmstransport/META-INF/wsdl/jmsservice.wsdl");
+      URL wsdlURL = getResourceURL("jaxws/samples/jmstransport/jmsservice.wsdl");
       QName serviceName = new QName("http://org.jboss.ws/samples/jmstransport", "OrganizationJMSEndpointService");
       QName portName = new QName("http://org.jboss.ws/samples/jmstransport", "HTTPEndpointPort");
       
@@ -153,8 +152,6 @@ public class JMSTransportTestCase extends JBossWSTest
       assertNotNull("Expected response message", responseListener.resMessage);
       assertEquals(DOMUtils.parse(resMessage), DOMUtils.parse(responseListener.resMessage));
 
-      sender.close();
-      receiver.close();
       con.stop();
       session.close();
       con.close();

@@ -28,7 +28,6 @@ import java.util.HashMap;
 
 import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
-import javax.xml.rpc.ParameterMode;
 import javax.xml.rpc.server.ServiceLifecycle;
 import javax.xml.rpc.server.ServletEndpointContext;
 import javax.xml.soap.Name;
@@ -36,7 +35,6 @@ import javax.xml.soap.SOAPBodyElement;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPHeader;
 import javax.xml.ws.WebServiceContext;
-import javax.xml.ws.WebServiceException;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.http.HTTPBinding;
 
@@ -62,11 +60,9 @@ import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
 import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.core.soap.SOAPBodyImpl;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
-import org.jboss.ws.extensions.wsrm.RMConstant;
 import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
-import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.wsf.common.JavaUtils;
 import org.jboss.wsf.spi.SPIProvider;
@@ -215,21 +211,6 @@ public class ServiceEndpointInvoker
                   reqMessage = msgContext.getMessageAbstraction();
                   sepInv = binding.unbindRequestMessage(opMetaData, reqMessage);
                }
-               //JBWS-2969:check if the RPC/Lit input paramter is null
-               if (opMetaData.getEndpointMetaData().getType() != EndpointMetaData.Type.JAXRPC
-                     && opMetaData.isRPCLiteral() && sepInv.getRequestParamNames() != null)
-               {  
-                  
-                  for (QName qname : sepInv.getRequestParamNames())
-                  {
-                     ParameterMetaData paramMetaData = opMetaData.getParameter(qname);
-                     if ((paramMetaData.getMode().equals(ParameterMode.IN) || paramMetaData.getMode().equals(ParameterMode.INOUT)) && sepInv.getRequestParamValue(qname) == null)
-                     {
-                        throw new WebServiceException("The RPC/Literal Operation [" + opMetaData.getQName()
-                              + "] parameters can not be null");
-                     }
-                  }
-               }
 
                // Invoke an instance of the SEI implementation bean 
                Invocation inv = setupInvocation(endpoint, sepInv, invContext);
@@ -280,8 +261,7 @@ public class ServiceEndpointInvoker
             msgContext.setMessageAbstraction(resMessage);
          }
 
-         boolean isWsrmMessage = msgContext.get(RMConstant.RESPONSE_CONTEXT) != null;
-         if ((oneway == false) || (isWsrmMessage)) // RM hack
+         if (oneway == false)
          {
             // call the  response handler chain, removing the fault type entry will not call handleFault for that chain 
             handlersPass = callResponseHandlerChain(sepMetaData, handlerType[2]);

@@ -160,8 +160,7 @@ public class WSSecurityDispatcher implements WSSecurityAPI
    public void encodeMessage(WSSecurityConfiguration configuration, SOAPMessage message, Config operationConfig, String user, String password) throws SOAPException
    {
       Config config = getActualConfig(configuration, operationConfig);
-      if (log.isDebugEnabled())
-         log.debug("WS-Security config: " + config);
+      log.debug("WS-Security config: " + config);
 
       // Nothing to process
       if (config == null)
@@ -215,11 +214,6 @@ public class WSSecurityDispatcher implements WSSecurityAPI
          SecurityStore securityStore = new SecurityStore(configuration.getKeyStoreURL(), configuration.getKeyStoreType(), configuration.getKeyStorePassword(),
                configuration.getKeyPasswords(), configuration.getTrustStoreURL(), configuration.getTrustStoreType(), configuration.getTrustStorePassword());
          SecurityEncoder encoder = new SecurityEncoder(operations, securityStore);
-         
-         if ((sign != null || encrypt != null) && message instanceof SOAPMessageImpl)
-         {
-            ((SOAPMessageImpl)message).prepareForDOMAccess();
-         }
          encoder.encode(message.getSOAPPart());
       }
       catch (WSSecurityException e)

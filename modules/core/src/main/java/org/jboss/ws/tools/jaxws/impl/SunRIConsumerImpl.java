@@ -23,7 +23,6 @@ package org.jboss.ws.tools.jaxws.impl;
 
 import com.sun.tools.ws.wscompile.WsimportTool;
 
-import org.jboss.ws.core.utils.JBossWSEntityResolver;
 import org.jboss.ws.tools.io.NullPrintStream;
 import org.jboss.wsf.spi.tools.WSContractConsumer;
 
@@ -52,8 +51,7 @@ public class SunRIConsumerImpl extends WSContractConsumer
    private PrintStream messageStream;
    private String wsdlLocation;
    private List<String> additionalCompilerClassPath = new ArrayList<String>();
-   private boolean additionalHeaders = false;
-   private String target;
+   private String target = "2.0";
 
    @Override
    public void setBindingFiles(List<File> bindingFiles)
@@ -114,12 +112,6 @@ public class SunRIConsumerImpl extends WSContractConsumer
    {
       this.additionalCompilerClassPath = additionalCompilerClassPath;
    }
-   
-   @Override
-   public void setAdditionalHeaders(boolean additionalHeaders)
-   {
-      this.additionalHeaders = additionalHeaders;
-   }
 
    @Override
    public void setTarget(String target)
@@ -156,11 +148,6 @@ public class SunRIConsumerImpl extends WSContractConsumer
       if (extension)
       {
          args.add("-extension");
-      }
-      
-      if (additionalHeaders)
-      {
-         args.add("-XadditionalHeaders");
       }
 
       if (nocompile)
@@ -210,14 +197,12 @@ public class SunRIConsumerImpl extends WSContractConsumer
       args.add("-d");
       args.add(outputDir.getAbsolutePath());
 
-      if (target != null)
-      {
-         if(!target.equals("2.0") && !target.equals("2.1") && !target.equals("2.2"))
-            throw new IllegalArgumentException("WSConsume (native) supports only JAX-WS 2.0, 2.1 and 2.2");
-
-         args.add("-target");
-         args.add(target);
-      }
+      // Always set the target
+       if(!target.equals("2.0") && !target.equals("2.1"))
+         throw new IllegalArgumentException("WSConsume (native) only supports JAX-WS 2.0 and 2.1");
+      
+      args.add("-target");
+      args.add(target);
 
       // finally the WSDL file
       args.add(wsdl.toString());
@@ -226,7 +211,7 @@ public class SunRIConsumerImpl extends WSContractConsumer
       String javaClassPath = System.getProperty("java.class.path");
       if(additionalCompilerClassPath.isEmpty() == false)
       {
-         StringBuilder javaCP = new StringBuilder();
+         StringBuffer javaCP = new StringBuffer();
          for(String s : additionalCompilerClassPath)
          {
             javaCP.append(s).append(File.pathSeparator);
@@ -242,7 +227,6 @@ public class SunRIConsumerImpl extends WSContractConsumer
       try
       {
          WsimportTool compileTool = new WsimportTool(stream);
-         compileTool.setEntityResolver(new JBossWSEntityResolver());
          boolean success = compileTool.run(args.toArray(new String[args.size()]));
 
          if (!success)
