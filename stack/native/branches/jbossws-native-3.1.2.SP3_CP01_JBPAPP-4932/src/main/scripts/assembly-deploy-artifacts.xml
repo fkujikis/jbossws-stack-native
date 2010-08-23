@@ -46,9 +46,9 @@
               <include>org.jboss.ws.native:jbossws-native-jaxws-ext:jar</include>
               <include>org.jboss.ws.native:jbossws-native-saaj:jar</include>
               <include>org.codehaus.jettison:jettison:jar</include>
-              <include>stax:stax-api:jar</include>
+              <include>stax:stax-api:jar</include>              
               <include>org.jvnet.staxex:stax-ex:jar</include>
-              <include>com.sun.xml.stream.buffer:streambuffer:jar</include>
+              <include>com.sun.xml.stream.buffer:streambuffer:jar</include>              
               <include>wsdl4j:wsdl4j:jar</include>
               <include>org.apache:xmlsec:jar</include>
             </includes>
