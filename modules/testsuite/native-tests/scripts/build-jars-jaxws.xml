@@ -603,6 +603,23 @@
 	      </webinf>
 	    </war>			
 		
+		<!-- jaxws-jbws2934 -->
+		<war warfile="${tests.output.dir}/test-libs/jaxws-jbws2934.war" webxml="${tests.output.dir}/test-resources/jaxws/jbws2934/WEB-INF/web.xml">
+			<classes dir="${tests.output.dir}/test-classes">
+				<include name="org/jboss/test/ws/jaxws/jbws2934/*.class" />
+				<exclude name="org/jboss/test/ws/jaxws/jbws2934/EndpointEJB.class" />
+				<exclude name="org/jboss/test/ws/jaxws/jbws2934/*TestCase*.class" />
+			</classes>
+		</war>
+		<jar destfile="${tests.output.dir}/test-libs/jaxws-jbws2934.jar">
+			<fileset dir="${tests.output.dir}/test-classes">
+				<include name="org/jboss/test/ws/jaxws/jbws2934/*.class" />
+				<exclude name="org/jboss/test/ws/jaxws/jbws2934/EndpointJSE.class" />
+				<exclude name="org/jboss/test/ws/jaxws/jbws2934/*TestCase*.class" />
+			</fileset>
+		</jar>
+		
+		
 		<!-- jaxws-webserviceref -->
 		<war warfile="${tests.output.dir}/test-libs/jaxws-webserviceref.war" webxml="${tests.output.dir}/test-resources/jaxws/webserviceref/WEB-INF/web.xml">
 			<classes dir="${tests.output.dir}/test-classes">
