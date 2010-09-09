@@ -66,8 +66,7 @@ public class WSSecurityConfigFactory
       WSSecurityConfiguration config = null;
       if (configLocation != null)
       {
-         if (log.isDebugEnabled())
-            log.debug("createConfiguration from: " + configLocation);
+         log.debug("createConfiguration from: " + configLocation);
          config = WSSecurityOMFactory.newInstance().parse(configLocation);
          
          initKeystorePath(vfsRoot, config);
@@ -75,8 +74,7 @@ public class WSSecurityConfigFactory
 		else
 		{
 			// an exception might be better here...
-		   if (log.isTraceEnabled())
-		      log.trace("Unable to load ws-security config ("+resourceName+"). Security processing will be disabled");
+			log.trace("Unable to load ws-security config ("+resourceName+"). Security processing will be disabled");
 		}		
 
 		return config;
@@ -89,8 +87,7 @@ public class WSSecurityConfigFactory
       if (config.getKeyStoreFile() != null)
       {
          keystoreLocation = getResource(vfsRoot, config.getKeyStoreFile(), true);
-         if (log.isDebugEnabled())
-            log.debug("Add keystore: " + keystoreLocation);
+         log.debug("Add keystore: " + keystoreLocation);
          config.setKeyStoreURL(keystoreLocation);
       }
 
@@ -98,8 +95,7 @@ public class WSSecurityConfigFactory
       if (config.getTrustStoreFile() != null)
       {
          truststoreLocation = getResource(vfsRoot, config.getTrustStoreFile(), true);
-         if (log.isDebugEnabled())
-            log.debug("Add truststore: " + truststoreLocation);
+         log.debug("Add truststore: " + truststoreLocation);
          config.setTrustStoreURL(truststoreLocation);
       }
    }

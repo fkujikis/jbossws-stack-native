@@ -27,7 +27,6 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.ws.handler.Handler;
 
 import org.jboss.logging.Logger;
@@ -52,7 +51,6 @@ import org.jboss.ws.core.soap.UnboundHeader;
 import org.jboss.ws.core.soap.XMLFragment;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
-import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 
 /** A BindingProvider for a JAXWS payload 
@@ -95,15 +93,9 @@ public class PayloadBinding implements CommonBinding, BindingExt
          SOAPBodyImpl body = (SOAPBodyImpl)reqMessage.getSOAPBody();
          
          SOAPContentElement bodyElement = (SOAPContentElement)body.getBodyElement();
-         Source source = null;
-         if (bodyElement != null)
-         {
-            source = bodyElement.getXMLFragment().getSource();
-         }
-         else 
-         {
-            source = new DOMSource();
-         }
+         Source source = bodyElement.getXMLFragment().getSource();
+         if (source == null)
+            throw new IllegalStateException("Payload cannot be null");
 
          epInv.setRequestParamValue(xmlName, source);
 

@@ -42,10 +42,11 @@ public class ResponseImpl implements Response
 {
    private Future delegate;
    private Object result;
-   private Exception exception;
+   private WebServiceException exception;
    private Map<String, Object> context = new HashMap<String, Object>();
 
-   public void setException(Exception ex)
+
+   public void setException(WebServiceException ex)
    {
       this.exception = ex;
    }
@@ -56,25 +57,8 @@ public class ResponseImpl implements Response
          throw new IllegalStateException("Future not available");
 
       if (exception != null)
-      {
-         if (exception instanceof WebServiceException)
-         {
-            throw (WebServiceException)exception;
-         }
-         else
-         {
-            throw new WebServiceException(exception);
-         }
-      }
-
-      return delegate;
-   }
-
-   private Future getFutureInternal()
-   {
-      if (delegate == null)
-         throw new IllegalStateException("Future not available");
-
+         throw exception;
+      
       return delegate;
    }
 
@@ -92,42 +76,32 @@ public class ResponseImpl implements Response
    {
       this.result = result;
    }
-
+   
    public boolean cancel(boolean mayInterruptIfRunning)
    {
-      return getFutureInternal().cancel(mayInterruptIfRunning);
+      return getFuture().cancel(mayInterruptIfRunning);
    }
 
    public Object get() throws InterruptedException, ExecutionException
    {
-      Object response = getResult();
-      if (response != null)
+      if (result == null)
       {
-         return response;
+         getFuture().get();
       }
+      
+      if (exception != null)
+         throw new ExecutionException(exception);
 
-      getFutureInternal().get();
-      response = getResult();
-
-      return response;
+      return result;
    }
 
    public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
    {
-      Object response = getResult();
-      if (response != null)
+      if (result == null)
       {
-         return response;
+         getFuture().get(timeout, unit);
       }
 
-      getFutureInternal().get(timeout, unit);
-      response = getResult();
-
-      return response;
-   }
-
-   private Object getResult() throws ExecutionException
-   {
       if (exception != null)
          throw new ExecutionException(exception);
 
@@ -136,11 +110,11 @@ public class ResponseImpl implements Response
 
    public boolean isCancelled()
    {
-      return getFutureInternal().isCancelled();
+      return getFuture().isCancelled();
    }
 
    public boolean isDone()
    {
-      return getFutureInternal().isDone();
+      return getFuture().isDone();
    }
 }

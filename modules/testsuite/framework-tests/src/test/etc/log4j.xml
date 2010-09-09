@@ -19,9 +19,12 @@
   <!-- ================================= -->
 
   <!-- A time/date based rolling appender -->
-  <appender name="FILE" class="org.apache.log4j.RollingFileAppender">
+  <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
     <param name="File" value="${log4j.output.dir}/test.log"/>
-    <param name="Append" value="true"/>
+    <param name="Append" value="false"/>
+
+    <!-- Rollover at midnight each day -->
+    <param name="DatePattern" value="'.'yyyy-MM-dd"/>
 
     <layout class="org.apache.log4j.PatternLayout">
       <!-- The default pattern: Date Priority [Category] Message\n -->
@@ -51,12 +54,8 @@
     <priority value="DEBUG"/>
   </category>
 
-  <category name="org.jboss.wsf">
-    <priority value="DEBUG"/>
-  </category>
-
   <category name="org.jboss.ws.core.MessageTrace">
-    <priority value="TRACE"/>
+    <priority value="TRACE" class="org.jboss.logging.XLevel"/>
   </category>
 
   <category name="org.jboss.remoting">

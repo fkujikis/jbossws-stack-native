@@ -30,9 +30,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import javax.naming.*;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
-import javax.xml.ws.WebServiceFeature;
-import javax.xml.ws.soap.AddressingFeature;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -99,36 +96,20 @@ public class ServiceObjectFactoryJAXWS extends ServiceObjectFactory
          if (Service.class.getName().equals(targetClassName))
             targetClassName = serviceImplClass;
          
-         if (log.isDebugEnabled())
-            log.debug("[name=" + serviceRefName + ",service=" + serviceImplClass + ",target=" + targetClassName + "]");
+         log.debug("[name=" + serviceRefName + ",service=" + serviceImplClass + ",target=" + targetClassName + "]");
 
          // Load the service class
-         ClassLoader ctxLoader = SecurityActions.getContextClassLoader();
-         Class serviceClass = SecurityActions.loadClass(ctxLoader, serviceImplClass);
+         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
+         Class serviceClass = ctxLoader.loadClass(serviceImplClass);
          Class targetClass = (targetClassName != null ? ctxLoader.loadClass(targetClassName) : null);
 
          if (Service.class.isAssignableFrom(serviceClass) == false)
             throw new IllegalArgumentException("WebServiceRef type '" + serviceClass + "' is not assignable to javax.xml.ws.Service");
          
-         if (log.isDebugEnabled())
-            log.debug("Loaded Service '" + serviceClass.getName() + "' from: " + serviceClass.getProtectionDomain().getCodeSource());
+         log.debug("Loaded Service '" + serviceClass.getName() + "' from: " + serviceClass.getProtectionDomain().getCodeSource());
 
          // Receives either a javax.xml.ws.Service or a dynamic proxy
          Object target;
-         
-         // configure addressing
-         AddressingFeature addressingFeature = null;
-         if (serviceRef.isAddressingEnabled()) {
-            final boolean enabled = serviceRef.isAddressingEnabled();
-            final boolean required = serviceRef.isAddressingRequired();
-            final String refResponses = serviceRef.getAddressingResponses();
-            AddressingFeature.Responses responses = AddressingFeature.Responses.ALL;
-            if ("ANONYMOUS".equals(refResponses))
-               responses = AddressingFeature.Responses.ANONYMOUS;
-            if ("NON_ANONYMOUS".equals(refResponses))
-               responses = AddressingFeature.Responses.NON_ANONYMOUS;
-            addressingFeature = new AddressingFeature(enabled, required, responses);
-         }
 
          // Get the URL to the wsdl
          URL wsdlURL = serviceRef.getWsdlLocation();
@@ -142,11 +123,7 @@ public class ServiceObjectFactoryJAXWS extends ServiceObjectFactory
             {
                if (wsdlURL != null)
                {
-                  if (addressingFeature != null) {
-                     target = Service.create(wsdlURL, serviceQName, new WebServiceFeature[] { addressingFeature });
-                  } else {
-                     target = Service.create(wsdlURL, serviceQName);
-                  }
+                  target = Service.create(wsdlURL, serviceQName);
                }
                else
                {
@@ -158,22 +135,12 @@ public class ServiceObjectFactoryJAXWS extends ServiceObjectFactory
             {
                if (wsdlURL != null)
                {
-                  if (addressingFeature != null) {
-                     Constructor ctor = serviceClass.getConstructor(new Class[] { URL.class, QName.class, WebServiceFeature[].class });
-                     target = ctor.newInstance(new Object[] { wsdlURL, serviceQName, new WebServiceFeature[] { addressingFeature } });
-                  } else {
-                     Constructor ctor = serviceClass.getConstructor(new Class[] { URL.class, QName.class });
-                     target = ctor.newInstance(new Object[] { wsdlURL, serviceQName });
-                  }
+                  Constructor ctor = serviceClass.getConstructor(new Class[] { URL.class, QName.class });
+                  target = ctor.newInstance(new Object[] { wsdlURL, serviceQName });
                }
                else
                {
-                  if (addressingFeature != null) {
-                     Constructor ctor = serviceClass.getConstructor(new Class[] { WebServiceFeature[].class });
-                     target = ctor.newInstance(new Object[] { new WebServiceFeature[] { addressingFeature } });
-                  } else {
-                     target = (Service)serviceClass.newInstance();
-                  }
+                  target = (Service)serviceClass.newInstance();
                }
             }
          }
