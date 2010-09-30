@@ -1,19 +1,23 @@
 #
 # A sample ant properties file
 #
+# $Id: ant.properties.example 3137 2007-05-18 13:41:57Z thomas.diesler@jboss.com $
 
 # Optional JBoss Home
-jboss501.home=@jboss501.home@
-jboss510.home=@jboss510.home@
-jboss600.home=@jboss600.home@
-jboss601.home=@jboss601.home@
+jboss50.home=@jboss50.home@
+jboss42.home=@jboss42.home@
+jboss40.home=@jboss40.home@
 
-# The JBoss server under test. This can be [jboss501|jboss510|jboss600jboss601|]
-jbossws.integration.target=jboss510
+# The JBoss server under test. This can be [jboss50|jboss42|jboss40]
+jbossws.integration.target=jboss42
 
 # The JBoss settings
 jboss.server.instance=default
 jboss.bind.address=localhost
+
+# JBoss Repository
+#jboss.repository=file:/home/tdiesler/svn/jboss.local.repository
+jboss.repository=http://repository.jboss.org
 
 # JBoss JMX invoker authentication
 #jmx.authentication.username=admin
