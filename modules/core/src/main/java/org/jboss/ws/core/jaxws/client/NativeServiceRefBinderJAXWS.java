@@ -35,14 +35,10 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.Referenceable;
 import javax.xml.namespace.QName;
-import javax.xml.ws.RespectBinding;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceClient;
 import javax.xml.ws.WebServiceRef;
 import javax.xml.ws.WebServiceRefs;
-import javax.xml.ws.soap.Addressing;
-import javax.xml.ws.soap.AddressingFeature;
-import javax.xml.ws.soap.MTOM;
 
 import org.jboss.logging.Logger;
 import org.jboss.util.naming.Util;
@@ -70,33 +66,13 @@ public class NativeServiceRefBinderJAXWS implements ServiceRefBinder
 
       // Build the list of @WebServiceRef relevant annotations
       List<WebServiceRef> wsrefList = new ArrayList<WebServiceRef>();
-      Addressing addressingAnnotation = null;
-      MTOM mtomAnnotation = null;
-      RespectBinding respectBindingAnnotation = null;
 
       if (anElement != null)
       {
          for (Annotation an : anElement.getAnnotations())
          {
-            if (an instanceof Addressing) {
-               addressingAnnotation = (Addressing)an;
-               continue;
-            }
-            
-            if (an instanceof MTOM) {
-               mtomAnnotation = (MTOM)an;
-               continue;
-            }
-            
-            if (an instanceof RespectBinding) {
-               respectBindingAnnotation = (RespectBinding)an;
-               continue;
-            }
-            
-            if (an instanceof WebServiceRef) {
+            if (an instanceof WebServiceRef)
                wsrefList.add((WebServiceRef)an);
-               continue;
-            }
 
             if (an instanceof WebServiceRefs)
             {
@@ -141,13 +117,12 @@ public class NativeServiceRefBinderJAXWS implements ServiceRefBinder
 
       String targetClassName = (targetClass != null ? targetClass.getName() : null);
       String externalName = encCtx.getNameInNamespace() + "/" + encName;
-      if (log.isDebugEnabled())
-         log.debug("setupServiceRef [jndi=" + externalName + ",target=" + targetClassName + "]");
+      log.debug("setupServiceRef [jndi=" + externalName + ",target=" + targetClassName + "]");
 
       String serviceImplClass = null;
 
       // #1 Use the explicit @WebServiceRef.value
-      if (wsref != null && wsref.value() != Service.class)
+      if (wsref != null && wsref.value() != Object.class)
          serviceImplClass = wsref.value().getName();
 
       // #2 Use the target ref type
@@ -216,33 +191,12 @@ public class NativeServiceRefBinderJAXWS implements ServiceRefBinder
             {
                WebServiceClient clientDecl = (WebServiceClient)serviceClass.getAnnotation(WebServiceClient.class);
                serviceRef.setServiceQName(new QName(clientDecl.targetNamespace(), clientDecl.name()));
-               //use the @WebServiceClien(wsdlLocation=...) if the service ref wsdl location returned at this time would be null
-               if (clientDecl.wsdlLocation().length() > 0 && serviceRef.getWsdlLocation() == null)
-               {
-                  serviceRef.setWsdlOverride(clientDecl.wsdlLocation());
-               }
             }
          }
          catch (ClassNotFoundException e)
          {
             WSFException.rethrow("Cannot extract service QName for target service", e);
          }
-      }
-
-      if (addressingAnnotation != null)
-      {
-         serviceRef.setAddressingEnabled(addressingAnnotation.enabled());
-         serviceRef.setAddressingRequired(addressingAnnotation.required());
-         serviceRef.setAddressingResponses(addressingAnnotation.responses().toString());
-      }
-
-      if (mtomAnnotation != null) {
-         serviceRef.setMtomEnabled(mtomAnnotation.enabled());
-         serviceRef.setMtomThreshold(mtomAnnotation.threshold());
-      }
-
-      if (respectBindingAnnotation != null) {
-         serviceRef.setRespectBindingEnabled(respectBindingAnnotation.enabled());
       }
 
       // Do not use rebind, the binding should be unique
