@@ -455,10 +455,7 @@ public class SchemaBindingBuilder
       if (typeBinding != null)
       {
          if(!isAnonymousType)
-         {
-            ElementBinding eb = schemaBinding.addElement(xmlName, typeBinding);
-            eb.setNillable(true);
-         }
+            schemaBinding.addElement(xmlName, typeBinding);
       }
       else if (xmlType.equals(Constants.TYPE_LITERAL_ANYTYPE) == false)
       {

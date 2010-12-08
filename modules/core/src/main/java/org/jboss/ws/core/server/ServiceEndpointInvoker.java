@@ -25,7 +25,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.HashMap;
-import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
@@ -63,7 +62,6 @@ import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
 import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.core.soap.SOAPBodyImpl;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
-import org.jboss.ws.extensions.wsrm.RMConstant;
 import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -80,6 +78,7 @@ import org.jboss.wsf.spi.invocation.InvocationHandler;
 import org.jboss.wsf.spi.invocation.InvocationType;
 import org.jboss.wsf.spi.invocation.WebServiceContextFactory;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+import org.jboss.wsf.spi.serviceref.ServiceRefHandler.Type;
 
 /** An implementation handles invocations on the endpoint
  *
@@ -231,7 +230,7 @@ public class ServiceEndpointInvoker
                      }
                   }
                }
-
+               
                // Invoke an instance of the SEI implementation bean 
                Invocation inv = setupInvocation(endpoint, sepInv, invContext);
                InvocationHandler invHandler = endpoint.getInvocationHandler();
@@ -239,6 +238,7 @@ public class ServiceEndpointInvoker
                try
                {
                   invHandler.invoke(endpoint, inv);
+                  
                }
                catch (InvocationTargetException th)
                {
@@ -281,8 +281,7 @@ public class ServiceEndpointInvoker
             msgContext.setMessageAbstraction(resMessage);
          }
 
-         boolean isWsrmMessage = msgContext.get(RMConstant.RESPONSE_CONTEXT) != null;
-         if ((oneway == false) || (isWsrmMessage)) // RM hack
+         if (oneway == false)
          {
             // call the  response handler chain, removing the fault type entry will not call handleFault for that chain 
             handlersPass = callResponseHandlerChain(sepMetaData, handlerType[2]);
@@ -301,6 +300,7 @@ public class ServiceEndpointInvoker
          CommonBinding binding = bindingProvider.getCommonBinding();
          try
          {
+            MessageContextAssociation.peekMessageContext().put("Exception", ex);
             binding.bindFaultMessage(ex);
 
             // call the fault handler chain
@@ -333,8 +333,7 @@ public class ServiceEndpointInvoker
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext instanceof SOAPMessageContextJAXWS)
       {
-         final DeploymentType deploymentType = ep.getService().getDeployment().getType(); 
-         if (DeploymentType.JAXWS_JSE == deploymentType)
+         if (ep.getService().getDeployment().getType() == DeploymentType.JAXWS_JSE)
          {
             if (msgContext.get(MessageContext.SERVLET_REQUEST) != null)
             {
@@ -345,11 +344,6 @@ public class ServiceEndpointInvoker
             {
                log.warn("Cannot provide WebServiceContext, since the current MessageContext does not provide a ServletRequest");
             }
-         }
-         else if (DeploymentType.JAXWS_EJB3 == deploymentType)
-         {
-            WebServiceContext wsContext = contextFactory.newWebServiceContext(InvocationType.JAXWS_EJB3, (SOAPMessageContextJAXWS)msgContext);
-            invContext.addAttachment(WebServiceContext.class, wsContext);
          }
          invContext.addAttachment(javax.xml.ws.handler.MessageContext.class, msgContext);
       }
@@ -429,19 +423,8 @@ public class ServiceEndpointInvoker
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext instanceof MessageContextJAXWS)
       {
-         Map<String, DataHandler> outboundAttachments = (Map<String, DataHandler>)msgContext.get(MessageContextJAXWS.OUTBOUND_MESSAGE_ATTACHMENTS);
-         Map<String, DataHandler> newAttachments = new HashMap<String, DataHandler>(); // to protect against attacks from endpoint
-         
          // Map of attachments to a message for the outbound message, key is the MIME Content-ID, value is a DataHandler
-         msgContext.put(MessageContextJAXWS.OUTBOUND_MESSAGE_ATTACHMENTS, newAttachments);
-         
-         if (outboundAttachments != null)
-         {
-            for (final String key : outboundAttachments.keySet())
-            {
-               newAttachments.put(key, outboundAttachments.get(key));
-            }
-         }
+         msgContext.put(MessageContextJAXWS.OUTBOUND_MESSAGE_ATTACHMENTS, new HashMap<String, DataHandler>());
       }
    }
 
