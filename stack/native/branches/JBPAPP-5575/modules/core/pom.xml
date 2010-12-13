@@ -20,6 +20,14 @@
   
   <!-- Dependencies -->
   <dependencies>
+  
+    <!-- to be replaced, can't directly depend on AS specific stuff here -->
+    <dependency>
+      <groupId>org.jboss.jbossas</groupId>
+      <artifactId>jboss-as-security</artifactId>
+      <version>5.1.0.GA</version>
+    </dependency>
+  
     <!-- jbossws dependencies -->
     <dependency>
       <groupId>org.jboss.ws</groupId>
