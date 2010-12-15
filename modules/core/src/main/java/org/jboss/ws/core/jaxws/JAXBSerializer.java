@@ -45,7 +45,6 @@ import org.jboss.ws.extensions.xop.jaxws.AttachmentMarshallerImpl;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.util.xml.BufferedStreamResult;
 import org.jboss.wsf.spi.binding.BindingCustomization;
-import org.jboss.wsf.spi.binding.JAXBBindingCustomization;
 import org.w3c.dom.NamedNodeMap;
 
 /**

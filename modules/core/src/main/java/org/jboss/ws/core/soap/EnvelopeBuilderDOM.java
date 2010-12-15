@@ -89,7 +89,6 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          {
             return null;
          }
-         log.error("Exception while building envelope", ex);
          QName faultCode = Constants.SOAP11_FAULT_CODE_CLIENT;
          throw new CommonSOAPFaultException(faultCode, ex.getMessage());
       }
@@ -134,7 +133,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
    {
       // Construct the envelope
       SOAPPartImpl soapPart = (SOAPPartImpl)soapMessage.getSOAPPart();
-      SOAPEnvelopeImpl soapEnv = new SOAPEnvelopeImpl(soapPart, (SOAPElementImpl)soapFactory.createElement(domEnv, false), false);
+      SOAPEnvelopeImpl soapEnv = new SOAPEnvelopeImpl(soapPart, soapFactory.createElement(domEnv, false), false);
 
       DOMUtils.copyAttributes(soapEnv, domEnv);
 
@@ -171,12 +170,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          soapHeader = soapEnv.addHeader();
 
       DOMUtils.copyAttributes(soapHeader, domHeader);
-      
-      if (!soapHeader.getPrefix().equals(domHeader.getPrefix()))
-      {
-         soapHeader.setPrefix(domHeader.getPrefix());
-      }
-      
+
       NodeList headerChildNodes = domHeader.getChildNodes();
       for (int i = 0; i < headerChildNodes.getLength(); i++)
       {
@@ -193,10 +187,6 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
 
             DOMUtils.copyAttributes(destElement, srcElement);
             destElement.setXMLFragment(xmlFragment);
-         }
-         else if (childType == Node.TEXT_NODE) 
-         {
-            log.debug("Ignore child type: " + childType);
          }
          else
          {
@@ -217,11 +207,6 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
 
       DOMUtils.copyAttributes(soapBody, domBody);
 
-      if (!soapBody.getPrefix().equals(domBody.getPrefix()))
-      {
-         soapBody.setPrefix(domBody.getPrefix());
-      }
-      
       SOAPBodyElement soapBodyElement = null;
       boolean attachHRefElements = Constants.URI_SOAP11_ENC.equals(soapEnv.getAttributeNS(envNS, "encodingStyle"));
 

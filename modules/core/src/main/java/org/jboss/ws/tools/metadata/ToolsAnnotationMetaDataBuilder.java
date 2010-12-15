@@ -75,7 +75,7 @@ public class ToolsAnnotationMetaDataBuilder
    private void generateOperationMetaData()
    {
       //    Generate the Operation Metadata
-      Method[] marr = endpoint.getMethods();
+      Method[] marr = endpoint.getDeclaredMethods();
       if( marr != null)
       {
          int len = Array.getLength(marr);
