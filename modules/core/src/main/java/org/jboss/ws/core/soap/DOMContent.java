@@ -57,8 +57,7 @@ public class DOMContent extends SOAPContent
          log.debug("getXMLFragment from DOM");
          DOMSource domSource = new DOMSource(container);
          XMLFragment fragment = new XMLFragment(domSource);
-         if (log.isDebugEnabled())
-            log.debug("xmlFragment: " + fragment);
+         log.debug("xmlFragment: " + fragment);
 
          SOAPContent xmlValid = new XMLContent(container);
          xmlValid.setXMLFragment(fragment);

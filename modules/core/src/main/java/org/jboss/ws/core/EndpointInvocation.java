@@ -172,7 +172,7 @@ public class EndpointInvocation
       }
       return paramValue;
    }
-
+  
    public void setReturnValue(Object value)
    {
       ParameterMetaData retMetaData = opMetaData.getReturnParameter();
@@ -186,7 +186,8 @@ public class EndpointInvocation
 
    public Object getReturnValue()
    {
-      log.debug("getReturnValue");
+      if (log.isDebugEnabled())
+         log.debug("getReturnValue");
       Object paramValue = returnValue;
       ParameterMetaData paramMetaData = opMetaData.getReturnParameter();
       if (paramMetaData != null)

@@ -117,12 +117,9 @@ public class EndpointConfigMetaData
       addHandlers(sepHandlers);
       addHandlers(postHandlers);
 
-      if (log.isDebugEnabled())
-      {
-         log.debug("Added " + preHandlers.size() + " PRE handlers");
-         log.debug("Added " + sepHandlers.size() + " ENDPOINT handlers");
-         log.debug("Added " + postHandlers.size() + " POST handlers");
-      }
+      log.debug("Added " + preHandlers.size() + " PRE handlers");
+      log.debug("Added " + sepHandlers.size() + " ENDPOINT handlers");
+      log.debug("Added " + postHandlers.size() + " POST handlers");
    }
 
    public EndpointMetaData getEndpointMetaData()
