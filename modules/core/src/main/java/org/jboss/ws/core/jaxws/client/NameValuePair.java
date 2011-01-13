@@ -57,7 +57,7 @@ public class NameValuePair implements Serializable
 
    public String toString()
    {
-      StringBuilder sb = new StringBuilder(100);
+      StringBuffer sb = new StringBuffer(100);
       sb.append('[');
       sb.append("name=").append(name);
       sb.append(",value=").append(value);

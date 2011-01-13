@@ -41,6 +41,7 @@
     <macro-wstools dest="jaxrpc/samples/secureejb/META-INF" config="jaxrpc/samples/secureejb/wstools-config.xml"/>
     <macro-wstools dest="jaxrpc/samples/wsaddr/hello/WEB-INF" config="jaxrpc/samples/wsaddr/hello/wstools-config.xml"/>
     <macro-wstools dest="jaxrpc/samples/wsaddr/replyto/WEB-INF" config="jaxrpc/samples/wsaddr/replyto/wstools-config.xml"/>
+    <macro-wstools dest="jaxrpc/samples/wsbpel/hello/WEB-INF" config="jaxrpc/samples/wsbpel/hello/wstools-config.xml"/>
     <macro-wstools dest="jaxrpc/samples/wssecurity/WEB-INF" config="jaxrpc/samples/wssecurity/wstools-config.xml"/>
     
   </target>
@@ -64,7 +65,7 @@
       http://jira.codehaus.org/browse/MANTRUN-91
     -->
     <javac destdir="${tests.output.dir}/test-classes" debug="true" encoding="utf-8" deprecation="true" fork="true"
-      source="1.5" target="1.5">
+      executable="${java.jdk15.home}/bin/javac" compiler="javac1.5">
       <src path="${tests.output.dir}/wstools/java"/>
       <classpath>
         <pathelement path="${maven.test.classpath}"/>

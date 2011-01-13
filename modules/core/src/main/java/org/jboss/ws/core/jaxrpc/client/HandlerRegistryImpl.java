@@ -117,12 +117,8 @@ public class HandlerRegistryImpl implements HandlerRegistry
 
          // copy headers
          Set<QName> headers = new HashSet<QName>();
-         QName[] infoHeaders = info.getHeaders();
-         if (infoHeaders != null)
-         {
-            for (QName header : infoHeaders)
-               headers.add(header);
-         }
+         for (QName header : info.getHeaders())
+            headers.add(header);
          handler.setSoapHeaders(headers);
 
          // copy init params
