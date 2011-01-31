@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,12 +23,10 @@ package org.jboss.ws.core.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
@@ -49,45 +47,18 @@ import org.w3c.dom.NodeList;
  * For a discussion of this topic.
  *
  * @author Thomas.Diesler@jboss.org
- * @author alessio.soldano@jboss.com
- * 
  * @since 23-Mar-2005
  */
 public class WSDLRequestHandler
 {
    // provide logging
-   private static Logger log = Logger.getLogger(WSDLRequestHandler.class);
+   private Logger log = Logger.getLogger(WSDLRequestHandler.class);
 
-   private final URL wsdlLocation;
-   private final String wsdlPublishLoc;
-   private final ServerConfig config;
+   private EndpointMetaData epMetaData;
 
-   public WSDLRequestHandler(URL wsdlLocationFromMetadata, String wsdlPublishLocationFromMetadata, ServerConfig config)
+   public WSDLRequestHandler(EndpointMetaData epMetaData)
    {
-      this.wsdlLocation = wsdlLocationFromMetadata;
-      this.wsdlPublishLoc = wsdlPublishLocationFromMetadata;
-      this.config = config;
-   }
-   
-   public Document getDocumentForPath(URL reqURL, String resPath) throws IOException
-   {
-      String wsdlHost = reqURL.getHost();
-      boolean rewriteUsingCalledURL = ServerConfig.UNDEFINED_HOSTNAME.equals(config.getWebServiceHost());
-
-      if (!rewriteUsingCalledURL)
-      {
-         wsdlHost = config.getWebServiceHost();
-      }
-
-      if (log.isDebugEnabled())
-         log.debug("WSDL request, using host: " + wsdlHost);
-      
-      return getDocumentForPath(reqURL, wsdlHost, rewriteUsingCalledURL, resPath);
-   }
-   
-   protected InputStream openStreamToWSDL() throws IOException
-   {
-      return wsdlLocation.openStream();
+      this.epMetaData = epMetaData;
    }
 
    /**
@@ -95,40 +66,23 @@ public class WSDLRequestHandler
     * <p/>
     * Use path value of null to get the root document
     *
-    * @param reqURL   The full request url
-    * @param wsdlHost The host to be used for address rewrite in the wsdl
-    * @param rewriteUsingCalledURL True if the called url is being used to get the wsdlHost (and the port to use for relative addresses in import/include elements) 
     * @param resPath The wsdl resource to get, can be null for the top level wsdl
     * @return A wsdl document, or null if it cannot be found
     */
-   private Document getDocumentForPath(URL reqURL, String wsdlHost, boolean rewriteUsingCalledURL, String resPath) throws IOException
+   public Document getDocumentForPath(URL reqURL, String wsdlHost, String resPath) throws IOException
    {
       Document wsdlDoc;
 
+      // The WSDLFilePublisher should set the location to an URL 
+      URL wsdlLocation = epMetaData.getServiceMetaData().getWsdlLocation();
       if (wsdlLocation == null)
          throw new IllegalStateException("Cannot obtain wsdl location");
 
       // get the root wsdl
       if (resPath == null)
       {
-         InputStream is = null;
-         try
-         {
-            is = openStreamToWSDL();
-            Element wsdlElement = DOMUtils.parse(is);
-            wsdlDoc = wsdlElement.getOwnerDocument();
-         }
-         finally
-         {
-            try
-            {
-               is.close();
-            }
-            catch (Exception e)
-            {
-               //ignore
-            }
-         }
+         Element wsdlElement = DOMUtils.parse(wsdlLocation.openStream());
+         wsdlDoc = wsdlElement.getOwnerDocument();
       }
 
       // get some imported resource
@@ -137,9 +91,9 @@ public class WSDLRequestHandler
          File wsdlLocFile = new File(wsdlLocation.getPath());
          String impResourcePath = wsdlLocFile.getParent() + File.separatorChar + resPath;
          File impResourceFile = new File(impResourcePath);
+         String wsdlPublishLoc = epMetaData.getServiceMetaData().getWsdlPublishLocation();
 
-         if (log.isDebugEnabled())
-            log.debug("Importing resource file: " + impResourceFile.getCanonicalPath());
+         log.debug("Importing resource file: " + impResourceFile.getCanonicalPath());
 
          String wsdlLocFilePath = wsdlLocFile.getParentFile().getCanonicalPath();
          SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
@@ -162,14 +116,14 @@ public class WSDLRequestHandler
          }
       }
 
-      modifyAddressReferences(reqURL, wsdlHost, rewriteUsingCalledURL, resPath, wsdlDoc.getDocumentElement());
+      modifyAddressReferences(reqURL, wsdlHost, resPath, wsdlDoc.getDocumentElement());
       return wsdlDoc;
    }
 
    /**
     * Modify the location of wsdl and schema imports
     */
-   private void modifyAddressReferences(URL reqURL, String wsdlHost, boolean rewriteUsingCalledURL, String resPath, Element element) throws IOException
+   private void modifyAddressReferences(URL reqURL, String wsdlHost, String resPath, Element element) throws IOException
    {
       // map wsdl definition imports
       NodeList nlist = element.getChildNodes();
@@ -205,44 +159,37 @@ public class WSDLRequestHandler
                         String resParent = resPath.substring(0, resPath.lastIndexOf("/"));
 
                         // replace parent traversal, results in resParent == null when successfully executed
-                        if (orgLocation.startsWith("../") && resParent != null)
+                        while (orgLocation.startsWith("../")  && resParent != null)
                         {
-                           // replace parent traversal, results in resParent == null when successfully executed
-                           while (orgLocation.startsWith("../") && resParent != null)
+                           if (resParent.indexOf("/") > 0)
                            {
-                              if (resParent.endsWith(".."))
-                              {
-                                 newResourcePath = resParent + "/" + orgLocation;
-                                 resParent = null;
-                              }
-                              else if (resParent.indexOf("/") > 0)
-                              {
-                                 resParent = resParent.substring(0, resParent.lastIndexOf("/"));
-                                 orgLocation = orgLocation.substring(3);
-                                 newResourcePath = resParent + "/" + orgLocation;
-                              }
-                              else
-                              {
-                                 orgLocation = orgLocation.substring(3);
-                                 newResourcePath = orgLocation;
-                                 resParent = null;
-                              }
+                              resParent = resParent.substring(0, resParent.lastIndexOf("/"));
+                              orgLocation = orgLocation.substring(3);
+                              newResourcePath = resParent + "/" + orgLocation;
                            }
+                           else
+                           {
+                              orgLocation = orgLocation.substring(3);
+                              newResourcePath = orgLocation;
+                              resParent = null;
+                           }
+                        }
 
-                        }
-                        else
-                        {
-                           newResourcePath = resParent + "/" + orgLocation;
-                        }
+                        // no parent traversal happend
+                        if(resParent!=null)
+                           newResourcePath = resParent +"/"+ orgLocation;
                      }
 
                      String reqPath = reqURL.getPath();
                      String completeHost = wsdlHost;
 
-                     String reqProtocol = reqURL.getProtocol();
-                     int reqPort = rewriteUsingCalledURL ? reqURL.getPort() : getPortForProtocol(reqProtocol);
-                     String hostAndPort = wsdlHost + (reqPort > 0 ? ":" + reqPort : "");
-                     completeHost = reqProtocol + "://" + hostAndPort;
+                     if (!(wsdlHost.startsWith("http://") || wsdlHost.startsWith("https://")))
+                     {
+                        String reqProtocol = reqURL.getProtocol();
+                        int reqPort = reqURL.getPort();
+                        String hostAndPort = wsdlHost + (reqPort > 0 ? ":" + reqPort : "");
+                        completeHost = reqProtocol + "://" + hostAndPort;
+                     }
 
                      String newLocation = completeHost + reqPath + "?wsdl&resource=" + newResourcePath;
                      locationAttr.setNodeValue(newLocation);
@@ -260,94 +207,34 @@ public class WSDLRequestHandler
                {
                   String orgLocation = locationAttr.getNodeValue();
 
-                  if (isHttp(orgLocation))
-                  {
-                     URL orgURL = new URL(orgLocation);
-                     String orgProtocol = orgURL.getProtocol();
-                     String host = orgURL.getHost();
-                     final boolean rewriteLocation =
-                        ServerConfig.UNDEFINED_HOSTNAME.equals(host) ||
-                        this.config.isModifySOAPAddress();
+                  URL orgURL = new URL(orgLocation);
+                  String orgHost = orgURL.getHost();
+                  String orgPath = orgURL.getPath();
 
-                     if (rewriteLocation)
-                     {
-                        //we stick with the original protocol (https) if the transport guarantee is CONFIDENTIAL
-                        //(if the original wsdl soap:address uses https we can't overwrite it with http)
-                        boolean confidential = "https".equalsIgnoreCase(orgProtocol);
-                        String reqProtocol = reqURL.getProtocol();
-                        
-                        int port;
-                        if (rewriteUsingCalledURL)
-                        {
-                           port = reqURL.getPort();
-                        }
-                        else
-                        {
-                           port = confidential ? getPortForProtocol("https") : getPortForProtocol(reqProtocol);
-                        }
-                        String path = orgURL.getPath();
-                        String newLocation = new URL(confidential ? "https" : reqProtocol, wsdlHost, port, path).toString();
-                        if (!newLocation.equals(orgLocation))
-                        {
-                           locationAttr.setNodeValue(newLocation);
-                           if (log.isDebugEnabled())
-                              log.debug("Mapping address from '" + orgLocation + "' to '" + newLocation + "'");
-                        }
-                     }
+                  if (ServerConfig.UNDEFINED_HOSTNAME.equals(orgHost))
+                  {
+                     URL newURL = new URL(wsdlHost); 
+                     String newProtocol = newURL.getProtocol();
+                     String newHost = newURL.getHost();
+                     int newPort = newURL.getPort();
+                     
+                     String newLocation = newProtocol + "://" + newHost;
+                     if (newPort != -1)
+                        newLocation += ":" + newPort;
+                     
+                     newLocation += orgPath;
+                     locationAttr.setNodeValue(newLocation);
+
+                     log.trace("Mapping address from '" + orgLocation + "' to '" + newLocation + "'");
                   }
                }
             }
             else
             {
-               modifyAddressReferences(reqURL, wsdlHost, rewriteUsingCalledURL, resPath, childElement);
+               modifyAddressReferences(reqURL, wsdlHost, resPath, childElement);
             }
          }
       }
-   }
-   
-   
-   private static boolean isHttp(String orgLocation)
-   {
-      try
-      {
-         String scheme = new URI(orgLocation).getScheme();
-         if (scheme != null && scheme.startsWith("http"))
-         {
-            return true;
-         }
-         else
-         {
-            log.info("Skipping rewrite of non-http address: " + orgLocation);
-            return false;
-         }
-      }
-      catch (URISyntaxException e)
-      {
-         log.error("Skipping rewrite of invalid address: " + orgLocation, e);
-         return false;
-      }
-   }
-
-   /**
-    * Returns real http and https protocol values. Returns -1 for non http(s) protocols.
-    *
-    * @param protocol to handle
-    * @return real http(s) value, or -1 if not http(s) protocol
-    */
-   private int getPortForProtocol( final String protocol )
-   {
-      final String lowerCasedProtocol = protocol.toLowerCase();
-
-      if ( "http".equals( lowerCasedProtocol ) )
-      {
-         return config.getWebServicePort();
-      }
-      else if ( "https".equals( lowerCasedProtocol ) )
-      {
-         return config.getWebServiceSecurePort();
-      }
-
-      return -1;
    }
 
 }

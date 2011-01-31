@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,21 +21,39 @@
  */
 package org.jboss.ws.core.jaxrpc.client;
 
-import javax.naming.Referenceable;
+import java.lang.reflect.AnnotatedElement;
 
+import javax.naming.Context;
+import javax.naming.NamingException;
+
+import org.jboss.logging.Logger;
+import org.jboss.util.naming.Util;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.serviceref.ServiceRefBinder;
 
 /**
- * Binds a JAXRPC Service object to the client's ENC.
+ * Binds a JAXRPC Service object in the client's ENC for every service-ref element in the
+ * deployment descriptor.
  *
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author Thomas.Diesler@jboss.org
+ * @since 04-Nov-2006
  */
-public final class NativeServiceRefBinderJAXRPC implements ServiceRefBinder
+public class NativeServiceRefBinderJAXRPC implements ServiceRefBinder
 {
-   @Override
-   public Referenceable createReferenceable(final UnifiedServiceRefMetaData serviceRefMD)
+   // logging support
+   private static Logger log = Logger.getLogger(NativeServiceRefBinderJAXRPC.class);
+
+   /**
+    * Binds a Service into the callers ENC for every service-ref element
+    */
+   public void setupServiceRef(Context encCtx, String encName, AnnotatedElement anElement, UnifiedServiceRefMetaData serviceRef, ClassLoader loader)
+         throws NamingException
    {
-      return new NativeServiceReferenceableJAXRPC(serviceRefMD);
+      String externalName = encCtx.getNameInNamespace() + "/" + encName;
+      log.info("setupServiceRef [jndi=" + externalName + "]");
+
+      // Do not use rebind, the binding should be unique
+      ServiceReferenceable ref = new ServiceReferenceable(serviceRef);
+      Util.bind(encCtx, encName, ref);
    }
 }

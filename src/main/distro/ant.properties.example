@@ -3,15 +3,18 @@
 #
 
 # Optional JBoss Home
-jboss600.home=@jboss600.home@
-jboss601.home=@jboss601.home@
+jboss510.home=@jboss510.home@
 
-# The JBoss server under test. This can be [jboss600jboss601|]
-jbossws.integration.target=jboss601
+# The JBoss server under test. This can be [jboss510]
+jbossws.integration.target=jboss510
 
 # The JBoss settings
 jboss.server.instance=default
 jboss.bind.address=localhost
+
+# JBoss Repository
+#jboss.repository=file:/home/tdiesler/svn/jboss.local.repository
+jboss.repository=http://repository.jboss.org
 
 # JBoss JMX invoker authentication
 #jmx.authentication.username=admin

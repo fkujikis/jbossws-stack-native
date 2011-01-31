@@ -39,8 +39,8 @@ import org.jboss.logging.Logger;
 import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonMessageContext;
-import org.jboss.ws.core.binding.AbstractDeserializerFactory;
 import org.jboss.ws.core.binding.BindingException;
+import org.jboss.ws.core.binding.AbstractDeserializerFactory;
 import org.jboss.ws.core.binding.DeserializerSupport;
 import org.jboss.ws.core.binding.SerializationContext;
 import org.jboss.ws.core.binding.TypeMappingImpl;
@@ -155,9 +155,7 @@ class XMLContent extends SOAPContent
       QName xmlType = container.getXmlType();
       Class javaType = container.getJavaType();
 
-      boolean debugEnabled = log.isDebugEnabled();
-      if (debugEnabled)
-         log.debug("getObjectValue [xmlType=" + xmlType + ",javaType=" + javaType + "]");
+      log.debug("getObjectValue [xmlType=" + xmlType + ",javaType=" + javaType + "]");
 
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext == null)
@@ -220,8 +218,7 @@ class XMLContent extends SOAPContent
                try
                {
                   String contentType = MimeUtils.resolveMimeType(javaType);
-                  if (debugEnabled)
-                     log.debug("Adopt DataHandler to " + javaType + ", contentType " + contentType);
+                  log.debug("Adopt DataHandler to " + javaType + ", contentType " + contentType);
 
                   DataSource ds = new SwapableMemoryDataSource(((DataHandler)obj).getInputStream(), contentType);
                   DataHandler dh = new DataHandler(ds);
@@ -252,8 +249,7 @@ class XMLContent extends SOAPContent
          throw new WSException(e);
       }
 
-      if (debugEnabled)
-         log.debug("objectValue: " + (obj != null ? obj.getClass().getName() : null));
+      log.debug("objectValue: " + (obj != null ? obj.getClass().getName() : null));
 
       return obj;
    }
@@ -313,28 +309,18 @@ class XMLContent extends SOAPContent
       // Remove all child nodes
       container.removeContents();
 
-      // In case of dispatch and provider we use artificial element names
+      // In case of dispatch and provider we use artifical element names
       // These need to be replaced (costly!)
       if (artificalElement)
       {
          container.setElementQNameInternal(contentRootName);
       }
 
-      // Process attributes: we copy from the fragment element to the previous container element, after having cleaned the latter
-      // to prevent useless / redundant namespace declarations with multiple prefixes. We also update the prefix of the container
-      // element to ensure proper namespace is configured for it
-      String oldPrefix = container.getPrefix();
-      if (oldPrefix != null)
-      {
-         container.removeNamespaceDeclaration(oldPrefix);
-      }
+      Document ownerDoc = container.getOwnerDocument();
       DOMUtils.copyAttributes(container, domElement);
-      container.setPrefix(domElement.getPrefix());
 
       SOAPFactoryImpl soapFactory = new SOAPFactoryImpl();
 
-      // Add new child nodes
-      Document ownerDoc = container.getOwnerDocument();
       NodeList nlist = domElement.getChildNodes();
       for (int i = 0; i < nlist.getLength(); i++)
       {

@@ -22,6 +22,7 @@
 package org.jboss.test.ws.common.soap;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.util.Iterator;
 
@@ -37,7 +38,6 @@ import javax.xml.soap.SOAPMessage;
 
 import org.jboss.wsf.test.JBossWSTest;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -97,24 +97,6 @@ public class SOAPElementTestCase extends JBossWSTest
       assertEquals(se, se2);
    }
    
-   // JBWS-3170
-   public void testAppendNonSoapElement() throws Exception
-   {
-      MessageFactory msgFactory = MessageFactory.newInstance();
-      SOAPMessage soapMessage = msgFactory.createMessage();
-      SOAPEnvelope env = soapMessage.getSOAPPart().getEnvelope();
-      SOAPBody body = env.getBody();
-
-      Element e = body.getOwnerDocument().createElement("MyChild1");
-      SOAPElement se = (SOAPElement)body.appendChild(e);
-      assertNotNull("Expected an element", se);
-
-      assertEquals("Expected 1 child element", 1, getIteratorCount(body.getChildElements()));
-
-      SOAPElement se2 = (SOAPElement)body.getChildElements().next();
-      assertEquals(se, se2);
-   }
-   
    //JBWS-2346
    public void testGetElementByTagNameNS() throws Exception
    {
@@ -141,64 +123,7 @@ public class SOAPElementTestCase extends JBossWSTest
       }
       assertEquals("Strawberry Apple Banana Orange Raspberry ", sb.toString());
    }
-   
-   // JBWS-2704
-   public void testGetElementByTagNameNS_Wildcard() throws Exception
-   {
-      InputStream is = getResourceURL("common/soap/jbws2704.xml").openStream();
-      MessageFactory messageFactory = MessageFactory.newInstance();
-      SOAPMessage soapMessage = messageFactory.createMessage(null, is);
-      SOAPEnvelope envelope = soapMessage.getSOAPPart().getEnvelope();
-      NodeList nodes = envelope.getElementsByTagNameNS("*", "String_1");
-      assertEquals("String_1 nodes", 2, nodes.getLength());
-      assertEquals("String_1(0) text content", "Value_1", nodes.item(0).getTextContent());
-      assertEquals("String_1(1) text content", "Value_2", nodes.item(1).getTextContent());
 
-      nodes = envelope.getElementsByTagNameNS("*", "String_2");
-      assertEquals("String_2 nodes", 2, nodes.getLength());
-      assertEquals("String_2(0) text content", "Value_3", nodes.item(0).getTextContent());
-      assertEquals("String_2(1) text content", "Value_4", nodes.item(1).getTextContent());
-
-      nodes = envelope.getElementsByTagNameNS("http://org.jboss.ws/testNS1", "*");
-      assertEquals("http://org.jboss.ws/testNS1 nodes", 2, nodes.getLength());
-      assertEquals("http://org.jboss.ws/testNS1(0) text content", "Value_1", nodes.item(0).getTextContent());
-      assertEquals("http://org.jboss.ws/testNS1(1) text content", "Value_3", nodes.item(1).getTextContent());
-
-      nodes = envelope.getElementsByTagNameNS("http://org.jboss.ws/testNS2", "*");
-      assertEquals("http://org.jboss.ws/testNS2 nodes", 2, nodes.getLength());
-      assertEquals("http://org.jboss.ws/testNS2(0) text content", "Value_2", nodes.item(0).getTextContent());
-      assertEquals("http://org.jboss.ws/testNS2(1) text content", "Value_4", nodes.item(1).getTextContent());
-
-      nodes = envelope.getElementsByTagNameNS("http://org.jboss.ws/testNS1", "String_1");
-      assertEquals("http://org.jboss.ws/testNS1 String_1 nodes", 1, nodes.getLength());
-      assertEquals("http://org.jboss.ws/testNS1 String_1(0) text content", "Value_1", nodes.item(0).getTextContent());
-
-      nodes = envelope.getElementsByTagNameNS("http://org.jboss.ws/testNS2", "String_1");
-      assertEquals("http://org.jboss.ws/testNS2 String_1 nodes", 1, nodes.getLength());
-      assertEquals("http://org.jboss.ws/testNS2 String_1(0) text content", "Value_2", nodes.item(0).getTextContent());
-   }            
-   
-   // JBWS-2703
-   public void testGetElementByTagName() throws Exception
-   {
-      InputStream is = getResourceURL("common/soap/jbws2703.xml").openStream();
-      MessageFactory messageFactory = MessageFactory.newInstance();
-      SOAPMessage soapMessage = messageFactory.createMessage(null, is);
-      SOAPEnvelope envelope = soapMessage.getSOAPPart().getEnvelope();
-      
-      NodeList nodeList;
-      nodeList = envelope.getElementsByTagName("soapenv:Header");
-      assertEquals("soapenv:Header nodes.", 1, nodeList.getLength());
-      nodeList = envelope.getElementsByTagName("soapenv:Body");
-      assertEquals("soapenv:Body nodes.", 1, nodeList.getLength());
-      nodeList = envelope.getElementsByTagName("jbw:echo");
-      assertEquals("jbw:echo nodes.", 1, nodeList.getLength());
-      nodeList = envelope.getElementsByTagName("arg0");
-      assertEquals("arg0 nodes.", 2, nodeList.getLength());
-      assertEquals("arg0 text content", "111", nodeList.item(0).getTextContent());
-      assertEquals("arg0 text content", "222", nodeList.item(1).getTextContent());
-   }
-   
    // http://jira.jboss.com/jira/browse/JBWS-773
    public void testGetNamespaceURI() throws Exception
    {
