@@ -63,7 +63,6 @@ public class OrganizationJMSEndpoint extends JMSTransportSupportEJB3
    }
 
    @Override
-   @WebMethod(exclude=true)
    public void onMessage(Message message)
    {
       log.info("onMessage: " + message);

@@ -68,7 +68,7 @@ public class EndpointReferenceUtil {
       throw new WebServiceException("EndpointReference of type " + clazz + " not supported.");
    }
    
-   public static Source getSourceFromEndpointReference(EndpointReference epr)
+   private static Source getSourceFromEndpointReference(EndpointReference epr)
    {
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       StreamResult result = new StreamResult(outputStream);

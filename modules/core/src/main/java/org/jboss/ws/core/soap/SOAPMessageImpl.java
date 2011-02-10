@@ -365,11 +365,10 @@ public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstracti
                contentType = MimeConstants.TYPE_FASTINFOSET;
             }
             //JBWS-2964:Create a new mimeHeaders to avoid changing another referenced mimeHeaders
-            MimeHeaders newMimeHeaders = new MimeHeaders();            
+            MimeHeaders newMimeHeaders = new MimeHeaders();
             Iterator iterator = mimeHeaders.getAllHeaders();
-            while (iterator.hasNext())
-            {
-               MimeHeader mimeHeader = (MimeHeader) iterator.next();
+            while (iterator.hasNext()) {
+               MimeHeader mimeHeader = (MimeHeader)iterator.next();
                newMimeHeaders.addHeader(mimeHeader.getName(), mimeHeader.getValue());
             }
             newMimeHeaders.setHeader(MimeConstants.CONTENT_TYPE, contentType);

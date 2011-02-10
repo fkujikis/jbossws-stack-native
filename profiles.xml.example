@@ -2,7 +2,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd">
   <profiles>
 
-    <!-- This profile can also be defined in ~/.m2/settings.xml -->
+    <!-- This profile can also be defined in ~/.m2/settings.xml -->   
     <profile>
       <id>jboss-home-profile</id>
       <activation>
@@ -11,8 +11,7 @@
         </property>
       </activation>
       <properties>
-        <jboss600.home>/home/opalka/svn/jbossas/tags/6.0.0.Final/build/target/jboss-6.0.0.Final</jboss600.home>
-        <jboss601.home>/home/opalka/svn/jbossas/trunk/build/output/jboss-6.0.1-SNAPSHOT</jboss601.home>
+        <jboss510.home>/home/opalka/svn/jbossas/branches/Branch_5_x/build/output/jboss-5.1.0.GA</jboss510.home>
       </properties>
     </profile>
 

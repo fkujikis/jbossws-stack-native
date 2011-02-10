@@ -74,6 +74,7 @@ public final class BufferedStreamSource extends StreamSource
             }
             chars = charArrayWriter.toCharArray();
          }
+         
          //JBWS-3164:try to create InputStream from systemId
          String systemId = source.getSystemId();
          if (sourceInputStream == null && sourceReader == null && systemId != null) 

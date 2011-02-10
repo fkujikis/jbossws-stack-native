@@ -21,8 +21,6 @@
  */
 package org.jboss.test.ws.jaxws.samples.news;
 
-import javax.jws.WebService;
-
 import org.jboss.logging.Logger;
 
 /**
@@ -31,7 +29,6 @@ import org.jboss.logging.Logger;
  * @author alessio.soldano@jboss.org
  * @since 31-Jan-2008
  */
-@WebService
 public abstract class AbstractPressReleaseEndpoint
 {
    private Logger log = Logger.getLogger(this.getClass());

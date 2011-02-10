@@ -60,7 +60,7 @@
         <include name="jboss.xml"/>
       </metainf>
     </jar>
-    <jar jarfile="${tests.output.dir}/test-libs/jaxws-samples-dar-queue-as6.sar">
+    <jar jarfile="${tests.output.dir}/test-libs/jaxws-samples-dar-queue-hq.sar">
       <metainf dir="${tests.output.dir}/test-resources/jaxws/samples/dar">
         <include name="hornetq-jms.xml"/>
       </metainf>
@@ -126,7 +126,7 @@
         <include name="jboss-service.xml"/>
       </metainf>
     </jar>
-    <jar jarfile="${tests.output.dir}/test-libs/jaxws-samples-dar-jms-client-as6.sar">
+    <jar jarfile="${tests.output.dir}/test-libs/jaxws-samples-dar-jms-client-hq.sar">
       <fileset dir="${tests.output.dir}/test-libs">
         <include name="jaxws-samples-dar-jms-client.war"/>
         <include name="jaxws-samples-dar-jms-client.jar"/>
@@ -143,7 +143,7 @@
         <include name="jboss-service.xml"/>
       </metainf>
     </jar>
-    <jar jarfile="${tests.output.dir}/test-libs/jaxws-samples-dar-jms-client-test-as6.sar">
+    <jar jarfile="${tests.output.dir}/test-libs/jaxws-samples-dar-jms-client-test-hq.sar">
       <fileset dir="${tests.output.dir}/test-libs">
         <include name="jaxws-samples-dar-jms-client.war"/>
       </fileset>
@@ -170,7 +170,7 @@
         <include name="jboss-service.xml"/>
       </metainf>
     </jar>
-    <jar jarfile="${tests.output.dir}/test-libs/jaxws-samples-jmstransport-as6.jar">
+    <jar jarfile="${tests.output.dir}/test-libs/jaxws-samples-jmstransport-hq.jar">
       <fileset dir="${tests.output.dir}/test-classes">
         <include name="org/jboss/test/ws/jaxws/samples/jmstransport/Organization.class"/>
         <include name="org/jboss/test/ws/jaxws/samples/jmstransport/OrganizationJMSEndpoint.class"/>
@@ -268,40 +268,15 @@
           prefix="WEB-INF/wsdl"/>
     </war>
 
-    <!-- jaxws-samples-wseventing -->
-    <war warfile="${tests.output.dir}/test-libs/jaxws-samples-wseventing.war" webxml="${tests.output.dir}/test-resources/jaxws/samples/wseventing/WEB-INF/web.xml">
+    <!-- jaxws-samples-wsaddressing -->
+    <war warfile="${tests.output.dir}/test-libs/jaxws-samples-wsaddressing.war" webxml="${tests.output.dir}/test-resources/jaxws/samples/wsaddressing/WEB-INF/web.xml">
       <classes dir="${tests.output.dir}/test-classes">
-        <include name="org/jboss/test/ws/jaxws/samples/wseventing/Sysmon**.class"/>
+        <include name="org/jboss/test/ws/jaxws/samples/wsaddressing/StatefulEndpointImpl.class"/>
+        <include name="org/jboss/test/ws/jaxws/samples/wsaddressing/StatefulEndpoint.class"/>
+        <include name="org/jboss/test/ws/jaxws/samples/wsaddressing/ServerHandler.class"/>
+        <include name="org/jboss/test/ws/jaxws/samples/wsaddressing/jaxws-handlers.xml"/>
       </classes>
-      <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wseventing/WEB-INF">
-        <include name="wsdl/jboss-web.xml"/>
-        <include name="wsdl/sysmon.wsdl"/>
-        <include name="wsdl/ws-eventing.wsdl"/>
-        <include name="wsdl/ws-eventing.xsd"/>
-        <include name="wsdl/ws-addr.xsd"/>
-      </webinf>
     </war>
-    <jar destfile="${tests.output.dir}/test-libs/jaxws-samples-wseventing-sink.jar">
-      <fileset dir="${tests.output.dir}/test-classes">
-        <include name="org/jboss/test/ws/jaxws/samples/wseventing/EventSink*.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wseventing/SystemStatus.class"/>
-      </fileset>
-    </jar>
-    
-    <!-- jaxws-samples-wsrm -->
-    <war warfile="${tests.output.dir}/test-libs/jaxws-samples-wsrm.war" webxml="${tests.output.dir}/test-resources/jaxws/samples/wsrm/WEB-INF/web.xml">
-      <classes dir="${tests.output.dir}/test-classes">
-        <include name="org/jboss/test/ws/jaxws/samples/wsrm/service/**"/>
-      </classes>
-      <zipfileset dir="${tests.output.dir}/test-resources/jaxws/samples/wsrm/WEB-INF/wsdl" prefix="WEB-INF/wsdl"/>
-      <zipfileset file="${tests.output.dir}/test-resources/jaxws/samples/wsrm/WEB-INF/wsrm-jaxws-endpoint-config.xml" prefix="META-INF"/>
-    </war>
-    
-    <jar jarfile="${tests.output.dir}/test-libs/jaxws-samples-wsrm-client.jar">
-      <metainf dir="${tests.output.dir}/test-resources/jaxws/samples/wsrm/META-INF">
-        <include name="wsrm-jaxws-client-config.xml"/>
-      </metainf>
-    </jar>
     
     <!-- jaxws-samples-wssecurity-encrypt -->
     <war warfile="${tests.output.dir}/test-libs/jaxws-samples-wssecurity-encrypt.war"
@@ -312,7 +287,6 @@
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloException_Exception.class"/>
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloJavaBean.class"/>
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/UserType.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/ObjectFactory.class"/>
       </classes>
       <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wssecurity/simple-encrypt/WEB-INF">
         <include name="jboss-wsse-server.xml"/>
@@ -331,7 +305,6 @@
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloException_Exception.class"/>
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloJavaBean.class"/>
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/UserType.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/ObjectFactory.class"/>
       </classes>
       <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wssecurity/simple-sign/WEB-INF">
         <include name="jboss-wsse-server.xml"/>
@@ -393,44 +366,8 @@
       </webinf>
     </war>
     
-    <!-- jaxws-samples-wssecurityAnnotatedpolicy-encrypt -->
-    <war warfile="${tests.output.dir}/test-libs/jaxws-samples-wssecurityAnnotatedpolicy-encrypt.war"
-      webxml="${tests.output.dir}/test-resources/jaxws/samples/wssecurityAnnotatedpolicy/WEB-INF/web.xml">
-      <classes dir="${tests.output.dir}/test-classes">
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurityAnnotatedpolicy/Hello.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurityAnnotatedpolicy/HelloJavaBean.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurityAnnotatedpolicy/UserType.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurityAnnotatedpolicy/ObjectFactory.class"/>
-      </classes>
-      <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wssecurityAnnotatedpolicy">
-        <include name="wsse.keystore"/>
-        <include name="wsse.truststore"/>
-      </webinf>
-      <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wssecurityAnnotatedpolicy/WEB-INF">
-        <include name="Policy.xml"/>
-      </webinf>
-    </war>
-    
-    <!-- jaxws-samples-wssecuritypolicy-encrypt -->
-    <war warfile="${tests.output.dir}/test-libs/jaxws-samples-wssecuritypolicy-encrypt.war"
-      webxml="${tests.output.dir}/test-resources/jaxws/samples/wssecuritypolicy/WEB-INF/web.xml">
-      <classes dir="${tests.output.dir}/test-classes">
-        <include name="org/jboss/test/ws/jaxws/samples/wssecuritypolicy/Hello.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecuritypolicy/HelloJavaBean.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecuritypolicy/UserType.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecuritypolicy/ObjectFactory.class"/>
-      </classes>
-      <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wssecuritypolicy">
-        <include name="wsse.keystore"/>
-        <include name="wsse.truststore"/>
-      </webinf>
-      <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wssecuritypolicy/WEB-INF">
-        <include name="wsdl/**"/>
-      </webinf>
-    </war>
-
     <!-- Please add alphabetically -->
-
+    
   </target>
-
+  
 </project>

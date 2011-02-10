@@ -11,14 +11,14 @@
     <!-- root -->
     <fileSet>
       <directory>src/main/distro</directory>
-      <outputDirectory>jbossws-native-bin-dist/</outputDirectory>
+      <outputDirectory>/</outputDirectory>
       <includes>
         <include>build.xml</include>
       </includes>
     </fileSet>
     <fileSet>
       <directory>src/main/distro</directory>
-      <outputDirectory>jbossws-native-bin-dist/</outputDirectory>
+      <outputDirectory>/</outputDirectory>
       <filtered>true</filtered>
       <includes>
         <include>ant.properties.example</include>
@@ -27,7 +27,7 @@
     <!-- build -->
     <fileSet>
       <directory>src/main/distro</directory>
-      <outputDirectory>jbossws-native-bin-dist/build</outputDirectory>
+      <outputDirectory>build</outputDirectory>
       <includes>
         <include>build-deploy.xml</include>
         <include>build-setup.xml</include>
@@ -37,17 +37,16 @@
     </fileSet>
     <fileSet>
       <directory>modules/resources/src/main/resources/resources</directory>
-      <outputDirectory>jbossws-native-bin-dist/build</outputDirectory>
+      <outputDirectory>build</outputDirectory>
       <includes>
-        <include>deploy.conf</include>
-        <include>server-deploy.conf</include>
+        <include>default-deploy.conf</include>
         <include>jbossws-deploy-macros.xml</include>
       </includes>
     </fileSet>
     <!-- docs -->
     <fileSet>
       <directory>src/main/distro</directory>
-      <outputDirectory>jbossws-native-bin-dist/docs</outputDirectory>
+      <outputDirectory>docs</outputDirectory>
       <filtered>true</filtered>
       <includes>
         <include>Install.txt</include>
@@ -55,19 +54,15 @@
         <include>JBossORG-EULA.txt</include>
       </includes>
     </fileSet>
-    <fileSet>
-      <directory>target/docbook/publish</directory>
-      <outputDirectory>jbossws-native-bin-dist/docs</outputDirectory>
-    </fileSet>
     <!-- deploy -->
     <fileSet>
-      <directory>target/assembly/deploy-artifacts</directory>
-      <outputDirectory>jbossws-native-bin-dist/deploy</outputDirectory>
+      <directory>target/deploy-artifacts</directory>
+      <outputDirectory>deploy</outputDirectory>
     </fileSet>
     <!-- test etc -->
     <fileSet>
       <directory>modules/testsuite/native-tests/src/test</directory>
-      <outputDirectory>jbossws-native-bin-dist/tests</outputDirectory>
+      <outputDirectory>tests</outputDirectory>
       <includes>
         <include>etc/**</include>
       </includes>
@@ -75,14 +70,14 @@
     <!-- test excludes -->
     <fileSet>
       <directory>modules/testsuite</directory>
-      <outputDirectory>jbossws-native-bin-dist/tests/resources</outputDirectory>
+      <outputDirectory>tests/resources</outputDirectory>
       <includes>
         <include>test-excludes-*.txt</include>
       </includes>
     </fileSet>
   </fileSets>
   
-  <!-- shared tests -->
+  <!-- framework tests -->
   <moduleSets>
     <moduleSet>
       <includes>
@@ -91,25 +86,23 @@
       <binaries>
         <dependencySets>
           <dependencySet>
-            <outputDirectory>jbossws-native-bin-dist/tests</outputDirectory>
+            <outputDirectory>tests</outputDirectory>
             <useStrictFiltering>true</useStrictFiltering>
             <scope>provided</scope>
             <unpack>true</unpack>
             <includes>
-              <include>*:jbossws-shared-testsuite:zip</include>
+              <include>*:jbossws-framework:zip:testsuite</include>
             </includes>
             <unpackOptions>
               <includes>
                 <include>ant-import/**</include>
                 <include>java/org/jboss/test/ws/console/**</include>
-                <include>java/org/jboss/test/ws/jaxrpc/samples/**</include>
                 <include>java/org/jboss/test/ws/jaxws/samples/**</include>
                 <include>java/org/jboss/test/ws/jaxws/smoke/**</include>
                 <include>java/org/jboss/test/ws/management/**</include>
                 <include>java/org/jboss/test/ws/projectGenerator/**</include>
                 <include>java/org/jboss/test/ws/saaj/**</include>
                 <include>resources/console/**</include>
-                <include>resources/jaxrpc/samples/**</include>
                 <include>resources/jaxws/samples/**</include>
                 <include>resources/jaxws/smoke/**</include>
                 <include>resources/management/**</include>

@@ -47,9 +47,7 @@ import org.jboss.logging.Logger;
 import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.StubExt;
-import org.jboss.ws.extensions.wsrm.api.RMProvider;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.metadata.umdm.FeatureAwareEndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.wsf.common.JavaUtils;
 
@@ -92,8 +90,6 @@ public class ClientProxy implements InvocationHandler
       this.executor = executor;
       this.stubMethods = new ArrayList(Arrays.asList(BindingProvider.class.getMethods()));
       this.stubMethods.addAll(Arrays.asList(StubExt.class.getMethods()));
-      this.stubMethods.addAll(Arrays.asList(RMProvider.class.getMethods()));
-      this.stubMethods.addAll(Arrays.asList(FeatureAwareEndpointMetaData.class.getMethods()));
       this.objectMethods = Arrays.asList(Object.class.getMethods());
    }
 
@@ -172,12 +168,6 @@ public class ClientProxy implements InvocationHandler
 
    private Object invoke(QName opName, Object[] args, Class retType, Map<String, Object> resContext) throws RemoteException
    {
-      boolean rmDetected = this.client.getEndpointConfigMetaData().getConfig().getRMMetaData() != null;
-      boolean rmActivated = client.getWSRMSequence() != null;
-      if (rmDetected && !rmActivated)
-      {
-         client.createSequence();
-      }
       Object retObj = client.invoke(opName, args, resContext);
       if (retObj != null)
       {

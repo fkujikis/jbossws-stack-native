@@ -29,28 +29,25 @@ import java.util.List;
 
 import javax.jws.soap.SOAPBinding;
 import javax.xml.namespace.QName;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.ws.BindingType;
-import javax.xml.ws.RespectBindingFeature;
-import javax.xml.ws.soap.AddressingFeature;
-import javax.xml.ws.soap.MTOMFeature;
 
 import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.annotation.EndpointConfig;
-import org.jboss.ws.core.jaxws.client.NativeServiceObjectFactoryJAXWS;
-import org.jboss.ws.core.jaxws.wsaddressing.NativeEndpointReference;
-import org.jboss.ws.extensions.policy.metadata.PolicyMetaDataBuilder;
-import org.jboss.ws.extensions.wsrm.common.RMHelper;
+import org.jboss.ws.core.jaxws.client.ServiceObjectFactoryJAXWS;
+import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
+import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
 import org.jboss.ws.metadata.wsdl.WSDLBinding;
+import org.jboss.ws.metadata.wsdl.WSDLBindingOperation;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
-import org.jboss.ws.metadata.wsdl.WSDLExtensibilityElement;
+import org.jboss.ws.metadata.wsdl.WSDLInterface;
+import org.jboss.ws.metadata.wsdl.WSDLInterfaceOperation;
 import org.jboss.ws.metadata.wsdl.WSDLService;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
@@ -60,7 +57,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedCallPropertyMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedStubPropertyMetaData;
-import org.w3c.dom.Element;
 
 /**
  * A client side meta data builder.
@@ -70,24 +66,16 @@ import org.w3c.dom.Element;
  */
 public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
 {
-   public ServiceMetaData buildMetaData(QName serviceName, URL wsdlURL, UnifiedVirtualFile vfsRoot)
-   {
-      return this.buildMetaData(serviceName, wsdlURL, vfsRoot, null);
-   }
 
-   public ServiceMetaData buildMetaData(QName serviceName, URL wsdlURL, UnifiedVirtualFile vfsRoot,
-         ClassLoader classLoader)
+   public ServiceMetaData buildMetaData(QName serviceName, URL wsdlURL, UnifiedVirtualFile vfsRoot)
    {
       if (wsdlURL == null)
          throw new IllegalArgumentException("Invalid wsdlURL: " + wsdlURL);
 
-      if (log.isDebugEnabled())
-         log.debug("START buildMetaData: [service=" + serviceName + "]");
+      log.debug("START buildMetaData: [service=" + serviceName + "]");
       try
       {
-         UnifiedMetaData wsMetaData = classLoader != null
-               ? new UnifiedMetaData(vfsRoot, classLoader)
-               : new UnifiedMetaData(vfsRoot);
+         UnifiedMetaData wsMetaData = new UnifiedMetaData(vfsRoot);
 
          ServiceMetaData serviceMetaData = new ServiceMetaData(wsMetaData, serviceName);
          wsMetaData.addService(serviceMetaData);
@@ -97,21 +85,12 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
 
          buildMetaDataInternal(serviceMetaData, wsdlDefinitions);
 
-         //Setup policies and EPRs for each endpoint
-         for (EndpointMetaData epMetaData : serviceMetaData.getEndpoints())
-         {
-            PolicyMetaDataBuilder policyBuilder = PolicyMetaDataBuilder.getClientSidePolicyMetaDataBuilder();
-            policyBuilder.processPolicyExtensions(epMetaData, wsdlDefinitions);
-            processEPRs(epMetaData, wsdlDefinitions);
-         }
-
          // Read the WSDL and initialize the schema model
          // This should only be needed for debuging purposes of the UMDM
          JBossXSModel schemaModel = WSDLUtils.getSchemaModel(wsdlDefinitions.getWsdlTypes());
          serviceMetaData.getTypesMetaData().setSchemaModel(schemaModel);
 
-         if (log.isDebugEnabled())
-            log.debug("END buildMetaData: " + wsMetaData);
+         log.debug("END buildMetaData: " + wsMetaData);
          return serviceMetaData;
       }
       catch (RuntimeException rte)
@@ -124,32 +103,6 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
       }
    }
 
-   private void processEPRs(EndpointMetaData endpointMD, WSDLDefinitions wsdlDefinitions)
-   {
-      WSDLService wsdlService = wsdlDefinitions.getService(endpointMD.getServiceMetaData().getServiceName());
-      if (wsdlService != null)
-      {
-         WSDLEndpoint wsdlEndpoint = wsdlService.getEndpoint(endpointMD.getPortName());
-         if (wsdlEndpoint != null)
-         {
-            List<WSDLExtensibilityElement> portEPRs = wsdlEndpoint.getExtensibilityElements(Constants.WSDL_ELEMENT_EPR);
-            if (portEPRs != null && portEPRs.size() != 0)
-            {
-               if (portEPRs.size() > 1)
-                  throw new IllegalStateException("Only one EPR can be specified on port");
-
-               Element eprElement = portEPRs.get(0).getElement();
-               
-               // construct Native EPR
-               DOMSource eprInfoset = new DOMSource(eprElement);
-               NativeEndpointReference nativeEPR = (NativeEndpointReference)NativeEndpointReference.readFrom(eprInfoset);
-               nativeEPR.setAddress(endpointMD.getEndpointAddress());
-               endpointMD.setEndpointReference(nativeEPR);
-            }
-         }
-      }
-   }
-
    /** Build from WSDL and service name
     */
    public ServiceMetaData buildMetaData(QName serviceName, URL wsdlURL)
@@ -157,8 +110,7 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
       return buildMetaData(serviceName, wsdlURL, new ResourceLoaderAdapter());
    }
 
-   private void buildMetaDataInternal(ServiceMetaData serviceMetaData, WSDLDefinitions wsdlDefinitions)
-         throws IOException
+   private void buildMetaDataInternal(ServiceMetaData serviceMetaData, WSDLDefinitions wsdlDefinitions) throws IOException
    {
       QName serviceName = serviceMetaData.getServiceName();
 
@@ -181,7 +133,7 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
          List<QName> serviceNames = new ArrayList<QName>();
          for (WSDLService wsdls : wsdlDefinitions.getServices())
             serviceNames.add(wsdls.getName());
-
+         
          throw new IllegalArgumentException("Cannot obtain wsdl service: " + serviceName + " we have " + serviceNames);
       }
 
@@ -196,8 +148,7 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
          {
             QName portName = wsdlEndpoint.getName();
             QName interfaceQName = wsdlEndpoint.getInterface().getName();
-            ClientEndpointMetaData epMetaData = new ClientEndpointMetaData(serviceMetaData, portName, interfaceQName,
-                  Type.JAXWS);
+            ClientEndpointMetaData epMetaData = new ClientEndpointMetaData(serviceMetaData, portName, interfaceQName, Type.JAXWS);
             epMetaData.setEndpointAddress(wsdlEndpoint.getAddress());
             serviceMetaData.addEndpoint(epMetaData);
 
@@ -222,11 +173,11 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
     */
    private void bufferServiceRefContributions(EndpointMetaData epMetaData)
    {
-      UnifiedServiceRefMetaData serviceRefMetaData = NativeServiceObjectFactoryJAXWS.getServiceRefAssociation();
+      UnifiedServiceRefMetaData serviceRefMetaData = ServiceObjectFactoryJAXWS.getServiceRefAssociation();
 
-      if (serviceRefMetaData != null)
+      if(serviceRefMetaData!=null)
       {
-         for (UnifiedPortComponentRefMetaData portComp : serviceRefMetaData.getPortComponentRefs())
+         for(UnifiedPortComponentRefMetaData portComp : serviceRefMetaData.getPortComponentRefs())
          {
             epMetaData.getServiceRefContrib().add(portComp);
          }
@@ -242,55 +193,78 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
 
       Iterator<UnifiedPortComponentRefMetaData> it = epMetaData.getServiceRefContrib().iterator();
 
-      while (it.hasNext())
+      while(it.hasNext())
       {
          UnifiedPortComponentRefMetaData portComp = it.next();
 
-         if (epMetaData.matches(portComp))
+         if(epMetaData.matches(portComp))
          {
-            if (log.isDebugEnabled())
-               log.debug("Processing service-ref contribution on portType: " + epMetaData.getPortTypeName());
+            log.debug("Processing service-ref contribution on portType: "+epMetaData.getPortTypeName());
 
             // process MTOM overrides
-            if (portComp.isMtomEnabled())
+            if(portComp.getEnableMTOM())
             {
-               epMetaData.addFeature(new MTOMFeature(true, portComp.getMtomThreshold()));
-            }
-            // process Addressing
-            if (portComp.isAddressingEnabled()) 
-            {
-               AddressingFeature.Responses response = getAddressFeatureResponses(portComp.getAddressingResponses());               
-               epMetaData.addFeature(new AddressingFeature(true, portComp.isAddressingRequired(), response));
-            }
-            
-            // process RespectBinding
-            if (portComp.isRespectBindingEnabled()) 
-            {
-               epMetaData.addFeature(new RespectBindingFeature(true));
+               String bindingId = epMetaData.getBindingId();
+               if(bindingId.equals(Constants.SOAP11HTTP_BINDING))
+                  epMetaData.setBindingId(Constants.SOAP11HTTP_MTOM_BINDING);
+               else if(bindingId.equals(Constants.SOAP12HTTP_BINDING))
+                  epMetaData.setBindingId(Constants.SOAP12HTTP_MTOM_BINDING);
             }
 
             // process stub properties
-            for (UnifiedStubPropertyMetaData stubProp : portComp.getStubProperties())
+            for(UnifiedStubPropertyMetaData stubProp: portComp.getStubProperties())
             {
-               epMetaData.getProperties().put(stubProp.getPropName(), stubProp.getPropValue());
+               epMetaData.getProperties().put(stubProp.getPropName(), stubProp.getPropValue());  
             }
 
             // process call properties
-            for (UnifiedCallPropertyMetaData callProp : portComp.getCallProperties())
+            for(UnifiedCallPropertyMetaData callProp: portComp.getCallProperties())
             {
                epMetaData.getProperties().put(callProp.getPropName(), callProp.getPropValue());
             }
-
+            
          }
 
       }
 
    }
 
+   protected void setupOperationsFromWSDL(EndpointMetaData epMetaData, WSDLEndpoint wsdlEndpoint)
+   {
+      WSDLDefinitions wsdlDefinitions = wsdlEndpoint.getInterface().getWsdlDefinitions();
+
+      // For every WSDL interface operation build the OperationMetaData
+      WSDLInterface wsdlInterface = wsdlEndpoint.getInterface();
+      for (WSDLInterfaceOperation wsdlOperation : wsdlInterface.getOperations())
+      {
+         String opName = wsdlOperation.getName().toString();
+         QName opQName = wsdlOperation.getName();
+
+         // Set java method name
+         String javaName = opName.substring(0, 1).toLowerCase() + opName.substring(1);
+
+         OperationMetaData opMetaData = new OperationMetaData(epMetaData, opQName, javaName);
+         epMetaData.addOperation(opMetaData);
+
+         // Set the operation style
+         String style = wsdlOperation.getStyle();
+         epMetaData.setStyle((Constants.URI_STYLE_DOCUMENT.equals(style) ? Style.DOCUMENT : Style.RPC));
+
+         // Set the operation MEP
+         if (Constants.WSDL20_PATTERN_IN_ONLY.equals(wsdlOperation.getPattern()))
+            opMetaData.setOneWay(true);
+
+         // Set the operation SOAPAction
+         WSDLBinding wsdlBinding = wsdlDefinitions.getBindingByInterfaceName(wsdlInterface.getName());
+         WSDLBindingOperation wsdlBindingOperation = wsdlBinding.getOperationByRef(opQName);
+         if (wsdlBindingOperation != null)
+            opMetaData.setSOAPAction(wsdlBindingOperation.getSOAPAction());
+      }
+   }
+
    public void rebuildEndpointMetaData(EndpointMetaData epMetaData, Class<?> wsClass)
    {
-      if (log.isDebugEnabled())
-         log.debug("START: rebuildMetaData");
+      if(log.isDebugEnabled()) log.debug("START: rebuildMetaData");
 
       // Clear the java types, etc.
       resetMetaDataBuilder(epMetaData.getClassLoader());
@@ -313,8 +287,6 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
       // Process @WebMethod
       processWebMethods(epMetaData, wsClass);
 
-      processXmlSeeAlso(wsClass);
-
       // Initialize types
       createJAXBContext(epMetaData);
       populateXmlTypes(epMetaData);
@@ -329,14 +301,7 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
       // Eager initialization
       epMetaData.eagerInitialize();
 
-      // wsrm initialization
-      if (epMetaData.getConfig().getRMMetaData() != null)
-      {
-         RMHelper.setupRMOperations(epMetaData);
-      }
-
-      if (log.isDebugEnabled())
-         log.debug("END: rebuildMetaData\n" + epMetaData.getServiceMetaData());
+      if(log.isDebugEnabled()) log.debug("END: rebuildMetaData\n" + epMetaData.getServiceMetaData());
    }
 
    /**
@@ -345,7 +310,7 @@ public class JAXWSClientMetaDataBuilder extends JAXWSMetaDataBuilder
     * @param wsClass -  the service endpoint interface
     */
    private void processEndpointConfig(EndpointMetaData epMetaData, Class<?> wsClass)
-   {
+   {      
       if (wsClass.isAnnotationPresent(EndpointConfig.class))
       {
          EndpointConfig anConfig = wsClass.getAnnotation(EndpointConfig.class);
