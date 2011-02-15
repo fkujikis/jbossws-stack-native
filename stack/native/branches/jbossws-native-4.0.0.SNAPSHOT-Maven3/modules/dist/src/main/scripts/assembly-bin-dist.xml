@@ -83,44 +83,35 @@
   </fileSets>
   
   <!-- shared tests -->
-  <moduleSets>
-    <moduleSet>
+  <dependencySets> 
+    <dependencySet>
+      <outputDirectory>jbossws-native-bin-dist/tests</outputDirectory>
+      <useStrictFiltering>true</useStrictFiltering>
+      <unpack>true</unpack>
+      <scope>test</scope>
       <includes>
-        <include>org.jboss.ws.native:jbossws-native-management</include>
-      </includes>
-      <binaries>
-        <dependencySets>
-          <dependencySet>
-            <outputDirectory>jbossws-native-bin-dist/tests</outputDirectory>
-            <useStrictFiltering>true</useStrictFiltering>
-            <scope>provided</scope>
-            <unpack>true</unpack>
-            <includes>
-              <include>*:jbossws-shared-testsuite:zip</include>
-            </includes>
-            <unpackOptions>
-              <includes>
-                <include>ant-import/**</include>
-                <include>java/org/jboss/test/ws/console/**</include>
-                <include>java/org/jboss/test/ws/jaxrpc/samples/**</include>
-                <include>java/org/jboss/test/ws/jaxws/samples/**</include>
-                <include>java/org/jboss/test/ws/jaxws/smoke/**</include>
-                <include>java/org/jboss/test/ws/management/**</include>
-                <include>java/org/jboss/test/ws/projectGenerator/**</include>
-                <include>java/org/jboss/test/ws/saaj/**</include>
-                <include>resources/console/**</include>
-                <include>resources/jaxrpc/samples/**</include>
-                <include>resources/jaxws/samples/**</include>
-                <include>resources/jaxws/smoke/**</include>
-                <include>resources/management/**</include>
-                <include>resources/projectGenerator/**</include>
-                <include>resources/saaj/**</include>
-              </includes>
-            </unpackOptions>
-          </dependencySet>
-        </dependencySets>
-      </binaries>
-    </moduleSet>
-  </moduleSets>
-  
+        <include>*:jbossws-shared-testsuite:zip</include>
+    </includes>
+    <unpackOptions>
+      <includes>
+        <include>ant-import/**</include>
+        <include>java/org/jboss/test/ws/console/**</include>
+        <include>java/org/jboss/test/ws/jaxrpc/samples/**</include>
+        <include>java/org/jboss/test/ws/jaxws/samples/**</include>
+        <include>java/org/jboss/test/ws/jaxws/smoke/**</include>
+        <include>java/org/jboss/test/ws/management/**</include>
+        <include>java/org/jboss/test/ws/projectGenerator/**</include>
+        <include>java/org/jboss/test/ws/saaj/**</include>
+        <include>resources/console/**</include>
+        <include>resources/jaxrpc/samples/**</include>
+        <include>resources/jaxws/samples/**</include>
+        <include>resources/jaxws/smoke/**</include>
+        <include>resources/management/**</include>
+        <include>resources/projectGenerator/**</include>
+        <include>resources/saaj/**</include>
+       </includes>
+     </unpackOptions>
+     <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+   </dependencySets>  
 </assembly>
