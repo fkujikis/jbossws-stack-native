@@ -55,15 +55,13 @@ public class SignatureOperation implements EncodingOperation
    private List<Target> targets;
    private String alias;
    private String tokenRefType;
-   private String securityDomainAliasLabel;
 
-   public SignatureOperation(List<Target> targets, String alias, String tokenRefType, String securityDomainAliasLabel)
+   public SignatureOperation(List<Target> targets, String alias, String tokenRefType)
    {
       super();
       this.targets = targets;
       this.alias = alias;
       this.tokenRefType = tokenRefType;
-      this.securityDomainAliasLabel = securityDomainAliasLabel;
    }
    
    private void processTarget(XMLSignature sig, Document message, Target target)
@@ -146,7 +144,7 @@ public class SignatureOperation implements EncodingOperation
       // For now we pass our resolver the root document because the signature element isn't attached
       // to the evelope yet (no wsse header). Perhaps we should do this differently
       sig.addResourceResolver(new WsuIdResolver(message, header.getElement()));
-      PrivateKey key = store.getPrivateKey(alias, securityDomainAliasLabel);
+      PrivateKey key = store.getPrivateKey(alias);
 
       if (targets == null || targets.size() == 0)
       {
@@ -171,7 +169,7 @@ public class SignatureOperation implements EncodingOperation
          throw new WSSecurityException("Error signing message: " + e.getMessage(), e);
       }
 
-      X509Certificate cert = store.getCertificate(alias, securityDomainAliasLabel);
+      X509Certificate cert = store.getCertificate(alias);
       X509Token token = (X509Token) header.getSharedToken(cert);
 
       // Can we reuse an existing token?

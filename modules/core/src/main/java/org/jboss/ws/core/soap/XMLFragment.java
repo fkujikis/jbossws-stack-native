@@ -23,7 +23,6 @@ package org.jboss.ws.core.soap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -175,16 +174,11 @@ public class XMLFragment
             boolean newReader = false;
 
             Reader reader = streamSource.getReader();
-            InputStream is = streamSource.getInputStream();
             {
                if (reader == null)
                {
-                  if (is != null)
-                  {
-                     reader = new InputStreamReader(is, "UTF-8");
-                     newReader = true;
-                  }
-                  else return;
+                  reader = new InputStreamReader(streamSource.getInputStream(), "UTF-8");
+                  newReader = true;
                }
             }
 
@@ -249,7 +243,7 @@ public class XMLFragment
          try
          {
             Element element = DOMUtils.sourceToElement(source);
-            source = element != null ? new DOMSource(element) : new DOMSource();
+            source = new DOMSource(element);
          }
          catch (IOException ex)
          {

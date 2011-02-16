@@ -69,7 +69,7 @@ public class WSDL20AssertionsTestCase extends JBossWSTest
       WSDLToJavaIntf wsdljava = new WSDLToJava();
       try
       {
-         WSDLDefinitions wsdl = wsdljava.convertWSDL2Java(wsdlFile.toURI().toURL());
+         WSDLDefinitions wsdl = wsdljava.convertWSDL2Java(wsdlFile.toURL());
          fail("Test Should not have passed");
       }
       catch (RuntimeException ie)

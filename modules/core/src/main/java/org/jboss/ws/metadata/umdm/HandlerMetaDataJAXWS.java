@@ -97,7 +97,7 @@ public class HandlerMetaDataJAXWS extends HandlerMetaData
 
    public String toString()
    {
-      StringBuilder buffer = new StringBuilder("\nHandlerMetaDataJAXWS:");
+      StringBuffer buffer = new StringBuffer("\nHandlerMetaDataJAXWS:");
       buffer.append("\n type=" + getHandlerType());
       buffer.append("\n name=" + getHandlerName());
       buffer.append("\n class=" + getHandlerClass());

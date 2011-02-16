@@ -33,19 +33,15 @@ public class Sign extends Targetable
 
    private String type;
    private String alias;
-   private boolean includeFaults;
    private boolean includeTimestamp;
    private String tokenRefType;
-   private String securityDomainAliasLabel;
 
-   public Sign(String type, String alias, boolean includeTimestamp, String tokenRefType, String securityDomainAliasLabel, boolean includeFaults)
+   public Sign(String type, String alias, boolean includeTimestamp, String tokenRefType)
    {
       this.type = type;
       this.alias = alias;
       this.includeTimestamp = includeTimestamp;
       this.tokenRefType = tokenRefType;
-      this.securityDomainAliasLabel = securityDomainAliasLabel;
-      this.includeFaults = includeFaults;
    }
 
    public String getAlias()
@@ -86,25 +82,5 @@ public class Sign extends Targetable
    public void setTokenRefType(String tokenRefType)
    {
       this.tokenRefType = tokenRefType;
-   }
-   
-   public String getSecurityDomainAliasLabel()
-   {
-      return securityDomainAliasLabel;
-   }
-
-   public void setSecurityDomainAliasLabel(String securityDomainAliasLabel)
-   {
-      this.securityDomainAliasLabel = securityDomainAliasLabel;
-   }
-
-   public boolean isIncludeFaults()
-   {
-      return includeFaults;
-   }
-
-   public void setIncludeFaults(boolean includeFaults)
-   {
-      this.includeFaults = includeFaults;
    }
 }
