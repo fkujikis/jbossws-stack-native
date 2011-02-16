@@ -36,7 +36,7 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>modules/resources/src/main/resources/resources</directory>
+      <directory>../resources/src/main/resources/resources</directory>
       <outputDirectory>jbossws-native-bin-dist/build</outputDirectory>
       <includes>
         <include>deploy.conf</include>
@@ -66,7 +66,7 @@
     </fileSet>
     <!-- test etc -->
     <fileSet>
-      <directory>modules/testsuite/native-tests/src/test</directory>
+      <directory>../testsuite/native-tests/src/test</directory>
       <outputDirectory>jbossws-native-bin-dist/tests</outputDirectory>
       <includes>
         <include>etc/**</include>
@@ -74,7 +74,7 @@
     </fileSet>
     <!-- test excludes -->
     <fileSet>
-      <directory>modules/testsuite</directory>
+      <directory>target/exclude-file</directory>
       <outputDirectory>jbossws-native-bin-dist/tests/resources</outputDirectory>
       <includes>
         <include>test-excludes-*.txt</include>

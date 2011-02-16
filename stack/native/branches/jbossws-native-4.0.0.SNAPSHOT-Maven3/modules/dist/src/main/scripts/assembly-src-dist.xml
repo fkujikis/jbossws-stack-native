@@ -9,25 +9,24 @@
 
   <fileSets>
     <fileSet>
-      <directory>eclipse/</directory>
+      <directory>../../eclipse/</directory>
       <outputDirectory>jbossws-native-src-dist/eclipse/
       </outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>src/</directory>
+      <directory>../../src/</directory>
       <outputDirectory>jbossws-native-src-dist/src/</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>modules/</directory>
-      <outputDirectory>jbossws-native-src-dist/modules/
-      </outputDirectory>
+      <directory>../</directory>
+      <outputDirectory>jbossws-native-src-dist/modules/</outputDirectory>
       <excludes>
         <exclude>**/target/**</exclude>
         <exclude>**/shared-tests/**</exclude>
       </excludes>
     </fileSet>
     <fileSet>
-      <directory>modules/testsuite/shared-tests</directory>
+      <directory>../testsuite/shared-tests</directory>
       <outputDirectory>jbossws-native-src-dist/modules/testsuite/shared-tests
       </outputDirectory>
       <includes>
@@ -37,7 +36,7 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory></directory>
+      <directory>./../</directory>
       <outputDirectory>jbossws-native-src-dist/</outputDirectory>
       <includes>
         <include>.classpath</include>
