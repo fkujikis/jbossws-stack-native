@@ -28,7 +28,16 @@
       </includes>
     </fileSet>
 
-    <!-- management -->
+    <!-- module.xml files -->
+    <fileSet>
+      <directory>../resources/src/main/resources/modules</directory>
+      <outputDirectory>deploy-artifacts/modules</outputDirectory>
+      <includes>
+        <include>**/module.xml</include>
+      </includes>
+    </fileSet>
+    
+    <!-- management console and port component link servlet -->
     <fileSet>
       <directory>./management/target</directory>
       <outputDirectory>deploy-artifacts/lib</outputDirectory>
@@ -47,6 +56,7 @@
         <include>org.jboss.ws.native:jbossws-native-client</include>
         <include>org.jboss.ws.native:jbossws-native-factories:jar</include>
         <include>org.jboss.ws.native:jbossws-native-services:jar</include>
+        <include>org.jboss.ws.native:jbossws-native-resources:jar:jboss700</include>
         <include>org.jboss.ws.native:jbossws-native-core</include>
         <include>com.sun.xml.fastinfoset:FastInfoset:jar</include>
         <include>javax.jws:jsr181-api:jar</include>

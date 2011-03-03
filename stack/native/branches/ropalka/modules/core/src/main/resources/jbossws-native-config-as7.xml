@@ -25,8 +25,8 @@
 <deploymentAspects xmlns="urn:jboss:ws:deployment:aspects:1.0">
 
   <deploymentAspect class="org.jboss.wsf.framework.deployment.ContextPropertiesDeploymentAspect">
-    <property name="provides">ContextProperties, StackDescriptor</property>
-    <property name="contextProperties">
+    <property name="provides" class="java.lang.String">ContextProperties, StackDescriptor</property>
+    <property name="contextProperties" class="java.util.HashMap">
       <map keyClass="java.lang.String" valueClass="java.lang.String">
         <entry>
           <key>stack.transport.class</key>
@@ -37,43 +37,43 @@
   </deploymentAspect>
 
   <deploymentAspect class="org.jboss.wsf.stack.jbws.EagerInitializeDeploymentAspect">
-    <property name="requires">UnifiedMetaDataModel</property>
-    <property name="provides">InitializedMetaDataModel</property>
+    <property name="requires" class="java.lang.String">UnifiedMetaDataModel</property>
+    <property name="provides" class="java.lang.String">InitializedMetaDataModel</property>
   </deploymentAspect>
 
   <deploymentAspect class="org.jboss.wsf.framework.deployment.EndpointHandlerDeploymentAspect">
-    <property name="requires">ContainerMetaData</property>
-    <property name="provides">StackEndpointHandler</property>
+    <property name="requires" class="java.lang.String">ContainerMetaData</property>
+    <property name="provides" class="java.lang.String">StackEndpointHandler</property>
   </deploymentAspect>
 
   <deploymentAspect class="org.jboss.wsf.stack.jbws.PublishContractDeploymentAspect">
-    <property name="requires">UnifiedMetaDataModel, JAXBIntros</property>
-    <property name="provides">PublishedContract</property>
+    <property name="requires" class="java.lang.String">UnifiedMetaDataModel, JAXBIntros</property>
+    <property name="provides" class="java.lang.String">PublishedContract</property>
   </deploymentAspect>
 
   <deploymentAspect class="org.jboss.wsf.stack.jbws.ServiceEndpointInvokerDeploymentAspect">
-    <property name="requires">UnifiedMetaDataModel</property>
+    <property name="requires" class="java.lang.String">UnifiedMetaDataModel</property>
   </deploymentAspect>
 
   <deploymentAspect class="org.jboss.ws.extensions.wsrm.server.RMDeploymentAspect">
-    <property name="requires">StackEndpointHandler, UnifiedMetaDataModel</property>
+    <property name="requires" class="java.lang.String">StackEndpointHandler, UnifiedMetaDataModel</property>
   </deploymentAspect>
 
   <deploymentAspect class="org.jboss.wsf.stack.jbws.UnifiedMetaDataDeploymentAspect">
-    <property name="requires">ContainerMetaData, URLPattern, EndpointAddress, VFSRoot, JAXBIntros</property>
-    <property name="provides">UnifiedMetaDataModel</property>
+    <property name="requires" class="java.lang.String">ContainerMetaData, URLPattern, EndpointAddress, VFSRoot, JAXBIntros</property>
+    <property name="provides" class="java.lang.String">UnifiedMetaDataModel</property>
   </deploymentAspect>
 
   <deploymentAspect class="org.jboss.wsf.framework.deployment.JAXBIntroDeploymentAspect">
-    <property name="provides">JAXBIntros</property>
+    <property name="provides" class="java.lang.String">JAXBIntros</property>
   </deploymentAspect>
 
   <!--
 
   <deploymentAspect class="org.jboss.wsf.framework.deployment.EndpointRecordProcessorDeploymentAspect">
     <property name="mbeanServer"><inject bean="WSMBeanServerLocator" property="mbeanServer"/></property>
-    <property name="requires">RegisteredEndpoint</property>
-    <property name="provides">EndpointRecordProcessors</property>
+    <property name="requires" class="java.lang.String">RegisteredEndpoint</property>
+    <property name="provides" class="java.lang.String">EndpointRecordProcessors</property>
     <property name="processors">
       <list class="java.util.ArrayList" elementClass="org.jboss.wsf.spi.management.recording.RecordProcessor">
         <inject bean="WSMemoryBufferRecorder"/>
@@ -83,7 +83,7 @@
   </deploymentAspect>
 
   <deploymentAspect class="org.jboss.wsf.stack.jbws.EventingDeploymentAspect">
-    <property name="requires">UnifiedMetaDataModel</property>
+    <property name="requires" class="java.lang.String">UnifiedMetaDataModel</property>
   </deploymentAspect>
 
   -->

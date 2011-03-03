@@ -69,6 +69,7 @@
             <artifactId>maven-dependency-plugin</artifactId>
             <executions>
               <execution>
+                <id>unpack-shared-tests</id>
                 <phase>generate-sources</phase>
                 <goals>
                   <goal>unpack</goal>
@@ -79,9 +80,10 @@
                       <groupId>org.jboss.ws</groupId>
                       <artifactId>jbossws-shared-testsuite</artifactId>
                       <type>zip</type>
+                      <overWrite>true</overWrite>
+                      <outputDirectory>src/test</outputDirectory>
                     </artifactItem>
                   </artifactItems>
-                  <outputDirectory>src/test</outputDirectory>
                 </configuration>
               </execution>
               <execution> <!-- This is used by WSRunClientTestCase -->
