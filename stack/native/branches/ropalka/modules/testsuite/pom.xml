@@ -740,6 +740,7 @@
                  <!-- ////////////////////////// -->
 
                  <!--# not yet supported on AS7 -->
+                 <exclude>org/jboss/test/ws/benchmark/jaxrpc/**</exclude>
                  <exclude>org/jboss/test/ws/jaxrpc/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/wseventing/**</exclude>
                  <!-- EJB3 client API dependencies -->
