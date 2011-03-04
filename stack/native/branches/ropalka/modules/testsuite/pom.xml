@@ -63,6 +63,11 @@
       <artifactId>servlet-api</artifactId>
     </dependency>
     <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.16</version>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>3.8.1</version>
@@ -138,6 +143,35 @@
       </testResource>
     </testResources>
     <plugins>
+      <plugin> <!-- This copies jboss-jaxws-api_2.2_spec & jboss-jaxb-api_2.2_spec jars to endorsed dir before the integration-tests are run -->
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.jboss.spec.javax.xml.ws</groupId>
+                  <artifactId>jboss-jaxws-api_2.2_spec</artifactId>
+                  <type>jar</type>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jboss.spec.javax.xml.bind</groupId>
+                  <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
+                  <type>jar</type>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin> <!-- This copies jbossws-native-factories jar to endorsed dir before the integration-tests are run -->
         <artifactId>maven-resources-plugin</artifactId>
         <executions>
@@ -154,6 +188,7 @@
                   <directory>${basedir}/../endorsed/target/</directory>
                   <includes>
                     <include>jbossws-native-factories-${project.version}.jar</include>
+                    <include>jboss-jaxb-api_2.2_spec-${jaxb.api.version}.jar</include>
                   </includes>
                 </resource>
               </resources>             
@@ -368,6 +403,8 @@
       <properties>
         <jboss.version>6.0.0.Final</jboss.version>
         <jbossws.integration.target>jboss600</jbossws.integration.target>
+        <endorsed.dirs>${jboss600.home}/lib/endorsed</endorsed.dirs>
+        <jaxrpc.enabled>true</jaxrpc.enabled>
       </properties>
       <dependencies>
         <dependency>
@@ -503,6 +540,8 @@
       <properties>
         <jboss.version>6.0.1-SNAPSHOT</jboss.version>
         <jbossws.integration.target>jboss601</jbossws.integration.target>
+        <endorsed.dirs>${jboss601.home}/lib/endorsed</endorsed.dirs>
+        <jaxrpc.enabled>true</jaxrpc.enabled>
       </properties>
       <dependencies>
         <dependency>
@@ -619,6 +658,8 @@
       <properties>
         <jboss.version>7.0.0.Alpha2-SNAPSHOT</jboss.version>
         <jbossws.integration.target>jboss700</jbossws.integration.target>
+        <endorsed.dirs>${project.build.directory}/endorsed</endorsed.dirs>
+        <jaxrpc.enabled>false</jaxrpc.enabled>
       </properties>
       <dependencies>
         <dependency>
@@ -638,12 +679,10 @@
         <dependency>
           <groupId>org.jboss</groupId>
           <artifactId>jboss-common-core</artifactId>
-          <exclusions>
-              <exclusion>
-                  <groupId>org.jboss.logging</groupId>
-                  <artifactId>jboss-logging-spi</artifactId>
-              </exclusion>
-          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss</groupId>
+          <artifactId>jbossxb</artifactId>
         </dependency>
       </dependencies>
       <build>
@@ -663,8 +702,11 @@
                   <testExcludes>
                     <!-- AS7 compilation excludes -->
                     <exclude>org/jboss/test/ws/jaxrpc/**</exclude>
+                    <exclude>org/jboss/test/ws/jaxws/wseventing/**</exclude>
                     <!-- EJB3 client API dependencies -->
                     <exclude>org/jboss/test/ws/jaxws/jbws944/**</exclude>
+                    <exclude>org/jboss/test/ws/jaxws/webserviceref/**</exclude>
+                    <exclude>org/jboss/test/ws/jaxws/samples/news/**</exclude>
                     <exclude>org/jboss/test/ws/jaxws/samples/webserviceref/**</exclude>
                     <exclude>org/jboss/test/ws/jaxws/samples/webservicerefsec/**</exclude>
                     <exclude>org/jboss/test/ws/jaxws/samples/securityDomain/**</exclude>
@@ -699,8 +741,11 @@
 
                  <!--# not yet supported on AS7 -->
                  <exclude>org/jboss/test/ws/jaxrpc/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/wseventing/**</exclude>
                  <!-- EJB3 client API dependencies -->
                  <exclude>org/jboss/test/ws/jaxws/jbws944/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/webserviceref/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/samples/news/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/webserviceref/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/webservicerefsec/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/securityDomain/**</exclude>
