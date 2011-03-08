@@ -183,15 +183,20 @@
             </goals>
             <configuration>
               <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
-              <resources>         
+              <resources>
                 <resource>
                   <directory>${basedir}/../endorsed/target/</directory>
                   <includes>
                     <include>jbossws-native-factories-${project.version}.jar</include>
-                    <include>jboss-jaxb-api_2.2_spec-${jaxb.api.version}.jar</include>
                   </includes>
                 </resource>
-              </resources>             
+                <resource>
+                  <directory>${basedir}/../../endorsed/target/</directory>
+                  <includes>
+                    <include>jbossws-native-factories-${project.version}.jar</include>
+                  </includes>
+                </resource>
+              </resources>
             </configuration>
           </execution>
         </executions>
@@ -504,13 +509,13 @@
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <compilerArgument>-Djava.endorsed.dirs=${jboss600.home}/lib/endorsed</compilerArgument>
+              <compilerArgument>-Djava.endorsed.dirs=${endorsed.dirs}</compilerArgument>
             </configuration>
           </plugin>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <argLine>${surefire.jvm.args} ${surefire.jvm.management.args} -Djava.endorsed.dirs=${jboss600.home}/lib/endorsed</argLine>
+              <argLine>${surefire.jvm.args} ${surefire.jvm.management.args} -Djava.endorsed.dirs=${endorsed.dirs}</argLine>
               <excludes>
                 <!--# UsernameTokenHTTPSTestCase requires keystore & trustore in jboss-web tomcat configuration-->
                 <exclude>org/jboss/test/ws/interop/nov2007/wsse/UsernameTokenHTTPSTestCase.*</exclude>
@@ -623,13 +628,13 @@
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <compilerArgument>-Djava.endorsed.dirs=${jboss601.home}/lib/endorsed</compilerArgument>
+              <compilerArgument>-Djava.endorsed.dirs=${endorsed.dirs}</compilerArgument>
             </configuration>
           </plugin>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <argLine>${surefire.jvm.args} ${surefire.jvm.management.args} -Djava.endorsed.dirs=${jboss601.home}/lib/endorsed</argLine>
+              <argLine>${surefire.jvm.args} ${surefire.jvm.management.args} -Djava.endorsed.dirs=${endorsed.dirs}</argLine>
               <excludes>
                 <!--# UsernameTokenHTTPSTestCase requires keystore & trustore in jboss-web tomcat configuration-->
                 <exclude>org/jboss/test/ws/interop/nov2007/wsse/UsernameTokenHTTPSTestCase.*</exclude>
@@ -690,9 +695,7 @@
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <compilerArguments>
-                <endorseddirs>${project.build.directory}/endorsed</endorseddirs>
-              </compilerArguments>
+              <compilerArgument>-Djava.endorsed.dirs=${endorsed.dirs}</compilerArgument>
             </configuration>
             <executions>
               <execution>
@@ -721,7 +724,7 @@
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <argLine>${surefire.jvm.args} ${surefire.jvm.management.args} -Djava.endorsed.dirs=${project.build.directory}/endorsed</argLine>
+              <argLine>${surefire.jvm.args} ${surefire.jvm.management.args} -Djava.endorsed.dirs=${endorsed.dirs}</argLine>
               <excludes>
                 <!--# UsernameTokenHTTPSTestCase requires keystore & trustore in jboss-web tomcat configuration-->
                 <exclude>org/jboss/test/ws/interop/nov2007/wsse/UsernameTokenHTTPSTestCase.*</exclude>
