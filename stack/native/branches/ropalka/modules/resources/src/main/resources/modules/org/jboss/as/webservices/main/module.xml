@@ -29,6 +29,8 @@
     </resources>
 
     <dependencies>
+        <module name="com.sun.xml.bind" services="import"/> <!-- TODO: JAXB API relies on TCCL - investigate how to workaround this factories import -->
+        <module name="org.apache.xerces" services="import"/> <!-- TODO: DOM API relies on TCCL - investigate how to workaround this factories import -->
         <module name="javax.api"/>
         <module name="javax.jws.api"/>
         <module name="javax.xml.ws.api"/>
