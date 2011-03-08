@@ -745,6 +745,7 @@
                  <!--# not yet supported on AS7 -->
                  <exclude>org/jboss/test/ws/benchmark/jaxrpc/**</exclude>
                  <exclude>org/jboss/test/ws/jaxrpc/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/wsrm/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/wseventing/**</exclude>
                  <!-- EJB3 client API dependencies -->
                  <exclude>org/jboss/test/ws/jaxws/jbws944/**</exclude>
@@ -817,6 +818,7 @@
                  <exclude>org/jboss/test/ws/jaxws/jbws2529/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2591/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2593/**</exclude>
+                 <exclude>org/jboss/test/ws/tools/scripts/ScriptTestCase*</exclude>
                  <exclude>org/jboss/test/ws/jaxws/smoke/tools/*ScriptTestCase*</exclude>
                  <exclude>org/jboss/test/ws/jaxws/smoke/tools/WSRunClientTestCase*</exclude>
 
@@ -836,17 +838,24 @@
                  <!-- # [JBWS-3229] DOMUtils issue on test classpath - probably missing xercesImpl on CP? -->
                  <exclude>org/jboss/test/ws/jaxws/jbws2960/**</exclude>
 
-                 <!-- # [JBWS-3230] WS RM namespace issue -->
-                 <exclude>org/jboss/test/ws/jaxws/samples/wsrm/client/WSReliableMessagingWithAPITestCase*</exclude>
-
-                 <!-- # [JBWS-3231] not satisfied policy alternatives -->
-                 <exclude>org/jboss/test/ws/jaxws/samples/mtom/MtomTestCase*</exclude>
-
                  <!-- # [JBWS-3232] javax.naming.NameNotFoundException: Name 'service' not found in context 'env' -->
                  <exclude>org/jboss/test/ws/jaxws/jbws3140/**</exclude>
 
                  <!-- # [JBWS-3234] JNDI over RMI not available on AS7 -->
                  <exclude>org/jboss/test/ws/jaxws/samples/serviceref/**</exclude>
+
+                 <!-- # [JBWS-3239] SPI TCCL issue -->
+                 <exclude>org/jboss/test/ws/jaxws/endpoint/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/samples/endpoint/**</exclude>
+
+                 <!-- # [JBWS-3240] Rewrite tests relying on $JBOSS_HOME/server/default/tmp/jbossws folder existence -->
+                 <exclude>org/jboss/test/ws/jaxws/samples/xop/doclit/**</exclude>
+
+                 <!-- # [JBWS-3241] NPE in ServerHandler.handleInbound() -->
+                 <exclude>org/jboss/test/ws/jaxws/samples/addressing/AddressingStatefulTestCase*</exclude>
+
+                 <!-- # [JBWS-3242] Servlet base test throws IllegalArgumentException: Resource META-INF/jbossws-entities.properties not found -->
+                 <exclude>org/jboss/test/ws/jaxws/jbws3223/**</exclude>
 
                  <!-- JAXR not available -->
                  <exclude>org/jboss/test/ws/jaxws/samples/jaxr/**</exclude>
