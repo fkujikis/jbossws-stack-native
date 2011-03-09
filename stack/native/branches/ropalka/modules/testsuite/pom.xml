@@ -682,6 +682,11 @@
           <version>5.0.5.Final</version>
         </dependency>
         <dependency>
+          <groupId>org.picketbox</groupId>
+          <artifactId>jbosssx-client</artifactId>
+          <version>3.0.0.CR2</version>
+        </dependency>
+        <dependency>
           <groupId>org.jboss</groupId>
           <artifactId>jboss-common-core</artifactId>
         </dependency>
@@ -779,6 +784,7 @@
                  <exclude>org/jboss/test/ws/jaxws/jbws1665/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1694/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1799/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws1809/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1813/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1815/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1822/**</exclude>
@@ -787,11 +793,16 @@
                  <exclude>org/jboss/test/ws/jaxws/jbws1850/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1872/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1904/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws1909/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1969/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws1991/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2000/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2011/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws2014/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2074/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws2116/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2166/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws2182/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2183/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2218/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2221/**</exclude>
@@ -799,6 +810,7 @@
                  <exclude>org/jboss/test/ws/jaxws/jbws2257/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2437/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2449/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws2565/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2630/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2634/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2701/**</exclude>
@@ -809,6 +821,7 @@
                  <exclude>org/jboss/test/ws/jaxws/jbws3026/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws3182/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/benchmark/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/epr/EndpointReferenceTestCase*</exclude>
                  <exclude>org/jboss/test/ws/jaxws/endpointReference/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/context/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/dar/**</exclude>
@@ -849,6 +862,7 @@
 
                  <!-- # [JBWS-3226] jboss-service.xml not matching AS7 format -->
                  <exclude>org/jboss/test/ws/jaxws/jbws1854/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws1988/UsernameAuthTestCase*</exclude>
 
                  <!-- # [JBWS-3227] handles config file not found on classpath -->
                  <exclude>org/jboss/test/ws/jaxws/jbws3034/**</exclude>
@@ -865,6 +879,7 @@
 
                  <!-- # [JBWS-3234] JNDI over RMI not available on AS7 -->
                  <exclude>org/jboss/test/ws/jaxws/samples/serviceref/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/wsaddressing/replyto/**</exclude>
 
                  <!-- # [JBWS-3239] SPI TCCL issue -->
                  <exclude>org/jboss/test/ws/jaxws/endpoint/**</exclude>
@@ -879,8 +894,13 @@
                  <!-- # [JBWS-3242] Servlet base test throws IllegalArgumentException: Resource META-INF/jbossws-entities.properties not found -->
                  <exclude>org/jboss/test/ws/jaxws/jbws3223/**</exclude>
 
+                 <!-- # [JBWS-3244] resuscitate WS-Eventing -->
+                 <exclude>org/jboss/test/ws/jaxws/samples/wseventing/**</exclude>
+
                  <!-- # [JBAS-8933] ClassCastException: org.jboss.security.plugins.auth.JaasSecurityManagerBase cannot be cast to org.jboss.security.AuthorizationManager -->
+                 <exclude>org/jboss/test/ws/jaxws/jbws1999/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/wssecurity/SimpleUsernameTestCase*</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/samples/wssecurity/SimpleDispatchTestCase*</exclude>
 
                  <!-- JAXR not available -->
                  <exclude>org/jboss/test/ws/jaxws/samples/jaxr/**</exclude>

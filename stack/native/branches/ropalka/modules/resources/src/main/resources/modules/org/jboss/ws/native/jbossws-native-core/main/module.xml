@@ -30,6 +30,7 @@
 
     <dependencies>
         <module name="com.sun.xml.bind" services="import"/>
+        <module name="com.sun.xml.fastinfoset"/>
         <module name="javax.api" />
         <module name="javax.servlet.api" />
         <module name="javax.jws.api" />
@@ -43,6 +44,7 @@
         <module name="org.apache.xmlsec"/>
         <module name="org.apache.ws.commons.policy"/>
         <module name="org.javassist" />
+        <module name="org.codehaus.jettison"/>
         <module name="org.jboss.netty" />
         <module name="org.jboss.xb" />
         <module name="org.jboss.ws.api" />
