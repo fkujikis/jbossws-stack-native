@@ -775,6 +775,7 @@
                  <exclude>org/jboss/test/ws/jaxws/jbws1904/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1969/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2000/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws2011/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2074/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2183/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2218/**</exclude>
