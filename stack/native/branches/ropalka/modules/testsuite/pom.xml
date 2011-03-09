@@ -689,6 +689,17 @@
           <groupId>org.jboss</groupId>
           <artifactId>jbossxb</artifactId>
         </dependency>
+        <!-- Apache XML security depends on Xalan impl classes :( -->
+        <dependency>
+          <groupId>apache-xalan</groupId>
+          <artifactId>serializer</artifactId>
+          <version>2.7.1.patch01-brew</version>
+        </dependency>
+        <dependency>
+          <groupId>apache-xalan</groupId>
+          <artifactId>xalan</artifactId>
+          <version>2.7.1.patch01-brew</version>
+        </dependency>
       </dependencies>
       <build>
         <plugins>
@@ -756,6 +767,8 @@
                  <exclude>org/jboss/test/ws/jaxws/samples/securityDomain/**</exclude>
 
                  <!-- EJB3 endpoint deployments -->
+                 <exclude>org/jboss/test/ws/jaxws/jbws771/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws1309/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1283/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1422/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1446/**</exclude>
@@ -771,16 +784,20 @@
                  <exclude>org/jboss/test/ws/jaxws/jbws1822/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1841/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1845/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws1850/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1872/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1904/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1969/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2000/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2011/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2074/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws2166/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2183/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2218/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws2221/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2241/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2257/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws2437/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2449/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2630/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2634/**</exclude>
@@ -790,9 +807,11 @@
                  <exclude>org/jboss/test/ws/jaxws/jbws2957/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2999/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws3026/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws3182/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/benchmark/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/endpointReference/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/context/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/samples/dar/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/eardeployment/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/exception/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/jaxbintros/**</exclude>
@@ -819,6 +838,8 @@
                  <exclude>org/jboss/test/ws/jaxws/jbws2529/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2591/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws2593/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws2633/**</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/jbws2637/**</exclude>
                  <exclude>org/jboss/test/ws/tools/scripts/ScriptTestCase*</exclude>
                  <exclude>org/jboss/test/ws/jaxws/smoke/tools/*ScriptTestCase*</exclude>
                  <exclude>org/jboss/test/ws/jaxws/smoke/tools/WSRunClientTestCase*</exclude>
@@ -857,6 +878,9 @@
 
                  <!-- # [JBWS-3242] Servlet base test throws IllegalArgumentException: Resource META-INF/jbossws-entities.properties not found -->
                  <exclude>org/jboss/test/ws/jaxws/jbws3223/**</exclude>
+
+                 <!-- # [JBAS-8933] ClassCastException: org.jboss.security.plugins.auth.JaasSecurityManagerBase cannot be cast to org.jboss.security.AuthorizationManager -->
+                 <exclude>org/jboss/test/ws/jaxws/samples/wssecurity/SimpleUsernameTestCase*</exclude>
 
                  <!-- JAXR not available -->
                  <exclude>org/jboss/test/ws/jaxws/samples/jaxr/**</exclude>
