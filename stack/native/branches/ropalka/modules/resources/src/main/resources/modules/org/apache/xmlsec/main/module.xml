@@ -30,6 +30,7 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="org.apache.xalan"/>
         <module name="org.slf4j.jcl-over-slf4j"/>
     </dependencies>
 
