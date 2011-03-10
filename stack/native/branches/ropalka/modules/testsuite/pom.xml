@@ -761,8 +761,7 @@
                  <!--# not yet supported on AS7 -->
                  <exclude>org/jboss/test/ws/benchmark/jaxrpc/**</exclude>
                  <exclude>org/jboss/test/ws/jaxrpc/**</exclude>
-                 <exclude>org/jboss/test/ws/jaxws/wsrm/**</exclude>
-                 <exclude>org/jboss/test/ws/jaxws/wseventing/**</exclude>
+
                  <!-- EJB3 client API dependencies -->
                  <exclude>org/jboss/test/ws/jaxws/jbws944/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/webserviceref/**</exclude>
@@ -863,6 +862,7 @@
                  <!-- # [JBWS-3226] jboss-service.xml not matching AS7 format -->
                  <exclude>org/jboss/test/ws/jaxws/jbws1854/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/jbws1988/UsernameAuthTestCase*</exclude>
+                 <exclude>org/jboss/test/ws/jaxws/samples/jmstransport/**</exclude>
 
                  <!-- # [JBWS-3227] handles config file not found on classpath -->
                  <exclude>org/jboss/test/ws/jaxws/jbws3034/**</exclude>
@@ -895,12 +895,22 @@
                  <exclude>org/jboss/test/ws/jaxws/jbws3223/**</exclude>
 
                  <!-- # [JBWS-3244] resuscitate WS-Eventing -->
+                 <exclude>org/jboss/test/ws/jaxws/wseventing/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/wseventing/**</exclude>
+
+                 <!-- # [JBWS-3245] AS7 RemoteDeployer have to always undeploy deployed archives -->
+                 <exclude>org/jboss/test/ws/jaxws/jbws1582/**</exclude>
+
+                 <!-- # [JBWS-3246] Resuscitate JSON -->
+                 <exclude>org/jboss/test/ws/jaxws/json/JsonTestCase*</exclude>
 
                  <!-- # [JBAS-8933] ClassCastException: org.jboss.security.plugins.auth.JaasSecurityManagerBase cannot be cast to org.jboss.security.AuthorizationManager -->
                  <exclude>org/jboss/test/ws/jaxws/jbws1999/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/wssecurity/SimpleUsernameTestCase*</exclude>
                  <exclude>org/jboss/test/ws/jaxws/samples/wssecurity/SimpleDispatchTestCase*</exclude>
+
+                 <!-- # [JBAS-8936] @Resource injection from web.xml doesn't work -->
+                 <exclude>org/jboss/test/ws/jaxws/enventry/EnvEntryServletTestCase*</exclude>
 
                  <!-- JAXR not available -->
                  <exclude>org/jboss/test/ws/jaxws/samples/jaxr/**</exclude>
