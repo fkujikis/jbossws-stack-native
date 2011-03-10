@@ -758,10 +758,6 @@
                  <!-- AS7 integration exclusions -->
                  <!-- ////////////////////////// -->
 
-                 <!--# not yet supported on AS7 -->
-                 <exclude>org/jboss/test/ws/benchmark/jaxrpc/**</exclude>
-                 <exclude>org/jboss/test/ws/jaxrpc/**</exclude>
-
                  <!-- EJB3 client API dependencies -->
                  <exclude>org/jboss/test/ws/jaxws/jbws944/**</exclude>
                  <exclude>org/jboss/test/ws/jaxws/webserviceref/**</exclude>
@@ -917,6 +913,7 @@
 
                  <!-- JAXRPC deployments -->
                  <exclude>org/jboss/test/ws/jaxrpc/**</exclude>
+                 <exclude>org/jboss/test/ws/benchmark/jaxrpc/**</exclude>
               </excludes>
             </configuration>
           </plugin>
