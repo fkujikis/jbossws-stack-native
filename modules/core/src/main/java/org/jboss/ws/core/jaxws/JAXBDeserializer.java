@@ -26,8 +26,6 @@ import java.lang.reflect.Method;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.ValidationEvent;
-import javax.xml.bind.ValidationEventHandler;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
@@ -44,7 +42,6 @@ import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.extensions.xop.jaxws.AttachmentUnmarshallerImpl;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.wsf.spi.binding.BindingCustomization;
-import org.jboss.wsf.spi.binding.JAXBBindingCustomization;
 
 /**
  * A Deserializer that can handle complex types by delegating to JAXB.
@@ -77,16 +74,6 @@ public class JAXBDeserializer extends ComplexTypeDeserializer
 
          Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
          unmarshaller.setAttachmentUnmarshaller( new AttachmentUnmarshallerImpl());
-         
-         //workaround for https://jira.jboss.org/jira/browse/JBWS-2686 while waiting for Sun's bug to be fixed
-         unmarshaller.setEventHandler(new ValidationEventHandler() {
-            public boolean handleEvent(final ValidationEvent event)
-            {
-               int severity = event.getSeverity();
-               return (severity != ValidationEvent.FATAL_ERROR && severity != ValidationEvent.ERROR);
-            }
-
-         }); 
 
          JAXBElement jbe = unmarshaller.unmarshal(xmlFragment, javaType);
          value = jbe.getValue();

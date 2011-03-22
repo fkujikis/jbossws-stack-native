@@ -84,10 +84,13 @@ public class WSSecurityDispatcher implements WSSecurityAPI
       QName secQName = new QName(Constants.WSSE_NS, "Security");
       Element secHeaderElement = (soapHeader != null) ? Util.findElement(soapHeader, secQName) : null;
 
-      boolean fault = message.getSOAPBody().getFault() != null;
       if (secHeaderElement == null)
       {
-         if (hasRequirements(config, fault))
+         // This is ok, we always allow faults to be received because WS-Security does not encrypt faults
+         if (message.getSOAPBody().getFault() != null)
+            return;
+
+         if (hasRequirements(config))
             throw convertToFault(new InvalidSecurityHeaderException("This service requires <wsse:Security>, which is missing."));
       }
 
@@ -95,7 +98,7 @@ public class WSSecurityDispatcher implements WSSecurityAPI
       {
          if (secHeaderElement != null)
          {
-            decodeHeader(configuration, config, message, secHeaderElement, fault);
+            decodeHeader(configuration, config, message, secHeaderElement);
          }
 
          authorize(config);
@@ -112,9 +115,10 @@ public class WSSecurityDispatcher implements WSSecurityAPI
 
    }
 
-   private void decodeHeader(WSSecurityConfiguration configuration, Config config, SOAPMessage message, Element secHeaderElement, boolean fault) throws WSSecurityException
+   private void decodeHeader(WSSecurityConfiguration configuration, Config config, SOAPMessage message, Element secHeaderElement) throws WSSecurityException
    {
-      SecurityStore securityStore = new SecurityStore(configuration);
+      SecurityStore securityStore = new SecurityStore(configuration.getKeyStoreURL(), configuration.getKeyStoreType(), configuration.getKeyStorePassword(),
+            configuration.getKeyPasswords(), configuration.getTrustStoreURL(), configuration.getTrustStoreType(), configuration.getTrustStorePassword());
       NonceFactory factory = Util.loadFactory(NonceFactory.class, configuration.getNonceFactory(), DefaultNonceFactory.class);
 
       Authenticate authenticate = null;
@@ -131,7 +135,7 @@ public class WSSecurityDispatcher implements WSSecurityAPI
       if (log.isTraceEnabled())
          log.trace("Decoded Message:\n" + DOMWriter.printNode(message.getSOAPPart(), true));
 
-      List<RequireOperation> operations = buildRequireOperations(config, fault);
+      List<RequireOperation> operations = buildRequireOperations(config);
 
       decoder.verify(operations);
       if (log.isDebugEnabled())
@@ -156,12 +160,10 @@ public class WSSecurityDispatcher implements WSSecurityAPI
    public void encodeMessage(WSSecurityConfiguration configuration, SOAPMessage message, Config operationConfig, String user, String password) throws SOAPException
    {
       Config config = getActualConfig(configuration, operationConfig);
-      if (log.isDebugEnabled())
-         log.debug("WS-Security config: " + config);
+      log.debug("WS-Security config: " + config);
 
-      boolean fault = message.getSOAPBody().getFault() != null;
       // Nothing to process
-      if (config == null || (fault && !config.includesFaults()))
+      if (config == null)
          return;
 
       ArrayList<EncodingOperation> operations = new ArrayList<EncodingOperation>();
@@ -179,7 +181,7 @@ public class WSSecurityDispatcher implements WSSecurityAPI
       }
 
       Sign sign = config.getSign();
-      if (sign != null && (!fault || sign.isIncludeFaults()))
+      if (sign != null)
       {
          List<Target> targets = convertTargets(sign.getTargets());
          if (sign.isIncludeTimestamp())
@@ -191,15 +193,14 @@ public class WSSecurityDispatcher implements WSSecurityAPI
                targets.add(new WsuIdTarget("timestamp"));
          }
 
-         operations.add(new SignatureOperation(targets, sign.getAlias(), sign.getTokenRefType(), sign.getSecurityDomainAliasLabel()));
+         operations.add(new SignatureOperation(targets, sign.getAlias(), sign.getTokenRefType()));
       }
 
       Encrypt encrypt = config.getEncrypt();
-      if (encrypt != null && (!fault || encrypt.isIncludeFaults()))
+      if (encrypt != null)
       {
          List<Target> targets = convertTargets(encrypt.getTargets());
-         operations.add(new EncryptionOperation(targets, encrypt.getAlias(), encrypt.getAlgorithm(), encrypt.getWrap(), encrypt.getTokenRefType(), encrypt
-               .getSecurityDomainAliasLabel()));
+         operations.add(new EncryptionOperation(targets, encrypt.getAlias(), encrypt.getAlgorithm(), encrypt.getWrap(), encrypt.getTokenRefType()));
       }
 
       if (operations.size() == 0)
@@ -210,7 +211,8 @@ public class WSSecurityDispatcher implements WSSecurityAPI
 
       try
       {
-         SecurityStore securityStore = new SecurityStore(configuration);
+         SecurityStore securityStore = new SecurityStore(configuration.getKeyStoreURL(), configuration.getKeyStoreType(), configuration.getKeyStorePassword(),
+               configuration.getKeyPasswords(), configuration.getTrustStoreURL(), configuration.getTrustStoreType(), configuration.getTrustStorePassword());
          SecurityEncoder encoder = new SecurityEncoder(operations, securityStore);
          
          if ((sign != null || encrypt != null) && message instanceof SOAPMessageImpl)
@@ -267,7 +269,7 @@ public class WSSecurityDispatcher implements WSSecurityAPI
       return new CommonSOAPFaultException(e.getFaultCode(), e.getFaultString());
    }
 
-   private List<RequireOperation> buildRequireOperations(Config operationConfig, boolean fault)
+   private List<RequireOperation> buildRequireOperations(Config operationConfig)
    {
       if (operationConfig == null)
          return null;
@@ -282,14 +284,14 @@ public class WSSecurityDispatcher implements WSSecurityAPI
          operations.add(new RequireTimestampOperation(requireTimestamp.getMaxAge()));
 
       RequireSignature requireSignature = requires.getRequireSignature();
-      if (requireSignature != null && (!fault || requireSignature.isIncludeFaults()))
+      if (requireSignature != null)
       {
          List<Target> targets = convertTargets(requireSignature.getTargets());
          operations.add(new RequireSignatureOperation(targets));
       }
 
       RequireEncryption requireEncryption = requires.getRequireEncryption();
-      if (requireEncryption != null && (!fault || requireEncryption.isIncludeFaults()))
+      if (requireEncryption != null)
       {
          List<Target> targets = convertTargets(requireEncryption.getTargets());
          operations.add(new RequireEncryptionOperation(targets));
@@ -351,10 +353,8 @@ public class WSSecurityDispatcher implements WSSecurityAPI
       return operation.getConfig();
    }
 
-   private boolean hasRequirements(Config config, boolean fault)
+   private boolean hasRequirements(Config config)
    {
-      Requires requires = (config != null) ? config.getRequires() : null;
-      return requires != null && (!fault || requires.includesFaults());
-
+      return config != null && config.getRequires() != null;
    }
 }

@@ -119,9 +119,9 @@ public class WSTools
                urls[j] = new File(token).toURL();
             }
 
-            ClassLoader ctxLoader = SecurityActions.getContextClassLoader();
+            ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
             URLClassLoader urlLoader = new URLClassLoader(urls, ctxLoader);
-            SecurityActions.setContextClassLoader(urlLoader);
+            Thread.currentThread().setContextClassLoader(urlLoader);
             i++;
          }
          else

@@ -22,14 +22,9 @@
 package org.jboss.test.ws.jaxws.jbws2927;
 
 import java.net.URL;
-import java.util.Iterator;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPBody;
-import javax.xml.soap.SOAPConnection;
-import javax.xml.soap.SOAPConnectionFactory;
-import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
@@ -40,15 +35,12 @@ import junit.framework.Test;
 
 import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
 import org.jboss.ws.core.jaxws.spi.EndpointImpl;
-import org.jboss.ws.core.soap.NodeImpl;
 import org.jboss.ws.extensions.addressing.jaxws.WSAddressingClientHandler;
 import org.jboss.ws.extensions.addressing.soap.SOAPAddressingPropertiesImpl;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * A JBWS2927TestCase.
@@ -81,41 +73,6 @@ public class JBWS2927TestCase extends JBossWSTest
    {     
       String response = port.echo("testJBWS2927");
       assertEquals("testJBWS2927", response);
-   }
-  
-   public void testSOAPRequestWithoutWsaHeader() throws Exception
-   {
-      SOAPMessage reqMsg = getRequestMessage();
-      URL epURL = new URL(TARGET_ENDPOINT_ADDRESS);
-      SOAPConnection con = SOAPConnectionFactory.newInstance().createConnection();
-      SOAPMessage resMsg = con.call(reqMsg, epURL);
-      SOAPEnvelope resEnv = resMsg.getSOAPPart().getEnvelope();
-
-      String response = "";
-
-      SOAPBody body = resEnv.getBody();
-      Iterator it = body.getChildElements(new QName("http://ws.jboss.org/jbws2927", "echoResponse"));
-      Node node = (Node)it.next();
-      NodeList nodes = node.getChildNodes();
-      for (int i = 0; i < nodes.getLength(); i++)
-      {
-         Node current = nodes.item(i);
-         if (current.getNodeName().equals("return"))
-         {
-            response = ((NodeImpl)current).getValue();
-         }
-      }
-
-      // The logical handler should have replaced the incoming String.
-      assertEquals("testJBWS2927", response);
-   }
-
-   private SOAPMessage getRequestMessage() throws Exception
-   {
-      URL reqMessage = getResourceURL("jaxws/jbws2927/request-message.xml");
-      MessageFactory msgFactory = MessageFactory.newInstance();
-
-      return msgFactory.createMessage(null, reqMessage.openStream());
    }
 
 }

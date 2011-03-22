@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.jaxrpc.samples.jsr109pojo;
 
+import java.io.File;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
@@ -56,11 +57,13 @@ public class RpcProxyTestCase extends JBossWSTest
 
       if (endpoint == null)
       {
-         URL javaWsdlMappingFile = getResourceURL("jaxrpc/samples/jsr109pojo/rpclit/WEB-INF/jaxrpc-mapping.xml");
+         File javaWsdlMappingFile = getResourceFile("jaxrpc/samples/jsr109pojo/rpclit/WEB-INF/jaxrpc-mapping.xml");
+         assertTrue(javaWsdlMappingFile.exists());
+
          QName serviceName = new QName(TARGET_NAMESPACE, "TestService");
          ServiceFactoryImpl factory = new ServiceFactoryImpl();
          URL wsdlLocation = new URL(TARGET_ENDPOINT_ADDRESS + "?wsdl");
-         ServiceImpl service = (ServiceImpl)factory.createService(wsdlLocation, serviceName, javaWsdlMappingFile);
+         ServiceImpl service = (ServiceImpl)factory.createService(wsdlLocation, serviceName, javaWsdlMappingFile.toURL());
          endpoint = (JaxRpcTestService)service.getPort(JaxRpcTestService.class);
       }
    }
