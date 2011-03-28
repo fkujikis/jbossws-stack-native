@@ -919,7 +919,7 @@ public class SSLContextFactory
             if (isServerSocketUseClientMode())
             {
                keyManagers = null;
-               log.debugf("Could not find keytore url. %s", e.getMessage());
+               log.debug("Could not find keytore url.  " + e.getMessage());
             }
             else
             {
@@ -938,7 +938,7 @@ public class SSLContextFactory
          catch (NullStoreURLException e)
          {
             trustManagers = null;
-            log.debugf("Could not find truststore url.  %s", e.getMessage());
+            log.debug("Could not find truststore url.  " + e.getMessage());
          }
 
          secureRandom = getSecureRandom();
@@ -982,7 +982,7 @@ public class SSLContextFactory
          {
             // this is allowable since would be the normal scenario
             keyManagers = null;
-            log.debugf("Could not find keystore url. %s ", e.getMessage());
+            log.debug("Could not find keystore url.  " + e.getMessage());
          }
 
          try
@@ -998,7 +998,7 @@ public class SSLContextFactory
             if(keyManagers != null)
             {
                trustManagers = null;
-               log.debugf("Could not find truststore url. %s", e.getMessage());
+               log.debug("Could not find truststore url.  " + e.getMessage());
             }
             else
             {

@@ -435,7 +435,7 @@ public class ServiceDelegateImpl extends ServiceDelegate
 
       if (usRef == null)
       {
-         log.debugf("No port configuration for: %s", portName);
+         log.debug("No port configuration for: " + portName);
          return;
       }
 
@@ -454,14 +454,14 @@ public class ServiceDelegateImpl extends ServiceDelegate
          Map<String, Object> reqCtx = bp.getRequestContext();
          for (UnifiedStubPropertyMetaData prop : pcref.getStubProperties())
          {
-            log.debugf("Set stub property: %s", prop);
+            log.debug("Set stub property: " + prop);
             reqCtx.put(prop.getPropName(), prop.getPropValue());
          }
       }
 
       if (configName != null || configFile != null)
       {
-         log.debugf("Configure Stub: [configName=%s,configFile=%s]", configName, configFile);
+         log.debug("Configure Stub: [configName=" + configName + ",configFile=" + configFile + "]");
          stub.setConfigName(configName, configFile);
       }
    }
@@ -481,11 +481,13 @@ public class ServiceDelegateImpl extends ServiceDelegate
       QName portName = null;
       NativeEndpointReference nepr = EndpointReferenceUtil.transform(NativeEndpointReference.class, epr);
       portName = nepr.getEndpointName();
-      //From the JAXWS dispacth api, EPR's address MUST be used for invocations on the endpoint
-      if (getEndpointMetaData(portName) != null && nepr.getAddress() != null  && nepr.getAddress().length() > 0)
-      {
-         getEndpointMetaData(portName).setEndpointAddress(nepr.getAddress());
-      }
+      
+      // From the JAXWS dispacth api, EPR's address MUST be used for invocations on the endpoint
+	  if (getEndpointMetaData(portName) != null && nepr.getAddress() != null && nepr.getAddress().length() > 0) 
+	  {
+		 getEndpointMetaData(portName).setEndpointAddress(nepr.getAddress());
+	  }
+      
       Dispatch<T> dispatch = createDispatch(portName, type, mode);
       initAddressingProperties(dispatch, epr);
       initWebserviceFeatures(dispatch, this.features);

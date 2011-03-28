@@ -493,18 +493,6 @@ public class ClientImpl extends CommonClient implements org.jboss.ws.extensions.
          initBindingHandlerChain(true);
       }
    }
-   
-   @Override
-   public String getConfigFile()
-   {
-      return epConfigMetaData.getConfigFile();
-   }
-
-   @Override
-   public String getConfigName()
-   {
-      return epConfigMetaData.getConfigName();
-   }   
 
    /**
     * Retrieve header names that can be processed by this binding

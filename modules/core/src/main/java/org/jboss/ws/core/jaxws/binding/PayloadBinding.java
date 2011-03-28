@@ -78,7 +78,7 @@ public class PayloadBinding implements CommonBinding, BindingExt
    /** On the server side, extract the IN parameters from the payload and populate an Invocation object */
    public EndpointInvocation unbindRequestMessage(OperationMetaData opMetaData, MessageAbstraction payload) throws BindingException
    {
-      log.debugf("unbindRequestMessage: %s", opMetaData.getQName());
+      log.debug("unbindRequestMessage: " + opMetaData.getQName());
       try
       {
          // Construct the endpoint invocation object
@@ -119,7 +119,7 @@ public class PayloadBinding implements CommonBinding, BindingExt
    /** On the server side, generate the payload from OUT parameters. */
    public MessageAbstraction bindResponseMessage(OperationMetaData opMetaData, EndpointInvocation epInv) throws BindingException
    {
-      log.debugf("bindResponseMessage: %s", opMetaData.getQName());
+      log.debug("bindResponseMessage: " + opMetaData.getQName());
 
       try
       {
