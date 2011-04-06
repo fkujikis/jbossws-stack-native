@@ -209,6 +209,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
 
       // Associate a message context with the current thread
       CommonMessageContext msgContext = new SOAPMessageContextJAXWS();
+      CommonMessageContext reqMsgContext = msgContext;
       MessageContextAssociation.pushMessageContext(msgContext);
       try
       {
@@ -224,6 +225,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
          msgContext.put(MessageContextJAXWS.MESSAGE_OUTBOUND_PROPERTY, Boolean.TRUE);
 
          QName portName = epMetaData.getPortName();
+         
          try
          {
             // Call the request handlers
@@ -278,6 +280,8 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
          }
          finally
          {
+            //cleanup attachment if there is any
+            CommonMessageContext.cleanupAttachments(reqMsgContext);
             closeHandlerChain(portName, handlerType[2]);
             closeHandlerChain(portName, handlerType[1]);
             closeHandlerChain(portName, handlerType[0]);
