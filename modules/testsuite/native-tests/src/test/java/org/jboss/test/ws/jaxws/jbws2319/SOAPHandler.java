@@ -22,6 +22,7 @@
 package org.jboss.test.ws.jaxws.jbws2319;
 
 import javax.xml.soap.SOAPBody;
+import javax.xml.soap.SOAPElementFactory;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.handler.LogicalMessageContext;

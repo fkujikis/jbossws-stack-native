@@ -111,10 +111,11 @@ public class JBWS2319TestCase extends JBossWSTest
 
    private SOAPMessage getRequestMessage() throws SOAPException, IOException
    {
-      URL reqMessage = getResourceURL("jaxws/jbws2319/request-message.xml");
+      URL reqMessage = getResourceFile("jaxws/jbws2319/request-message.xml").toURL();
       MessageFactory msgFactory = MessageFactory.newInstance();
 
-      return msgFactory.createMessage(null, reqMessage.openStream());
+      SOAPMessage reqMsg = msgFactory.createMessage(null, reqMessage.openStream());
+      return reqMsg;
    }
 
 }

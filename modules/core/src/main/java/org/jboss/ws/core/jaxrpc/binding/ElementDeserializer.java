@@ -28,6 +28,7 @@ import org.jboss.logging.Logger;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.DeserializerSupport;
 import org.jboss.ws.core.binding.SerializationContext;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -42,14 +43,27 @@ public class ElementDeserializer extends DeserializerSupport
    private static final Logger log = Logger.getLogger(ElementDeserializer.class);
 
    public Object deserialize(QName xmlName, QName xmlType, Source xmlFragment, SerializationContext serContext) throws BindingException {
-      return deserialize(xmlName, xmlType, sourceToElement(xmlFragment), serContext);
+      return deserialize(xmlName, xmlType, sourceToString(xmlFragment), serContext);
    }
 
    /** Deserialize the given simple xmlString
     */
-   private Object deserialize(QName xmlName, QName xmlType, Element xmlFragment, SerializationContext serContext) throws BindingException
+   private Object deserialize(QName xmlName, QName xmlType, String xmlFragment, SerializationContext serContext) throws BindingException
    {
       if(log.isDebugEnabled()) log.debug("deserialize: [xmlName=" + xmlName + ",xmlType=" + xmlType + "]");
-      return xmlFragment;
+      try
+      {
+         // TODO: Better way for DOM to source conversion
+         Element domElement = DOMUtils.parse(xmlFragment);
+         return domElement;
+      }
+      catch (RuntimeException rte)
+      {
+         throw rte;
+      }
+      catch (Exception ex)
+      {
+         throw new BindingException();
+      }
    }
 }

@@ -117,9 +117,9 @@ public class ServiceFactoryImpl extends ServiceFactory
     */
    public Service createService(URL wsdlURL, QName serviceName) throws ServiceException
    {
-      ClassLoader cl = SecurityActions.getContextClassLoader();
+      ClassLoader cl = Thread.currentThread().getContextClassLoader();
       
-      URL mappingURL = SecurityActions.getResource(cl, "META-INF/jaxrpc-mapping.xml");
+      URL mappingURL = cl.getResource("META-INF/jaxrpc-mapping.xml");
       if (mappingURL != null)
          log.info("Use jaxrpc-mapping from: " + mappingURL);
       

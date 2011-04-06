@@ -101,13 +101,12 @@ public class DarAddressingEndpoint
    @Oneway
    public void onewayProcess(DarRequest request)
    {
-      QueueConnection con = null;
       QueueSession queueSession =null;
       QueueSender sender = null;
       try {
          InitialContext context = new InitialContext();
          QueueConnectionFactory connectionFactory = (QueueConnectionFactory)context.lookup("ConnectionFactory");
-         con = connectionFactory.createQueueConnection();
+         QueueConnection con = connectionFactory.createQueueConnection();
          queueSession = con.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
          Queue queue = (Queue)context.lookup("queue/DarQueue");
          sender = queueSession.createSender(queue);
@@ -130,11 +129,6 @@ public class DarAddressingEndpoint
          try
          {
             queueSession.close();
-         }
-         catch(Exception e1) {}
-         try
-         {
-            con.close();
          }
          catch(Exception e1) {}
       }
