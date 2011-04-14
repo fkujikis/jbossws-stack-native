@@ -28,13 +28,13 @@ import java.net.URI;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.addressing.AddressingBuilder;
+import javax.xml.ws.addressing.AddressingException;
 import javax.xml.ws.addressing.soap.SOAPAddressingBuilder;
 import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
-import javax.xml.ws.soap.SOAPFaultException;
 
-import org.jboss.ws.extensions.addressing.soap.SOAPAddressingPropertiesImpl;
-import org.jboss.wsf.common.DOMUtils;
+import org.jboss.util.xml.DOMUtils;
 import org.jboss.wsf.test.JBossWSTest;
+import org.jboss.ws.extensions.addressing.soap.SOAPAddressingPropertiesImpl;
 
 /**
  * Test the SOAPAddressingProperties
@@ -150,15 +150,15 @@ public class SOAPAddressingPropertiesTestCase extends JBossWSTest
 	public void testReplyToWithoutAction() throws Exception
 	{
 		MessageFactory mf = MessageFactory.newInstance();
-		SOAPMessage  message= mf.createMessage(null, new ByteArrayInputStream(ERRORNOUS_XML.getBytes()));
-        message.setProperty("isRequired", true);
+		SOAPMessage message = mf.createMessage(null, new ByteArrayInputStream(ERRORNOUS_XML.getBytes()));
+
 		SOAPAddressingPropertiesImpl props = new SOAPAddressingPropertiesImpl();
 		try
 		{
 			props.readHeaders(message);
 			fail("ERRORNOUS_XML should cause a parsing exception due to missing wsa:Action value");
 		}
-		catch (SOAPFaultException e)
+		catch (AddressingException e)
 		{
 			// expected an exception
 		}

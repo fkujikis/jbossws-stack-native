@@ -23,7 +23,6 @@ package org.jboss.ws.metadata.builder.jaxws;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.core.utils.DelegateClassLoader;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -44,8 +43,7 @@ public class JAXWSMetaDataBuilderJSE
     */
    public UnifiedMetaData buildMetaData(ArchiveDeployment dep)
    {
-      if (log.isDebugEnabled())
-         log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
+      log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
       try
       {
          UnifiedMetaData wsMetaData = new UnifiedMetaData(dep.getRootFile());
@@ -53,7 +51,7 @@ public class JAXWSMetaDataBuilderJSE
          ClassLoader runtimeClassLoader = dep.getRuntimeClassLoader();
          if(null == runtimeClassLoader)
             throw new IllegalArgumentException("Runtime classloader cannot be null");
-         wsMetaData.setClassLoader(new DelegateClassLoader(runtimeClassLoader, SecurityActions.getContextClassLoader()));
+         wsMetaData.setClassLoader(runtimeClassLoader);
 
          // For every bean
          for (Endpoint ep : dep.getService().getEndpoints())
@@ -63,8 +61,7 @@ public class JAXWSMetaDataBuilderJSE
             JAXWSServerMetaDataBuilder.setupProviderOrWebService(dep, wsMetaData, beanClass, shortName);
          }
          
-         if (log.isDebugEnabled())
-            log.debug("END buildMetaData: " + wsMetaData);
+         log.debug("END buildMetaData: " + wsMetaData);
          return wsMetaData;
       }
       catch (RuntimeException rte)

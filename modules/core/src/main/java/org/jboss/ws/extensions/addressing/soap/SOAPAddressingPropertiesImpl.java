@@ -32,11 +32,10 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPFault;
+import javax.xml.soap.SOAPFactory;
 import javax.xml.soap.SOAPHeader;
 import javax.xml.soap.SOAPHeaderElement;
 import javax.xml.soap.SOAPMessage;
-import javax.xml.ws.WebServiceException;
 import javax.xml.ws.addressing.AddressingConstants;
 import javax.xml.ws.addressing.AddressingException;
 import javax.xml.ws.addressing.AttributedURI;
@@ -44,12 +43,9 @@ import javax.xml.ws.addressing.ReferenceParameters;
 import javax.xml.ws.addressing.Relationship;
 import javax.xml.ws.addressing.soap.SOAPAddressingBuilder;
 import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
-import javax.xml.ws.soap.SOAPFaultException;
 
-import org.jboss.logging.Logger;
 import org.jboss.ws.core.soap.NameImpl;
 import org.jboss.ws.core.soap.SOAPFactoryImpl;
-import org.jboss.ws.core.soap.SOAPFaultImpl;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
 import org.jboss.ws.extensions.addressing.AddressingPropertiesImpl;
 import org.jboss.ws.extensions.addressing.EndpointReferenceImpl;
@@ -71,8 +67,6 @@ import org.w3c.dom.NamedNodeMap;
  */
 public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl implements SOAPAddressingProperties
 {
-   private static Logger log = Logger.getLogger(SOAPAddressingBuilderImpl.class);
-   
 	private static AddressingConstants ADDR = new AddressingConstantsImpl();
 
 	private NamespaceRegistry nsRegistry = new NamespaceRegistry();
@@ -82,27 +76,12 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 	private String getRequiredHeaderContent(SOAPHeader soapHeader, QName qname)
 	{
 		Element element = DOMUtils.getFirstChildElement(soapHeader, qname);
-		if(null == element) throwAddressingHeaderMissing();
+		if(null == element) throw new AddressingException("Required element "+qname+" is missing");
 
 		String value = DOMUtils.getTextContent(element);
-		if(null == value || value.equals("")) throwAddressingHeaderMissing();
+		if(null == value || value.equals("")) throw new AddressingException("Required element "+qname+" is missing");
 		
 		return value;
-	}
-	
-	private void throwAddressingHeaderMissing()
-	{
-	   try
-	   {
-	      SOAPFault fault = new SOAPFaultImpl();
-	      fault.setFaultCode(org.jboss.wsf.common.addressing.AddressingConstants.Core.Faults.MESSAGEADDRESSINGHEADERREQUIRED_QNAME);
-	      fault.setFaultString("A required header representing a Message Addressing Property is not present");
-	      throw new SOAPFaultException(fault);
-	   }
-	   catch (SOAPException e)
-	   {
-	      throw new WebServiceException(e);
-	   }
 	}
 
 	private String getOptionalHeaderContent(SOAPHeader soapHeader, QName qname)
@@ -121,7 +100,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 		try
 		{
 			SOAPHeader soapHeader = message.getSOAPHeader();
-			
+
 			SOAPAddressingBuilder builder = new SOAPAddressingBuilderImpl();
 			AddressingConstants ADDR = builder.newAddressingConstants();
 			registerNamespaces(ADDR, soapHeader);		
@@ -167,17 +146,8 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 			// wsa:Action
 			// This REQUIRED element of type xs:anyURI conveys the [action] property.
 			// The [children] of this element convey the value of this property.
-	         if (message.getProperty("isRequired") != null && (Boolean)message.getProperty("isRequired")) 
-	         {
-	            //check the action header only if the required value is true
-	            String action = getRequiredHeaderContent(soapHeader, ADDR.getActionQName());
-	            setAction(builder.newURI(action));
-	         } 
-	         else
-	         {
-	            String action = getOptionalHeaderContent(soapHeader, ADDR.getActionQName());
-                if (action != null) setAction(builder.newURI(action));
-	         }
+			String action = getRequiredHeaderContent(soapHeader, ADDR.getActionQName());
+			setAction(builder.newURI(action));
 
 			// Read wsa:MessageID
 			// This OPTIONAL element (whose content is of type xs:anyURI) conveys the [message id] property.
@@ -247,15 +217,10 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 
 	public void writeHeaders(SOAPMessage message) throws AddressingException
 	{
-      try
-      {
-            SOAPFactoryImpl factory = new SOAPFactoryImpl();
+		try
+		{
+			SOAPFactoryImpl factory = (SOAPFactoryImpl)SOAPFactory.newInstance();
 			SOAPHeader soapHeader = message.getSOAPHeader();					
-			
-			if (soapHeader == null)
-			{
-			   soapHeader = message.getSOAPPart().getEnvelope().addHeader();
-			}
 			
 			// Add the xmlns:wsa declaration
 			soapHeader.addNamespaceDeclaration(ADDR.getNamespacePrefix(), ADDR.getNamespaceURI());
@@ -400,7 +365,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
       SOAPElement child = null;
       try
       {
-         SOAPFactoryImpl factory = new SOAPFactoryImpl();
+         SOAPFactoryImpl factory = (SOAPFactoryImpl)SOAPFactory.newInstance();
          if (obj instanceof Element)
          {
             child = factory.createElement((Element)obj);

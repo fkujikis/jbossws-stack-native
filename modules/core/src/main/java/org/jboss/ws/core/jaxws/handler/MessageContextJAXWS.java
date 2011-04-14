@@ -118,6 +118,7 @@ public abstract class MessageContextJAXWS extends CommonMessageContext implement
       resContext.put(MessageContext.MESSAGE_OUTBOUND_PROPERTY, Boolean.valueOf(!outbound));
 
       MessageContextAssociation.pushMessageContext(resContext);
+      cleanupAttachments(reqContext);
 
       return resContext;
    }
@@ -142,18 +143,10 @@ public abstract class MessageContextJAXWS extends CommonMessageContext implement
             }
             catch (URISyntaxException e)
             {
-               if (log.isTraceEnabled())
-               {
-                  log.trace("Cannot convert the WSDL URL to a URI", e);
-               }
-               else
-               {
-                  log.debug("Cannot convert the WSDL URL to a URI");
-               }
+               log.warn("Cannot get the wsdl url", e);
             }
          }
 
-         
          put(MessageContext.WSDL_SERVICE, serviceMetaData.getServiceName());
          put(MessageContext.WSDL_PORT, epMetaData.getPortName());
          put(MessageContext.WSDL_INTERFACE, epMetaData.getPortTypeName());

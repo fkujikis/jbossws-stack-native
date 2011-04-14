@@ -39,7 +39,6 @@ import javax.naming.InitialContext;
 import junit.framework.Test;
 
 import org.jboss.wsf.test.JBossWSTest;
-import org.jboss.wsf.test.JBossWSTestHelper;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
 /**
@@ -54,8 +53,7 @@ public class JMSClientTestCase extends JBossWSTest
    
    public static Test suite()
    {
-      //TODO: replace isHornetQAvailable call with JBossWSTestHelper.isTargetJBoss6() once AS 6 M3 is out and hence M2 is not supported anymore
-      return new JBossWSTestSetup(JMSClientTestCase.class, JBossWSTestHelper.isTargetJBoss6() ? "jaxws-samples-dar-jms-client-test-as6.sar,jaxws-samples-dar-jms.jar" : "jaxws-samples-dar-jms-client-test.sar,jaxws-samples-dar-jms.jar");
+      return new JBossWSTestSetup(JMSClientTestCase.class, "jaxws-samples-dar-jms-client-test.sar,jaxws-samples-dar-jms.jar");
    }
    
    public void test() throws Exception

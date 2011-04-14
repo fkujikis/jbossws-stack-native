@@ -58,7 +58,6 @@ public class EncryptionOperation implements EncodingOperation
    private String algorithm;
    private String wrap;
    private String tokenRefType;
-   private String securityDomainAliasLabel;
    
    private static class Algorithm
    {
@@ -87,7 +86,7 @@ public class EncryptionOperation implements EncodingOperation
       algorithms.put("tripledes", new Algorithm("TripleDes", XMLCipher.TRIPLEDES, 168));
    }
 
-   public EncryptionOperation(List<Target> targets, String alias, String algorithm, String wrap, String tokenRefType, String securityDomainAliasLabel)
+   public EncryptionOperation(List<Target> targets, String alias, String algorithm, String wrap, String tokenRefType)
    {
       super();
       this.targets = targets;
@@ -95,7 +94,6 @@ public class EncryptionOperation implements EncodingOperation
       this.algorithm = algorithm;
       this.wrap = wrap;
       this.tokenRefType = tokenRefType;
-      this.securityDomainAliasLabel = securityDomainAliasLabel;
    }
 
    private void processTarget(XMLCipher cipher, Document message, Target target, ReferenceList list, SecretKey key) throws WSSecurityException
@@ -174,7 +172,7 @@ public class EncryptionOperation implements EncodingOperation
             processTarget(cipher, message, target, list, secretKey);
       }
       
-      X509Certificate cert = getCertificate(store, alias, securityDomainAliasLabel);
+      X509Certificate cert = getCertificate(store, alias);
       X509Token token = (X509Token) header.getSharedToken(cert);
 
       // Can we reuse an existing token?
@@ -190,12 +188,12 @@ public class EncryptionOperation implements EncodingOperation
    }
    
    @SuppressWarnings("unchecked")
-   private X509Certificate getCertificate(SecurityStore store, String alias, String secDomainLabel) throws WSSecurityException
+   private X509Certificate getCertificate(SecurityStore store, String alias) throws WSSecurityException
    {
       X509Certificate cert = null;
-      if (alias != null || secDomainLabel != null)
+      if (alias != null)
       {
-         cert = store.getCertificate(alias, secDomainLabel);
+         cert = store.getCertificate(alias);
          if (cert == null)
             throw new WSSecurityException("Cannot load certificate from keystore; alias = " + alias);
       }
