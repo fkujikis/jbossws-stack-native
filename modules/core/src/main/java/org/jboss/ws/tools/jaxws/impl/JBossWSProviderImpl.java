@@ -27,9 +27,6 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceProvider;
-
 import org.jboss.ws.WSException;
 import org.jboss.ws.metadata.builder.jaxws.JAXWSWebServiceMetaDataBuilder;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
@@ -49,12 +46,11 @@ import org.jboss.wsf.spi.tools.WSContractProvider;
 final class JBossWSProviderImpl extends WSContractProvider
 {
    private ClassLoader loader;
-   private boolean generateWsdl;
-   private boolean extension;
-   private boolean generateSource;
+   private boolean generateWsdl = false;
+   private boolean generateSource = false;
    private File outputDir = new File("output");
-   private File resourceDir;
-   private File sourceDir;
+   private File resourceDir = null;
+   private File sourceDir = null;
    private PrintStream messageStream = NullPrintStream.getInstance();
 
    private void createDirectories(File resourceDir, File sourceDir)
@@ -83,12 +79,6 @@ final class JBossWSProviderImpl extends WSContractProvider
 
       messageStream.println("Output directory: " + outputDir.getAbsolutePath());
       messageStream.println("Source directory: " + sourceDir.getAbsolutePath());
-      
-      if (!endpointClass.isAnnotationPresent(WebService.class) && endpointClass.isAnnotationPresent(WebServiceProvider.class))
-      {
-         messageStream.println("@WebServiceProvider endpoint specified.");
-         return;
-      }
 
       // Create a dummy classloader to catch generated classes
       ClassLoader loader = new URLClassLoader(new URL[0], this.loader);
@@ -105,8 +95,7 @@ final class JBossWSProviderImpl extends WSContractProvider
       builder.setGenerateWsdl(generateWsdl);
       builder.setToolMode(true);
       builder.setWsdlDirectory(resourceDir);
-      builder.setMessageStream(messageStream);
-      builder.setExtension(extension);
+      builder.setMessageStream(messageStream);      
 
       if (generateWsdl)
          messageStream.println("Generating WSDL:");
@@ -130,19 +119,13 @@ final class JBossWSProviderImpl extends WSContractProvider
    @Override
    public void provide(String endpointClass)
    {
-      final ClassLoader origLoader = SecurityActions.getContextClassLoader();
       try
       {
-         SecurityActions.setContextClassLoader(loader);
          provide(loader.loadClass(endpointClass));
       }
       catch (ClassNotFoundException e)
       {
          throw new WSException("Class not found: " + endpointClass);
-      }
-      finally
-      {
-          SecurityActions.setContextClassLoader(origLoader);
       }
    }
 
@@ -156,12 +139,6 @@ final class JBossWSProviderImpl extends WSContractProvider
    public void setGenerateWsdl(boolean generateWsdl)
    {
       this.generateWsdl = generateWsdl;
-   }
-
-   @Override
-   public void setExtension(boolean extension)
-   {
-      this.extension = extension;
    }
 
    @Override

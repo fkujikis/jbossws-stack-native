@@ -25,15 +25,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.FileInputStream;
 import java.net.URL;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 import javax.xml.namespace.QName;
 
@@ -55,15 +48,9 @@ public class SchemaExtractor
    private static Logger log = Logger.getLogger(SchemaExtractor.class);
 
    private File xsdFile;
-   private String path;
    
-   public InputStream[] getSchemas(URL wsdlURL) throws IOException
+   public URL getSchemaUrl(URL wsdlURL) throws IOException
    {
-      //Get the path to the WSDL
-      Pattern p = Pattern.compile("[a-zA-Z]+\\.[a-zA-Z]+$");
-      Matcher m = p.matcher(wsdlURL.getFile());
-      path = m.replaceFirst("");
-
       // parse the wsdl
       Element root = DOMUtils.parse(wsdlURL.openStream());
 
@@ -90,64 +77,25 @@ public class SchemaExtractor
       }
       Element schemaElement = schemaElements.get(0);
 
-      List<InputStream> streams = new ArrayList<InputStream>();
+      File tmpdir = IOUtils.createTempDirectory();
+      xsdFile = File.createTempFile("jbossws_schema", ".xsd", tmpdir);
+      xsdFile.deleteOnExit();
 
-      pullImportedSchemas(schemaElement, streams);
-
-      //Add the WSDL schema to the schema array
-      ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-      OutputStreamWriter outwr = new OutputStreamWriter( outStream );
+      OutputStreamWriter outwr = new OutputStreamWriter(new FileOutputStream(xsdFile));
       DOMWriter domWriter = new DOMWriter(outwr);
       domWriter.setPrettyprint(true);
       domWriter.print(schemaElement);
+      outwr.close();
 
-      streams.add(new ByteArrayInputStream(outStream.toByteArray()));
-
-      return streams.toArray(new InputStream[streams.size()]);
+      return xsdFile.toURL();
    }
-
-   private void pullImportedSchemas(Element schemaElement, List<InputStream> streams)
+   
+   public void close()
    {
-      QName importQName = new QName( "http://www.w3.org/2001/XMLSchema", "import" );
-      List<Element> importElements = DOMUtils.getChildElementsAsList( schemaElement, importQName );
-
-      ArrayList<String> schemaLocations = new ArrayList<String>();
-      for( Element importElement : importElements )
+      if (xsdFile != null)
       {
-         String schemaLocation = importElement.getAttribute( "schemaLocation" );
-         schemaLocations.add( schemaLocation );
-      }
-
-      ByteArrayOutputStream outStream = null;
-
-      for( int i=0; i < schemaLocations.size(); i++ )
-      {
-         String schemaLocation = schemaLocations.get( i );
-
-         try
-         {
-            FileInputStream in = new FileInputStream( path + schemaLocation );
-            outStream = new ByteArrayOutputStream();
- 
-            int bt = 0;
-            while(( bt = in.read() ) != -1 )
-            {
-               outStream.write( (byte)bt );
-            }
- 
-            InputStream inputStream = new ByteArrayInputStream(outStream.toByteArray());
-            inputStream.mark(0);
- 
-            Element root = DOMUtils.parse(inputStream);
-            pullImportedSchemas(root, streams);
- 
-            inputStream.reset();
-            streams.add(inputStream);
-         }
-         catch(IOException ioe)
-         {
-            log.warn("Error obtaining schema: " + path + schemaLocation);
-         }
+         xsdFile.delete();
+         xsdFile = null;
       }
    }
 }

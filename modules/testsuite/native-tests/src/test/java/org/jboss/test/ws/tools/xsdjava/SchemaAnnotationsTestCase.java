@@ -21,8 +21,8 @@
  */
 package org.jboss.test.ws.tools.xsdjava;
 
+import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
@@ -46,8 +46,8 @@ public class SchemaAnnotationsTestCase extends WSToolsBase
    public void testXSDAnnotations() throws MalformedURLException
    {
       String filename = "xsdAnnotation.xsd";
-      URL xsdFile = getResourceURL("tools/xsd/annotations/" + filename);  
-      XSModel xsmodel = parseSchema(xsdFile);
+      File xsdFile = getResourceFile("tools/xsd/annotations/" + filename);  
+      XSModel xsmodel = parseSchema(xsdFile.toURL());
       assertNotNull("XSModel is null?", xsmodel);
       XSObjectList xsobjlist = xsmodel.getAnnotations();
       assertNotNull("Schema Annotation is null?", xsobjlist);

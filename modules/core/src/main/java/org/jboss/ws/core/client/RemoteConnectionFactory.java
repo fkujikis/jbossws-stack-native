@@ -58,7 +58,7 @@ public class RemoteConnectionFactory
          key += ".json";
       }
       
-      RemoteConnection con = (RemoteConnection)ServiceLoader.loadService(key, null, this.getClass().getClassLoader());
+      RemoteConnection con = (RemoteConnection)ServiceLoader.loadService(key, null);
       if (con == null)
          throw new IllegalArgumentException("Cannot obtain remote connetion for: " + key);
       

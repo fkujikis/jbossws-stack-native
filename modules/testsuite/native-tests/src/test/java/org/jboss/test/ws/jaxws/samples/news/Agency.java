@@ -26,10 +26,11 @@ import java.util.GregorianCalendar;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.test.ws.jaxws.samples.dar.XMLGregorianCalendarHelper;
 import org.jboss.test.ws.jaxws.samples.news.generated.agency.PressRelease;
 import org.jboss.test.ws.jaxws.samples.news.generated.agency.PressReleaseEndpoint;
 import org.jboss.test.ws.jaxws.samples.news.generated.agency.PressReleaseService;
+
+import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
 
 /**
  * The press agency client
@@ -54,7 +55,7 @@ public class Agency
       pressRelease.setAgencyId("agency01");
       pressRelease.setTitle(title);
       pressRelease.setBody(body);
-      pressRelease.setDate(XMLGregorianCalendarHelper.convert(new GregorianCalendar()));
+      pressRelease.setDate(new XMLGregorianCalendarImpl(new GregorianCalendar()));
       endpoint.submitPressRelease(pressRelease);
    }
    

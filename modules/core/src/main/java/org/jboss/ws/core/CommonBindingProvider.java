@@ -128,20 +128,18 @@ public class CommonBindingProvider implements Configurable
       {
          throw new UnsupportedOperationException("Cannot get epr for BindingProvider instances using the XML/HTTP binding");
       }
-      if (epMetaData == null)
-         throw new IllegalStateException("Cannot get endpoint reference info from endpoint metadata!");
-         
-      if (epMetaData.getEndpointReference() != null)
-      {
-         return EndpointReferenceUtil.transform(clazz, epMetaData.getEndpointReference());      
-      }
-      
       W3CEndpointReferenceBuilder builder = new W3CEndpointReferenceBuilder();
-      builder.address(epMetaData.getEndpointAddress());
-      builder.serviceName(epMetaData.getServiceMetaData().getServiceName());
-      builder.endpointName(epMetaData.getPortName());
-      builder.wsdlDocumentLocation(epMetaData.getEndpointAddress() + "?wsdl");
-      
+      if (epMetaData != null)
+      {
+         builder.address(epMetaData.getEndpointAddress());
+         builder.serviceName(epMetaData.getServiceMetaData().getServiceName());
+         builder.endpointName(epMetaData.getPortName());
+         builder.wsdlDocumentLocation(epMetaData.getEndpointAddress() + "?wsdl");
+      }
+      else
+      {
+         log.warn("Cannot get endpoint reference info from endpoint metadata!");
+      }
       return EndpointReferenceUtil.transform(clazz, builder.build());
    }
 
