@@ -30,6 +30,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.FileInputStream;
 import java.net.URL;
+import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -42,6 +43,9 @@ import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.common.DOMWriter;
 import org.jboss.wsf.common.IOUtils;
 import org.w3c.dom.Element;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  * Extracts the schema from a given WSDL
@@ -67,6 +71,8 @@ public class SchemaExtractor
       // parse the wsdl
       Element root = DOMUtils.parse(wsdlURL.openStream());
 
+      List<Attr> nsAttrs = getNamespaceAttrs(root);
+
       // get the types element
       QName typesQName = new QName(root.getNamespaceURI(), "types");
       Element typesEl = DOMUtils.getFirstChildElement(root, typesQName);
@@ -90,6 +96,16 @@ public class SchemaExtractor
       }
       Element schemaElement = schemaElements.get(0);
 
+      //Add namespace declarations from root element
+      for(Attr nsAttr : nsAttrs)
+      {
+         Attr replacedAttr = schemaElement.setAttributeNodeNS(nsAttr);
+         if(replacedAttr != null) //then put it back
+         {
+            schemaElement.setAttributeNodeNS(replacedAttr);
+         }
+      }
+
       List<InputStream> streams = new ArrayList<InputStream>();
 
       pullImportedSchemas(schemaElement, streams);
@@ -104,6 +120,23 @@ public class SchemaExtractor
       streams.add(new ByteArrayInputStream(outStream.toByteArray()));
 
       return streams.toArray(new InputStream[streams.size()]);
+   }
+
+   private List<Attr> getNamespaceAttrs(Element element)
+   {
+      List<Attr> nsAttrs = new ArrayList<Attr>();
+
+      NamedNodeMap nodes = element.getAttributes();
+
+      for(int i=0; i < nodes.getLength(); i++)
+      {
+         Node node = nodes.item(i);
+         Attr attr = (Attr)node;
+         if(attr.getName().startsWith("xmlns"))
+            nsAttrs.add((Attr)attr.cloneNode(true));
+      }
+
+      return nsAttrs;
    }
 
    private void pullImportedSchemas(Element schemaElement, List<InputStream> streams)
