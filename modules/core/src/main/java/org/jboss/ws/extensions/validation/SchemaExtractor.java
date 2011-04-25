@@ -71,7 +71,9 @@ public class SchemaExtractor
       // parse the wsdl
       Element root = DOMUtils.parse(wsdlURL.openStream());
 
-      List<Attr> nsAttrs = getNamespaceAttrs(root);
+      List<Attr> nsAttrs = new ArrayList<Attr>();
+      
+      getNamespaceAttrs(root, nsAttrs);
 
       // get the types element
       QName typesQName = new QName(root.getNamespaceURI(), "types");
@@ -81,6 +83,8 @@ public class SchemaExtractor
          log.warn("Cannot find element: " + typesQName);
          return null;
       }
+
+      getNamespaceAttrs(typesEl, nsAttrs);
 
       // get the schema element
       QName schemaQName = new QName("http://www.w3.org/2001/XMLSchema", "schema");
@@ -122,10 +126,8 @@ public class SchemaExtractor
       return streams.toArray(new InputStream[streams.size()]);
    }
 
-   private List<Attr> getNamespaceAttrs(Element element)
+   private void getNamespaceAttrs(Element element, List<Attr> nsAttrs)
    {
-      List<Attr> nsAttrs = new ArrayList<Attr>();
-
       NamedNodeMap nodes = element.getAttributes();
 
       for(int i=0; i < nodes.getLength(); i++)
@@ -135,8 +137,6 @@ public class SchemaExtractor
          if(attr.getName().startsWith("xmlns"))
             nsAttrs.add((Attr)attr.cloneNode(true));
       }
-
-      return nsAttrs;
    }
 
    private void pullImportedSchemas(Element schemaElement, List<InputStream> streams)
