@@ -44,7 +44,7 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.jaxrpc.LiteralTypeMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.ExceptionMapping;
@@ -83,7 +83,7 @@ import org.jboss.ws.tools.RPCSignature;
 import org.jboss.ws.tools.ToolsUtils;
 import org.jboss.ws.tools.WSToolsConstants;
 import org.jboss.ws.tools.mapping.MappingFileGenerator;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -920,11 +920,8 @@ public class MappingFileGeneratorHelper
 
       if (javaType == null)
       {
-         if (log.isDebugEnabled())
-         {
-            log.debug("Typemapping lookup failed for " + xmlName);
-            log.debug("Falling back to identifier generation");
-         }
+         log.debug("Typemapping lookup failed for " + xmlName);
+         log.debug("Falling back to identifier generation");
          String className = xmlType.getLocalPart();
          if (className.charAt(0) == '>')
             className = className.substring(1);

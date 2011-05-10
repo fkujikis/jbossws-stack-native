@@ -31,7 +31,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.AbstractDeserializerFactory;
@@ -39,8 +39,8 @@ import org.jboss.ws.core.binding.DeserializerSupport;
 import org.jboss.ws.core.binding.SerializationContext;
 import org.jboss.ws.core.binding.TypeMappingImpl;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.JavaUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -94,7 +94,7 @@ public class SOAPArrayDeserializer extends DeserializerSupport
          componentDeserializer = (DeserializerSupport)compDeserializerFactory.getDeserializer();
 
          if (arrDims.length < 1 || 2 < arrDims.length)
-            throw new WSException("Unsupported array dimensions: " + arrDims);
+            throw new WSException("Unsupported array dimensions: " + Arrays.asList(arrDims));
 
          Iterator it = DOMUtils.getChildElements(soapElement);
          if (arrDims.length == 1)

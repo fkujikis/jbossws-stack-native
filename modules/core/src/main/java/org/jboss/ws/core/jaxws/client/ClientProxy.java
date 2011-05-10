@@ -44,13 +44,12 @@ import javax.xml.ws.WebServiceException;
 import javax.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.metadata.umdm.FeatureAwareEndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * The dynamic proxy that delegates to the underlying client implementation
@@ -91,7 +90,6 @@ public class ClientProxy implements InvocationHandler
       this.executor = executor;
       this.stubMethods = new ArrayList(Arrays.asList(BindingProvider.class.getMethods()));
       this.stubMethods.addAll(Arrays.asList(StubExt.class.getMethods()));
-      this.stubMethods.addAll(Arrays.asList(FeatureAwareEndpointMetaData.class.getMethods()));
       this.objectMethods = Arrays.asList(Object.class.getMethods());
    }
 

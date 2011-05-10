@@ -21,9 +21,6 @@
  */
 package org.jboss.ws.core.jaxws;
 
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 
 import javax.xml.bind.JAXBContext;
@@ -31,7 +28,7 @@ import javax.xml.bind.JAXBException;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.binding.BindingCustomization;
+import org.jboss.wsf.spi.binding.BindingCustomization;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.invocation.EndpointAssociation;
 
@@ -86,27 +83,15 @@ public class CustomizableJAXBContextFactory extends JAXBContextFactory
       }
    }
 
-   public JAXBContext createContext(final Class[] clazzes, final BindingCustomization bcust) throws WSException
+   public JAXBContext createContext(Class[] clazzes, BindingCustomization bcust) throws WSException
    {
       JAXBContext jaxbCtx = null;
       try
       {
-         jaxbCtx = AccessController.doPrivileged(new PrivilegedExceptionAction<JAXBContext>() {
-            public JAXBContext run() throws PrivilegedActionException
-            {
-               try
-               {
-                  return JAXBContext.newInstance(clazzes, bcust);
-               }
-               catch (JAXBException e)
-               {
-                  throw new PrivilegedActionException(e);
-               }
-            }
-         });
-         incrementContextCount();
+         jaxbCtx = JAXBContext.newInstance(clazzes, bcust);
+         incrementContextCount();        
       }
-      catch (Exception e)
+      catch (JAXBException e)
       {  
          if (bcust != null && bcust.get("com.sun.xml.bind.defaultNamespaceRemap") != null)
          {
@@ -115,22 +100,10 @@ public class CustomizableJAXBContextFactory extends JAXBContextFactory
             bcust.put("com.sun.xml.internal.bind.defaultNamespaceRemap", dns);                       
             try
             {
-               jaxbCtx = AccessController.doPrivileged(new PrivilegedExceptionAction<JAXBContext>() {
-                  public JAXBContext run() throws PrivilegedActionException
-                  {
-                     try
-                     {
-                        return JAXBContext.newInstance(clazzes, bcust);
-                     }
-                     catch (JAXBException e)
-                     {
-                        throw new PrivilegedActionException(e);
-                     }
-                  }
-               });
+               jaxbCtx = JAXBContext.newInstance(clazzes, bcust);
                incrementContextCount();
             }
-            catch (Exception ex)
+            catch (JAXBException ex)
             {
                throw new WSException("Failed to create JAXBContext", ex);
             }

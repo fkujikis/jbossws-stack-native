@@ -39,14 +39,14 @@ import javax.xml.namespace.QName;
 import javax.xml.rpc.holders.ByteArrayHolder;
 import javax.xml.rpc.holders.Holder;
 
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.jaxrpc.LiteralTypeMapping;
 import org.jboss.ws.core.jaxrpc.binding.SimpleDeserializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.SimpleSerializerFactory;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.metadata.wsdl.xsd.SchemaUtils;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * Util class for the JBossWS Tools project
@@ -88,7 +88,7 @@ public class ToolsUtils
     */
    public static String firstLetterUpperCase(String fname)
    {
-      if (fname == null || fname.length() == 0)
+      if (fname == "" || fname == null)
          throw new WSException("String passed is null");
       //Ensure that the first character is uppercase
       if (Character.isLowerCase(fname.charAt(0)))
@@ -108,7 +108,7 @@ public class ToolsUtils
     */
    public static String firstLetterLowerCase(String fname)
    {
-      if (fname == null || fname.length() == 0)
+      if (fname == "" || fname == null)
          throw new WSException("String passed is null");
       //Ensure that the first character is lowercase
       if (Character.isUpperCase(fname.charAt(0)))
@@ -130,7 +130,7 @@ public class ToolsUtils
     */
    public static String getJavaIdentifier(String xmlName)
    {
-      if(xmlName == null || xmlName.length() == 0)
+      if(xmlName == null || xmlName == "")
          throw new IllegalArgumentException("xmlName is null");
       xmlName = xmlName.trim(); //Get rid of whitespaces
 

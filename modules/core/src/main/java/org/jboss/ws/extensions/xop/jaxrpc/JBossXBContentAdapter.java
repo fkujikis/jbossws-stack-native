@@ -31,13 +31,13 @@ import javax.activation.DataSource;
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.soap.attachment.ContentHandlerRegistry;
 import org.jboss.ws.core.soap.attachment.SwapableMemoryDataSource;
 import org.jboss.ws.core.utils.MimeUtils;
 import org.jboss.ws.extensions.xop.XOPContext;
-import org.jboss.ws.common.IOUtils;
+import org.jboss.wsf.common.IOUtils;
 import org.jboss.xb.binding.sunday.marshalling.MarshallingContext;
 import org.jboss.xb.binding.sunday.marshalling.TermBeforeMarshallingCallback;
 import org.jboss.xb.binding.sunday.unmarshalling.SchemaBinding;

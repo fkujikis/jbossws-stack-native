@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -42,7 +42,7 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.http.HTTPBinding;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.CommonBinding;
 import org.jboss.ws.core.CommonBindingProvider;
 import org.jboss.ws.core.CommonMessageContext;
@@ -68,7 +68,7 @@ import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -79,6 +79,7 @@ import org.jboss.wsf.spi.invocation.InvocationHandler;
 import org.jboss.wsf.spi.invocation.InvocationType;
 import org.jboss.wsf.spi.invocation.WebServiceContextFactory;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+import org.jboss.wsf.spi.serviceref.ServiceRefHandler.Type;
 
 /** An implementation handles invocations on the endpoint
  *
@@ -230,7 +231,7 @@ public class ServiceEndpointInvoker
                      }
                   }
                }
-
+               
                // Invoke an instance of the SEI implementation bean 
                Invocation inv = setupInvocation(endpoint, sepInv, invContext);
                InvocationHandler invHandler = endpoint.getInvocationHandler();
@@ -238,12 +239,21 @@ public class ServiceEndpointInvoker
                try
                {
                   invHandler.invoke(endpoint, inv);
+                  
                }
                catch (InvocationTargetException th)
                {
                   //Unwrap the throwable raised by the service endpoint implementation
                   Throwable targetEx = th.getTargetException();
                   throw (targetEx instanceof Exception ? (Exception)targetEx : new UndeclaredThrowableException(targetEx));
+               }
+               finally
+               {
+                  // JBWS-2486
+                  if (endpoint.getAttachment(Object.class) == null)
+                  {
+                     endpoint.addAttachment(Object.class, inv.getInvocationContext().getTargetBean());
+                  }
                }
 
                // Handler processing might have replaced the endpoint invocation
@@ -291,6 +301,7 @@ public class ServiceEndpointInvoker
          CommonBinding binding = bindingProvider.getCommonBinding();
          try
          {
+            MessageContextAssociation.peekMessageContext().put("Exception", ex);
             binding.bindFaultMessage(ex);
 
             // call the fault handler chain
@@ -323,8 +334,7 @@ public class ServiceEndpointInvoker
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext instanceof SOAPMessageContextJAXWS)
       {
-         final DeploymentType deploymentType = ep.getService().getDeployment().getType(); 
-         if (DeploymentType.JAXWS_JSE == deploymentType)
+         if (ep.getService().getDeployment().getType() == DeploymentType.JAXWS_JSE)
          {
             if (msgContext.get(MessageContext.SERVLET_REQUEST) != null)
             {
@@ -335,11 +345,6 @@ public class ServiceEndpointInvoker
             {
                log.warn("Cannot provide WebServiceContext, since the current MessageContext does not provide a ServletRequest");
             }
-         }
-         else if (DeploymentType.JAXWS_EJB3 == deploymentType)
-         {
-            WebServiceContext wsContext = contextFactory.newWebServiceContext(InvocationType.JAXWS_EJB3, (SOAPMessageContextJAXWS)msgContext);
-            invContext.addAttachment(WebServiceContext.class, wsContext);
          }
          invContext.addAttachment(javax.xml.ws.handler.MessageContext.class, msgContext);
       }
@@ -358,34 +363,10 @@ public class ServiceEndpointInvoker
       Invocation wsInv = new DelegatingInvocation();
       wsInv.setInvocationContext(invContext);
       wsInv.setJavaMethod(getImplMethod(endpoint, epInv));
-      wsInv.getInvocationContext().setTargetBean(getEndpointInstance());
+      // JBWS-2486, see endpoint attachment initialization above
+      wsInv.getInvocationContext().setTargetBean(endpoint.getAttachment(Object.class));
 
       return wsInv;
-   }
-   
-   // JBWS-2486 - Only one webservice endpoint instance can be created!
-   private Object getEndpointInstance()
-   {
-      synchronized(endpoint) 
-      {
-         Object endpointImpl = endpoint.getAttachment(Object.class);
-         if (endpointImpl == null)
-         {
-            try
-            {
-               // create endpoint instance
-               final Class<?> endpointImplClass = endpoint.getTargetBeanClass();
-               endpointImpl = endpointImplClass.newInstance();
-               endpoint.addAttachment(Object.class, endpointImpl);
-            }
-            catch (Exception ex)
-            {
-               throw new IllegalStateException("Cannot create endpoint instance: ", ex);
-            }
-         }
-
-         return endpointImpl;
-      }
    }
 
    protected Method getImplMethod(Endpoint endpoint, EndpointInvocation sepInv) throws ClassNotFoundException, NoSuchMethodException

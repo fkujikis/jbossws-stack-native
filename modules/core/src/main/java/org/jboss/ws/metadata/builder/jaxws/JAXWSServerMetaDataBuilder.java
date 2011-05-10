@@ -24,15 +24,17 @@ package org.jboss.ws.metadata.builder.jaxws;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceProvider;
 
+import org.jboss.ws.annotation.EndpointConfig;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
-import org.jboss.ws.api.annotation.EndpointConfig;
-import org.jboss.ws.api.annotation.WebContext;
+import org.jboss.wsf.spi.annotation.WebContext;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.EJBSecurityMetaData;
 
 /**
  * Builds ServiceEndpointMetaData for a JAX-WS endpoint.
@@ -87,6 +89,14 @@ public abstract class JAXWSServerMetaDataBuilder extends JAXWSMetaDataBuilder
             configName = ejbMetaData.getConfigName();
          if (ejbMetaData.getConfigFile() != null)
             configFile = ejbMetaData.getConfigFile();
+
+         EJBMetaData ejbMD = ejbMetaData.getBeanByEjbName(linkName);
+         EJBSecurityMetaData ejbSecurityMD = ejbMD != null ? ejbMD.getSecurityMetaData() : null;
+
+         if (ejbSecurityMD != null)
+         {
+            sepMetaData.setTransportGuarantee(ejbSecurityMD.getTransportGuarantee());
+         }
       }
       
       if (configName != null || configFile != null)

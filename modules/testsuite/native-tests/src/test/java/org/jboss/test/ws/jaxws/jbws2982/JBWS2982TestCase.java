@@ -49,9 +49,8 @@ public final class JBWS2982TestCase extends JBossWSTest
    {
       return new JBossWSTestSetup(JBWS2982TestCase.class, "jaxws-jbws2982.war");
    }
-   private static final int THREADS_COUNT = 5;
-   private static final int REQUESTS_COUNT = 5;
-   private static final String ENDPOINT_ADDRESS = "http://" + getServerHost() + ":8080/jaxws-jbws2982"; 
+   private static final int THREADS_COUNT = 1;
+   private static final int REQUESTS_COUNT = 1;
    private final Endpoint[] proxies = new Endpoint[THREADS_COUNT];
    private final Thread[] threads = new Thread[THREADS_COUNT];
    private final TestJob[] jobs = new TestJob[THREADS_COUNT];
@@ -63,7 +62,7 @@ public final class JBWS2982TestCase extends JBossWSTest
       super.setUp();
 
       QName serviceName = new QName("http://jboss.org/jbws2982", "EndpointService");
-      URL wsdlURL = new URL(ENDPOINT_ADDRESS + "?wsdl");
+      URL wsdlURL = new URL("http://" + getServerHost() + ":8080/jaxws-jbws2982" + "?wsdl");
 
       Service service = Service.create(wsdlURL, serviceName);
       for (int i = 0; i < THREADS_COUNT; i++)

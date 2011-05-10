@@ -36,7 +36,7 @@ import org.jboss.util.NotImplementedException;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.core.soap.Use;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -87,7 +87,7 @@ public class OperationMetaData extends ExtensibleMetaData implements Initalizabl
       String localPart = qname.getLocalPart();
       this.responseName = new QName(nsURI, localPart + "Response");
    }
-   
+
    public EndpointMetaData getEndpointMetaData()
    {
       return epMetaData;
@@ -151,11 +151,6 @@ public class OperationMetaData extends ExtensibleMetaData implements Initalizabl
    public boolean isDocumentWrapped()
    {
       return getStyle() == Style.DOCUMENT && getParameterStyle() == ParameterStyle.WRAPPED;
-   }
-
-   public void setJavaName(String javaName)
-   {
-      this.javaName = javaName;
    }
 
    public String getJavaName()

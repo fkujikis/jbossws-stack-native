@@ -36,7 +36,7 @@ import javax.xml.soap.SOAPException;
 import javax.xml.transform.Source;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.binding.AbstractDeserializerFactory;
@@ -50,8 +50,8 @@ import org.jboss.ws.core.utils.MimeUtils;
 import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.JavaUtils;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -155,9 +155,7 @@ class XMLContent extends SOAPContent
       QName xmlType = container.getXmlType();
       Class javaType = container.getJavaType();
 
-      boolean debugEnabled = log.isDebugEnabled();
-      if (debugEnabled)
-         log.debug("getObjectValue [xmlType=" + xmlType + ",javaType=" + javaType + "]");
+      log.debug("getObjectValue [xmlType=" + xmlType + ",javaType=" + javaType + "]");
 
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext == null)
@@ -220,8 +218,7 @@ class XMLContent extends SOAPContent
                try
                {
                   String contentType = MimeUtils.resolveMimeType(javaType);
-                  if (debugEnabled)
-                     log.debug("Adopt DataHandler to " + javaType + ", contentType " + contentType);
+                  log.debug("Adopt DataHandler to " + javaType + ", contentType " + contentType);
 
                   DataSource ds = new SwapableMemoryDataSource(((DataHandler)obj).getInputStream(), contentType);
                   DataHandler dh = new DataHandler(ds);
@@ -252,8 +249,7 @@ class XMLContent extends SOAPContent
          throw new WSException(e);
       }
 
-      if (debugEnabled)
-         log.debug("objectValue: " + (obj != null ? obj.getClass().getName() : null));
+      log.debug("objectValue: " + (obj != null ? obj.getClass().getName() : null));
 
       return obj;
    }

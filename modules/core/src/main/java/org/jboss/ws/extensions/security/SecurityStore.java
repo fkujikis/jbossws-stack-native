@@ -51,13 +51,13 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.ServiceLoader;
 import org.jboss.ws.extensions.security.exception.FailedAuthenticationException;
 import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.jboss.ws.metadata.wsse.SecurityDomain;
 import org.jboss.ws.metadata.wsse.WSSecurityConfiguration;
 import org.jboss.wsf.spi.security.JAASSecurityDomainAdaptor;
 import org.jboss.wsf.spi.security.JAASSecurityDomainAdaptorResolver;
+import org.jboss.wsf.spi.util.ServiceLoader;
 
 /**
  * <code>SecurityStore</code> holds and loads the keystore and truststore required for encyption and signing.
@@ -140,7 +140,7 @@ public class SecurityStore
    private void loadKeyStore(URL keyStoreURL, String keyStoreType, String keyStorePassword) throws WSSecurityException
    {
       if (keyStorePassword == null)
-         keyStorePassword = SecurityActions.getSystemProperty("org.jboss.ws.wsse.keyStorePassword");
+         keyStorePassword = System.getProperty("org.jboss.ws.wsse.keyStorePassword");
 
       keyStore = loadStore("org.jboss.ws.wsse.keyStore", "Keystore", keyStoreURL, keyStoreType, keyStorePassword);
       this.keyStorePassword = keyStorePassword;
@@ -149,7 +149,7 @@ public class SecurityStore
    private void loadTrustStore(URL trustStoreURL, String trustStoreType, String trustStorePassword) throws WSSecurityException
    {
       if (trustStorePassword == null)
-         trustStorePassword = SecurityActions.getSystemProperty("org.jboss.ws.wsse.trustStorePassword");
+         trustStorePassword = System.getProperty("org.jboss.ws.wsse.trustStorePassword");
 
       trustStore = loadStore("org.jboss.ws.wsse.trustStore", "Truststore", trustStoreURL, trustStoreType, trustStorePassword);
       this.trustStorePassword = trustStorePassword;
@@ -159,7 +159,7 @@ public class SecurityStore
    {
       if (storeURL == null)
       {
-         String defaultStore = SecurityActions.getSystemProperty(property);
+         String defaultStore = System.getProperty(property);
          if (defaultStore == null)
          {
             return null;
@@ -177,7 +177,7 @@ public class SecurityStore
       }
 
       if (storeType == null)
-         storeType = SecurityActions.getSystemProperty(property + "Type");
+         storeType = System.getProperty(property + "Type");
       if (storeType == null)
          storeType = "jks";
 
@@ -185,8 +185,7 @@ public class SecurityStore
       InputStream stream = null;
       try
       {
-         if (log.isDebugEnabled())
-            log.debug("loadStore: " + storeURL);
+         log.debug("loadStore: " + storeURL);
          stream = storeURL.openStream();
          if (stream == null)
             throw new WSSecurityException("Cannot load store from: " + storeURL);
@@ -269,9 +268,7 @@ public class SecurityStore
 
    private String execPasswordCmd(String keyStorePasswordCmd) throws WSSecurityException
    {
-      boolean debugEnabled = log.isDebugEnabled();
-      if (debugEnabled)
-         log.debug("Executing cmd: " + keyStorePasswordCmd);
+      log.debug("Executing cmd: " + keyStorePasswordCmd);
       try
       {
          String password = null;
@@ -298,8 +295,7 @@ public class SecurityStore
             reader.close();
             stderr.close();
          }
-         if (debugEnabled)
-            log.debug("Command exited with: " + status);
+         log.debug("Command exited with: " + status);
          return password;
       }
       catch (Exception e)
@@ -319,11 +315,10 @@ public class SecurityStore
          classname = keyStorePasswordCmd.substring(0, colon);
          ctorArg = keyStorePasswordCmd.substring(colon + 1);
       }
-      if (log.isDebugEnabled())
-         log.debug("Loading class: " + classname + ", ctorArg=" + ctorArg);
+      log.debug("Loading class: " + classname + ", ctorArg=" + ctorArg);
       try
       {
-         ClassLoader loader = SecurityActions.getContextClassLoader();
+         ClassLoader loader = Thread.currentThread().getContextClassLoader();
          Class c = loader.loadClass(classname);
          Object instance = null;
          if (ctorArg != null)

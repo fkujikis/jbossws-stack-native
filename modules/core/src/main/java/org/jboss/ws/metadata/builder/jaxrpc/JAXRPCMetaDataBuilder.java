@@ -33,7 +33,7 @@ import javax.xml.rpc.encoding.TypeMappingRegistry;
 
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.binding.TypeMappingImpl;
 import org.jboss.ws.core.jaxrpc.EncodedTypeMapping;
@@ -81,7 +81,7 @@ import org.jboss.ws.metadata.wsdl.WSDLTypes;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.metadata.wsdl.WSDLRPCSignatureItem.Direction;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * A meta data builder that is based on webservices.xml.
@@ -160,17 +160,13 @@ public abstract class JAXRPCMetaDataBuilder extends MetaDataBuilder
 
          WSDLBindingOperation wsdlBindingOperation = wsdlOperation.getBindingOperation();
          if (wsdlBindingOperation == null)
-         {
             log.warn("Could not locate binding operation for:" + opQName);
-         }
-         else
-         {
-            // Change operation according namespace defined on binding 
-            // <soap:body use="encoded" namespace="http://MarshallTestW2J.org/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-            String namespaceURI = wsdlBindingOperation.getNamespaceURI();
-            if (namespaceURI != null)
-               opQName = new QName(namespaceURI, opName);
-         }
+
+         // Change operation according namespace defined on binding 
+         // <soap:body use="encoded" namespace="http://MarshallTestW2J.org/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         String namespaceURI = wsdlBindingOperation.getNamespaceURI();
+         if (namespaceURI != null)
+            opQName = new QName(namespaceURI, opName);
 
          // Set java method name
          String javaName = opName.substring(0, 1).toLowerCase() + opName.substring(1);
@@ -517,7 +513,7 @@ public abstract class JAXRPCMetaDataBuilder extends MetaDataBuilder
       String ns = xmlType.getNamespaceURI() != null ? xmlType.getNamespaceURI() : "";
       XSTypeDefinition xsType = schemaModel.getTypeDefinition(localPart, ns);
       XOPScanner scanner = new XOPScanner();
-      if (scanner.findXOPTypeDef(xsType) != null || (localPart.equals("base64Binary") && ns.equals(Constants.NS_SCHEMA_XSD)))
+      if (scanner.findXOPTypeDef(xsType) != null | (localPart.equals("base64Binary") && ns.equals(Constants.NS_SCHEMA_XSD)))
       {
          // FIXME: read the xmime:contentType from the element declaration
          // See SchemaUtils#findXOPTypeDef(XSTypeDefinition typeDef) for details
@@ -901,6 +897,72 @@ public abstract class JAXRPCMetaDataBuilder extends MetaDataBuilder
       {
          wsdlPosition = processOutputDocElement(opMetaData, wsdlOperation, seiMethodMapping, typeMapping, wrappedResponseParameters, wsdlPosition);
          wsdlPosition = processBindingOutputParameters(opMetaData, wsdlOperation, seiMethodMapping, typeMapping, bindingOperation, wsdlPosition);
+      }
+   }
+
+   /**
+    * Build default action according to the pattern described in
+    * http://www.w3.org/Submission/2004/SUBM-ws-addressing-20040810/
+    * Section 3.3.2 'Default Action Pattern'<br>
+    * [target namespace]/[port type name]/[input|output name]
+    *
+    * @param wsdlOperation
+    * @return action value
+    */
+   private String buildWsaActionValue(WSDLInterfaceOperation wsdlOperation)
+   {
+      WSDLProperty wsaAction = wsdlOperation.getProperty(Constants.WSDL_ATTRIBUTE_WSA_ACTION.toString());
+      String actionValue = null;
+
+      if (null == wsaAction)
+      {
+
+         String tns = wsdlOperation.getName().getNamespaceURI();
+         String portTypeName = wsdlOperation.getName().getLocalPart();
+         WSDLProperty messageName = wsdlOperation.getProperty("http://www.jboss.org/jbossws/messagename/in");
+
+         actionValue = new String(tns + "/" + portTypeName + "/" + messageName.getValue());
+      }
+      else
+      {
+         actionValue = wsaAction.getValue();
+      }
+
+      return actionValue;
+   }
+
+   protected void buildFaultMetaData(OperationMetaData opMetaData, WSDLInterfaceOperation wsdlOperation)
+   {
+      TypesMetaData typesMetaData = opMetaData.getEndpointMetaData().getServiceMetaData().getTypesMetaData();
+
+      WSDLInterface wsdlInterface = wsdlOperation.getWsdlInterface();
+      for (WSDLInterfaceOperationOutfault outFault : wsdlOperation.getOutfaults())
+      {
+         QName ref = outFault.getRef();
+
+         WSDLInterfaceFault wsdlFault = wsdlInterface.getFault(ref);
+         QName xmlName = wsdlFault.getElement();
+         QName xmlType = wsdlFault.getXmlType();
+         String javaTypeName = null;
+
+         if (xmlType == null)
+         {
+            log.warn("Cannot obtain fault type for element: " + xmlName);
+            xmlType = xmlName;
+         }
+
+         TypeMappingMetaData tmMetaData = typesMetaData.getTypeMappingByXMLType(xmlType);
+         if (tmMetaData != null)
+            javaTypeName = tmMetaData.getJavaTypeName();
+
+         if (javaTypeName == null)
+         {
+            log.warn("Cannot obtain java type mapping for: " + xmlType);
+            javaTypeName = new UnqualifiedFaultException(xmlType).getClass().getName();
+         }
+
+         FaultMetaData faultMetaData = new FaultMetaData(opMetaData, xmlName, xmlType, javaTypeName);
+         opMetaData.addFault(faultMetaData);
       }
    }
 

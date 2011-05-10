@@ -77,29 +77,22 @@ public abstract class AddressingBuilder implements AddressingType
 
    private static AddressingBuilder newInstance(String className, ClassLoader classLoader)
    {
-      Class cls = null;
       try
       {
-         cls = loadClass(classLoader, className);
-      }
-      catch (Exception x)
-      {
-         //ignore
-      }
-      if (cls == null)
-      {
-         try
+         Class cls;
+         if (classLoader == null)
          {
             cls = Class.forName(className);
          }
-         catch (ClassNotFoundException x)
+         else
          {
-            throw new AddressingException("Provider " + className + " not found", x);
+            cls = loadClass(classLoader, className);
          }
-      }
-      try
-      {
          return (AddressingBuilder)cls.newInstance();
+      }
+      catch (ClassNotFoundException x)
+      {
+         throw new AddressingException("Provider " + className + " not found", x);
       }
       catch (Exception x)
       {

@@ -65,7 +65,7 @@ import org.jboss.ws.metadata.wsse.Sign;
 import org.jboss.ws.metadata.wsse.Timestamp;
 import org.jboss.ws.metadata.wsse.Username;
 import org.jboss.ws.metadata.wsse.WSSecurityConfiguration;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMWriter;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.invocation.SecurityAdaptor;
@@ -156,8 +156,7 @@ public class WSSecurityDispatcher implements WSSecurityAPI
    public void encodeMessage(WSSecurityConfiguration configuration, SOAPMessage message, Config operationConfig, String user, String password) throws SOAPException
    {
       Config config = getActualConfig(configuration, operationConfig);
-      if (log.isDebugEnabled())
-         log.debug("WS-Security config: " + config);
+      log.debug("WS-Security config: " + config);
 
       boolean fault = message.getSOAPBody().getFault() != null;
       // Nothing to process

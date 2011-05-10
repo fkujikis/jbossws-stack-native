@@ -41,6 +41,8 @@ import org.jboss.ws.extensions.addressing.soap.SOAPAddressingPropertiesImpl;
  */
 public class JBWS2926TestCase extends TestCase
 {
+
+
    public void testWsaAction() throws Exception
    {
       WSAddressingClientHandler wsHandler = new WSAddressingClientHandler();

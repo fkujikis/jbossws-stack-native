@@ -51,7 +51,7 @@ import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.ws.metadata.wsse.WSSecurityConfiguration;
-import org.jboss.ws.common.ResourceLoaderAdapter;
+import org.jboss.wsf.common.ResourceLoaderAdapter;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedCallPropertyMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedInitParamMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaData;
@@ -104,7 +104,7 @@ public class ServiceImpl implements ServiceExt
       this.wsdlLocation = wsdlURL;
       JAXRPCClientMetaDataBuilder builder = new JAXRPCClientMetaDataBuilder();
 
-      ClassLoader ctxClassLoader = SecurityActions.getContextClassLoader();
+      ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
 
       serviceMetaData = builder.buildMetaData(serviceName, wsdlURL, mappingURL, securityURL, null, ctxClassLoader);
       handlerRegistry = new HandlerRegistryImpl(serviceMetaData);
@@ -119,7 +119,7 @@ public class ServiceImpl implements ServiceExt
       this.usrMetaData = usrMetaData;
 
       JAXRPCClientMetaDataBuilder builder = new JAXRPCClientMetaDataBuilder();
-      ClassLoader ctxClassLoader = SecurityActions.getContextClassLoader();
+      ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
 
       serviceMetaData = builder.buildMetaData(serviceName, wsdlURL, mappingURL, securityConfig, usrMetaData, ctxClassLoader);
       handlerRegistry = new HandlerRegistryImpl(serviceMetaData);

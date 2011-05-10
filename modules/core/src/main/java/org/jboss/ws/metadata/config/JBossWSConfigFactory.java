@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,22 +24,17 @@ package org.jboss.ws.metadata.config;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
+import org.jboss.ws.core.utils.JBossWSEntityResolver;
 import org.jboss.ws.metadata.config.binding.OMFactoryJAXRPC;
+import org.jboss.ws.metadata.config.binding.OMFactoryJAXWS;
 import org.jboss.ws.metadata.config.jaxrpc.ConfigRootJAXRPC;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.ResourceLoaderAdapter;
-import org.jboss.ws.common.utils.DelegateClassLoader;
-import org.jboss.ws.common.utils.JBossWSEntityResolver;
-import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
+import org.jboss.ws.metadata.config.jaxws.ConfigRootJAXWS;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.ResourceLoaderAdapter;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
-import org.jboss.wsf.spi.metadata.config.CommonConfig;
-import org.jboss.wsf.spi.metadata.config.ConfigMetaDataParser;
-import org.jboss.wsf.spi.metadata.config.ConfigRoot;
 import org.jboss.xb.binding.JBossXBException;
 import org.jboss.xb.binding.Unmarshaller;
 import org.jboss.xb.binding.UnmarshallerFactory;
@@ -57,29 +52,18 @@ public class JBossWSConfigFactory
    private final Logger log = Logger.getLogger(JBossWSConfigFactory.class);
 
    private static String URN_JAXRPC_CONFIG = "urn:jboss:jaxrpc-config:2.0";
-   private static String URN_JAXWS_CONFIG = "urn:jboss:jbossws-jaxws-config:4.0";
-   
-   private ClassLoader loader;
+   private static String URN_JAXWS_CONFIG = "urn:jboss:jaxws-config:2.0";
 
    // Hide constructor
-   private JBossWSConfigFactory(ClassLoader loader)
+   private JBossWSConfigFactory()
    {
-      //use a delegate classloader: first try lookup using the provided classloader,
-      //otherwise use server integration classloader which has the default configuration
-      final ClassLoader cl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
-      this.loader = new DelegateClassLoader(cl, loader);
    }
 
    /** Create a new instance of the factory
     */
    public static JBossWSConfigFactory newInstance()
    {
-      return new JBossWSConfigFactory(getContextClassLoader());
-   }
-
-   public static JBossWSConfigFactory newInstance(ClassLoader loader)
-   {
-      return new JBossWSConfigFactory(loader);
+      return new JBossWSConfigFactory();
    }
 
    public Object parse(URL configURL)
@@ -103,7 +87,7 @@ public class JBossWSConfigFactory
          }
          else if (URN_JAXWS_CONFIG.equals(nsURI))
          {
-            wsConfig = ConfigMetaDataParser.parse(is);
+            wsConfig = unmarshaller.unmarshal(is, new OMFactoryJAXWS(), null);
          }
          else
          {
@@ -174,7 +158,7 @@ public class JBossWSConfigFactory
       }
       else
       {
-         config = ((ConfigRoot)configRoot).getConfigByName(configName);
+         config = ((ConfigRootJAXWS)configRoot).getConfigByName(configName);
       }
 
       if (config == null)
@@ -200,7 +184,7 @@ public class JBossWSConfigFactory
       {
          try
          {
-            configURL = new ResourceLoaderAdapter(loader).findChild(configFile).toURL();
+            configURL = new ResourceLoaderAdapter().findChild(configFile).toURL();
          }
          catch (IOException ex)
          {
@@ -212,28 +196,5 @@ public class JBossWSConfigFactory
          throw new WSException("Cannot find configFile: " + configFile);
       
       return configURL;
-   }
-   
-   /**
-    * Get context classloader.
-    * 
-    * @return the current context classloader
-    */
-   private static ClassLoader getContextClassLoader()
-   {
-      SecurityManager sm = System.getSecurityManager();
-      if (sm == null)
-      {
-         return Thread.currentThread().getContextClassLoader();
-      }
-      else
-      {
-         return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            public ClassLoader run()
-            {
-               return Thread.currentThread().getContextClassLoader();
-            }
-         });
-      }
    }
 }

@@ -35,7 +35,7 @@ import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.tools.Configuration.OperationConfig;
-import org.jboss.ws.common.ResourceLoaderAdapter;
+import org.jboss.wsf.common.ResourceLoaderAdapter;
 
 /**
  *  Builder class that builds the Tools Meta Data
@@ -82,7 +82,7 @@ public class ToolsUnifiedMetaDataBuilder
       if (!Remote.class.isAssignableFrom(seiClass))
          throw new WSException("A service endpoint interface should extend Remote");
 
-      ClassLoader contextClassLoader = SecurityActions.getContextClassLoader();
+      ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
       ResourceLoaderAdapter vfsRoot = new ResourceLoaderAdapter();
       um = new UnifiedMetaData(vfsRoot);
       um.setClassLoader(contextClassLoader);

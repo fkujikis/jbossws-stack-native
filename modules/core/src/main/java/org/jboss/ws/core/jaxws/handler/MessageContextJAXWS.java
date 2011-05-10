@@ -38,7 +38,7 @@ import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
-import org.jboss.ws.common.IOUtils;
+import org.jboss.wsf.common.IOUtils;
 import org.jboss.xb.binding.NamespaceRegistry;
 import org.xml.sax.InputSource;
 
@@ -118,6 +118,7 @@ public abstract class MessageContextJAXWS extends CommonMessageContext implement
       resContext.put(MessageContext.MESSAGE_OUTBOUND_PROPERTY, Boolean.valueOf(!outbound));
 
       MessageContextAssociation.pushMessageContext(resContext);
+      cleanupAttachments(reqContext);
 
       return resContext;
    }

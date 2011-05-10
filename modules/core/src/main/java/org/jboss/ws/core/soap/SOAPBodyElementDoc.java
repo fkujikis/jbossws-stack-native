@@ -21,7 +21,6 @@
  */
 package org.jboss.ws.core.soap;
 
-import java.io.InputStream;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
@@ -37,7 +36,7 @@ import org.jboss.ws.extensions.validation.SchemaExtractor;
 import org.jboss.ws.extensions.validation.SchemaValidationHelper;
 import org.jboss.ws.feature.SchemaValidationFeature;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Element;
 import org.xml.sax.ErrorHandler;
 
@@ -103,7 +102,6 @@ public class SOAPBodyElementDoc extends SOAPContentElement implements SOAPBodyEl
          EndpointMetaData epMetaData = msgContext.getEndpointMetaData();
          feature = epMetaData.getFeature(SchemaValidationFeature.class);
          URL xsdURL = feature.getSchemaLocation() != null ? new URL(feature.getSchemaLocation()) : null;
-         InputStream[] xsdStreams = null;
          if (xsdURL == null)
          {
             URL wsdlURL = epMetaData.getServiceMetaData().getWsdlFileOrLocation();
@@ -113,7 +111,7 @@ public class SOAPBodyElementDoc extends SOAPContentElement implements SOAPBodyEl
             }
             else
             {
-               xsdStreams = schemaExtractor.getSchemas(wsdlURL);
+               xsdURL = schemaExtractor.getSchemaUrl(wsdlURL);
             }
          }
          if (xsdURL != null)
@@ -121,12 +119,6 @@ public class SOAPBodyElementDoc extends SOAPContentElement implements SOAPBodyEl
             ErrorHandler errorHandler = feature.getErrorHandler();
             Element xmlDOM = DOMUtils.sourceToElement(source);
             new SchemaValidationHelper(xsdURL).setErrorHandler(errorHandler).validateDocument(xmlDOM);
-         }
-         else //xsdStreams != null
-         {
-            ErrorHandler errorHandler = feature.getErrorHandler();
-            Element xmlDOM = DOMUtils.sourceToElement(source);
-            new SchemaValidationHelper(xsdStreams).setErrorHandler(errorHandler).validateDocument(xmlDOM);
          }
       }
       catch (RuntimeException rte)
@@ -136,6 +128,10 @@ public class SOAPBodyElementDoc extends SOAPContentElement implements SOAPBodyEl
       catch (Exception ex)
       {
          WSException.rethrow(ex);
+      }
+      finally
+      {
+         schemaExtractor.close();
       }
    }
 

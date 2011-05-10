@@ -32,7 +32,7 @@ import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.jaxrpc.ParameterWrapping;
 import org.jboss.ws.core.jaxws.DynamicWrapperGenerator;
@@ -43,7 +43,7 @@ import org.jboss.ws.metadata.accessor.AccessorFactoryCreator;
 import org.jboss.ws.metadata.accessor.ReflectiveMethodAccessorFactoryCreator;
 import org.jboss.ws.metadata.config.EndpointFeature;
 import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * A request/response parameter that a given operation supports.
@@ -371,7 +371,7 @@ public class ParameterMetaData implements InitalizableMetaData
 
    public void setSOAPArrayCompType(QName compXmlType)
    {
-      if (log.isDebugEnabled() && compXmlType != null && !compXmlType.equals(soapArrayCompType))
+      if (compXmlType != null && !compXmlType.equals(soapArrayCompType))
       {
          String logmsg = "SOAPArrayCompType: [xmlType=" + xmlType + ",compType=" + compXmlType + "]";
          log.debug((soapArrayCompType == null ? "set" : "reset") + logmsg);

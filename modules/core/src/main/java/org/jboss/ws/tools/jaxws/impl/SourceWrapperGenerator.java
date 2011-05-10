@@ -45,7 +45,7 @@ import org.jboss.ws.metadata.umdm.FaultMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.WrappedParameter;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
@@ -104,8 +104,7 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
       }
 
       String wrapperName = parameterMD.getJavaTypeName();
-      if (log.isDebugEnabled())
-         log.debug("Generating wrapper: " + wrapperName);
+      log.debug("Generating wrapper: " + wrapperName);
 
       try
       {

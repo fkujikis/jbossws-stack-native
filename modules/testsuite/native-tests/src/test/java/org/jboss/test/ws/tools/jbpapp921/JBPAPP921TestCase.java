@@ -26,7 +26,7 @@ import java.io.File;
 import org.jboss.test.ws.tools.fixture.JBossSourceComparator;
 import org.jboss.test.ws.tools.validation.JaxrpcMappingValidator;
 import org.jboss.ws.tools.WSTools;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.test.JBossWSTest;
 import org.w3c.dom.Element;
 
@@ -47,8 +47,8 @@ public class JBPAPP921TestCase extends JBossWSTest
       File jaxrpcMapping = getResourceFile(resourceDir + "/jaxrpc-mapping.xml");
       mappingValidator.validate(jaxrpcMapping.getAbsolutePath(), toolsDir + "/jaxrpc-mapping.xml");
 
-      Element exp = DOMUtils.parse(getResourceURL(resourceDir + "/webservices.xml").openStream());
-      Element act = DOMUtils.parse(getResourceURL(toolsDir + "/webservices.xml").openStream());
+      Element exp = DOMUtils.parse(getResourceFile(resourceDir + "/webservices.xml").toURL().openStream());
+      Element act = DOMUtils.parse(new File(toolsDir + "/webservices.xml").toURL().openStream());
       assertEquals(exp, act);
    }
 

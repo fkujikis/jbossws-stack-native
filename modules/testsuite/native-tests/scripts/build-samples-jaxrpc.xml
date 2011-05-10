@@ -205,7 +205,7 @@
         <include name="wsdl/**"/>
       </metainf>
     </jar>
-    <jar jarfile="${tests.output.dir}/test-libs/jaxrpc-samples-jmstransport-as6.jar">
+    <jar jarfile="${tests.output.dir}/test-libs/jaxrpc-samples-jmstransport-hq.jar">
       <fileset dir="${tests.output.dir}/test-classes">
         <include name="org/jboss/test/ws/jaxrpc/samples/jmstransport/Organization.class"/>
         <include name="org/jboss/test/ws/jaxrpc/samples/jmstransport/OrganizationJMSEndpoint.class"/>
@@ -215,7 +215,7 @@
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
       </metainf>
-      <metainf dir="${tests.output.dir}/test-resources/jaxrpc/samples/jmstransport/META-INF-AS6">
+      <metainf dir="${tests.output.dir}/test-resources/jaxrpc/samples/jmstransport/META-INF-hq">
         <include name="ejb-jar.xml"/>
         <include name="jboss.xml"/>
       </metainf>
@@ -228,11 +228,11 @@
         <include name="jboss-service.xml"/>
       </metainf>
     </jar>
-    <jar jarfile="${tests.output.dir}/test-libs/jaxrpc-samples-jmstransport-as6.sar">
+    <jar jarfile="${tests.output.dir}/test-libs/jaxrpc-samples-jmstransport-hq.sar">
       <fileset dir="${tests.output.dir}/test-libs">
-        <include name="jaxrpc-samples-jmstransport-as6.jar"/>
+        <include name="jaxrpc-samples-jmstransport-hq.jar"/>
       </fileset>
-      <metainf dir="${tests.output.dir}/test-resources/jaxrpc/samples/jmstransport/META-INF-AS6">
+      <metainf dir="${tests.output.dir}/test-resources/jaxrpc/samples/jmstransport/META-INF-hq">
         <include name="hornetq-jms.xml"/>
       </metainf>
     </jar>
@@ -653,7 +653,37 @@
         <include name="wsdl/**"/>
       </metainf>
     </jar>
-
+    
+    <!-- jaxrpc-samples-wsbpel -->
+    <war warfile="${tests.output.dir}/test-libs/jaxrpc-samples-wsbpel-hello.war" webxml="${tests.output.dir}/test-resources/jaxrpc/samples/wsbpel/hello/WEB-INF/web.xml">
+      <classes dir="${tests.output.dir}/test-classes">
+        <include name="org/jboss/test/ws/jaxrpc/samples/wsbpel/hello/HelloWorldService.class"/>
+        <include name="org/jboss/test/ws/jaxrpc/samples/wsbpel/hello/Greeter.class"/>
+        <include name="org/jboss/test/ws/jaxrpc/samples/wsbpel/hello/Greeter_Impl.class"/>
+      </classes>
+      <webinf dir="${tests.output.dir}/test-resources/jaxrpc/samples/wsbpel/hello/WEB-INF">
+        <include name="webservices.xml"/>
+        <include name="classes/bpel-application.xml"/>
+      </webinf>
+      <webinf dir="${tests.output.dir}/wstools/resources/jaxrpc/samples/wsbpel/hello/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="wsdl/**"/>
+      </webinf>
+    </war>
+    <jar destfile="${tests.output.dir}/test-libs/jaxrpc-samples-wsbpel-hello-client.jar">
+      <fileset dir="${tests.output.dir}/test-classes">
+        <include name="org/jboss/test/ws/jaxrpc/samples/wsbpel/hello/HelloWorldService.class"/>
+        <include name="org/jboss/test/ws/jaxrpc/samples/wsbpel/hello/Greeter.class"/>
+      </fileset>
+      <metainf dir="${tests.output.dir}/test-resources/jaxrpc/samples/wsbpel/hello/META-INF">
+        <include name="application-client.xml"/>
+        <include name="jboss-client.xml"/>
+      </metainf>
+      <metainf dir="${tests.output.dir}/wstools/resources/jaxrpc/samples/wsbpel/hello/WEB-INF">
+        <include name="jaxrpc-mapping.xml"/>
+      </metainf>
+    </jar>
+    
     <!-- jaxrpc-samples-wssecurity-sign -->
     <war warfile="${tests.output.dir}/test-libs/jaxrpc-samples-wssecurity-sign.war" webxml="${tests.output.dir}/test-resources/jaxrpc/samples/wssecurity/WEB-INF/web.xml">
       <classes dir="${tests.output.dir}/test-classes">

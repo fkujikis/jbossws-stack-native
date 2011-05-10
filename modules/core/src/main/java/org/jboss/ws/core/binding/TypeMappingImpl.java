@@ -38,7 +38,7 @@ import javax.xml.rpc.encoding.SerializerFactory;
 import javax.xml.rpc.encoding.TypeMapping;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.jaxrpc.binding.Base64DeserializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.Base64SerializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.CalendarDeserializerFactory;
@@ -51,8 +51,8 @@ import org.jboss.ws.core.jaxrpc.binding.QNameDeserializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.QNameSerializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.SimpleDeserializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.SimpleSerializerFactory;
-import org.jboss.ws.common.JavaUtils;
-import org.jboss.ws.common.utils.HashCodeUtil;
+import org.jboss.ws.core.utils.HashCodeUtil;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * This is the representation of a type mapping.
