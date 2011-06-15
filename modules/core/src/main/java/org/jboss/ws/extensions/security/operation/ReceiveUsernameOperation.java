@@ -37,7 +37,6 @@ import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.jboss.ws.extensions.security.nonce.NonceStore;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
-import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.invocation.SecurityAdaptor;
 import org.jboss.wsf.spi.invocation.SecurityAdaptorFactory;
 import org.jboss.xb.binding.SimpleTypeBindings;
@@ -58,9 +57,8 @@ public class ReceiveUsernameOperation implements TokenOperation
       this.store = store;
       this.nonceStore = nonceStore;
 
-      ClassLoader cl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
-      SPIProvider spiProvider = SPIProviderResolver.getInstance(cl).getProvider();
-      secAdapterfactory = spiProvider.getSPI(SecurityAdaptorFactory.class, cl);
+      SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+      secAdapterfactory = spiProvider.getSPI(SecurityAdaptorFactory.class);
    }
 
    public void process(Document message, Token token) throws WSSecurityException

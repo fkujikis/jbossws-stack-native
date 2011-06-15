@@ -35,7 +35,7 @@ import javax.xml.ws.WebServiceException;
 import javax.xml.ws.WebServiceProvider;
 import javax.xml.ws.Service.Mode;
 
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.soap.SOAPContentElement;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.metadata.builder.MetaDataBuilder;
@@ -46,7 +46,7 @@ import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
@@ -122,7 +122,7 @@ public class JAXWSProviderMetaDataBuilder extends JAXWSServerMetaDataBuilder
       String wsdlLocation = anWebServiceProvider.wsdlLocation();
       if (wsdlLocation.length() > 0)
       {
-         URL wsdlURL = dep.getResourceResolver().resolve(wsdlLocation);
+         URL wsdlURL = dep.getMetaDataFileURL(wsdlLocation);
          serviceMetaData.setWsdlLocation(wsdlURL);
       }
 

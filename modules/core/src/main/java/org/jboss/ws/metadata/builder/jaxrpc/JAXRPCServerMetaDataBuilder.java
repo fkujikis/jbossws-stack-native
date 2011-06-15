@@ -69,8 +69,7 @@ public class JAXRPCServerMetaDataBuilder extends JAXRPCMetaDataBuilder
     */
    public UnifiedMetaData buildMetaData(ArchiveDeployment dep)
    {
-      if (log.isDebugEnabled())
-         log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
+      log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
       try
       {
          // For every webservice-description build the ServiceMetaData
@@ -98,7 +97,7 @@ public class JAXRPCServerMetaDataBuilder extends JAXRPCMetaDataBuilder
 
             // Unmarshall the jaxrpc-mapping.xml
             String mappingFile = wsdMetaData.getJaxrpcMappingFile();
-            serviceMetaData.setMappingLocation(dep.getResourceResolver().resolve(mappingFile));
+            serviceMetaData.setMappingLocation(dep.getMetaDataFileURL(mappingFile));
             JavaWsdlMapping javaWsdlMapping = serviceMetaData.getJavaWsdlMapping();
             if (javaWsdlMapping == null)
                throw new WSException("jaxrpc-mapping-file not configured from webservices.xml");
@@ -212,6 +211,9 @@ public class JAXRPCServerMetaDataBuilder extends JAXRPCMetaDataBuilder
                if (seiMapping == null)
                   log.warn("Cannot obtain SEI mapping for: " + seiName);
 
+               // process endpoint meta extension
+               processEndpointMetaDataExtensions(sepMetaData, wsdlDefinitions);
+
                // Setup the endpoint operations
                setupOperationsFromWSDL(sepMetaData, wsdlEndpoint, seiMapping);
 
@@ -228,8 +230,7 @@ public class JAXRPCServerMetaDataBuilder extends JAXRPCMetaDataBuilder
             }
          }
 
-         if (log.isDebugEnabled())
-            log.debug("END buildMetaData: " + wsMetaData);
+         log.debug("END buildMetaData: " + wsMetaData);
          return wsMetaData;
       }
       catch (RuntimeException rte)

@@ -33,7 +33,7 @@ import org.jboss.test.ws.tools.sei.PrimitiveArrayTypes;
 import org.jboss.test.ws.tools.sei.PrimitiveTypes;
 import org.jboss.test.ws.tools.sei.ServiceException;
 import org.jboss.test.ws.tools.sei.StandardJavaTypes;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
@@ -41,8 +41,8 @@ import org.jboss.ws.tools.JavaToWSDL;
 import org.jboss.ws.tools.WSToolsConstants;
 import org.jboss.ws.tools.wsdl.WSDLWriter;
 import org.jboss.wsf.test.JBossWSTest;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.IOUtils;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.IOUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -136,10 +136,10 @@ public class JavaToWSDL11TestCase extends JBossWSTest
 
       //Validate the generated WSDL
       File wsdlfix = new File(fixturefile);
-      Element exp = DOMUtils.parse(wsdlfix.toURI().toURL().openStream());
+      Element exp = DOMUtils.parse(wsdlfix.toURL().openStream());
       File wsdlFile = new File(wsdlPath);
       assertNotNull("Generated WSDL File exists?", wsdlFile);
-      Element was = DOMUtils.parse(wsdlFile.toURI().toURL().openStream());
+      Element was = DOMUtils.parse(wsdlFile.toURL().openStream());
 
       assertEquals(exp, was);
       /*

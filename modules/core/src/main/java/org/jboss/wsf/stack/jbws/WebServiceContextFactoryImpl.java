@@ -23,8 +23,6 @@ package org.jboss.wsf.stack.jbws;
 
 import javax.xml.ws.handler.MessageContext;
 
-import org.jboss.ws.common.invocation.WebServiceContextEJB;
-import org.jboss.ws.common.invocation.WebServiceContextJSE;
 import org.jboss.wsf.spi.invocation.ExtensibleWebServiceContext;
 import org.jboss.wsf.spi.invocation.InvocationType;
 import org.jboss.wsf.spi.invocation.WebServiceContextFactory;
@@ -41,9 +39,9 @@ public class WebServiceContextFactoryImpl extends WebServiceContextFactory
       ExtensibleWebServiceContext context = null;
 
       if(type.toString().indexOf("EJB")!=-1 || type.toString().indexOf("MDB")!=-1)
-         context = new WebServiceContextEJB(new NativeWebServiceContext(messageContext));
+         context = new WebServiceContextEJB(messageContext);
       else
-         context = new WebServiceContextJSE(new NativeWebServiceContext(messageContext));
+         context = new WebServiceContextJSE(messageContext);
 
       return context;
    }

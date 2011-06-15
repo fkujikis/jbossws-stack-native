@@ -28,11 +28,8 @@ import javax.xml.ws.WebServiceProvider;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.common.utils.DelegateClassLoader;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
-import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.deployment.Service;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
 
@@ -54,8 +51,7 @@ public class JAXWSMetaDataBuilderEJB3
     */
    public UnifiedMetaData buildMetaData(ArchiveDeployment dep)
    {
-      if (log.isDebugEnabled())
-         log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
+      log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
       try
       {
          UnifiedMetaData wsMetaData = new UnifiedMetaData(dep.getRootFile());
@@ -64,7 +60,7 @@ public class JAXWSMetaDataBuilderEJB3
          ClassLoader runtimeClassLoader = dep.getRuntimeClassLoader();
          if(null == runtimeClassLoader)
             throw new IllegalArgumentException("Runtime loader cannot be null");
-         wsMetaData.setClassLoader(new DelegateClassLoader(runtimeClassLoader, SecurityActions.getContextClassLoader()));
+         wsMetaData.setClassLoader(runtimeClassLoader);
 
          // The container objects below provide access to all of the ejb metadata
          EJBArchiveMetaData apMetaData = dep.getAttachment(EJBArchiveMetaData.class);
@@ -74,10 +70,9 @@ public class JAXWSMetaDataBuilderEJB3
             EJBMetaData beanMetaData = it.next();
             String ejbClassName = beanMetaData.getEjbClass();
             Class<?> beanClass = wsMetaData.getClassLoader().loadClass(ejbClassName);
-            Service service = dep.getService();
-            String ejbLink = beanMetaData.getEjbName();
-            if (service.getEndpointByName(ejbLink) != null && (beanClass.isAnnotationPresent(WebService.class) || beanClass.isAnnotationPresent(WebServiceProvider.class)))
+            if (beanClass.isAnnotationPresent(WebService.class) || beanClass.isAnnotationPresent(WebServiceProvider.class))
             {
+               String ejbLink = beanMetaData.getEjbName();
                JAXWSServerMetaDataBuilder.setupProviderOrWebService(dep, wsMetaData, beanClass, ejbLink);
 
                /* Resolve dependency on @SecurityDomain
@@ -96,8 +91,7 @@ public class JAXWSMetaDataBuilderEJB3
             }
          }
 
-         if (log.isDebugEnabled())
-            log.debug("END buildMetaData: " + wsMetaData);
+         log.debug("END buildMetaData: " + wsMetaData);
          return wsMetaData;
       }
       catch (RuntimeException rte)

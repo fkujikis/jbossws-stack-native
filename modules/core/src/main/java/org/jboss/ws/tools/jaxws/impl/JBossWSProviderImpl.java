@@ -33,13 +33,13 @@ import javax.xml.ws.WebServiceProvider;
 import org.jboss.ws.WSException;
 import org.jboss.ws.metadata.builder.jaxws.JAXWSWebServiceMetaDataBuilder;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
-import org.jboss.ws.api.tools.WSContractProvider;
-import org.jboss.ws.common.ResourceLoaderAdapter;
-import org.jboss.ws.common.utils.NullPrintStream;
+import org.jboss.ws.tools.io.NullPrintStream;
+import org.jboss.wsf.common.ResourceLoaderAdapter;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
+import org.jboss.wsf.spi.tools.WSContractProvider;
 
 /**
  * The default WSContractProvider implementation.
@@ -130,19 +130,13 @@ final class JBossWSProviderImpl extends WSContractProvider
    @Override
    public void provide(String endpointClass)
    {
-      final ClassLoader origLoader = SecurityActions.getContextClassLoader();
       try
       {
-         SecurityActions.setContextClassLoader(loader);
          provide(loader.loadClass(endpointClass));
       }
       catch (ClassNotFoundException e)
       {
          throw new WSException("Class not found: " + endpointClass);
-      }
-      finally
-      {
-          SecurityActions.setContextClassLoader(origLoader);
       }
    }
 

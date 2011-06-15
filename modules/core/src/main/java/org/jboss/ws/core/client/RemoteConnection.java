@@ -23,6 +23,8 @@ package org.jboss.ws.core.client;
 
 import java.io.IOException;
 
+import org.jboss.remoting.marshal.Marshaller;
+import org.jboss.remoting.marshal.UnMarshaller;
 import org.jboss.ws.core.MessageAbstraction;
 
 
@@ -37,6 +39,6 @@ public interface RemoteConnection
    Marshaller getMarshaller();
 
    UnMarshaller getUnmarshaller();
-   
+
    MessageAbstraction invoke(MessageAbstraction reqMessage, Object endpoint, boolean oneway) throws IOException;
 }

@@ -25,7 +25,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.xerces.xs.XSModel;
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.binding.SerializationContext;
 import org.jboss.ws.core.jaxrpc.handler.SOAPMessageContextJAXRPC;
@@ -36,7 +36,7 @@ import org.jboss.ws.metadata.jaxrpcmapping.PackageMapping;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.TypesMetaData;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * The serialization context for JAXRPC endpoints/clients

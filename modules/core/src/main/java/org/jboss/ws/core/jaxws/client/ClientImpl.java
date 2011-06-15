@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -34,7 +34,6 @@ import javax.xml.ws.Binding;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.EndpointReference;
 import javax.xml.ws.WebServiceException;
-import javax.xml.ws.WebServiceFeature;
 import javax.xml.ws.handler.Handler;
 import javax.xml.ws.handler.HandlerResolver;
 import javax.xml.ws.handler.MessageContext;
@@ -45,11 +44,10 @@ import javax.xml.ws.http.HTTPException;
 import javax.xml.ws.soap.SOAPBinding;
 import javax.xml.ws.soap.SOAPFaultException;
 
-import org.jboss.logging.Logger;
+import org.jboss.remoting.transport.http.HTTPMetadataConstants;
 import org.jboss.ws.core.CommonBindingProvider;
 import org.jboss.ws.core.CommonClient;
 import org.jboss.ws.core.CommonMessageContext;
-import org.jboss.ws.core.client.transport.NettyClient;
 import org.jboss.ws.core.jaxws.binding.BindingExt;
 import org.jboss.ws.core.jaxws.binding.BindingProviderImpl;
 import org.jboss.ws.core.jaxws.handler.HandlerChainExecutor;
@@ -57,10 +55,9 @@ import org.jboss.ws.core.jaxws.handler.HandlerResolverImpl;
 import org.jboss.ws.core.jaxws.handler.MessageContextJAXWS;
 import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
 import org.jboss.ws.core.soap.MessageContextAssociation;
+import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointConfigMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.metadata.umdm.FeatureAwareClientEndpointMetaDataAdapter;
-import org.jboss.ws.metadata.umdm.FeatureAwareEndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 
@@ -70,12 +67,11 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  * @author Thomas.Diesler@jboss.org
  * @since 04-Jul-2006
  */
-public class ClientImpl extends CommonClient implements BindingProvider, FeatureAwareEndpointMetaData
+public class ClientImpl extends CommonClient implements BindingProvider
 {
-   private static Logger log = Logger.getLogger(ClientImpl.class);
 
    // the associated endpoint meta data
-   private final FeatureAwareClientEndpointMetaDataAdapter epMetaData;
+   private final ClientEndpointMetaData epMetaData;
    private EndpointConfigMetaData epConfigMetaData;
 
    // Keep a handle on the resolver so that updateConfig calls may revisit the associated chains
@@ -89,7 +85,7 @@ public class ClientImpl extends CommonClient implements BindingProvider, Feature
       super(epMetaData);
       setTargetEndpointAddress(epMetaData.getEndpointAddress());
 
-      this.epMetaData = (FeatureAwareClientEndpointMetaDataAdapter)epMetaData;
+      this.epMetaData = (ClientEndpointMetaData)epMetaData;
       this.epConfigMetaData = epMetaData.getEndpointConfigMetaData();
 
       if (handlerResolver instanceof HandlerResolverImpl)
@@ -188,24 +184,16 @@ public class ClientImpl extends CommonClient implements BindingProvider, Feature
          Map<?, ?> remotingMetadata = (Map)msgContext.get(CommonMessageContext.REMOTING_METADATA);
 
          // Get the HTTP_RESPONSE_CODE
-         Integer resposeCode = (Integer)remotingMetadata.get(NettyClient.RESPONSE_CODE);
+         Integer resposeCode = (Integer)remotingMetadata.get(HTTPMetadataConstants.RESPONSE_CODE);
          if (resposeCode != null)
             msgContext.put(MessageContextJAXWS.HTTP_RESPONSE_CODE, resposeCode);
 
          // [JBREM-728] Improve access to HTTP response headers
          Map<String, List> headers = new HashMap<String, List>();
-         Map<String, Object> metadataHeaders = (Map<String, Object>)remotingMetadata.get(NettyClient.RESPONSE_HEADERS);
-         if (metadataHeaders != null)
+         for (Map.Entry en : remotingMetadata.entrySet())
          {
-            for (Map.Entry en : metadataHeaders.entrySet())
-            {
-               if (en.getKey() instanceof String && en.getValue() instanceof List)
-                  headers.put((String)en.getKey(), (List)en.getValue());
-            }
-         }
-         else
-         {
-            log.info("Cannot find response headers");
+            if (en.getKey() instanceof String && en.getValue() instanceof List)
+               headers.put((String)en.getKey(), (List)en.getValue());
          }
          msgContext.put(MessageContext.HTTP_RESPONSE_HEADERS, headers);
       }
@@ -260,8 +248,13 @@ public class ClientImpl extends CommonClient implements BindingProvider, Feature
          {
             msgContext = MessageContextAssociation.peekMessageContext();
 
+
             // Copy the inbound msg properties to the binding's response context
-            resContext.putAll(msgContext);
+            for (String key : msgContext.keySet())
+            {
+               Object value = msgContext.get(key);
+               resContext.put(key, value);
+            }
          }
       }
       finally
@@ -406,18 +399,6 @@ public class ClientImpl extends CommonClient implements BindingProvider, Feature
          initBindingHandlerChain(true);
       }
    }
-   
-   @Override
-   public String getConfigFile()
-   {
-      return epConfigMetaData.getConfigFile();
-   }
-
-   @Override
-   public String getConfigName()
-   {
-      return epConfigMetaData.getConfigName();
-   }   
 
    /**
     * Retrieve header names that can be processed by this binding
@@ -450,22 +431,6 @@ public class ClientImpl extends CommonClient implements BindingProvider, Feature
    {
       Object bool = getRequestContext().get(BindingProvider.SESSION_MAINTAIN_PROPERTY);
       return Boolean.TRUE.equals(bool);
-   }
-
-   //////////////////////////////////////////
-   // FeatureAwareEndpointMetaData support //
-   //////////////////////////////////////////
-   
-   @Override
-   public <T extends WebServiceFeature> T getFeature(Class<T> key)
-   {
-      return this.epMetaData.getFeature(key);
-   }
-
-   @Override
-   public void setFeature(WebServiceFeature feature)
-   {
-      this.epMetaData.setFeature(feature);
    }
 
 }

@@ -44,7 +44,8 @@ import org.jboss.ws.core.soap.SOAPBodyImpl;
 import org.jboss.ws.core.soap.SOAPContentElement;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.core.soap.XMLFragment;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.spi.util.ServiceLoader;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -111,7 +112,7 @@ public class LogicalMessageImpl implements LogicalMessage
                try
                {
                   soapBody.removeContents();
-                  EnvelopeBuilder envBuilder = new EnvelopeBuilderDOM();
+                  EnvelopeBuilder envBuilder = (EnvelopeBuilder)ServiceLoader.loadService(EnvelopeBuilder.class.getName(), EnvelopeBuilderDOM.class.getName());
                   envBuilder.setStyle(style);
                   Element domBodyElement = DOMUtils.sourceToElement(source);
                   envBuilder.buildBodyElementRpc(soapBody, domBodyElement);

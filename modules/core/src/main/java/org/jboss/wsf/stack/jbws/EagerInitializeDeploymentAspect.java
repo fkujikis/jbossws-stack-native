@@ -22,8 +22,7 @@
 package org.jboss.wsf.stack.jbws;
 
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
-import org.jboss.ws.common.integration.AbstractDeploymentAspect;
-import org.jboss.ws.common.utils.DelegateClassLoader;
+import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
 
 /**
@@ -32,7 +31,7 @@ import org.jboss.wsf.spi.deployment.Deployment;
  * @author Thomas.Diesler@jboss.org
  * @since 25-Apr-2007
  */
-public class EagerInitializeDeploymentAspect extends AbstractDeploymentAspect
+public class EagerInitializeDeploymentAspect extends DeploymentAspect
 {
    @Override
    public void start(Deployment dep)
@@ -45,7 +44,7 @@ public class EagerInitializeDeploymentAspect extends AbstractDeploymentAspect
       if(null == runtimeClassLoader)
          throw new IllegalArgumentException("Runtime classloader may not be null");
       
-      umd.setClassLoader(new DelegateClassLoader(runtimeClassLoader, SecurityActions.getContextClassLoader()));
+      umd.setClassLoader(runtimeClassLoader);
       umd.eagerInitialize();
    }
 }

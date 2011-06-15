@@ -24,23 +24,19 @@ package org.jboss.ws.extensions.addressing.jaxws;
 import org.jboss.logging.Logger;
 import org.jboss.ws.extensions.addressing.AddressingClientUtil;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
-import org.jboss.ws.extensions.addressing.metadata.AddressingOpMetaExt;
 import org.jboss.ws.extensions.addressing.soap.SOAPAddressingPropertiesImpl;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.core.CommonMessageContext;
-import org.jboss.ws.api.handler.GenericSOAPHandler;
+import org.jboss.wsf.common.handler.GenericSOAPHandler;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.BindingProvider;
-import javax.xml.ws.WebServiceException;
 import javax.xml.ws.addressing.AddressingBuilder;
 import javax.xml.ws.addressing.AddressingException;
-import javax.xml.ws.addressing.AttributedURI;
-import javax.xml.ws.addressing.EndpointReference;
 import javax.xml.ws.addressing.JAXWSAConstants;
 import javax.xml.ws.addressing.soap.SOAPAddressingBuilder;
 import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
@@ -64,196 +60,135 @@ import java.util.Set;
  * @author Heiko.Braun@jboss.com
  * @since 24-Nov-2005
  */
-@SuppressWarnings("unchecked")
 public class WSAddressingClientHandler extends GenericSOAPHandler
 {
-   // Provide logging
-   private static Logger log = Logger.getLogger(WSAddressingClientHandler.class);
+	// Provide logging
+	private static Logger log = Logger.getLogger(WSAddressingClientHandler.class);
 
-   private static AddressingBuilder ADDR_BUILDER;
+	private static AddressingBuilder ADDR_BUILDER;
+	private static AddressingConstantsImpl ADDR_CONSTANTS;
+	private static Set<QName> HEADERS = new HashSet<QName>();
 
-   private static AddressingConstantsImpl ADDR_CONSTANTS;
+	static
+	{
+		ADDR_CONSTANTS = new AddressingConstantsImpl();
+		ADDR_BUILDER = AddressingBuilder.getAddressingBuilder();
 
-   private static Set<QName> HEADERS = new HashSet<QName>();
+		HEADERS.add( ADDR_CONSTANTS.getActionQName());
+		HEADERS.add( ADDR_CONSTANTS.getToQName());
+	}
 
-   static
-   {
-      ADDR_CONSTANTS = new AddressingConstantsImpl();
-      ADDR_BUILDER = AddressingBuilder.getAddressingBuilder();
+	public Set getHeaders()
+	{
+		return Collections.unmodifiableSet(HEADERS);
+	}
 
-      HEADERS.add(ADDR_CONSTANTS.getActionQName());
-      HEADERS.add(ADDR_CONSTANTS.getToQName());
-   }
+	protected boolean handleOutbound(MessageContext msgContext)
+	{
+		log.debug("handleOutbound");
 
-   public Set getHeaders()
-   {
-      return Collections.unmodifiableSet(HEADERS);
-   }
-
-   protected boolean handleOutbound(MessageContext msgContext)
-   {
-      log.debug("handleOutbound");
-
-      SOAPAddressingProperties addrProps = (SOAPAddressingProperties) msgContext
-            .get(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES);
+      SOAPAddressingProperties addrProps = (SOAPAddressingProperties)msgContext.get(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES);
       if (addrProps != null)
       {
          msgContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND, addrProps);
          msgContext.setScope(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND, Scope.APPLICATION);
       }
-
-      addrProps = (SOAPAddressingProperties) msgContext.get(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND);
+      
+      addrProps = (SOAPAddressingProperties)msgContext.get(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND);
       if (addrProps == null)
       {
          // supply default addressing properties
-         addrProps = (SOAPAddressingPropertiesImpl) ADDR_BUILDER.newAddressingProperties();
+         addrProps = (SOAPAddressingPropertiesImpl)ADDR_BUILDER.newAddressingProperties();
          msgContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND, addrProps);
          msgContext.setScope(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND, Scope.APPLICATION);
       }
-
-      // Add required wsa:Action
+      
       if (addrProps.getAction() == null)
       {
-         addrProps.setAction(this.getAction(msgContext));
+         try
+         {
+            OperationMetaData opMetaData = ((CommonMessageContext)msgContext).getOperationMetaData();
+            if (msgContext.get(BindingProvider.SOAPACTION_URI_PROPERTY) != null) 
+            {
+            	addrProps.setAction(ADDR_BUILDER.newURI(msgContext.get(BindingProvider.SOAPACTION_URI_PROPERTY).toString()));
+            }
+            else 
+            {
+                addrProps.setAction(ADDR_BUILDER.newURI(opMetaData.getJavaName()));
+            }
+         }
+         catch (URISyntaxException ex)
+         {
+            // ignore
+         }
       }
-
-      // Add optional wsa:MessageID
-      if (addrProps.getMessageID() == null)
+      
+      //Add this optional messageID
+      if (addrProps.getMessageID()== null)
       {
          addrProps.setMessageID(AddressingClientUtil.createMessageID());
       }
-
-      // Add optional wsa:To
-      if (addrProps.getTo() == null)
-      {
-         addrProps.setTo(this.getAddress(msgContext));
-      }
-
-      // Add optional wsa:ReplyTo
-      if (addrProps.getReplyTo() == null)
-      {
-         addrProps.setReplyTo(this.newAnonymousURI());
-      }
-
-      SOAPMessage soapMessage = ((SOAPMessageContext) msgContext).getMessage();
-      addrProps.writeHeaders(soapMessage);
-
-      return true;
-   }
-
-   protected boolean handleInbound(MessageContext msgContext)
-   {
-      log.debug("handleInbound");
       
-      try
-      {
-         SOAPMessage soapMessage = ((SOAPMessageContext) msgContext).getMessage();
-         if (soapMessage.getSOAPPart().getEnvelope() != null)
-         {
-            SOAPAddressingBuilder builder = (SOAPAddressingBuilder) SOAPAddressingBuilder.getAddressingBuilder();
-            SOAPAddressingProperties addrProps = (SOAPAddressingProperties) builder.newAddressingProperties();
-            if (this.isAddressingRequired(msgContext))
-            {
-               try
-               {
-                  soapMessage.setProperty("isRequired", true);
-               }
-               catch (Exception e)
-               {
-                  //ignore 
-               }
+		SOAPMessage soapMessage = ((SOAPMessageContext)msgContext).getMessage();
+		addrProps.writeHeaders(soapMessage);
 
-            }
-            addrProps.readHeaders(soapMessage);
-            msgContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES, addrProps);
-            msgContext.setScope(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES, Scope.APPLICATION);
-            msgContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_INBOUND, addrProps);
-            msgContext.setScope(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_INBOUND, Scope.APPLICATION);
-            msgContext.put(MessageContext.REFERENCE_PARAMETERS, convertToElementList(addrProps.getReferenceParameters()
-                  .getElements()));
-            msgContext.setScope(MessageContext.REFERENCE_PARAMETERS, Scope.APPLICATION);
-         }
-      }
-      catch (SOAPException ex)
-      {
-         throw new AddressingException("Cannot handle response", ex);
-      }
+		return true;
+	}
 
-      return true;
-   }
+	protected boolean handleInbound(MessageContext msgContext)
+	{
+		log.debug("handleInbound");
 
-   private static List<Element> convertToElementList(List<Object> objects)
+		try
+		{
+			SOAPMessage soapMessage = ((SOAPMessageContext)msgContext).getMessage();
+			if (soapMessage.getSOAPPart().getEnvelope() != null)
+			{
+				SOAPAddressingBuilder builder = (SOAPAddressingBuilder)SOAPAddressingBuilder.getAddressingBuilder();
+				SOAPAddressingProperties addrProps = (SOAPAddressingProperties)builder.newAddressingProperties();
+		        CommonMessageContext commonMsgContext = (CommonMessageContext)msgContext;
+		        ClientEndpointMetaData serverMetaData = (ClientEndpointMetaData)commonMsgContext.getEndpointMetaData();
+		        AddressingFeature addrFeature = serverMetaData.getFeature(AddressingFeature.class);
+		        if (addrFeature != null && addrFeature.isRequired())
+		        {
+		           try 
+		           {
+		               soapMessage.setProperty("isRequired", true);
+		           }
+		           catch (Exception e) 
+		           {
+		              //ignore 
+		           }
+		           
+		        }
+		        addrProps.readHeaders(soapMessage);        
+		        msgContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES, addrProps);
+                msgContext.setScope(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES, Scope.APPLICATION);
+                msgContext.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_INBOUND, addrProps);
+                msgContext.setScope(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_INBOUND, Scope.APPLICATION);
+                msgContext.put(MessageContext.REFERENCE_PARAMETERS, convertToElementList(addrProps.getReferenceParameters().getElements()));
+                msgContext.setScope(MessageContext.REFERENCE_PARAMETERS, Scope.APPLICATION);
+           	}
+		}
+		catch (SOAPException ex)
+		{
+			throw new AddressingException("Cannot handle response", ex);
+		}
+
+		return true;
+	}
+	
+	private static List<Element> convertToElementList(List<Object> objects)
    {
-      if (objects == null)
-         return null;
+      if (objects == null) return null;
       List<Element> elements = new LinkedList<Element>();
       for (Object o : objects)
       {
          if (o instanceof Element)
          {
-            elements.add((Element) o);
+            elements.add((Element)o);
          }
       }
       return elements;
-   }
-
-   private AttributedURI getAction(final MessageContext msgContext)
-   {
-      String action = "UNSPECIFIED";
-      
-      if (msgContext.get(BindingProvider.SOAPACTION_URI_PROPERTY) != null)
-         action = msgContext.get(BindingProvider.SOAPACTION_URI_PROPERTY).toString();
-
-      OperationMetaData operationMD = ((CommonMessageContext) msgContext).getOperationMetaData();
-      if (operationMD != null)
-      {
-         AddressingOpMetaExt addressingMD = (AddressingOpMetaExt) 
-            operationMD.getExtension(ADDR_CONSTANTS.getNamespaceURI());
-
-         action = addressingMD.getInboundAction();
-         if (action == null)
-            action = operationMD.getJavaName();
-      }
-
-      return this.newURI(action);
-   }
-   
-   private AttributedURI getAddress(final MessageContext msgContext)
-   {
-      final OperationMetaData operationMD = ((CommonMessageContext) msgContext).getOperationMetaData();
-      if (operationMD != null)
-      {
-         final ClientEndpointMetaData endpointMD = (ClientEndpointMetaData) operationMD.getEndpointMetaData();
-
-         return this.newURI(endpointMD.getEndpointAddress());
-      }
-      
-      return null;
-   }
-   
-   private AttributedURI newURI(final String uri)
-   {
-      try
-      {
-         return ADDR_BUILDER.newURI(uri);
-      }
-      catch (URISyntaxException e)
-      {
-         throw new WebServiceException(e.getMessage(), e);
-      }
-   }
-
-   private EndpointReference newAnonymousURI()
-   {
-      return ADDR_BUILDER.newEndpointReference(this.newURI(ADDR_CONSTANTS.getAnonymousURI()).getURI());
-   }
-
-   private boolean isAddressingRequired(final MessageContext msgContext)
-   {
-      CommonMessageContext commonMsgContext = (CommonMessageContext)msgContext;
-      ClientEndpointMetaData serverMetaData = (ClientEndpointMetaData)commonMsgContext.getEndpointMetaData();
-      AddressingFeature addrFeature = serverMetaData.getFeature(AddressingFeature.class);
-      
-      return addrFeature != null && addrFeature.isRequired();
    }
 }

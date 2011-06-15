@@ -21,27 +21,34 @@
 */
 package org.jboss.ws.extensions.security.operation;
 
+import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.security.auth.Subject;
 
 import org.jboss.logging.Logger;
+import org.jboss.security.AuthenticationManager;
+import org.jboss.security.RealmMapping;
+import org.jboss.security.SecurityAssociation;
+import org.jboss.security.SecurityContext;
+import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SimplePrincipal;
+import org.jboss.ws.WSException;
 import org.jboss.ws.extensions.security.exception.FailedAuthenticationException;
 import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.jboss.ws.metadata.wsse.Authorize;
 import org.jboss.ws.metadata.wsse.Role;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
-import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
-import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.invocation.EndpointAssociation;
 import org.jboss.wsf.spi.invocation.SecurityAdaptor;
 import org.jboss.wsf.spi.invocation.SecurityAdaptorFactory;
-import org.jboss.wsf.spi.security.SecurityDomainContext;
 
 /**
  * Operation to authenticate and check the authorisation of the
@@ -52,26 +59,35 @@ import org.jboss.wsf.spi.security.SecurityDomainContext;
  */
 public class AuthorizeOperation
 {
+
    private static final Logger log = Logger.getLogger(AuthorizeOperation.class);
 
    private Authorize authorize;
 
+   private AuthenticationManager am;
+
+   private RealmMapping rm;
+
    private SecurityAdaptorFactory secAdapterfactory;
-   
-   private SecurityDomainContext sdc;
 
    public AuthorizeOperation(Authorize authorize)
    {
       this.authorize = authorize;
-      ClassLoader cl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
-      SPIProvider spiProvider = SPIProviderResolver.getInstance(cl).getProvider();
-      secAdapterfactory = spiProvider.getSPI(SecurityAdaptorFactory.class, cl);
 
-      Endpoint ep = EndpointAssociation.getEndpoint();
-      if (ep != null)
+      try
       {
-         sdc = ep.getSecurityDomainContext();
+         Context ctx = new InitialContext();
+         Object obj = ctx.lookup("java:comp/env/security/securityMgr");
+         am = (AuthenticationManager)obj;
+         rm = (RealmMapping)am;
       }
+      catch (NamingException ne)
+      {
+         throw new WSException("Unable to lookup AuthenticationManager", ne);
+      }
+
+      SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+      secAdapterfactory = spiProvider.getSPI(SecurityAdaptorFactory.class);
    }
 
    public void process() throws WSSecurityException
@@ -79,35 +95,23 @@ public class AuthorizeOperation
       boolean TRACE = log.isTraceEnabled();
 
       if (TRACE)
-         log.trace("About to check authorization, using security domain '" + sdc.getSecurityDomain() + "'");
+         log.trace("About to check authorization, using security domain '" + am.getSecurityDomain() + "'");
 
       // Step 1 - Authenticate using currently associated principals.
       SecurityAdaptor securityAdaptor = secAdapterfactory.newSecurityAdapter();
       Principal principal = securityAdaptor.getPrincipal();
       Object credential = securityAdaptor.getCredential();
 
-      if (principal == null)
-      {
-         principal = new Principal()
-         {
-            @Override
-            public String getName()
-            {
-               return null;
-            }
-         };
-      }
-      
       Subject subject = new Subject();
 
-      if (sdc.isValid(principal, credential, subject) == false)
+      if (am.isValid(principal, credential, subject) == false)
       {
          String msg = "Authentication failed, principal=" + principal;
          log.error(msg);
          SecurityException e = new SecurityException(msg);
          throw new FailedAuthenticationException(e);
       }
-      sdc.pushSubjectContext(subject, principal, credential);
+      securityAdaptor.pushSubjectContext(subject, principal, credential);
 
       if (TRACE)
          log.trace("Authenticated, principal=" + principal);
@@ -126,9 +130,9 @@ public class AuthorizeOperation
       if (TRACE)
          log.trace("expectedRoles=" + expectedRoles);
 
-      if (sdc.doesUserHaveRole(principal, expectedRoles) == false)
+      if (rm.doesUserHaveRole(principal, expectedRoles) == false)
       {
-         Set<Principal> userRoles = sdc.getUserRoles(principal);
+         Set<Principal> userRoles = rm.getUserRoles(principal);
          String msg = "Insufficient method permissions, principal=" + principal + ", requiredRoles=" + expectedRoles + ", principalRoles=" + userRoles;
          log.error(msg);
          SecurityException e = new SecurityException(msg);

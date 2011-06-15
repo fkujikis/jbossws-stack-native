@@ -48,7 +48,7 @@ import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSComplexTypeDefinition;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSElementDeclaration;
@@ -70,7 +70,7 @@ public class SchemaUtils
 {
    private static SchemaUtils ourInstance = new SchemaUtils();
 
-   protected static final String xsNS = Constants.NS_SCHEMA_XSD;
+   protected static String xsNS = Constants.NS_SCHEMA_XSD;
 
    private static Map<Class, QName> toolsTypeMappingOverride = new HashMap<Class, QName>();
 

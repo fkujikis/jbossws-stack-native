@@ -27,7 +27,6 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import org.jboss.ws.WSException;
-import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -219,13 +218,13 @@ public class Util
    @SuppressWarnings("unchecked")
    public static <T> T loadFactory(Class<T> factoryType, String factoryClassName, Class<? extends T> defaultFactoryClassName)
    {
-      ClassLoader loader = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
-      String name = factoryClassName != null ? factoryClassName : SecurityActions.getSystemProperty(factoryType.getName());
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      String name = factoryClassName != null ? factoryClassName : System.getProperty(factoryType.getName());
       if (name == null)
          name = defaultFactoryClassName.getName();
       try
       {
-         Class<T> cl = (Class<T>)SecurityActions.loadClass(loader, name);
+         Class<T> cl = (Class<T>)loader.loadClass(name);
          return cl.newInstance();
       }
       catch (Exception e)

@@ -23,7 +23,7 @@ package org.jboss.ws.core.client;
 
 import org.jboss.ws.feature.FastInfosetFeature;
 import org.jboss.ws.feature.JsonEncodingFeature;
-import org.jboss.ws.api.util.ServiceLoader;
+import org.jboss.wsf.spi.util.ServiceLoader;
 
 /**
  * A factory for remote connections 
@@ -58,7 +58,7 @@ public class RemoteConnectionFactory
          key += ".json";
       }
       
-      RemoteConnection con = (RemoteConnection)ServiceLoader.loadService(key, null, this.getClass().getClassLoader());
+      RemoteConnection con = (RemoteConnection)ServiceLoader.loadService(key, null);
       if (con == null)
          throw new IllegalArgumentException("Cannot obtain remote connetion for: " + key);
       

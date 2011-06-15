@@ -35,7 +35,7 @@ import javax.jws.soap.SOAPBinding.ParameterStyle;
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.jaxrpc.LiteralTypeMapping;
 import org.jboss.ws.core.soap.Style;
@@ -63,10 +63,10 @@ import org.jboss.ws.tools.client.ServiceCreator;
 import org.jboss.ws.tools.interfaces.WebservicesXMLCreator;
 import org.jboss.ws.tools.mapping.MappingFileGenerator;
 import org.jboss.ws.tools.wsdl.WSDLWriter;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
-import org.jboss.ws.common.IOUtils;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
+import org.jboss.wsf.common.IOUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  *  Helper class used by the cmd line tool "jbossws"
@@ -288,8 +288,8 @@ public class ToolsHelper
 
          if (wsdlURL == null)
          {
-            ClassLoader ctxLoader = SecurityActions.getContextClassLoader();
-            wsdlURL = SecurityActions.getResource(ctxLoader, w2jc.wsdlLocation);
+            ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
+            wsdlURL = ctxLoader.getResource(w2jc.wsdlLocation);
          }
 
          if (wsdlURL == null)
@@ -378,9 +378,9 @@ public class ToolsHelper
       Class clazz = null;
       try
       {
-         clazz = SecurityActions.loadClass(SecurityActions.getContextClassLoader(), cls);
+         clazz = Thread.currentThread().getContextClassLoader().loadClass(cls);
       }
-      catch (Exception e)
+      catch (ClassNotFoundException e)
       {
          log.error("Cannot load endpoint:" + e.getLocalizedMessage());
       }

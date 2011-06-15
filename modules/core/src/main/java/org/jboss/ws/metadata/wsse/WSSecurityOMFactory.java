@@ -28,7 +28,7 @@ import java.net.URL;
 import java.util.HashMap;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.utils.ResourceURL;
+import org.jboss.ws.core.utils.ResourceURL;
 import org.jboss.xb.binding.JBossXBException;
 import org.jboss.xb.binding.ObjectModelFactory;
 import org.jboss.xb.binding.SimpleTypeBindings;
@@ -38,7 +38,7 @@ import org.jboss.xb.binding.UnmarshallingContext;
 import org.xml.sax.Attributes;
 
 /**
- * A JBossXB Object Model Factory that represents a JBoss WS-Security
+ * A JBossXB Object Model Factory that represets a JBoss WS-Security
  * configuration. See the jboss-ws-security_1_0.xsd file for more info.
  *
  * @author <a href="mailto:jason.greene@jboss.com">Jason T. Greene</a>
@@ -50,11 +50,10 @@ public class WSSecurityOMFactory implements ObjectModelFactory
 
    public static final String CLIENT_RESOURCE_NAME = "jboss-wsse-client.xml";
 
-   private static HashMap<String, String> options = new HashMap<String, String>(7);
+   private static HashMap options = new HashMap(7);
 
    static
    {
-      options.put("security-domain", "setSecurityDomain");
       options.put("key-store-file", "setKeyStoreFile");
       options.put("key-store-type", "setKeyStoreType");
       options.put("key-store-password", "setKeyStorePassword");
@@ -94,7 +93,6 @@ public class WSSecurityOMFactory implements ObjectModelFactory
       }
       catch (JBossXBException e)
       {
-         log.error("Could not parse " + configURL + ":", e);
          IOException ioex = new IOException("Cannot parse: " + configURL);
          Throwable cause = e.getCause();
          if (cause != null)
@@ -208,16 +206,6 @@ public class WSSecurityOMFactory implements ObjectModelFactory
 
          return new TimestampVerification(createdTolerance, warnCreated, expiresTolerance, warnExpires);
       }
-      if ("security-domain".equals(localName))
-      {
-         String jndi = attrs.getValue("", "jndi");
-         String authToken = attrs.getValue("", "authToken");
-         String useSecurityDomainAliasesAttr = attrs.getValue("", "useSecurityDomainAliases");
-         Boolean useSecurityDomainAliases = new Boolean(true);
-         if (useSecurityDomainAliasesAttr != null)
-            useSecurityDomainAliases = (Boolean)SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, useSecurityDomainAliasesAttr, null);
-         return new SecurityDomain(jndi, authToken, useSecurityDomainAliases);
-      }
       return null;
    }
 
@@ -265,16 +253,6 @@ public class WSSecurityOMFactory implements ObjectModelFactory
    }
 
    /**
-    * Called when parsing SecurityDomain is complete.
-    */
-   public void addChild(WSSecurityConfiguration configuration, SecurityDomain securityDomain, UnmarshallingContext navigator, String namespaceURI,
-         String localName)
-   {
-      log.trace("addChild: [obj=" + configuration + ",child=" + securityDomain + "]");
-      configuration.setSecurityDomain(securityDomain);
-   }
-
-   /**
     * Called when parsing of a new element started.
     */
    public Object newChild(Config config, UnmarshallingContext navigator, String namespaceURI, String localName, Attributes attrs)
@@ -282,29 +260,18 @@ public class WSSecurityOMFactory implements ObjectModelFactory
       log.trace("newChild: " + localName);
       if ("sign".equals(localName))
       {
-         // By default, we always include a timestamp
-         boolean includeTimestamp = true;
-         String value = attrs.getValue("", "includeTimestamp");
-         if (value != null)
-            includeTimestamp = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
-         
-         boolean includeFaults = false;
-         value = attrs.getValue("", "includeFaults");
-         if (value != null)
-            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
+         // By default, we alwyas include a timestamp
+         Boolean include = new Boolean(true);
+         String timestamp = attrs.getValue("", "includeTimestamp");
+         if (timestamp != null)
+            include = (Boolean)SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, timestamp, null);
 
-         return new Sign(attrs.getValue("", "type"), attrs.getValue("", "alias"), includeTimestamp, attrs.getValue("", "tokenReference"), attrs.getValue("",
-               "securityDomainAliasLabel"), includeFaults);
+         return new Sign(attrs.getValue("", "type"), attrs.getValue("", "alias"), include.booleanValue(), attrs.getValue("", "tokenReference"));
       }
       else if ("encrypt".equals(localName))
       {
-         boolean includeFaults = false;
-         String value = attrs.getValue("", "includeFaults");
-         if (value != null)
-            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
-
          return new Encrypt(attrs.getValue("", "type"), attrs.getValue("", "alias"), attrs.getValue("", "algorithm"), attrs.getValue("", "keyWrapAlgorithm"), attrs
-               .getValue("", "tokenReference"), attrs.getValue("", "securityDomainAliasLabel"), includeFaults);
+               .getValue("", "tokenReference"));
       }
       else if ("timestamp".equals(localName))
       {
@@ -485,21 +452,11 @@ public class WSSecurityOMFactory implements ObjectModelFactory
       log.trace("newChild: " + localName);
       if ("signature".equals(localName))
       {
-         boolean includeFaults = false;
-         String value = attrs.getValue("", "includeFaults");
-         if (value != null)
-            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
-
-         return new RequireSignature(includeFaults);
+         return new RequireSignature();
       }
       else if ("encryption".equals(localName))
       {
-         boolean includeFaults = false;
-         String value = attrs.getValue("", "includeFaults");
-         if (value != null)
-            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
-
-         return new RequireEncryption(includeFaults);
+         return new RequireEncryption();
       }
       else if ("timestamp".equals(localName))
       {

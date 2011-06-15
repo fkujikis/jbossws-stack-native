@@ -41,7 +41,7 @@ import org.jboss.ws.metadata.accessor.AccessorFactory;
 import org.jboss.ws.metadata.accessor.ReflectiveFieldAccessorFactoryCreator;
 import org.jboss.ws.metadata.accessor.ReflectiveMethodAccessorFactoryCreator;
 import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * A Fault component describes a fault that a given operation supports.
@@ -112,11 +112,6 @@ public class FaultMetaData implements InitalizableMetaData
          throw new IllegalArgumentException("Invalid null xmlType argument, for: " + xmlName);
 
       this.xmlType = xmlType;
-   }
-   
-   public void setJavaTypeName(String javaTypeName)
-   {
-      this.javaTypeName = javaTypeName;
    }
 
    public String getJavaTypeName()
@@ -399,8 +394,7 @@ public class FaultMetaData implements InitalizableMetaData
             for (int i = 0; i < propertyCount; i++)
                propertyValues[i] = faultBeanProperties[i].accessor().get(faultBean);
 
-            if (log.isDebugEnabled())
-               log.debug("constructing " + javaType.getSimpleName() + ": " + Arrays.toString(propertyValues));
+            log.debug("constructing " + javaType.getSimpleName() + ": " + Arrays.toString(propertyValues));
             serviceException = (Exception)serviceExceptionConstructor.newInstance(propertyValues);
          }
       }

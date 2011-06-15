@@ -46,7 +46,7 @@ import org.jboss.ws.core.utils.MimeUtils.ByteArrayConverter;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.WrappedParameter;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 import org.w3c.dom.Element;
 
 /** A web service invocation.
@@ -172,7 +172,7 @@ public class EndpointInvocation
       }
       return paramValue;
    }
-
+  
    public void setReturnValue(Object value)
    {
       ParameterMetaData retMetaData = opMetaData.getReturnParameter();
@@ -186,7 +186,8 @@ public class EndpointInvocation
 
    public Object getReturnValue()
    {
-      log.debug("getReturnValue");
+      if (log.isDebugEnabled())
+         log.debug("getReturnValue");
       Object paramValue = returnValue;
       ParameterMetaData paramMetaData = opMetaData.getReturnParameter();
       if (paramMetaData != null)

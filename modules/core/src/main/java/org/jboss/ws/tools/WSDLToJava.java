@@ -41,7 +41,7 @@ import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.jaxrpc.LiteralTypeMapping;
 import org.jboss.ws.metadata.wsdl.WSDLBindingOperation;
@@ -62,7 +62,7 @@ import org.jboss.ws.metadata.wsdl.xsd.SchemaUtils;
 import org.jboss.ws.tools.helpers.ReturnTypeUnwrapper;
 import org.jboss.ws.tools.interfaces.WSDLToJavaIntf;
 import org.jboss.ws.tools.wsdl.WSDLDefinitionsFactory;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -75,7 +75,7 @@ import org.w3c.dom.Element;
  * <br> Please also have a look at the features that can be passed via {@link #setFeature(String name, boolean value) setFeature}
  * <br>
  * <br>Features are:
- * <br>@see org.jboss.ws.common.Constants.USE_ANNOTATIONS : Should the generated Java Types use annotations
+ * <br>@see org.jboss.ws.Constants.USE_ANNOTATIONS : Should the generated Java Types use annotations
  * @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
  * @since Dec 28, 2004
  */

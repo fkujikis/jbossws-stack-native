@@ -26,7 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.soap.MessageFactory;
@@ -50,7 +49,7 @@ import org.jboss.ws.core.soap.SOAPBodyImpl;
 import org.jboss.ws.core.soap.SOAPContentElement;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.core.soap.XMLFragment;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMWriter;
 
 /**
  * A helper that 
@@ -142,7 +141,7 @@ public class DispatchSOAPBinding extends DispatchBinding
       return reqMsg;
    }
 
-   public Object getReturnObject(MessageAbstraction message, boolean unwrap)
+   public Object getReturnObject(MessageAbstraction message)
    {
       SOAPMessage resMsg = (SOAPMessage)message;
 
@@ -183,17 +182,9 @@ public class DispatchSOAPBinding extends DispatchBinding
             SOAPBodyImpl soapBody = (SOAPBodyImpl)resMsg.getSOAPBody();
             SOAPElement soapElement = soapBody.getBodyElement();
 
-            if (log.isDebugEnabled())
-               log.debug("JAXB unmarshal: " + DOMWriter.printNode(soapElement, false));
+            log.debug("JAXB unmarshal: " + DOMWriter.printNode(soapElement, false));
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            if (soapElement != null)
-            {
-               retObj = unmarshaller.unmarshal(soapElement);
-               if ((retObj instanceof JAXBElement<?>) && unwrap)
-               {
-                  retObj = ((JAXBElement<?>)retObj).getValue();
-               }
-            }
+            retObj = unmarshaller.unmarshal(soapElement);
          }
       }
       catch (RuntimeException rte)

@@ -54,7 +54,8 @@ import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
 import org.jboss.ws.metadata.wsdl.WSDLExtensibilityElement;
 import org.jboss.ws.metadata.wsdl.WSDLService;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
@@ -80,7 +81,7 @@ public class EndpointFeatureProcessor
             if (an.annotationType() == Addressing.class)
             {
                Addressing anFeature = sepClass.getAnnotation(Addressing.class);
-               AddressingFeature feature = new AddressingFeature(anFeature.enabled(), anFeature.required(), anFeature.responses());
+               AddressingFeature feature = new AddressingFeature(anFeature.enabled(), anFeature.required());
                sepMetaData.addFeature(feature);
             }
             else if (an.annotationType() == MTOM.class)
@@ -149,14 +150,12 @@ public class EndpointFeatureProcessor
          String bindingId = sepMetaData.getBindingId();
          if (SOAPBinding.SOAP11HTTP_BINDING.equals(bindingId))
          {
-            if (log.isDebugEnabled())
-               log.debug("MTOMFeature found, setting binding to " + SOAPBinding.SOAP11HTTP_MTOM_BINDING);
+            log.debug("MTOMFeature found, setting binding to " + SOAPBinding.SOAP11HTTP_MTOM_BINDING);
             sepMetaData.setBindingId(SOAPBinding.SOAP11HTTP_MTOM_BINDING);
          }
          else if (SOAPBinding.SOAP12HTTP_BINDING.equals(bindingId))
          {
-            if (log.isDebugEnabled())
-               log.debug("MTOMFeature found, setting binding to " + SOAPBinding.SOAP12HTTP_MTOM_BINDING);
+            log.debug("MTOMFeature found, setting binding to " + SOAPBinding.SOAP12HTTP_MTOM_BINDING);
             sepMetaData.setBindingId(SOAPBinding.SOAP12HTTP_MTOM_BINDING);
          }
       }
@@ -220,7 +219,7 @@ public class EndpointFeatureProcessor
          {
             try
             {
-               URL xsdURL = ((ArchiveDeployment)dep).getResourceResolver().resolve(xsdLoc);
+               URL xsdURL = ((ArchiveDeployment)dep).getMetaDataFileURL(xsdLoc);
                xsdLoc = xsdURL.toExternalForm();
             }
             catch (IOException ex)

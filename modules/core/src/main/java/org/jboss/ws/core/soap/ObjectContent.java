@@ -40,7 +40,7 @@ import org.jboss.ws.core.jaxrpc.binding.NullValueSerializer;
 import org.jboss.ws.core.jaxws.SerializationContextJAXWS;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * Represents the OBJECT_VALID state of an {@link SOAPContentElement}.<br>
@@ -135,9 +135,7 @@ public class ObjectContent extends SOAPContent
       QName xmlType = container.getXmlType();
       Class javaType = container.getJavaType();
 
-      boolean debugEnabled = log.isDebugEnabled();
-      if (debugEnabled)
-         log.debug("getXMLFragment from Object [xmlType=" + xmlType + ",javaType=" + javaType + "]");
+      log.debug("getXMLFragment from Object [xmlType=" + xmlType + ",javaType=" + javaType + "]");
 
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext == null)
@@ -168,8 +166,7 @@ public class ObjectContent extends SOAPContent
          Result result = ser.serialize(container, serContext);
 
          xmlFragment = new XMLFragment(result);
-         if (debugEnabled)
-            log.debug("xmlFragment: " + xmlFragment);
+         log.debug("xmlFragment: " + xmlFragment);
       }
       catch (BindingException e)
       {

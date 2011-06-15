@@ -46,8 +46,8 @@ import org.jboss.ws.core.soap.attachment.MimeConstants;
 import org.jboss.ws.core.soap.attachment.MultipartRelatedDecoder;
 import org.jboss.ws.feature.FastInfosetFeature;
 import org.jboss.ws.metadata.umdm.FeatureSet;
-import org.jboss.ws.api.util.ServiceLoader;
-import org.jboss.ws.common.IOUtils;
+import org.jboss.wsf.common.IOUtils;
+import org.jboss.wsf.spi.util.ServiceLoader;
 
 /**
  * MessageFactory implementation
@@ -210,9 +210,7 @@ public class MessageFactoryImpl extends MessageFactory
       }
 
       ContentType contentType = getContentType(mimeHeaders);
-      if (log.isDebugEnabled()) {
-         log.debug("createMessage: [contentType=" + contentType + "]");
-      }
+      log.debug("createMessage: [contentType=" + contentType + "]");
 
       SOAPMessageImpl soapMessage = new SOAPMessageImpl();
       String encoding = contentType.getParameterList().get("charset");
@@ -288,18 +286,8 @@ public class MessageFactoryImpl extends MessageFactory
          }
          else
          {
-            //the classloader for jbossws-native-core has enough visibility to get the proper envelope builder
-            envBuilder = (EnvelopeBuilder)ServiceLoader.loadService(EnvelopeBuilder.class.getName(), null, this.getClass().getClassLoader());
+            envBuilder = (EnvelopeBuilder)ServiceLoader.loadService(EnvelopeBuilder.class.getName(), null);
          }
-         //if inputstream is empty, no need to build
-         if (inputStream.markSupported()) {
-        	 inputStream.mark(1);
-    		 final int bytesRead = inputStream.read(new byte[1]);
-    		 inputStream.reset();
-    		 if (bytesRead == -1) {
-    			return soapMessage;
-    		 }
-    	  }
 
          // Build the payload
          envBuilder.setStyle(getStyle());
