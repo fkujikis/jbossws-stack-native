@@ -62,6 +62,9 @@ public class SwapableMemoryDataSource implements DataSource
    private int contentLength;
 
    private int maxMemorySize = 64 * 1024;
+   
+   //JVM argument lets users specify maxMemorySize on start up - in KB.
+   private static final String MAX_MEMORY_SIZE_PROPERTY = "org.jboss.mtom.maxMemSize";
 
 
    /**
@@ -91,10 +94,22 @@ public class SwapableMemoryDataSource implements DataSource
     */
    public SwapableMemoryDataSource(InputStream inputStream, String contentType, int maxMemorySize) throws IOException
    {
-      if (contentType != null)
+      if (contentType != null) {
          this.contentType = contentType;
-
-      this.maxMemorySize = maxMemorySize;
+      }
+      
+      String property = System.getProperty(MAX_MEMORY_SIZE_PROPERTY);
+      if(property != null) {
+         try {
+            int maxMemSizeInt = Integer.valueOf(property);
+            this.maxMemorySize = maxMemSizeInt * 1024;
+         }catch(NumberFormatException nfe) {
+            this.maxMemorySize = maxMemorySize;
+            log.info("Invalid argument provided for " + MAX_MEMORY_SIZE_PROPERTY + " - using default: " + this.maxMemorySize); 
+         }
+      }else { //use default 64K for maxMemorySize
+         this.maxMemorySize = maxMemorySize;   
+      }
 
       load(inputStream);
    }
@@ -108,15 +123,17 @@ public class SwapableMemoryDataSource implements DataSource
       int count = inputStream.read(buffer);
       while (count > 0) {
          os.write(buffer, 0, count);
-
-         if (rbaos != null && rbaos.size() > maxMemorySize)
-         {
-            File tmpdir = IOUtils.createTempDirectory();
-            swapFile = File.createTempFile(SWAP_PREFIX, SWAP_SUFFIX, tmpdir);
-            swapFile.deleteOnExit();
-            os = new FileOutputStream(swapFile);
-            rbaos.writeTo(os);
-            rbaos = null;
+         
+         if(maxMemorySize > 0) { //never write to disk if negative number
+            if ((rbaos != null) && (rbaos.size() > maxMemorySize))
+            {
+               File tmpdir = IOUtils.createTempDirectory();
+               swapFile = File.createTempFile(SWAP_PREFIX, SWAP_SUFFIX, tmpdir);
+               swapFile.deleteOnExit();
+               os = new FileOutputStream(swapFile);
+               rbaos.writeTo(os);
+               rbaos = null;
+            }
          }
 
          count = inputStream.read(buffer);
