@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.xml.rpc.JAXRPCException;
@@ -39,11 +38,10 @@ import javax.xml.rpc.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * The dynamic proxy that delegates to the underlying Call implementation
@@ -53,7 +51,6 @@ import org.jboss.ws.metadata.umdm.OperationMetaData;
  */
 public class PortProxy implements InvocationHandler
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(PortProxy.class);
    // provide logging
    private static final Logger log = Logger.getLogger(PortProxy.class);
    
@@ -141,7 +138,7 @@ public class PortProxy implements InvocationHandler
          EndpointMetaData epMetaData = call.getEndpointMetaData();
          OperationMetaData opMetaData = epMetaData.getOperation(method);
          if (opMetaData == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_OPERATION_META_DATA",  methodName));
+            throw new WSException("Cannot obtain operation meta data for: " + methodName);
 
          call.setOperationName(opMetaData.getQName());
 
@@ -159,7 +156,7 @@ public class PortProxy implements InvocationHandler
                {
                   Class retType = method.getReturnType();
                   if (retType == null)
-                     throw new WSException(BundleUtils.getMessage(bundle, "RETURN_VALUE_NOT_SUPPORTED",  opMetaData));
+                     throw new WSException("Return value not supported by: " + opMetaData);
 
                   if (JavaUtils.isPrimitive(retType))
                      retObj = JavaUtils.getPrimitiveValueArray(retObj);
@@ -190,12 +187,12 @@ public class PortProxy implements InvocationHandler
    private String assertPropertyName(String name)
    {
       if (name != null && name.startsWith("javax.xml.rpc") && standardProperties.contains(name) == false)
-         throw new JAXRPCException(BundleUtils.getMessage(bundle, "UNSUPPORTED_PROPERTY",  name));
+         throw new JAXRPCException("Unsupported property: " + name);
       
       if (legacyPropertyMap.keySet().contains(name))
       {
          String jbosswsName = legacyPropertyMap.get(name);
-         log.warn(BundleUtils.getMessage(bundle, "LEGACY_PROPERY", new Object[]{ name ,  jbosswsName }));
+         log.warn("Legacy propery '" + name + "' mapped to '" + jbosswsName + "'");
          name = jbosswsName;
       }
 

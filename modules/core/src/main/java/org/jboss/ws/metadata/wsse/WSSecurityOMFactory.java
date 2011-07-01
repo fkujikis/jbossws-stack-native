@@ -26,11 +26,9 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.ResourceBundle;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.utils.ResourceURL;
+import org.jboss.ws.core.utils.ResourceURL;
 import org.jboss.xb.binding.JBossXBException;
 import org.jboss.xb.binding.ObjectModelFactory;
 import org.jboss.xb.binding.SimpleTypeBindings;
@@ -40,24 +38,22 @@ import org.jboss.xb.binding.UnmarshallingContext;
 import org.xml.sax.Attributes;
 
 /**
- * A JBossXB Object Model Factory that represents a JBoss WS-Security
+ * A JBossXB Object Model Factory that represets a JBoss WS-Security
  * configuration. See the jboss-ws-security_1_0.xsd file for more info.
  *
  * @author <a href="mailto:jason.greene@jboss.com">Jason T. Greene</a>
  */
 public class WSSecurityOMFactory implements ObjectModelFactory
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSSecurityOMFactory.class);
 
    public static final String SERVER_RESOURCE_NAME = "jboss-wsse-server.xml";
 
    public static final String CLIENT_RESOURCE_NAME = "jboss-wsse-client.xml";
 
-   private static HashMap<String, String> options = new HashMap<String, String>(7);
+   private static HashMap options = new HashMap(7);
 
    static
    {
-      options.put("security-domain", "setSecurityDomain");
       options.put("key-store-file", "setKeyStoreFile");
       options.put("key-store-type", "setKeyStoreType");
       options.put("key-store-password", "setKeyStorePassword");
@@ -86,7 +82,7 @@ public class WSSecurityOMFactory implements ObjectModelFactory
    public WSSecurityConfiguration parse(URL configURL) throws IOException
    {
       if (configURL == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "SECURITY_CONFIG_URL_CANNOT_BE_NULL"));
+         throw new IllegalArgumentException("Security config URL cannot be null");
 
       InputStream is = new ResourceURL(configURL).openStream();
       try
@@ -97,8 +93,7 @@ public class WSSecurityOMFactory implements ObjectModelFactory
       }
       catch (JBossXBException e)
       {
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_PARSE",  configURL ),  e);
-         IOException ioex = new IOException(BundleUtils.getMessage(bundle, "CANNOT_PARSE",  configURL));
+         IOException ioex = new IOException("Cannot parse: " + configURL);
          Throwable cause = e.getCause();
          if (cause != null)
             ioex.initCause(cause);
@@ -113,7 +108,7 @@ public class WSSecurityOMFactory implements ObjectModelFactory
    public WSSecurityConfiguration parse(String xmlString) throws JBossXBException
    {
       if (xmlString == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "SECURITY_CONFIG_XML_STRING_CANNOT_BE_NULL"));
+         throw new IllegalArgumentException("Security config xml String cannot be null");
 
       Unmarshaller unmarshaller = UnmarshallerFactory.newInstance().newUnmarshaller();
       WSSecurityConfiguration configuration = (WSSecurityConfiguration)unmarshaller.unmarshal(xmlString, this, null);
@@ -124,7 +119,7 @@ public class WSSecurityOMFactory implements ObjectModelFactory
    public WSSecurityConfiguration parse(StringReader strReader) throws JBossXBException
    {
       if (strReader == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "SECURITY_INPUTSTREAM_CANNOT_BE_NULL"));
+         throw new IllegalArgumentException("Security InputStream cannot be null");
 
       Unmarshaller unmarshaller = UnmarshallerFactory.newInstance().newUnmarshaller();
       WSSecurityConfiguration configuration = (WSSecurityConfiguration)unmarshaller.unmarshal(strReader, this, null);
@@ -159,7 +154,7 @@ public class WSSecurityOMFactory implements ObjectModelFactory
       }
       catch (Exception e)
       {
-         log.error(BundleUtils.getMessage(bundle, "COULD_NOT_SET_OPTION", new Object[]{ method ,  value}),  e);
+         log.error("Could not set option: " + method + " to: " + value, e);
       }
    }
 
@@ -211,16 +206,6 @@ public class WSSecurityOMFactory implements ObjectModelFactory
 
          return new TimestampVerification(createdTolerance, warnCreated, expiresTolerance, warnExpires);
       }
-      if ("security-domain".equals(localName))
-      {
-         String jndi = attrs.getValue("", "jndi");
-         String authToken = attrs.getValue("", "authToken");
-         String useSecurityDomainAliasesAttr = attrs.getValue("", "useSecurityDomainAliases");
-         Boolean useSecurityDomainAliases = new Boolean(true);
-         if (useSecurityDomainAliasesAttr != null)
-            useSecurityDomainAliases = (Boolean)SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, useSecurityDomainAliasesAttr, null);
-         return new SecurityDomain(jndi, authToken, useSecurityDomainAliases);
-      }
       return null;
    }
 
@@ -268,16 +253,6 @@ public class WSSecurityOMFactory implements ObjectModelFactory
    }
 
    /**
-    * Called when parsing SecurityDomain is complete.
-    */
-   public void addChild(WSSecurityConfiguration configuration, SecurityDomain securityDomain, UnmarshallingContext navigator, String namespaceURI,
-         String localName)
-   {
-      log.trace("addChild: [obj=" + configuration + ",child=" + securityDomain + "]");
-      configuration.setSecurityDomain(securityDomain);
-   }
-
-   /**
     * Called when parsing of a new element started.
     */
    public Object newChild(Config config, UnmarshallingContext navigator, String namespaceURI, String localName, Attributes attrs)
@@ -285,29 +260,18 @@ public class WSSecurityOMFactory implements ObjectModelFactory
       log.trace("newChild: " + localName);
       if ("sign".equals(localName))
       {
-         // By default, we always include a timestamp
-         boolean includeTimestamp = true;
-         String value = attrs.getValue("", "includeTimestamp");
-         if (value != null)
-            includeTimestamp = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
-         
-         boolean includeFaults = false;
-         value = attrs.getValue("", "includeFaults");
-         if (value != null)
-            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
+         // By default, we alwyas include a timestamp
+         Boolean include = new Boolean(true);
+         String timestamp = attrs.getValue("", "includeTimestamp");
+         if (timestamp != null)
+            include = (Boolean)SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, timestamp, null);
 
-         return new Sign(attrs.getValue("", "type"), attrs.getValue("", "alias"), includeTimestamp, attrs.getValue("", "tokenReference"), attrs.getValue("",
-               "securityDomainAliasLabel"), includeFaults);
+         return new Sign(attrs.getValue("", "type"), attrs.getValue("", "alias"), include.booleanValue(), attrs.getValue("", "tokenReference"));
       }
       else if ("encrypt".equals(localName))
       {
-         boolean includeFaults = false;
-         String value = attrs.getValue("", "includeFaults");
-         if (value != null)
-            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
-
          return new Encrypt(attrs.getValue("", "type"), attrs.getValue("", "alias"), attrs.getValue("", "algorithm"), attrs.getValue("", "keyWrapAlgorithm"), attrs
-               .getValue("", "tokenReference"), attrs.getValue("", "securityDomainAliasLabel"), includeFaults);
+               .getValue("", "tokenReference"));
       }
       else if ("timestamp".equals(localName))
       {
@@ -488,21 +452,11 @@ public class WSSecurityOMFactory implements ObjectModelFactory
       log.trace("newChild: " + localName);
       if ("signature".equals(localName))
       {
-         boolean includeFaults = false;
-         String value = attrs.getValue("", "includeFaults");
-         if (value != null)
-            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
-
-         return new RequireSignature(includeFaults);
+         return new RequireSignature();
       }
       else if ("encryption".equals(localName))
       {
-         boolean includeFaults = false;
-         String value = attrs.getValue("", "includeFaults");
-         if (value != null)
-            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
-
-         return new RequireEncryption(includeFaults);
+         return new RequireEncryption();
       }
       else if ("timestamp".equals(localName))
       {

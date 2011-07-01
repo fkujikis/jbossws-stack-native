@@ -22,18 +22,15 @@
 package org.jboss.ws.extensions.security.jaxrpc;
 
 import java.io.IOException;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.rpc.Stub;
 import javax.xml.rpc.handler.GenericHandler;
 import javax.xml.rpc.handler.MessageContext;
-import javax.xml.rpc.soap.SOAPFaultException;
 import javax.xml.soap.SOAPException;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.extensions.security.Constants;
@@ -52,25 +49,16 @@ import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
  */
 public abstract class WSSecurityHandler extends GenericHandler
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSSecurityHandler.class);
    // provide logging
    private static Logger log = Logger.getLogger(WSSecurityHandler.class);
-   protected static String FAULT_THROWN = "org.jboss.ws.wsse.faultThrown";
 
    public QName[] getHeaders()
    {
       return new QName[] {Constants.WSSE_HEADER_QNAME};
    }
-   
-   protected boolean thrownByMe(MessageContext msgContext)
-   {
-      Boolean bool = (Boolean)msgContext.getProperty(FAULT_THROWN);
-      return bool != null && bool.booleanValue();
-   }
 
    protected boolean handleInboundSecurity(MessageContext msgContext)
    {
-      Exception exception = null;
       try
       {
          WSSecurityConfiguration configuration = getSecurityConfiguration(msgContext);
@@ -84,17 +72,7 @@ public abstract class WSSecurityHandler extends GenericHandler
       }
       catch (SOAPException ex)
       {
-         exception = ex;
-      }
-
-      if (exception != null)
-      {
-         msgContext.setProperty(FAULT_THROWN, true);
-         if (exception instanceof SOAPFaultException)
-            throw (SOAPFaultException) exception;
-
-         // Unexpected exception, log it
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_HANDLE_INBOUND_WSSE"),  exception);
+         log.error("Cannot handle inbound ws-security", ex);
          return false;
       }
       return true;
@@ -102,7 +80,6 @@ public abstract class WSSecurityHandler extends GenericHandler
 
    protected boolean handleOutboundSecurity(MessageContext msgContext)
    {
-      Exception exception = null;
       try
       {
          WSSecurityConfiguration configuration = getSecurityConfiguration(msgContext);
@@ -118,17 +95,7 @@ public abstract class WSSecurityHandler extends GenericHandler
       }
       catch (SOAPException ex)
       {
-         exception = ex;
-      }
-      
-      if (exception != null)
-      {
-         msgContext.setProperty(FAULT_THROWN, true);
-         if (exception instanceof SOAPFaultException)
-            throw (SOAPFaultException) exception;
-
-         // Unexpected exception, log it
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_HANDLE_OUTBOUND_WSSE"),  exception);
+         log.error("Cannot handle outbound ws-security", ex);
          return false;
       }
       return true;
@@ -154,7 +121,7 @@ public abstract class WSSecurityHandler extends GenericHandler
          }
          catch (IOException e)
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_SECURITY_CONFIG",  getConfigResourceName()));
+            throw new WSException("Cannot obtain security config: " + getConfigResourceName());
          }
 
          // it's required further down the processing chain

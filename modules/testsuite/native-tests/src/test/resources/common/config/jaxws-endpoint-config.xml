@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0"
+<jaxws-config xmlns="urn:jboss:jaxws-config:2.0"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xmlns:javaee="http://java.sun.com/xml/ns/javaee"
-              xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 jaxws-config_2_0.xsd">
+              xsi:schemaLocation="urn:jboss:jaxws-config:2.0 jaxws-config_2_0.xsd">
 
    <endpoint-config>
       <config-name>Standard Endpoint</config-name>
@@ -12,7 +12,7 @@
    <endpoint-config>
       <config-name>Standard MTOM Endpoint</config-name>
 
-      <feature><feature-name>http://org.jboss.ws/mtom</feature-name></feature>
+      <feature>http://org.jboss.ws/mtom</feature>
 
    </endpoint-config>
 
@@ -30,7 +30,7 @@
          </javaee:handler-chain>
       </pre-handler-chains>
 
-      <feature><feature-name>http://org.jboss.ws/mtom</feature-name></feature>
+      <feature>http://org.jboss.ws/mtom</feature>
 
       <property>
          <property-name>http://org.jboss.ws/mtom#threshold</property-name>

@@ -23,15 +23,16 @@ package org.jboss.ws.core.jaxws.binding;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
+import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.core.client.UnMarshaller;
+import org.jboss.remoting.marshal.UnMarshaller;
 import org.jboss.ws.core.soap.MessageFactoryImpl;
 import org.jboss.ws.extensions.json.BadgerFishDOMDocumentParser;
 import org.w3c.dom.Document;
@@ -42,11 +43,10 @@ import org.w3c.dom.Document;
  */
 public class JsonMessageUnMarshaller implements UnMarshaller
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JsonMessageUnMarshaller.class);
    // Provide logging
    private static Logger log = Logger.getLogger(JsonMessageUnMarshaller.class);
 
-   public Object read(InputStream inputStream, Map<String, Object> metadata, Map<String, Object> headers) throws IOException
+   public Object read(InputStream inputStream, Map metadata) throws IOException, ClassNotFoundException
    {
       if (log.isTraceEnabled())
       {
@@ -64,9 +64,48 @@ public class JsonMessageUnMarshaller implements UnMarshaller
       }
       catch (SOAPException ex)
       {
-         IOException ioex = new IOException(BundleUtils.getMessage(bundle, "CANNOT_UNMARSHALL_JSON_INPUT_STREAM"));
+         IOException ioex = new IOException("Cannot unmarshall json input stream");
          ioex.initCause(ex);
          throw ioex;
       }
+   }
+
+   /**
+    * Set the class loader to use for unmarhsalling.  This may
+    * be needed when need to have access to class definitions that
+    * are not part of this unmarshaller's parent classloader (especially
+    * when doing remote classloading).
+    *
+    * @param classloader
+    */
+   public void setClassLoader(ClassLoader classloader)
+   {
+      //NO OP
+   }
+
+   public UnMarshaller cloneUnMarshaller() throws CloneNotSupportedException
+   {
+      return new JsonMessageUnMarshaller();
+   }
+
+   private MimeHeaders getMimeHeaders(Map metadata)
+   {
+      log.debug("getMimeHeaders from: " + metadata);
+
+      MimeHeaders headers = new MimeHeaders();
+      Iterator i = metadata.keySet().iterator();
+      while (i.hasNext())
+      {
+         String key = (String)i.next();
+         Object value = metadata.get(key);
+         if (key != null && value instanceof List)
+         {
+            for (Object listValue : (List)value)
+            {
+               headers.addHeader(key, listValue.toString());
+            }
+         }
+      }
+      return headers;
    }
 }

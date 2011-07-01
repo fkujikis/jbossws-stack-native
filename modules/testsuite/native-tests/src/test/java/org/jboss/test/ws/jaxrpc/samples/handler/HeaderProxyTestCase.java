@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.jaxrpc.samples.handler;
 
+import java.io.File;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
@@ -29,7 +30,7 @@ import javax.xml.rpc.holders.StringHolder;
 
 import junit.framework.Test;
 
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.core.jaxrpc.client.ServiceFactoryImpl;
 import org.jboss.ws.core.jaxrpc.client.ServiceImpl;
@@ -60,11 +61,13 @@ public class HeaderProxyTestCase extends JBossWSTest
 
       if (endpoint == null)
       {
-         URL javaWsdlMappingFile = getResourceURL("jaxrpc/samples/handler/WEB-INF/jaxrpc-mapping.xml");
+         File javaWsdlMappingFile = getResourceFile("jaxrpc/samples/handler/WEB-INF/jaxrpc-mapping.xml");
+         assertTrue(javaWsdlMappingFile.exists());
+
          QName serviceName = new QName(NAMESPACE_URI, "TestService");
          ServiceFactoryImpl factory = new ServiceFactoryImpl();
          URL wsdlLocation = new URL(TARGET_ENDPOINT_ADDRESS + "?wsdl");
-         ServiceImpl service = (ServiceImpl)factory.createService(wsdlLocation, serviceName, javaWsdlMappingFile);
+         ServiceImpl service = (ServiceImpl)factory.createService(wsdlLocation, serviceName, javaWsdlMappingFile.toURL());
          endpoint = (HeaderTestService)service.getPort(HeaderTestService.class);
       }
    }

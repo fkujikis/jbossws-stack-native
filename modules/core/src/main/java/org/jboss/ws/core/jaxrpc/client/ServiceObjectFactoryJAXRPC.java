@@ -35,7 +35,6 @@ import java.rmi.Remote;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
 import javax.naming.Context;
 import javax.naming.Name;
@@ -47,9 +46,8 @@ import javax.xml.rpc.JAXRPCException;
 import javax.xml.rpc.Service;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
 import org.jboss.ws.core.client.ServiceObjectFactory;
 import org.jboss.ws.core.server.PortComponentResolver;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMapping;
@@ -58,14 +56,14 @@ import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.wsse.WSSecurityConfiguration;
-import org.jboss.wsf.spi.SPIProvider;
-import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.management.EndpointRegistry;
 import org.jboss.wsf.spi.management.EndpointRegistryFactory;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedCallPropertyMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
+import org.jboss.wsf.spi.SPIProviderResolver;
+import org.jboss.wsf.spi.SPIProvider;
 
 /**
  * This ServiceObjectFactory reconstructs a javax.xml.rpc.Service
@@ -78,7 +76,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
  */
 public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ServiceObjectFactoryJAXRPC.class);
    // provide logging
    private static final Logger log = Logger.getLogger(ServiceObjectFactoryJAXRPC.class);
 
@@ -110,7 +107,7 @@ public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
 
          // Unmarshall the ServiceRefMetaData
          UnifiedServiceRefMetaData serviceRef = null;
-         RefAddr metaRefAddr = ref.get(NativeServiceReferenceableJAXRPC.SERVICE_REF_META_DATA);
+         RefAddr metaRefAddr = ref.get(ServiceReferenceable.SERVICE_REF_META_DATA);
          ByteArrayInputStream bais = new ByteArrayInputStream((byte[])metaRefAddr.getContent());
          try
          {
@@ -120,14 +117,14 @@ public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
          }
          catch (IOException ex)
          {
-            NamingException ne = new NamingException(BundleUtils.getMessage(bundle, "CANNOT_UNMARSHALL_SERVICE_REF_META_DATA"));
+            NamingException ne = new NamingException("Cannot unmarshall service ref meta data");
             ne.setRootCause(ex);
             throw ne;
          }
 
          // Unmarshall the WSSecurityConfiguration
          WSSecurityConfiguration securityConfig = null;
-         RefAddr wsseRefAddr = ref.get(NativeServiceReferenceableJAXRPC.SECURITY_CONFIG);
+         RefAddr wsseRefAddr = ref.get(ServiceReferenceable.SECURITY_CONFIG);
          if (wsseRefAddr != null)
          {
             bais = new ByteArrayInputStream((byte[])wsseRefAddr.getContent());
@@ -139,7 +136,7 @@ public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
             }
             catch (IOException e)
             {
-               throw new NamingException(BundleUtils.getMessage(bundle, "CANNOT_UNMARSHALL_SECURITY_CONFIG", e.toString()));
+               throw new NamingException("Cannot unmarshall security config, cause: " + e.toString());
             }
          }
 
@@ -175,7 +172,7 @@ public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
 
          // The web service client using a port-component-link, the contet is the URL to
          // the PortComponentLinkServlet that will return the actual endpoint address
-         RefAddr pcLinkRef = ref.get(NativeServiceReferenceableJAXRPC.PORT_COMPONENT_LINK);
+         RefAddr pcLinkRef = ref.get(ServiceReferenceable.PORT_COMPONENT_LINK);
          if (pcLinkRef != null)
          {
             String pcLink = (String)pcLinkRef.getContent();
@@ -189,7 +186,7 @@ public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
                EndpointRegistry epRegistry = spiProvider.getSPI(EndpointRegistryFactory.class).getEndpointRegistry();
                Endpoint endpoint = epRegistry.resolve( new PortComponentResolver(pcLink) );
                if (endpoint == null)
-                  throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_RESOLVE_PORT_COMPONENT_LINK",  pcLink));
+                  throw new WSException("Cannot resolve port-component-link: " + pcLink);
 
                ServerEndpointMetaData sepMetaData = endpoint.getAttachment(ServerEndpointMetaData.class);
                endpointAddress = sepMetaData.getEndpointAddress();
@@ -202,7 +199,7 @@ public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
             // We may be remote in the esoteric case where an appclient uses the port-comonent-link feature
             if (endpointAddress == null)
             {
-               String servletPath = (String)ref.get(NativeServiceReferenceableJAXRPC.PORT_COMPONENT_LINK_SERVLET).getContent();
+               String servletPath = (String)ref.get(ServiceReferenceable.PORT_COMPONENT_LINK_SERVLET).getContent();
                servletPath += "?pcLink=" + URLEncoder.encode(pcLink, "UTF-8");
                InputStream is = new URL(servletPath).openStream();
                BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -220,7 +217,7 @@ public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
             }
             else
             {
-               log.warn(BundleUtils.getMessage(bundle, "CANNOT_SET_ENDPOINT_ADDRESS"));
+               log.warn("Cannot set endpoint address for port-component-link, unsuported number of endpoints");
             }
          }
 
@@ -231,10 +228,10 @@ public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
           ********************************************************/
 
          // load the service interface class
-         ClassLoader contextCL = SecurityActions.getContextClassLoader();
-         Class<?> siClass = SecurityActions.loadClass(contextCL, serviceRef.getServiceInterface());
+         ClassLoader contextCL = Thread.currentThread().getContextClassLoader();
+         Class siClass = contextCL.loadClass(serviceRef.getServiceInterface());
          if (Service.class.isAssignableFrom(siClass) == false)
-            throw new JAXRPCException(BundleUtils.getMessage(bundle, "NOT_IMPLEMENT_SERVICE",  siClass.getName()));
+            throw new JAXRPCException("The service interface does not implement javax.xml.rpc.Service: " + siClass.getName());
 
          // load all service endpoint interface classes
          for (UnifiedPortComponentRefMetaData pcr : serviceRef.getPortComponentRefs())
@@ -244,7 +241,7 @@ public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
             {
                Class seiClass = contextCL.loadClass(seiName);
                if (Remote.class.isAssignableFrom(seiClass) == false)
-                  throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "NOT_IMPLEMENT_REMOTE",  seiClass.getName()));
+                  throw new IllegalArgumentException("The SEI does not implement java.rmi.Remote: " + seiClass.getName());
             }
          }
 
@@ -256,7 +253,7 @@ public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
       }
       catch (Exception ex)
       {
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_CREATE_SERVICE"),  ex);
+         log.error("Cannot create service", ex);
          throw ex;
       }
    }
@@ -287,7 +284,7 @@ public class ServiceObjectFactoryJAXRPC extends ServiceObjectFactory
          }
          catch (Exception e)
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_UNMARSHAL_JAXRPC_MAPPING_FILE",  mappingFile),  e);
+            throw new WSException("Cannot unmarshal jaxrpc-mapping-file: " + mappingFile, e);
          }
       }
       return javaWsdlMapping;

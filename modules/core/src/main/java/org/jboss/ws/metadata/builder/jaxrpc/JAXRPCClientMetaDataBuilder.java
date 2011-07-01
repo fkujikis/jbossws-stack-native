@@ -23,35 +23,33 @@ package org.jboss.ws.metadata.builder.jaxrpc;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.ResourceLoaderAdapter;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMappingFactory;
 import org.jboss.ws.metadata.jaxrpcmapping.ServiceEndpointInterfaceMapping;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
 import org.jboss.ws.metadata.umdm.HandlerMetaDataJAXRPC;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
+import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
 import org.jboss.ws.metadata.wsdl.WSDLBinding;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
 import org.jboss.ws.metadata.wsdl.WSDLService;
 import org.jboss.ws.metadata.wsse.WSSecurityConfiguration;
 import org.jboss.ws.metadata.wsse.WSSecurityOMFactory;
+import org.jboss.wsf.common.ResourceLoaderAdapter;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 
 /**
  * A client side meta data builder.
@@ -61,7 +59,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
  */
 public class JAXRPCClientMetaDataBuilder extends JAXRPCMetaDataBuilder
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JAXRPCClientMetaDataBuilder.class);
    // provide logging
    private final Logger log = Logger.getLogger(JAXRPCClientMetaDataBuilder.class);
 
@@ -93,7 +90,7 @@ public class JAXRPCClientMetaDataBuilder extends JAXRPCMetaDataBuilder
       }
       catch (Exception ex)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_BUILD_META_DATA",  ex.getMessage()),  ex);
+         throw new WSException("Cannot build meta data: " + ex.getMessage(), ex);
       }
    }
 
@@ -147,7 +144,7 @@ public class JAXRPCClientMetaDataBuilder extends JAXRPCMetaDataBuilder
       }
       catch (Exception ex)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_BUILD_META_DATA",  ex.getMessage()),  ex);
+         throw new WSException("Cannot build meta data: " + ex.getMessage(), ex);
       }
    }
 
@@ -161,7 +158,7 @@ public class JAXRPCClientMetaDataBuilder extends JAXRPCMetaDataBuilder
       if (serviceQName == null)
       {
          if (wsdlDefinitions.getServices().length != 1)
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "EXPECTED_A_SINGLE_SERVICE_ELEMENT"));
+            throw new IllegalArgumentException("Expected a single service element");
 
          wsdlService = wsdlDefinitions.getServices()[0];
          serviceMetaData.setServiceName(wsdlService.getName());
@@ -171,7 +168,7 @@ public class JAXRPCClientMetaDataBuilder extends JAXRPCMetaDataBuilder
          wsdlService = wsdlDefinitions.getService(serviceQName);
       }
       if (wsdlService == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_WSDL_SERVICE",  serviceQName));
+         throw new IllegalArgumentException("Cannot obtain wsdl service: " + serviceQName);
 
       // Build type mapping meta data
       setupTypesMetaData(serviceMetaData);
@@ -216,10 +213,11 @@ public class JAXRPCClientMetaDataBuilder extends JAXRPCMetaDataBuilder
                }
                else
                {
-                  log.warn(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_SEI_MAPPING",  portType));
+                  log.warn("Cannot obtain the SEI mapping for: " + portType);
                }
             }
 
+            processEndpointMetaDataExtensions(epMetaData, wsdlDefinitions);
             setupOperationsFromWSDL(epMetaData, wsdlEndpoint, seiMapping);
             setupHandlers(serviceRefMetaData, portName, epMetaData);
          }

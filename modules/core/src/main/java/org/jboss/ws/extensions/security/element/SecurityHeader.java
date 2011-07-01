@@ -23,9 +23,7 @@ package org.jboss.ws.extensions.security.element;
 
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.ResourceBundle;
 
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.security.BinarySecurityTokenValidator;
 import org.jboss.ws.extensions.security.Constants;
 import org.jboss.ws.extensions.security.KeyResolver;
@@ -44,7 +42,6 @@ import org.w3c.dom.Element;
  */
 public class SecurityHeader implements SecurityElement
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SecurityHeader.class);
    private Document document;
 
    private Timestamp timestamp;
@@ -89,7 +86,7 @@ public class SecurityHeader implements SecurityElement
          else if (tag.equals("EncryptedKey"))
             securityProcesses.add(new EncryptedKey(child, resolver));
          else if (tag.equals("ReferenceList"))
-            throw new UnsupportedSecurityTokenException(BundleUtils.getMessage(bundle, "REFERENCELISTS_NOT_SUPPORTED"));
+            throw new UnsupportedSecurityTokenException("ReferenceLists outside of encrypted keys (shared secrets) are not supported.");
 
          child = Util.getNextSiblingElement(child);
       }

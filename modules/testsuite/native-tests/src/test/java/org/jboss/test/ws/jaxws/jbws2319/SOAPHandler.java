@@ -22,6 +22,7 @@
 package org.jboss.test.ws.jaxws.jbws2319;
 
 import javax.xml.soap.SOAPBody;
+import javax.xml.soap.SOAPElementFactory;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.handler.LogicalMessageContext;
@@ -29,9 +30,9 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 import org.jboss.logging.Logger;
-import org.jboss.test.helper.DOMWriter;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.handler.GenericSOAPHandler;
+import org.jboss.wsf.common.DOMWriter;
+import org.jboss.wsf.common.handler.GenericSOAPHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;

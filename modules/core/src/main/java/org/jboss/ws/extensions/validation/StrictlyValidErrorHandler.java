@@ -22,8 +22,6 @@
 package org.jboss.ws.extensions.validation;
 
 import org.jboss.logging.Logger;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -36,13 +34,12 @@ import org.xml.sax.SAXParseException;
  */
 public class StrictlyValidErrorHandler implements ErrorHandler
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(StrictlyValidErrorHandler.class);
    // provide logging
    private static Logger log = Logger.getLogger(StrictlyValidErrorHandler.class);
    
    public void error(SAXParseException ex) throws SAXException
    {
-      log.error(BundleUtils.getMessage(bundle, ""));
+      log.error(ex.toString());
       throw new SAXException(ex.getMessage());
    }
 
@@ -54,6 +51,6 @@ public class StrictlyValidErrorHandler implements ErrorHandler
 
    public void warning(SAXParseException ex) throws SAXException
    {
-      log.warn(BundleUtils.getMessage(bundle, ""));
+      log.warn(ex.toString());
    }
 }

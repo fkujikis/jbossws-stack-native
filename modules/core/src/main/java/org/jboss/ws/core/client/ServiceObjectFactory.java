@@ -25,14 +25,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.naming.spi.ObjectFactory;
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaData;
@@ -48,7 +46,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
  */
 public abstract class ServiceObjectFactory implements ObjectFactory
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ServiceObjectFactory.class);
    // provide logging
    private static final Logger log = Logger.getLogger(ServiceObjectFactory.class);
 
@@ -67,7 +64,7 @@ public abstract class ServiceObjectFactory implements ObjectFactory
 
             // Constraint#1: within a service-ref it's not allowed to use a SEI across different pcref's
             if (pcrefs.get(seiName) != null)
-               throw new WSException(BundleUtils.getMessage(bundle, "NOT_ALLOWED_TO_USE",  seiName));
+               throw new WSException("Within a <service-ref> it's not allowed to use a SEI across different <port-component-ref>'s: " + seiName);
             
             pcrefs.put(seiName, pcref);
          }
@@ -101,19 +98,18 @@ public abstract class ServiceObjectFactory implements ObjectFactory
 
                // Constraint: Dont exclude all of them ;)
                if (pcRef2EndpointMapping.size() > 0 && (pcRef2EndpointMapping.size() == narrowedEndpoints.size()))
-                  throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_NARROW_ENDPOINTS"));
+                  throw new WSException("Failed to narrow available endpoints by <port-component-ref> declaration");
 
                for (QName q : narrowedEndpoints)
                {
                   EndpointMetaData removed = serviceMetaData.removeEndpoint(q);
-                  if (log.isDebugEnabled())
-                     log.debug("Narrowed endpoint " + q + "(" + removed + ")");
+                  log.debug("Narrowed endpoint " + q + "(" + removed + ")");
                }
             }
             else
             {
                // TODO: In case there is more then one EMPD this should cause an exception
-               log.warn(BundleUtils.getMessage(bundle, "UNABLE_TO_NARROW_PORT_SELECTION",  pcref));
+               log.warn("Unable to narrow port selection for " + pcref);
             }
          }
       }

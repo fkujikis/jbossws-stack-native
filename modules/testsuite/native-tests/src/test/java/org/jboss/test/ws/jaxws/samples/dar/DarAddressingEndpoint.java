@@ -42,10 +42,10 @@ import javax.xml.ws.addressing.AddressingProperties;
 import javax.xml.ws.addressing.JAXWSAConstants;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.annotation.EndpointConfig;
-import org.jboss.ws.api.annotation.AuthMethod;
-import org.jboss.ws.api.annotation.TransportGuarantee;
-import org.jboss.ws.api.annotation.WebContext;
+import org.jboss.ws.annotation.EndpointConfig;
+import org.jboss.wsf.spi.annotation.AuthMethod;
+import org.jboss.wsf.spi.annotation.TransportGuarantee;
+import org.jboss.wsf.spi.annotation.WebContext;
 
 
 /**
@@ -101,13 +101,12 @@ public class DarAddressingEndpoint
    @Oneway
    public void onewayProcess(DarRequest request)
    {
-      QueueConnection con = null;
       QueueSession queueSession =null;
       QueueSender sender = null;
       try {
          InitialContext context = new InitialContext();
          QueueConnectionFactory connectionFactory = (QueueConnectionFactory)context.lookup("ConnectionFactory");
-         con = connectionFactory.createQueueConnection();
+         QueueConnection con = connectionFactory.createQueueConnection();
          queueSession = con.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
          Queue queue = (Queue)context.lookup("queue/DarQueue");
          sender = queueSession.createSender(queue);
@@ -130,11 +129,6 @@ public class DarAddressingEndpoint
          try
          {
             queueSession.close();
-         }
-         catch(Exception e1) {}
-         try
-         {
-            con.close();
          }
          catch(Exception e1) {}
       }

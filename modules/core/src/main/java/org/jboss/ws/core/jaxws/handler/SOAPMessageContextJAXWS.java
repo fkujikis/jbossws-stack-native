@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
@@ -38,7 +37,6 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.CommonMessageContext;
 
 /**
@@ -50,7 +48,6 @@ import org.jboss.ws.core.CommonMessageContext;
  */
 public class SOAPMessageContextJAXWS extends MessageContextJAXWS implements SOAPMessageContext
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPMessageContextJAXWS.class);
    // The SOAP actor roles 
    private Set<String> roles = new HashSet<String>();
 
@@ -122,7 +119,7 @@ public class SOAPMessageContextJAXWS extends MessageContextJAXWS implements SOAP
          }
          catch (Exception ex)
          {
-            throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_GET_HEADERS"),  ex);
+            throw new WebServiceException("Cannot get headers", ex);
          }
       }
 
