@@ -22,10 +22,7 @@
 package org.jboss.ws.tools;
 
 import java.util.HashSet;
-import java.util.ResourceBundle;
 import java.util.Set;
-
-import org.jboss.ws.api.util.BundleUtils;
 
 /**
  *  Utility class for mapping an XML namespace to a Java package.
@@ -38,7 +35,6 @@ import org.jboss.ws.api.util.BundleUtils;
  */
 public class NamespacePackageMapping
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(NamespacePackageMapping.class);
 
    private static final NamespacePackageMapping npm = new NamespacePackageMapping();
 
@@ -122,7 +118,7 @@ public class NamespacePackageMapping
       }
       else
       {
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "TARGETNS_SHOULD_START_WITH"));
+         throw new IllegalArgumentException("TargetNS should start with http:// / https:// / urn:");
       }
 
       // Test for an ending .?? .??? or .html

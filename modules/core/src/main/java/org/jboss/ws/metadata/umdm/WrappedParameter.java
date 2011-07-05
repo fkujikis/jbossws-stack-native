@@ -24,7 +24,7 @@ package org.jboss.ws.metadata.umdm;
 import javax.xml.namespace.QName;
 
 import org.jboss.ws.metadata.accessor.Accessor;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * WrappedParameter represents a document/literal wrapped parameter.

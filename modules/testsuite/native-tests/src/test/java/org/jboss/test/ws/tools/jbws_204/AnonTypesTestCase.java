@@ -27,10 +27,10 @@ import java.net.URL;
 import javax.xml.namespace.QName;
 
 import org.jboss.test.ws.tools.jbws_204.wscompile.anontypes.Items;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.tools.JavaToXSD;
 import org.jboss.wsf.test.JBossWSTest;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -48,8 +48,8 @@ public class AnonTypesTestCase extends JBossWSTest
       QName q = new QName(targetNS,"Items", Constants.PREFIX_TNS);
       jxsd.getSchemaCreator().addPackageNamespaceMapping(Items.class.getPackage().getName(), targetNS);
       String xs = jxsd.generateForSingleType(q,Items.class).serialize();
-      URL xsdFile = getResourceURL("tools/jbws-204/wscompile/anontypes_new.xsd");
-      checkXMLFiles(xsdFile,xs);
+      File xsdFile = getResourceFile("tools/jbws-204/wscompile/anontypes_new.xsd");
+      checkXMLFiles(xsdFile.toURL(),xs);
    }
 
    private void checkXMLFiles(URL exp,String actual) throws Exception

@@ -26,18 +26,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.jws.soap.SOAPBinding.ParameterStyle;
 import javax.xml.rpc.encoding.TypeMapping;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMapping;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
@@ -45,6 +41,8 @@ import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.tools.Configuration.OperationConfig;
 import org.jboss.ws.tools.metadata.ToolsUnifiedMetaDataBuilder;
 import org.jboss.ws.tools.wsdl.WSDLWriter;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
 
 /**
@@ -64,7 +62,6 @@ import org.w3c.dom.Element;
  */
 public class JavaToWSDL
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JavaToWSDL.class);
    // provide logging
    private static final Logger log = Logger.getLogger(JavaToWSDL.class);
 
@@ -109,7 +106,7 @@ public class JavaToWSDL
    public JavaToWSDL(String namespace)
    {
       if (Constants.NS_WSDL11.equals(namespace) == false)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "UNSUPPORTED_WSDL_VERSION",  namespace));
+         throw new IllegalArgumentException("Unsupported wsdl version: " + namespace);
 
       this.wsdlNamespace = namespace;
    }
@@ -136,7 +133,7 @@ public class JavaToWSDL
    {
       Boolean val = features.get(name);
       if (val == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "FEATURE_VALUE_NOT_AVAILABLE",  name));
+         throw new WSException("Feature value not available: " + name);
 
       return val.booleanValue();
    }
@@ -212,7 +209,7 @@ public class JavaToWSDL
    public TypeMapping getTypeMapping()
    {
       if(typeMapping == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "TYPEMAPPING_HAS_NOT_BEEN_GENERATED"));
+         throw new WSException("TypeMapping has not been generated");
       return typeMapping;
    }
 
@@ -334,7 +331,7 @@ public class JavaToWSDL
             javaWsdlMapping = javaWSDL11.getJavaWsdlMapping();
          }
          if (wsdlDefinitions == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_GENERATE_WSDL_DEFINITIONS"));
+            throw new WSException("Cannot generate WSDL definitions");
 
          // Debug the generated wsdl
          StringWriter sw = new StringWriter();
@@ -356,8 +353,8 @@ public class JavaToWSDL
       }
       catch (Exception e)
       {
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_GENERATE_WSDL"), e);
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_GENERATE_WSDL_FROM",  endpoint));
+         log.error("Cannot generate WSDL",e);
+         throw new WSException("Cannot generate wsdl from: " + endpoint);
       }
       return wsdlDefinitions;
    }

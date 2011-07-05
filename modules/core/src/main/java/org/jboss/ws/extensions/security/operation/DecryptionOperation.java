@@ -23,13 +23,11 @@ package org.jboss.ws.extensions.security.operation;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.ResourceBundle;
 
 import javax.crypto.SecretKey;
 
 import org.apache.xml.security.encryption.XMLCipher;
 import org.apache.xml.security.encryption.XMLEncryptionException;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.security.Constants;
 import org.jboss.ws.extensions.security.SecurityStore;
 import org.jboss.ws.extensions.security.Util;
@@ -45,7 +43,6 @@ import org.w3c.dom.Element;
 
 public class DecryptionOperation implements DecodingOperation
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(DecryptionOperation.class);
 
    private SecurityHeader header;
 
@@ -66,11 +63,11 @@ public class DecryptionOperation implements DecodingOperation
    {
       element = Util.findElement(element, "EncryptionMethod", Constants.XML_ENCRYPTION_NS);
       if (element == null)
-         throw new InvalidSecurityHeaderException(BundleUtils.getMessage(bundle, "NO_ENCRYPTION_METHOD"));
+         throw new InvalidSecurityHeaderException("Encrypted element corrupted, no encryption method");
 
       String alg = element.getAttribute("Algorithm");
       if (alg == null || alg.length() == 0)
-         throw new InvalidSecurityHeaderException(BundleUtils.getMessage(bundle, "NO_ALGORITHM_SPECIFIED"));
+         throw new InvalidSecurityHeaderException("Encrypted element corrupted, no algorithm specified");
 
       return alg;
    }
@@ -110,11 +107,11 @@ public class DecryptionOperation implements DecodingOperation
       }
       catch (XMLEncryptionException e)
       {
-         throw new FailedCheckException(BundleUtils.getMessage(bundle, "DECRYPTION_WAS_INVALID"),  e);
+         throw new FailedCheckException("Decryption was invalid.");
       }
       catch (Exception e)
       {
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "COULD_NOT_DECRYPT_ELEMENT",  e.getMessage()),  e);
+         throw new WSSecurityException("Could not decrypt element: " + e.getMessage(), e);
       }
 
       if (isContent)
@@ -141,10 +138,10 @@ public class DecryptionOperation implements DecodingOperation
       {
          Element element = Util.findElementByWsuId(message.getDocumentElement(), uri);
          if (element == null)
-            throw new WSSecurityException(BundleUtils.getMessage(bundle, "REFERENCE_LIST_NOT_FOUND",  uri));
+            throw new WSSecurityException("A reference list refered to an element that was not found: " + uri);
 
          if (!isEncryptedData(element))
-            throw new WSSecurityException(BundleUtils.getMessage(bundle, "MALFORMED_REFERENCE_LIST",  uri));
+            throw new WSSecurityException("Malformed reference list, a non encrypted data element was referenced: " + uri);
 
          ids.add(decryptElement(element, key.getSecretKey()));
       }

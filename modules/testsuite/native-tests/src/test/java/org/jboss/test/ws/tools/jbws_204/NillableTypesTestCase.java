@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.tools.jbws_204;
 
+import java.io.File;
 import java.io.StringWriter;
 import java.net.URL;
 
@@ -28,12 +29,12 @@ import javax.xml.namespace.QName;
 
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.jboss.test.ws.tools.jbws_204.wscompile.nillabletypes.NillableType;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
 import org.jboss.ws.metadata.wsdl.xmlschema.WSSchemaUtils;
 import org.jboss.ws.tools.JavaToXSD;
 import org.jboss.wsf.test.JBossWSTest;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Element;
 
 
@@ -57,8 +58,8 @@ public class NillableTypesTestCase extends JBossWSTest
        xsmodel.addXSTypeDefinition(xst);
        StringWriter sw = new StringWriter();
        sutils.serialize(xsmodel,sw);
-       URL xsdFile = getResourceURL("tools/jbws-204/wscompile/nillable.xsd");
-       checkXMLFiles(xsdFile,sw.toString());
+       File xsdFile = getResourceFile("tools/jbws-204/wscompile/nillable.xsd");
+       checkXMLFiles(xsdFile.toURL(),sw.toString());
     }
 
     private void checkXMLFiles(URL exp,String actual) throws Exception

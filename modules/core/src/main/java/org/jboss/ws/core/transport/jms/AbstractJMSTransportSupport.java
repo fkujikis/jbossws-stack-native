@@ -22,8 +22,6 @@
 package org.jboss.ws.core.transport.jms;
 
 import java.io.ByteArrayInputStream;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,7 +67,6 @@ import org.jboss.wsf.spi.management.JMSEndpointResolver;
  */
 public abstract class AbstractJMSTransportSupport implements MessageListener
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(AbstractJMSTransportSupport.class);
    // logging support
    protected static Logger log = Logger.getLogger(AbstractJMSTransportSupport.class);
 
@@ -93,7 +90,7 @@ public abstract class AbstractJMSTransportSupport implements MessageListener
          }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "INVALID_MESSAGE_TYPE",  message));
+            log.warn("Invalid message type: " + message);
             return;
          }
 
@@ -117,7 +114,7 @@ public abstract class AbstractJMSTransportSupport implements MessageListener
             }
             else
             {
-               log.warn(BundleUtils.getMessage(bundle, "IGNORE_RESPONSE_MESSAGE"));
+               log.warn("No reply queue, ignore response message");
             }
          }
          else
@@ -145,7 +142,7 @@ public abstract class AbstractJMSTransportSupport implements MessageListener
       Endpoint endpoint = epRegistry.resolve(resolver);
 
       if (endpoint == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_FIND_ENDPOINT_FOR_DESTINATION",  destination));
+         throw new IllegalStateException("Cannot find endpoint for destination: " + destination);
 
       EndpointAssociation.setEndpoint(endpoint);
       try
@@ -186,7 +183,7 @@ public abstract class AbstractJMSTransportSupport implements MessageListener
          }
          catch (Exception ex)
          {
-            throw new RemoteException(BundleUtils.getMessage(bundle, "CANNOT_PROCESS_SOAP_REQUEST"),  ex);
+            throw new RemoteException("Cannot process SOAP request", ex);
          }
       }
       finally

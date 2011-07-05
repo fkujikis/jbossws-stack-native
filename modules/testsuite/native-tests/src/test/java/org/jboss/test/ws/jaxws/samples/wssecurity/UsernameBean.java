@@ -31,7 +31,7 @@ import javax.jws.soap.SOAPBinding;
 import javax.xml.ws.WebServiceContext;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.annotation.EndpointConfig;
+import org.jboss.ws.annotation.EndpointConfig;
 
 /**
  * The SEI implementation used by the SimpleUsernameTestCase
@@ -56,6 +56,6 @@ public class UsernameBean
    {
       Principal principal = wsCtx.getUserPrincipal();
       log.info("getUsernameToken: " + principal);
-      return principal.getName();
+      return principal.toString();
    }
 }

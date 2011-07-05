@@ -23,11 +23,9 @@ package org.jboss.ws.core.soap.attachment;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ResourceBundle;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.utils.UUIDGenerator;
+import org.jboss.wsf.common.utils.UUIDGenerator;
 
 /**
  * A common CID generator
@@ -37,7 +35,6 @@ import org.jboss.ws.common.utils.UUIDGenerator;
  */
 public class CIDGenerator
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(CIDGenerator.class);
    // provide logging
    private static Logger log = Logger.getLogger(CIDGenerator.class);
    
@@ -66,7 +63,7 @@ public class CIDGenerator
       }
       catch (UnsupportedEncodingException ex)
       {
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_ENCODE_NAME",  ex));
+         log.error("Cannot encode name for cid: " + ex);
       }
 
       String cid = name + "-" + UUIDGenerator.generateRandomUUIDString() + "@" + MimeConstants.CID_DOMAIN;

@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -40,12 +39,11 @@ import javax.xml.soap.SOAPFault;
 import javax.xml.soap.SOAPFaultElement;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
 import org.jboss.ws.core.utils.SAAJUtils;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.jboss.xb.QNameBuilder;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -69,7 +67,6 @@ import org.w3c.dom.Element;
  */
 public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPFaultImpl.class);
    // provide logging
    private static Logger log = Logger.getLogger(SOAPFaultImpl.class);
 
@@ -200,7 +197,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
       
       String faultCodeNS = faultCode.getNamespaceURI();
       if (faultCodeNS.length() == 0)
-         throw new SOAPException(BundleUtils.getMessage(bundle, "FAULTCODE_MUST_BE_NS_QUALIFIED",  faultCode ));
+         throw new SOAPException("Fault code '" + faultCode + "' must be namespace qualified");
       
       /* JUDDI uses unqualified fault codes
       // Fix the namespace for SOAP1.1, if it is not a standard fault code
@@ -210,10 +207,10 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
          for (QName soap11Fault : soap11FaultCodes)
          {
             if (soap11Fault.equals(localPart))
-               throw new SOAPException(BundleUtils.getMessage(bundle, "FAULTCODE_MUST_BE_NS_QUALIFIED",  faultCode ));
+               throw new SOAPException("Fault code '" + faultCode + "' must be namespace qualified");
          }
          QName newFaultCode = new QName("http://unknown-namespace-uri", localPart);
-         log.warn(BundleUtils.getMessage(bundle, "FAULTCODE_MUST_BE_NS_QUALIFIED", new Object[]{ faultCode ,  newFaultCode}));
+         log.warn("Fault code '" + faultCode + "' must be namespace qualified, assuming: " + newFaultCode);
          faultCode = newFaultCode;
       }
       */
@@ -259,7 +256,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
    public Iterator getFaultSubcodes()
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "NOT_SUPPORT_SUBCODE"));
+         throw new UnsupportedOperationException("SOAP 1.1 Fault does not support the concept of Subcode");
 
       ArrayList<QName> subcodes = new ArrayList<QName>();
 
@@ -286,11 +283,11 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
    public void appendFaultSubcode(QName subcode) throws SOAPException
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "NOT_SUPPORT_SUBCODE"));
+         throw new UnsupportedOperationException("SOAP 1.1 Fault does not support the concept of Subcode");
 
       String nsURI = subcode.getNamespaceURI();
       if (nsURI.length() == 0)
-         throw new SOAPException(BundleUtils.getMessage(bundle, "SUBCODE_MUST_BE_NAMESPACE_QUALIFIED",  subcode));
+         throw new SOAPException("subcode must be namespace qualified: " + subcode);
 
       if (faultcode == null)
          findCodeElement();
@@ -309,7 +306,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
    public void removeAllFaultSubcodes()
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "NOT_SUPPORT_SUBCODE"));
+         throw new UnsupportedOperationException("SOAP 1.1 Fault does not support the concept of Subcode");
 
       if (faultcode == null)
          findFaultCodeElement();
@@ -453,7 +450,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
    public Iterator getFaultReasonTexts() throws SOAPException
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "NOT_SUPPORT_REASON"));
+         throw new UnsupportedOperationException("SOAP 1.1 Fault does not support the concept of Reason");
 
       if (faultstring == null)
       {
@@ -471,7 +468,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
       }
 
       if (texts.isEmpty())
-         throw new SOAPException(BundleUtils.getMessage(bundle, "NO_TEXT_ELEMENTS_FOUND"));
+         throw new SOAPException("no Text elements found inside Reason");
 
       return texts.iterator();
    }
@@ -479,7 +476,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
    public Iterator getFaultReasonLocales() throws SOAPException
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "NOT_SUPPORT_REASON"));
+         throw new UnsupportedOperationException("SOAP 1.1 Fault does not support the concept of Reason");
 
       if (faultstring == null)
       {
@@ -495,12 +492,12 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
          SOAPElement textElement = (SOAPElement)it.next();
          Locale locale = getLocale(textElement);
          if (locale == null)
-            throw new SOAPException(BundleUtils.getMessage(bundle, "LANG_ATTRIBUTE_NOT_PRESENT"));
+            throw new SOAPException("lang attribute not present on Text element");
          locales.add(locale);
       }
 
       if (locales.isEmpty())
-         throw new SOAPException(BundleUtils.getMessage(bundle, "NO_TEXT_ELEMENTS_FOUND"));
+         throw new SOAPException("no Text elements found inside Reason");
 
       return locales.iterator();
    }
@@ -508,7 +505,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
    public String getFaultReasonText(Locale locale) throws SOAPException
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "NOT_SUPPORT_REASON"));
+         throw new UnsupportedOperationException("SOAP 1.1 Fault does not support the concept of Reason");
 
       if (locale == null)
          return null;
@@ -553,10 +550,10 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
    public void addFaultReasonText(String text, Locale locale) throws SOAPException
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "NOT_SUPPORT_REASON"));
+         throw new UnsupportedOperationException("SOAP 1.1 Fault does not support the concept of Reason");
 
       if (locale == null)
-         throw new SOAPException(BundleUtils.getMessage(bundle, "LOCALE_IS_NULL"));
+         throw new SOAPException("locale passed is null");
 
       if (faultstring == null)
       {
@@ -617,7 +614,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
    public String getFaultRole()
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "NOT_SUPPORT_ROLE"));
+         throw new UnsupportedOperationException("SOAP 1.1 Fault does not support the concept of Role");
 
       if (faultactor == null)
       {
@@ -637,7 +634,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
    public void setFaultRole(String uri) throws SOAPException
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "NOT_SUPPORT_ROLE"));
+         throw new UnsupportedOperationException("SOAP 1.1 Fault does not support the concept of Role");
 
       if (faultactor == null)
       {
@@ -651,7 +648,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
    public String getFaultNode()
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "NOT_SUPPORT_NODE"));
+         throw new UnsupportedOperationException("SOAP 1.1 Fault does not support the concept of Node");
 
       if (faultnode == null)
       {
@@ -671,7 +668,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
    public void setFaultNode(String uri) throws SOAPException
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "NOT_SUPPORT_NODE"));
+         throw new UnsupportedOperationException("SOAP 1.1 Fault does not support the concept of Node");
 
       if (faultnode == null)
       {
@@ -710,7 +707,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
             findSoap11DetailElement();
 
          if (detail != null)
-            throw new SOAPException(BundleUtils.getMessage(bundle, "ALREADY_CONTAINS_DETAIL"));
+            throw new SOAPException("this fault already contains a detail element");
 
          detail = new DetailImpl();
       }
@@ -720,7 +717,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
             findSoap12DetailElement();
 
          if (detail != null)
-            throw new SOAPException(BundleUtils.getMessage(bundle, "ALREADY_CONTAINS_DETAIL"));
+            throw new SOAPException("this fault already contains a detail element");
 
          detail = new DetailImpl(getPrefix(), getNamespaceURI());
       }
@@ -755,7 +752,7 @@ public class SOAPFaultImpl extends SOAPBodyElementDoc implements SOAPFault
          }
          catch (SOAPException e)
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "UNABLE_TO_CREATE_FAULT_DETAIL",  e.getMessage()));
+            throw new WSException("Unable to create fault detail: " + e.getMessage());
          }
       }
       return detail;

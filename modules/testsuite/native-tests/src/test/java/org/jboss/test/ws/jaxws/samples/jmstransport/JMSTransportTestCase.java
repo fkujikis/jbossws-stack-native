@@ -41,9 +41,8 @@ import javax.xml.ws.Service;
 
 import junit.framework.Test;
 
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.wsf.common.DOMUtils;
 import org.jboss.wsf.test.JBossWSTest;
-import org.jboss.wsf.test.JBossWSTestHelper;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
 /**
@@ -58,7 +57,9 @@ public class JMSTransportTestCase extends JBossWSTest
    
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JMSTransportTestCase.class, JBossWSTestHelper.isTargetJBoss6() ? "jaxws-samples-jmstransport-as6.jar" : "jaxws-samples-jmstransport.sar");
+      Test test = new JBossWSTestSetup(JMSTransportTestCase.class, Boolean.getBoolean("use.hornetq") ? "jaxws-samples-jmstransport-hq.jar" : "jaxws-samples-jmstransport.sar");
+      Thread.sleep(5000);
+      return test;
    }
    
    public void testPublishedContract() throws Exception
@@ -77,7 +78,7 @@ public class JMSTransportTestCase extends JBossWSTest
 
    public void testJMSEndpointPort() throws Exception
    {
-      URL wsdlURL = getResourceURL("jaxws/samples/jmstransport/META-INF/wsdl/jmsservice.wsdl");
+      URL wsdlURL = getResourceURL("jaxws/samples/jmstransport/jmsservice.wsdl");
       QName serviceName = new QName("http://org.jboss.ws/samples/jmstransport", "OrganizationJMSEndpointService");
       QName portName = new QName("http://org.jboss.ws/samples/jmstransport", "OrganizationJMSEndpointPort");
       
@@ -90,7 +91,7 @@ public class JMSTransportTestCase extends JBossWSTest
 
    public void testHTTPEndpointPort() throws Exception
    {
-      URL wsdlURL = getResourceURL("jaxws/samples/jmstransport/META-INF/wsdl/jmsservice.wsdl");
+      URL wsdlURL = getResourceURL("jaxws/samples/jmstransport/jmsservice.wsdl");
       QName serviceName = new QName("http://org.jboss.ws/samples/jmstransport", "OrganizationJMSEndpointService");
       QName portName = new QName("http://org.jboss.ws/samples/jmstransport", "HTTPEndpointPort");
       
@@ -153,7 +154,6 @@ public class JMSTransportTestCase extends JBossWSTest
       assertNotNull("Expected response message", responseListener.resMessage);
       assertEquals(DOMUtils.parse(resMessage), DOMUtils.parse(responseListener.resMessage));
 
-      sender.close();
       receiver.close();
       con.stop();
       session.close();
