@@ -22,12 +22,11 @@
 package org.jboss.ws.extensions.security.operation;
 
 import java.util.Calendar;
-import java.util.ResourceBundle;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import org.jboss.logging.Logger;
 import org.jboss.security.auth.callback.CallbackHandlerPolicyContextHandler;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.security.SecurityStore;
 import org.jboss.ws.extensions.security.SimplePrincipal;
 import org.jboss.ws.extensions.security.auth.callback.UsernameTokenCallbackHandler;
@@ -38,7 +37,6 @@ import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.jboss.ws.extensions.security.nonce.NonceStore;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
-import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.invocation.SecurityAdaptor;
 import org.jboss.wsf.spi.invocation.SecurityAdaptorFactory;
 import org.jboss.xb.binding.SimpleTypeBindings;
@@ -46,7 +44,6 @@ import org.w3c.dom.Document;
 
 public class ReceiveUsernameOperation implements TokenOperation
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ReceiveUsernameOperation.class);
    private SecurityHeader header;
    private SecurityStore store;
    private NonceStore nonceStore;
@@ -60,9 +57,8 @@ public class ReceiveUsernameOperation implements TokenOperation
       this.store = store;
       this.nonceStore = nonceStore;
 
-      ClassLoader cl = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
-      SPIProvider spiProvider = SPIProviderResolver.getInstance(cl).getProvider();
-      secAdapterfactory = spiProvider.getSPI(SecurityAdaptorFactory.class, cl);
+      SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+      secAdapterfactory = spiProvider.getSPI(SecurityAdaptorFactory.class);
    }
 
    public void process(Document message, Token token) throws WSSecurityException
@@ -87,13 +83,13 @@ public class ReceiveUsernameOperation implements TokenOperation
          Calendar ref = Calendar.getInstance();
          ref.add(Calendar.SECOND, -TIMESTAMP_FRESHNESS_THRESHOLD);
          if (ref.after(cal))
-            throw new WSSecurityException(BundleUtils.getMessage(bundle, "REQUEST_REJECTED_SINCE_PROVIDED",  token.getCreated()));
+            throw new WSSecurityException("Request rejected since a stale timestamp has been provided: " + token.getCreated());
       }
       String nonce = token.getNonce();
       if (nonce != null)
       {
          if (nonceStore.hasNonce(nonce))
-            throw new WSSecurityException(BundleUtils.getMessage(bundle, "REQUEST_REJECTED_SINCE_RECEIVED",  nonce));
+            throw new WSSecurityException("Request rejected since a message with the same nonce has been recently received; nonce = " + nonce);
          nonceStore.putNonce(nonce);
       }
    }

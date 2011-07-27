@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.naming.Context;
@@ -40,15 +39,14 @@ import javax.xml.ws.soap.SOAPBinding;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.handler.GenericHandler;
-import org.jboss.ws.api.handler.GenericSOAPHandler;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.injection.InjectionHelper;
 import org.jboss.ws.metadata.umdm.EndpointConfigMetaData;
 import org.jboss.ws.metadata.umdm.HandlerMetaData;
 import org.jboss.ws.metadata.umdm.HandlerMetaDataJAXWS;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
+import org.jboss.wsf.common.handler.GenericHandler;
+import org.jboss.wsf.common.handler.GenericSOAPHandler;
+import org.jboss.wsf.common.injection.InjectionHelper;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.invocation.EndpointAssociation;
 import org.jboss.wsf.spi.metadata.injection.InjectionsMetaData;
@@ -68,7 +66,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  */
 public class HandlerResolverImpl implements HandlerResolver
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(HandlerResolverImpl.class);
    private static Logger log = Logger.getLogger(HandlerResolverImpl.class);
 
    private static final Map<String, String> protocolMap = new HashMap<String, String>();
@@ -116,8 +113,7 @@ public class HandlerResolverImpl implements HandlerResolver
 
    public List<Handler> getHandlerChain(PortInfo info, HandlerType type)
    {
-      if (log.isDebugEnabled())
-         log.debug("getHandlerChain: [type=" + type + ",info=" + info + "]");
+      log.debug("getHandlerChain: [type=" + type + ",info=" + info + "]");
 
       List<Handler> handlers = new ArrayList<Handler>();
       for (ScopedHandler scopedHandler : getHandlerMap(type))
@@ -130,8 +126,7 @@ public class HandlerResolverImpl implements HandlerResolver
 
    public void initServiceHandlerChain(ServiceMetaData serviceMetaData)
    {
-      if (log.isDebugEnabled())
-         log.debug("initServiceHandlerChain: " + serviceMetaData.getServiceName());
+      log.debug("initServiceHandlerChain: " + serviceMetaData.getServiceName());
 
       // clear all exisisting handler to avoid double registration
       List<ScopedHandler> handlerMap = getHandlerMap(HandlerType.ENDPOINT);
@@ -144,8 +139,7 @@ public class HandlerResolverImpl implements HandlerResolver
 
    public void initHandlerChain(EndpointConfigMetaData epConfigMetaData, HandlerType type, boolean clearExistingHandlers)
    {
-      if (log.isDebugEnabled())
-         log.debug("initHandlerChain: " + type);
+      log.debug("initHandlerChain: " + type);
 
       List<ScopedHandler> handlerMap = getHandlerMap(type);
 
@@ -193,14 +187,13 @@ public class HandlerResolverImpl implements HandlerResolver
       }
       catch (Exception ex)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_LOAD_HANDLER",  className),  ex);
+         throw new WSException("Cannot load handler: " + className, ex);
       }
    }
 
    private boolean addHandler(HandlerMetaDataJAXWS hmd, Handler handler, HandlerType type)
    {
-      if (log.isDebugEnabled())
-         log.debug("addHandler: " + hmd);
+      log.debug("addHandler: " + hmd);
 
       List<ScopedHandler> handlerMap = getHandlerMap(type);
       ScopedHandler scopedHandler = new ScopedHandler(handler);
@@ -230,7 +223,7 @@ public class HandlerResolverImpl implements HandlerResolver
       else if (type == HandlerType.POST)
          handlers = postHandlers;
       else
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_HANDLER_TYPE",  type));
+         throw new IllegalArgumentException("Illegal handler type: " + type);
 
       return handlers;
    }

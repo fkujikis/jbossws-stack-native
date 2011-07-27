@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -68,13 +67,12 @@ import javax.xml.rpc.holders.StringHolder;
 
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.jaxrpc.ParameterWrapping;
 import org.jboss.ws.core.utils.HolderUtils;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
+import org.jboss.wsf.common.JavaUtils;
 import org.jboss.xb.binding.Util;
 
 /**
@@ -86,7 +84,6 @@ import org.jboss.xb.binding.Util;
 
 public class WSDLUtils
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSDLUtils.class);
    private String newline = "\n";
    private static WSDLUtils instance = new WSDLUtils();
 
@@ -242,7 +239,7 @@ public class WSDLUtils
    public boolean checkIgnoreClass(Class cls)
    {
       if (cls == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_NULL_ARGUMENT", "cls"));
+         throw new IllegalArgumentException("Illegal null argument:cls");
       //if (cls.isArray()) cls = cls.getComponentType();
       if (!cls.isArray())
       {
@@ -259,12 +256,18 @@ public class WSDLUtils
 
    /** Check if this method should be ignored
     */
-   public boolean checkIgnoreMethod(final Method method)
+   public boolean checkIgnoreMethod(Method method)
    {
+      String methodname = method.getName();
       if (ignoredMethods == null)
       {
          ignoredMethods = new ArrayList<String>();
-         //Add the SessionBean methods to the ignore list
+         Method[] objMethods = Object.class.getMethods();
+         for (int i = 0; i < objMethods.length; i++)
+         {
+            ignoredMethods.add(objMethods[i].getName());
+         }
+         //Add the SessionBean Methods to the ignore list
          Method[] sbMethods = SessionBean.class.getMethods();
          for (int i = 0; i < sbMethods.length; i++)
          {
@@ -272,55 +275,15 @@ public class WSDLUtils
          }
       }
 
-      return ignoredMethods.contains(method.getName());
+      boolean ignoreMethod = ignoredMethods.contains(methodname);
+
+      // FIXME: This code is a duplicate, it should read from the UMDM
+      if (method.getDeclaringClass().isAnnotationPresent(WebService.class) && method.isAnnotationPresent(WebMethod.class) == false)
+         ignoreMethod = true;
+
+      return ignoreMethod;
    }
-   
-   /**
-    * The public, non-static or non-final methods that satisfy one of the following conditions:
-    * 1. They are annotated with the javax.jws.WebMethod annotation with the exclude element set to
-    * false or missing (since false is the default for this annotation element).
-    * 2. They are not annotated with the javax.jws.WebMethod annotation but their declaring class has a
-    * javax.jws.WebService annotation.
-    * @param method to process
-    * @return true if webmethod, false otherwise
-    */
-   public static boolean isWebMethod(final Method method, final boolean definedInInterface)
-   {
-      if (!isWebMethodCandidate(method))
-         return false;
-         
-      final WebMethod webMethodAnnotation = method.getAnnotation(WebMethod.class);
-      
-      if (webMethodAnnotation != null)
-      {
-         return !webMethodAnnotation.exclude();
-      }
-      if (definedInInterface)
-      {
-         return true;
-      }
-      else
-      {
-         return method.getDeclaringClass().getAnnotation(WebService.class) != null;
-      }
-   }
-   
-   /**
-    * Only public, non-static and non-final methods are web method candidates.
-    *
-    * @param method to process
-    * @return true if satisfies modifier requirements, false otherwise
-    */
-   private static boolean isWebMethodCandidate(final Method method)
-   {
-      final int modifiers = method.getModifiers();
-      final boolean isPublic = Modifier.isPublic(modifiers);
-      final boolean isNotStatic = !Modifier.isStatic(modifiers);
-      final boolean isNotFinal = !Modifier.isFinal(modifiers);
-      
-      return isPublic && isNotStatic && isNotFinal;
-   }
-   
+
    /**
     * Chop "PortType" at the end of the String
     * @param name
@@ -357,9 +320,9 @@ public class WSDLUtils
    public File createPackage(String path, String packageName)
    {
       if (packageName == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_NULL_ARGUMENT", "packageName"));
+         throw new IllegalArgumentException("Illegal Null Argument: packageName");
       if (path == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_NULL_ARGUMENT", "path"));
+         throw new IllegalArgumentException("Illegal Null Argument: path");
       String pac = packageName.replace('.', '/');
       File dir = new File(path + "/" + pac);
       dir.mkdirs();
@@ -376,9 +339,9 @@ public class WSDLUtils
    public File createPhysicalFile(File loc, String fname) throws IOException
    {
       if (loc == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_NULL_ARGUMENT", "loc"));
+         throw new IllegalArgumentException("Illegal Null Argument: loc");
       if (fname == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_NULL_ARGUMENT", "fname"));
+         throw new IllegalArgumentException("Illegal Null Argument: fname");
       File javaFile = new File(loc.getAbsolutePath() + "/" + fname + ".java");
       //Delete the javaFile if already exists
       if (javaFile.exists())
@@ -480,7 +443,7 @@ public class WSDLUtils
    public String firstLetterUpperCase(String fname)
    {
       if (fname == null || fname.length() == 0)
-         throw new WSException(BundleUtils.getMessage(bundle, "STRING_PASSED_IS_NULL"));
+         throw new WSException("String passed is null");
       //Ensure that the first character is uppercase
       final char firstChar = fname.charAt(0);
       if (Character.isLowerCase(firstChar))
@@ -500,7 +463,7 @@ public class WSDLUtils
    public int getArrayDimension(Class arr)
    {
       if (arr == null || arr.isArray() == false)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_NULL_OR_ARRAY_ARG", arr));
+         throw new IllegalArgumentException("Illegal null or array arg:arr");
       int counter = 0;
       while (arr.isArray())
       {
@@ -661,7 +624,7 @@ public class WSDLUtils
    public String getMixedCase(String str)
    {
       if (str == null || str.length() == 0)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "STRING_PASSED_IS_NULL"));
+         throw new IllegalArgumentException("String passed to WSDLUtils.getMixedCase is null");
 
       if (str.length() == 1)
          return str.toUpperCase();
@@ -678,7 +641,7 @@ public class WSDLUtils
    public String getFormattedString(QName qn)
    {
       if (qn == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "QNAME_PASSED_IS_NULL"));
+         throw new IllegalArgumentException(" QName passed is null");
       StringBuilder sb = new StringBuilder();
       String prefix = qn.getPrefix();
       String localpart = qn.getLocalPart();
@@ -700,7 +663,7 @@ public class WSDLUtils
       QName qn = null;
       int ind = formattedStr.lastIndexOf(':');
       if (ind < 0)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_FORMATTED_STRING"));
+         throw new IllegalArgumentException("Formatted String is not of format prefix:localpart");
       String prefix = formattedStr.substring(0, ind);
       String nsuri = null;
       if (Constants.PREFIX_XSD.equals(prefix))
@@ -790,13 +753,13 @@ public class WSDLUtils
       if (types instanceof XSModelTypes)
          return ((XSModelTypes)types).getSchemaModel();
 
-      throw new WSException(BundleUtils.getMessage(bundle, "NOT_AN_XSMODELTYPES"));
+      throw new WSException("WSDLTypes is not an XSModelTypes");
    }
 
    public static void addSchemaModel(WSDLTypes types, String namespace, JBossXSModel model)
    {
       if (!(types instanceof XSModelTypes))
-         throw new WSException(BundleUtils.getMessage(bundle, "NOT_AN_XSMODELTYPESs"));
+         throw new WSException("WSDLTypes is not an XSModelTypes");
 
       XSModelTypes modelTypes = (XSModelTypes)types;
       modelTypes.addSchemaModel(namespace, model);
@@ -895,7 +858,7 @@ public class WSDLUtils
             return outputs[0];
       }
 
-      throw new WSException(BundleUtils.getMessage(bundle, "ONLY_MEPS_ARE_ALLOWED"));
+      throw new WSException("Only Request-Only and Request-Response MEPs are allowed");
    }
 
    public static WSDLInterfaceOperationInput getWsdl11Input(WSDLInterfaceOperation operation)
@@ -912,6 +875,6 @@ public class WSDLUtils
             return inputs[0];
       }
 
-      throw new WSException(BundleUtils.getMessage(bundle, "ONLY_MEPS_ARE_ALLOWED"));
+      throw new WSException("Only Request-Only and Request-Response MEPs are allowed");
    }
 }

@@ -26,11 +26,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.tools.config.ToolsSchemaConfigReader;
 import org.jboss.ws.tools.helpers.ToolsHelper;
 
@@ -43,7 +41,6 @@ import org.jboss.ws.tools.helpers.ToolsHelper;
  */
 public class WSTools
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSTools.class);
    private static Logger log = Logger.getLogger(WSTools.class);
 
    /**
@@ -122,9 +119,9 @@ public class WSTools
                urls[j] = new File(token).toURL();
             }
 
-            ClassLoader ctxLoader = SecurityActions.getContextClassLoader();
+            ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
             URLClassLoader urlLoader = new URLClassLoader(urls, ctxLoader);
-            SecurityActions.setContextClassLoader(urlLoader);
+            Thread.currentThread().setContextClassLoader(urlLoader);
             i++;
          }
          else
@@ -145,7 +142,7 @@ public class WSTools
    private boolean process(Configuration config, String outputDir) throws IOException
    {
       if (config == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CONFIGURATION_IS_NULL"));
+         throw new IllegalArgumentException("Configuration is null");
 
       if (outputDir == null)
          outputDir = ".";
@@ -161,7 +158,7 @@ public class WSTools
       }
       else
       {
-         throw new IOException(BundleUtils.getMessage(bundle, "CONFIGURATION_ERROR"));
+         throw new IOException("Nothing done, Configuration source must have JavaToWSDL or WSDLToJava specified");
       }
       return true;
    }

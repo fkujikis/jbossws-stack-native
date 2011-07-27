@@ -24,13 +24,10 @@ package org.jboss.ws.tools.client;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.metadata.wsdl.WSDLBinding;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
@@ -38,6 +35,7 @@ import org.jboss.ws.metadata.wsdl.WSDLService;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.tools.ToolsUtils;
 import org.jboss.ws.tools.interfaces.ServiceCreatorIntf;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  *  Creates the  Service Interface<br>
@@ -55,7 +53,6 @@ import org.jboss.ws.tools.interfaces.ServiceCreatorIntf;
 
 public class ServiceCreator implements ServiceCreatorIntf
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ServiceCreator.class);
    /**
     * The Package Name
     */
@@ -165,11 +162,11 @@ public class ServiceCreator implements ServiceCreatorIntf
    public void createServiceDescriptor() throws IOException
    {
       if (packageName == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "PACKAGE_NAME_IS_NULL"));
+         throw new WSException("package name is null");
       if (dirLocation == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "DIR_LOCATION_IS_NULL"));
+         throw new WSException("dir location  is null");
       if (wsdl == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "WSDL_DEFINITIONS_IS_NULL"));
+         throw new WSException("wsdl definitions is null");
 
       WSDLService[] services = wsdl.getServices();
 

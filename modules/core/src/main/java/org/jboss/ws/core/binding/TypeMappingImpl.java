@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.namespace.QName;
@@ -39,10 +38,7 @@ import javax.xml.rpc.encoding.SerializerFactory;
 import javax.xml.rpc.encoding.TypeMapping;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
-import org.jboss.ws.common.utils.HashCodeUtil;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.jaxrpc.binding.Base64DeserializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.Base64SerializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.CalendarDeserializerFactory;
@@ -55,6 +51,8 @@ import org.jboss.ws.core.jaxrpc.binding.QNameDeserializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.QNameSerializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.SimpleDeserializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.SimpleSerializerFactory;
+import org.jboss.ws.core.utils.HashCodeUtil;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * This is the representation of a type mapping.
@@ -68,7 +66,6 @@ import org.jboss.ws.core.jaxrpc.binding.SimpleSerializerFactory;
  */
 public abstract class TypeMappingImpl implements TypeMapping
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(TypeMappingImpl.class);
    // provide logging
    private static final Logger log = Logger.getLogger(TypeMappingImpl.class);
 
@@ -150,9 +147,9 @@ public abstract class TypeMappingImpl implements TypeMapping
    private void registerInternal(Class javaType, IQName xmlType, SerializerFactory sf, DeserializerFactory df)
    {
       if (javaType == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "JAVATYPE_CANNOT_BE_NULL",  xmlType));
+         throw new IllegalArgumentException("javaType cannot be null for: " + xmlType);
       if (xmlType == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "XMLTYPE_CANNOT_BE_NULL",  javaType));
+         throw new IllegalArgumentException("xmlType cannot be null for: " + javaType);
 
       KeyPair kPair = new KeyPair(xmlType, javaType);
       FactoryPair fPair = new FactoryPair(sf, df);
@@ -708,7 +705,7 @@ public abstract class TypeMappingImpl implements TypeMapping
 
       public boolean equals(Object object) {
          if(!(object instanceof IQName))
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_COMPARE_IQNAME",  object));
+            throw new IllegalArgumentException("Cannot compare IQName to " + object);
 
          IQName iqn = (IQName)object;
          return (iqn.namespace == this.namespace && iqn.localPart == this.localPart);

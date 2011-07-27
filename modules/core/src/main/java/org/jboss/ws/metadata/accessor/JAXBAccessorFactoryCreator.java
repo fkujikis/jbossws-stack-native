@@ -21,9 +21,6 @@
  */
 package org.jboss.ws.metadata.accessor;
 
-import java.util.ResourceBundle;
-
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.metadata.umdm.FaultMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 
@@ -31,7 +28,6 @@ import com.sun.xml.bind.api.JAXBRIContext;
 
 public class JAXBAccessorFactoryCreator implements AccessorFactoryCreator
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JAXBAccessorFactoryCreator.class);
    private JAXBRIContext ctx;
    
    public void setJAXBContext(JAXBRIContext ctx)
@@ -42,14 +38,14 @@ public class JAXBAccessorFactoryCreator implements AccessorFactoryCreator
    public AccessorFactory create(ParameterMetaData parameter)
    {
       if (ctx == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "JAXBCONTEXT_NOT_AVAILABLE"));
+         throw new IllegalStateException("JAXBContext not available");
       return new JAXBAccessorFactory(parameter.getJavaType(), ctx);
    }
 
    public AccessorFactory create(FaultMetaData fault)
    {
       if (ctx == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "JAXBCONTEXT_NOT_AVAILABLE"));
+         throw new IllegalStateException("JAXBContext not available");
       return new JAXBAccessorFactory(fault.getFaultBean(), ctx);
    }
 }

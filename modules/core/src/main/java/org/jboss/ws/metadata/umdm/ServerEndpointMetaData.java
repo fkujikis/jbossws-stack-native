@@ -21,20 +21,18 @@
  */
 package org.jboss.ws.metadata.umdm;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.ResourceBundle;
+import org.jboss.logging.Logger;
+import org.jboss.ws.metadata.config.ConfigurationProvider;
+import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+import org.jboss.wsf.spi.binding.BindingCustomization;
 
 import javax.management.ObjectName;
 import javax.xml.namespace.QName;
 
-import org.jboss.logging.Logger;
-import org.jboss.ws.api.binding.BindingCustomization;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.metadata.config.ConfigurationProvider;
-import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Client side endpoint meta data.
@@ -45,7 +43,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  */
 public class ServerEndpointMetaData extends EndpointMetaData
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ServerEndpointMetaData.class);
    protected static final Logger log = Logger.getLogger(ServerEndpointMetaData.class);
 
    public static final String SEPID_DOMAIN = "jboss.ws";
@@ -147,7 +144,7 @@ public class ServerEndpointMetaData extends EndpointMetaData
    public void setContextRoot(String contextRoot)
    {
       if (contextRoot != null && !(contextRoot.startsWith("/")))
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CONTEXT_ROOT_START_WITH"));
+         throw new IllegalArgumentException("context root should start with '/'");
 
       this.contextRoot = contextRoot;
    }
@@ -160,7 +157,7 @@ public class ServerEndpointMetaData extends EndpointMetaData
    public void setURLPattern(String urlPattern)
    {
       if (urlPattern != null && !urlPattern.startsWith("/"))
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "URL_PATTERN_START_WITH"));
+         throw new IllegalArgumentException("URL pattern should start with '/'");
 
       this.urlPattern = urlPattern;
    }
@@ -195,7 +192,7 @@ public class ServerEndpointMetaData extends EndpointMetaData
    public void setEndpointAddress(String endpointAddress)
    {
       if (endpoint == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "ENDPOINT_NOT_AVAILABLE"));
+         throw new IllegalStateException("Endpoint not available");
 
       endpoint.setAddress(endpointAddress);
    }

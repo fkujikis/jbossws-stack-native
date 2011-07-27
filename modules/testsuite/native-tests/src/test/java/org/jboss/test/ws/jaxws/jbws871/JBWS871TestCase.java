@@ -158,6 +158,12 @@ public class JBWS871TestCase extends JBossWSTest
       assertNull(outArr);
    }*/
 
+   public void testEchoEmptyArray() throws Exception
+   {
+      Integer[] outArr = endpoint.intArr("empty", new Integer[]{});
+      assertEquals(0, outArr.length);
+   }
+
    public void testEchoSingleValueArray() throws Exception
    {
       Integer[] outArr = endpoint.intArr("single", new Integer[] {new Integer(1)} );

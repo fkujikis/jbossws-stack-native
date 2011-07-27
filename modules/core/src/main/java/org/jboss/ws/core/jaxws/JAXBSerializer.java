@@ -44,8 +44,7 @@ import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.extensions.xop.jaxws.AttachmentMarshallerImpl;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.util.xml.BufferedStreamResult;
-import org.jboss.ws.api.binding.BindingCustomization;
-import org.jboss.ws.api.binding.JAXBBindingCustomization;
+import org.jboss.wsf.spi.binding.BindingCustomization;
 import org.w3c.dom.NamedNodeMap;
 
 /**

@@ -21,19 +21,16 @@
  */
 package org.jboss.ws.extensions.xop.jaxws;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.ResourceBundle;
+import org.jboss.ws.WSException;
+import org.jboss.ws.core.soap.attachment.ContentHandlerRegistry;
+import org.jboss.ws.extensions.xop.XOPContext;
 
 import javax.activation.DataHandler;
 import javax.xml.bind.attachment.AttachmentUnmarshaller;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.SOAPException;
-
-import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.core.soap.attachment.ContentHandlerRegistry;
-import org.jboss.ws.extensions.xop.XOPContext;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * <p>Enables JAXB unmarshalling of a root document containing optimized binary data formats.</p>
@@ -62,7 +59,6 @@ import org.jboss.ws.extensions.xop.XOPContext;
  */
 public class AttachmentUnmarshallerImpl extends AttachmentUnmarshaller
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(AttachmentUnmarshallerImpl.class);
 
    static
    {
@@ -89,7 +85,7 @@ public class AttachmentUnmarshallerImpl extends AttachmentUnmarshaller
       }
       catch (SOAPException e)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_ACCESS_ATTACHMENT_PART"),  e);
+         throw new WSException("Failed to access attachment part", e);
       }
    }
 

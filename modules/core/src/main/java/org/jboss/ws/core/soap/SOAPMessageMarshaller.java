@@ -23,22 +23,20 @@ package org.jboss.ws.core.soap;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ResourceBundle;
 
 import javax.xml.soap.SOAPMessage;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.core.client.Marshaller;
+import org.jboss.remoting.InvocationRequest;
+import org.jboss.remoting.invocation.OnewayInvocation;
+import org.jboss.remoting.marshal.Marshaller;
 
 /**
  * @author Thomas.Diesler@jboss.org
- * @author alessio.soldano@jboss.com
  * @since 25-Nov-2004
  */
 public class SOAPMessageMarshaller implements Marshaller
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPMessageMarshaller.class);
    // Provide logging
    private static Logger log = Logger.getLogger(SOAPMessageMarshaller.class);
 
@@ -53,10 +51,21 @@ public class SOAPMessageMarshaller implements Marshaller
     */
    public void write(Object dataObject, OutputStream output) throws IOException
    {
+      if (dataObject instanceof InvocationRequest)
+         dataObject = ((InvocationRequest)dataObject).getParameter();
+
+      if (dataObject instanceof OnewayInvocation)
+         dataObject = ((OnewayInvocation)dataObject).getParameters()[0];
+
       if ((dataObject instanceof SOAPMessage) == false)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "NOT_A_SOAPMESSAGE",  dataObject));
+         throw new IllegalArgumentException("Not a SOAPMessage: " + dataObject);
 
       SOAPMessageImpl soapMessage = (SOAPMessageImpl)dataObject;
       soapMessage.writeTo(output);
+   }
+
+   public Marshaller cloneMarshaller() throws CloneNotSupportedException
+   {
+      return new SOAPMessageMarshaller();
    }
 }
