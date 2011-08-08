@@ -67,7 +67,7 @@
     <jsr181.api.version>1.0-MR1</jsr181.api.version>
     <jaxb.api.version>1.0.0.Final</jaxb.api.version>
     <jaxb.impl.version>2.2</jaxb.impl.version>
-    <jboss.logging.version>2.2.0.CR1</jboss.logging.version>
+    <jboss.logging.version>3.0.0.GA</jboss.logging.version>
     <jboss.jaxr.version>2.0.2</jboss.jaxr.version>
     <apache.scout.version>1.1.1</apache.scout.version>
     <juddi.version>0.9RC4</juddi.version>
@@ -355,12 +355,7 @@
       </dependency>
       <dependency>
         <groupId>org.jboss.logging</groupId>
-        <artifactId>jboss-logging-log4j</artifactId>
-        <version>${jboss.logging.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.logging</groupId>
-        <artifactId>jboss-logging-spi</artifactId>
+        <artifactId>jboss-logging</artifactId>
         <version>${jboss.logging.version}</version>
       </dependency>
       <dependency>
