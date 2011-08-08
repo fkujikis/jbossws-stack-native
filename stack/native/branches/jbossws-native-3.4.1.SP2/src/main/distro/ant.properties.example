@@ -3,9 +3,9 @@
 #
 
 # Optional JBoss Home
-jboss600.home=@jboss601.home@
+jboss610.home=@jboss610.home@
 
-jbossws.integration.target=jboss600
+jbossws.integration.target=jboss610
 
 # The JBoss settings
 jboss.server.instance=default

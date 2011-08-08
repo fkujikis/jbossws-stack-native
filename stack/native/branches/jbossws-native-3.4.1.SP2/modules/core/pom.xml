@@ -233,10 +233,10 @@
                 <artifactItem>
                   <groupId>org.jboss.ws</groupId>
                   <artifactId>jbossws-jboss600x</artifactId>
-                  <version>${jbossws.jboss601.version}</version>
+                  <version>${jbossws.jboss610.version}</version>
                   <classifier>resources</classifier>
                   <type>zip</type>
-                  <outputDirectory>${project.build.directory}/resources/jbossws-jboss601</outputDirectory>
+                  <outputDirectory>${project.build.directory}/resources/jbossws-jboss610</outputDirectory>
                 </artifactItem>
                 -->
                 <!-- END -->

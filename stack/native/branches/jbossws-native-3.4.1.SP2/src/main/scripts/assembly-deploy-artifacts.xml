@@ -186,7 +186,7 @@
           </dependencySet>
           <dependencySet>
             <outputDirectory>deploy-artifacts/lib</outputDirectory>
-            <outputFileNameMapping>jbossws-jboss601.${module.extension}</outputFileNameMapping>
+            <outputFileNameMapping>jbossws-jboss610.${module.extension}</outputFileNameMapping>
             <useStrictFiltering>true</useStrictFiltering>
             <scope>provided</scope>
             <unpack>false</unpack>
