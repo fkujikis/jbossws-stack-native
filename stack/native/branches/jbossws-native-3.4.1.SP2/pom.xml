@@ -46,8 +46,8 @@
 
   <!-- Properties -->
   <properties>
-    <jbossws.spi.version>1.4.1.GA</jbossws.spi.version>
-    <jbossws.common.version>1.4.1.GA</jbossws.common.version>
+    <jbossws.spi.version>1.4.1.SP1</jbossws.spi.version>
+    <jbossws.common.version>1.4.1.SP1</jbossws.common.version>
     <jbossws.framework.version>3.4.1.GA</jbossws.framework.version>
     <jbossws.jboss501.version>3.4.0.GA</jbossws.jboss501.version>
     <jbossws.jboss510.version>3.4.0.GA</jbossws.jboss510.version>
