@@ -566,7 +566,7 @@
     <profile>
       <id>jboss610</id>
       <properties>
-        <jboss.version>6.1.0-SNAPSHOT</jboss.version>
+        <jboss.version>6.1.0.Final</jboss.version>
         <jbossws.integration.target>jboss610</jbossws.integration.target>
       </properties>
       <dependencies>
@@ -653,6 +653,10 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <argLine>${surefire.jvm.args} ${surefire.jvm.management.args} -Djava.endorsed.dirs=${jboss610.home}/lib/endorsed</argLine>
+              <additionalClasspathElements>
+                <additionalClasspathElement>${jboss.home}/client/jbossall-client.jar</additionalClasspathElement>
+                <additionalClasspathElement>${jboss.home}/common/lib/jboss-ejb3-core.jar</additionalClasspathElement>
+              </additionalClasspathElements>
             </configuration>
           </plugin>
         </plugins>
