@@ -29,7 +29,6 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.management.ObjectName;
 import javax.wsdl.Definition;
@@ -42,14 +41,15 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.addressing.AddressingProperties;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.ObjectNameFactory;
 import org.jboss.ws.core.jaxrpc.UnqualifiedFaultException;
 import org.jboss.ws.core.soap.Use;
 import org.jboss.ws.extensions.addressing.AddressingPropertiesImpl;
 import org.jboss.ws.extensions.addressing.metadata.AddressingOpMetaExt;
+import org.jboss.ws.extensions.eventing.EventingConstants;
+import org.jboss.ws.extensions.eventing.EventingUtils;
+import org.jboss.ws.extensions.eventing.metadata.EventingEpMetaExt;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.FaultMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -64,22 +64,25 @@ import org.jboss.ws.metadata.wsdl.WSDLInterface;
 import org.jboss.ws.metadata.wsdl.WSDLInterfaceFault;
 import org.jboss.ws.metadata.wsdl.WSDLInterfaceOperation;
 import org.jboss.ws.metadata.wsdl.WSDLInterfaceOperationOutfault;
+import org.jboss.ws.metadata.wsdl.WSDLInterfaceOperationOutput;
 import org.jboss.ws.metadata.wsdl.WSDLProperty;
 import org.jboss.ws.metadata.wsdl.WSDLService;
+import org.jboss.ws.metadata.wsdl.WSDLUtils;
+import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
+import org.jboss.wsf.common.ObjectNameFactory;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.deployment.HttpEndpoint;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.management.ServerConfigFactory;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.MDBMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSESecurityMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSESecurityMetaData.JSEResourceCollection;
-import org.jboss.wsf.spi.metadata.j2ee.MDBMetaData;
 
 /** An abstract meta data builder.
  *
@@ -88,7 +91,6 @@ import org.jboss.wsf.spi.metadata.j2ee.MDBMetaData;
  */
 public abstract class MetaDataBuilder
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(MetaDataBuilder.class);
    // provide logging
    private final static Logger log = Logger.getLogger(MetaDataBuilder.class);
 
@@ -124,7 +126,7 @@ public abstract class MetaDataBuilder
                QName bindQName = wsdlEndpoint.getBinding();
                WSDLBinding wsdlBinding = wsdlDefinitions.getBinding(bindQName);
                if (wsdlBinding == null)
-                  throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_BINDING",  bindQName));
+                  throw new WSException("Cannot obtain binding: " + bindQName);
 
                for (WSDLBindingOperation wsdlBindingOperation : wsdlBinding.getOperations())
                {
@@ -147,7 +149,7 @@ public abstract class MetaDataBuilder
       {
          Endpoint endpoint = dep.getService().getEndpointByName(linkName);
          if (endpoint != null)
-            urlPattern = ((HttpEndpoint)endpoint).getURLPattern();
+            urlPattern = endpoint.getURLPattern();
       }
 
       // Endpoint API hack
@@ -206,11 +208,11 @@ public abstract class MetaDataBuilder
       {
          String ejbName = sepMetaData.getLinkName();
          if (ejbName == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_GET_EJB_LINK"));
+            throw new WSException("Cannot obtain ejb-link from port component");
 
          EJBMetaData beanMetaData = (EJBMetaData)apMetaData.getBeanByEjbName(ejbName);
          if (beanMetaData == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_GET_EJB_META_DATA",  ejbName));
+            throw new WSException("Cannot obtain ejb meta data for: " + ejbName);
 
          if (beanMetaData instanceof MDBMetaData)
          {
@@ -228,7 +230,7 @@ public abstract class MetaDataBuilder
    public static String getServiceEndpointAddress(String uriScheme, String servicePath, int servicePort, ServerConfig config)
    {
       if (servicePath == null || servicePath.length() == 0)
-         throw new WSException(BundleUtils.getMessage(bundle, "SERVICE_PATH_CANNOT_BE_NULL"));
+         throw new WSException("Service path cannot be null");
 
       if (servicePath.endsWith("/*"))
          servicePath = servicePath.substring(0, servicePath.length() - 2);
@@ -278,7 +280,7 @@ public abstract class MetaDataBuilder
       }
       catch (MalformedURLException e)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "MALFORMED_URL_DETAIL", new Object[]{ uriScheme ,  host ,  port ,  servicePath }),  e);
+         throw new WSException("Malformed URL: uriScheme={" + uriScheme + "} host={" + host + "} port={" + port + "} servicePath={" + servicePath + "}", e);
       }
    }
 
@@ -295,7 +297,7 @@ public abstract class MetaDataBuilder
          String urlPattern = servletMappings.get(servletLink);
 
          if (urlPattern == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_FIND_URL_PATTERN",  servletLink));
+            throw new WSException("Cannot find <url-pattern> for servlet-name: " + servletLink);
 
          List<JSESecurityMetaData> securityList = webMetaData.getSecurityMetaData();
          for (JSESecurityMetaData currentSecurity : securityList)
@@ -367,7 +369,7 @@ public abstract class MetaDataBuilder
                   }
                   catch (MalformedURLException e)
                   {
-                     log.warn(BundleUtils.getMessage(bundle, "MALFORMED_URL",  orgAddress));
+                     log.warn("Malformed URL: " + orgAddress);
                      sepMetaData.setEndpointAddress(orgAddress);
                   }
                }
@@ -376,7 +378,7 @@ public abstract class MetaDataBuilder
       }
 
       if (endpointFound == false)
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_FIND_PORT_IN_WSDL",  portName));
+         throw new WSException("Cannot find port in wsdl: " + portName);
    }
    
    private static boolean requiresRewrite(String orgAddress, String uriScheme, ServerConfig config)
@@ -430,7 +432,7 @@ public abstract class MetaDataBuilder
          }
       }
       
-      throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_FIND_PORT",  portQName ));
+      throw new IllegalArgumentException("Cannot find port with name '" + portQName + "' in wsdl document");
    }
 
    /**
@@ -493,6 +495,44 @@ public abstract class MetaDataBuilder
       catch (URISyntaxException e)
       {
          return null;
+      }
+   }
+
+   protected void processEndpointMetaDataExtensions(EndpointMetaData epMetaData, WSDLDefinitions wsdlDefinitions)
+   {
+      for (WSDLInterface wsdlInterface : wsdlDefinitions.getInterfaces())
+      {
+         WSDLProperty eventSourceProp = wsdlInterface.getProperty(Constants.WSDL_PROPERTY_EVENTSOURCE);
+         if (eventSourceProp != null && epMetaData instanceof ServerEndpointMetaData)
+         {
+            ServerEndpointMetaData sepMetaData = (ServerEndpointMetaData)epMetaData;
+            String eventSourceNS = wsdlInterface.getName().getNamespaceURI() + "/" + wsdlInterface.getName().getLocalPart();
+
+            // extract the schema model
+            JBossXSModel schemaModel = WSDLUtils.getSchemaModel(wsdlDefinitions.getWsdlTypes());
+            String[] notificationSchema = EventingUtils.extractNotificationSchema(schemaModel);
+
+            // extract the root element NS
+            String notificationRootElementNS = null;
+            WSDLInterfaceOperation wsdlInterfaceOperation = wsdlInterface.getOperations()[0];
+            if (wsdlInterfaceOperation.getOutputs().length > 0)
+            {
+               WSDLInterfaceOperationOutput wsdlInterfaceOperationOutput = wsdlInterfaceOperation.getOutputs()[0];
+               notificationRootElementNS = wsdlInterfaceOperationOutput.getElement().getNamespaceURI();
+            }
+            else
+            {
+               // WSDL operation of an WSDL interface that is marked as an event source
+               // requires to carry an output message.
+               throw new WSException("Unable to resolve eventing root element NS. No operation output found at " + wsdlInterfaceOperation.getName());
+            }
+
+            EventingEpMetaExt ext = new EventingEpMetaExt(EventingConstants.NS_EVENTING);
+            ext.setEventSourceNS(eventSourceNS);
+            ext.setNotificationSchema(notificationSchema);
+            ext.setNotificationRootElementNS(notificationRootElementNS);
+            sepMetaData.addExtension(ext);
+         }
       }
    }
 
@@ -664,7 +704,7 @@ public abstract class MetaDataBuilder
 
          if (xmlType == null)
          {
-            log.warn(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_FAULT_TYPE",  xmlName));
+            log.warn("Cannot obtain fault type for element: " + xmlName);
             xmlType = xmlName;
          }
 
@@ -674,7 +714,7 @@ public abstract class MetaDataBuilder
 
          if (javaTypeName == null)
          {
-            log.warn(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_JAVA_TYPE_MAPPING",  xmlType));
+            log.warn("Cannot obtain java type mapping for: " + xmlType);
             javaTypeName = new UnqualifiedFaultException(xmlType).getClass().getName();
          }
 

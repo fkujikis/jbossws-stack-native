@@ -27,7 +27,7 @@ import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.annotation.EndpointConfig;
+import org.jboss.ws.annotation.EndpointConfig;
 
 @WebService(name = "Hello", serviceName = "HelloService", targetNamespace = "http://org.jboss.ws/samples/wssecurity")
 @EndpointConfig(configName = "Standard WSSecurity Endpoint")
@@ -41,16 +41,5 @@ public class HelloJavaBean
    {
       log.info(in0);
       return in0;
-   }
-   
-   @WebMethod
-   public void triggerException(@WebParam(name = "String_1") String reason, @WebParam(name = "int_2") int code) throws HelloException_Exception
-   {
-      String message = "Error: " + reason + ":" + code;
-      HelloException he = new HelloException();
-      he.setMessage(message);
-      he.setCode(code);
-      he.setReason(reason);
-      throw new HelloException_Exception(message, he);
    }
 }

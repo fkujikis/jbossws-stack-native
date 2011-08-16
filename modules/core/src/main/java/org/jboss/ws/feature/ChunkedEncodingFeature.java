@@ -21,13 +21,10 @@
  */
 package org.jboss.ws.feature;
 
-import java.util.ResourceBundle;
-
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.WebServiceFeature;
 
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 
 /**
  * This feature represents the use of http chunked encoding
@@ -37,7 +34,6 @@ import org.jboss.ws.common.Constants;
  */
 public final class ChunkedEncodingFeature extends WebServiceFeature
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ChunkedEncodingFeature.class);
    /** 
     * Constant value identifying the FastInfosetFeature
     */
@@ -77,7 +73,7 @@ public final class ChunkedEncodingFeature extends WebServiceFeature
    {
       if (chunkSize < 0)
       {
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CHUNKSIZE_ERROR",  chunkSize));
+         throw new WebServiceException("ChunkedEncodingFeature.chunkSize must be >= 0, actual value: " + chunkSize);
       }
       this.chunkSize = chunkSize;
       this.enabled = (chunkSize > 0);

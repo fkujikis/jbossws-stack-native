@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.jws.soap.SOAPBinding.ParameterStyle;
@@ -35,10 +34,10 @@ import javax.xml.rpc.ParameterMode;
 import org.jboss.logging.Logger;
 import org.jboss.util.NotImplementedException;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.core.soap.Use;
+import org.jboss.ws.extensions.wsrm.protocol.RMProvider;
+import org.jboss.wsf.common.JavaUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -50,7 +49,6 @@ import org.w3c.dom.Element;
  */
 public class OperationMetaData extends ExtensibleMetaData implements InitalizableMetaData
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(OperationMetaData.class);
    // provide logging
    private final Logger log = Logger.getLogger(OperationMetaData.class);
 
@@ -82,9 +80,9 @@ public class OperationMetaData extends ExtensibleMetaData implements Initalizabl
       this.javaName = javaName;
 
       if (qname == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_NULL_QNAME_ARGUMENT"));
+         throw new IllegalArgumentException("Invalid null qname argument");
       if (javaName == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_NULL_JAVANAME_ARGUMENT",  qname));
+         throw new IllegalArgumentException("Invalid null javaName argument, for: " + qname);
 
       String nsURI = qname.getNamespaceURI();
       String localPart = qname.getLocalPart();
@@ -182,7 +180,7 @@ public class OperationMetaData extends ExtensibleMetaData implements Initalizabl
                if (wsMetaData.isEagerInitialized())
                {
                   if (UnifiedMetaData.isFinalRelease() == false)
-                     log.warn(BundleUtils.getMessage(bundle, "LOADING_JAVA_METHOD"),  new IllegalStateException());
+                     log.warn("Loading java method after eager initialization", new IllegalStateException());
 
                   javaMethod = method;
                }
@@ -191,8 +189,8 @@ public class OperationMetaData extends ExtensibleMetaData implements Initalizabl
             }
          }
 
-         if (tmpMethod == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_FIND_JAVA_METHOD",  javaName));
+         if ((tmpMethod == null) && (epMetaData.getConfig().getRMMetaData() == null)) // RM hack
+            throw new WSException("Cannot find java method: " + javaName);
       }
       return tmpMethod;
    }
@@ -402,15 +400,15 @@ return false;
       if (oneWay)
       {
          if (returnParam != null)
-            throw new WSException(BundleUtils.getMessage(bundle, "ONEWAY_CANNOT_HAVE_RETURN"));
+            throw new WSException("OneWay operations cannot have a return parameter");
 
          if (faults.size() > 0)
-            throw new WSException(BundleUtils.getMessage(bundle, "ONEWAY_CANNOT_HAVE_CHECKEDEX"));
+            throw new WSException("OneWay operations cannot have checked exceptions");
 
          for (ParameterMetaData paramMetaData : parameters)
          {
             if (paramMetaData.getMode() != ParameterMode.IN)
-               throw new WSException(BundleUtils.getMessage(bundle, "ONEWAY_CANNOT_HAVE_INOUT"));
+               throw new WSException("OneWay operations cannot have INOUT or OUT parameters");
          }
       }
    }
@@ -438,7 +436,8 @@ return false;
             out++;
 
          if (in > 1 || out > (oneWay ? 0 : 1))
-            throw new WSException(BundleUtils.getMessage(bundle, "DOC_LIT_BARE_REQUIRE",  new Object[]{javaName, in, out}));
+            throw new WSException("The body of a document/literal bare message requires at most 1 input and at most 1 output (or 0 if oneway). method: " + javaName + " in: "
+                  + in + " out: " + out);
       }
    }
 
@@ -485,7 +484,8 @@ return false;
       }
 
       // Report unsynchronized java method
-      if (javaMethod == null)
+      boolean isRMMethod = RMProvider.get().getConstants().getNamespaceURI().equals(qname.getNamespaceURI());
+      if ((javaMethod == null) && (isRMMethod == false)) // RM hack
       {
          StringBuilder errMsg = new StringBuilder("Cannot synchronize to any of these methods:");
          for (Method method : unsynchronizedMethods)

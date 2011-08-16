@@ -9,7 +9,7 @@
   <parent>
     <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native-testsuite</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>3.4.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -56,7 +56,6 @@
                     <property name="project.version" value="${project.version}" />
                     <property name="log4j.conf" value="${basedir}/src/test/etc/log4j.xml" />
                     <property name="log4j.output.dir" value="${log4j.output.dir}"/>
-                    <property name="endorsed.dirs" value="${endorsed.dirs}"/>
                     <property name="jboss.home" value="${jboss.home}"/>
                     <ant antfile="scripts/antrun-wsconsume.xml" target="wsconsume" />
                   </tasks>
@@ -94,7 +93,6 @@
                     <property name="log4j.conf" value="${basedir}/src/test/etc/log4j.xml" />
                     <property name="log4j.output.dir" value="${log4j.output.dir}"/>
                     <property name="jboss.home" value="${jboss.home}"/>
-                    <property name="endorsed.dirs" value="${endorsed.dirs}"/>
                     <ant antfile="scripts/antrun-wsprovide.xml" target="wsprovide" />
                   </tasks>
                 </configuration>

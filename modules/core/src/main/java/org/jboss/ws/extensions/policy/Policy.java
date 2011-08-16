@@ -25,12 +25,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.ResourceBundle;
 
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.jboss.xb.binding.NamespaceRegistry;
 import org.w3c.dom.Element;
 
@@ -52,7 +50,6 @@ import org.w3c.dom.Element;
  */
 public class Policy
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(Policy.class);
    public static final String URI_POLICY = "http://schemas.xmlsoap.org/ws/2004/09/policy";
    public static final String URI_SECURITY_UTILITY = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd";
 
@@ -131,7 +128,7 @@ public class Policy
       }
       catch (IOException ex)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_PARSE",  xmlString),  ex);
+         throw new WSException("Cannot parse: " + xmlString, ex);
       }
    }
    

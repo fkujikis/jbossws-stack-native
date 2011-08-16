@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.jws.soap.SOAPBinding.ParameterStyle;
@@ -44,16 +43,12 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
-import javax.xml.ws.Service.Mode;
 import javax.xml.ws.WebServiceFeature;
+import javax.xml.ws.Service.Mode;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.binding.BindingCustomization;
-import org.jboss.ws.api.binding.JAXBBindingCustomization;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.CommonBindingProvider;
 import org.jboss.ws.core.CommonSOAPBinding;
 import org.jboss.ws.core.binding.TypeMappingImpl;
@@ -69,17 +64,22 @@ import org.jboss.ws.core.jaxws.client.DispatchBinding;
 import org.jboss.ws.core.jaxws.wsaddressing.NativeEndpointReference;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.core.soap.Use;
+import org.jboss.ws.extensions.wsrm.config.RMConfig;
+import org.jboss.ws.extensions.wsrm.config.RMPortConfig;
 import org.jboss.ws.metadata.accessor.AccessorFactory;
 import org.jboss.ws.metadata.accessor.AccessorFactoryCreator;
 import org.jboss.ws.metadata.accessor.JAXBAccessorFactoryCreator;
+import org.jboss.ws.metadata.config.CommonConfig;
 import org.jboss.ws.metadata.config.Configurable;
 import org.jboss.ws.metadata.config.ConfigurationProvider;
 import org.jboss.ws.metadata.config.EndpointFeature;
 import org.jboss.ws.metadata.config.JBossWSConfigFactory;
+import org.jboss.wsf.common.JavaUtils;
+import org.jboss.wsf.spi.binding.BindingCustomization;
+import org.jboss.wsf.spi.binding.JAXBBindingCustomization;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
-import org.jboss.wsf.spi.metadata.config.CommonConfig;
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 
 import com.sun.xml.bind.api.JAXBRIContext;
 
@@ -91,7 +91,6 @@ import com.sun.xml.bind.api.JAXBRIContext;
  */
 public abstract class EndpointMetaData extends ExtensibleMetaData implements ConfigurationProvider, InitalizableMetaData
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(EndpointMetaData.class);
    // provide logging
    private static Logger log = Logger.getLogger(EndpointMetaData.class);
 
@@ -217,7 +216,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
    public void setBindingId(String bindingId)
    {
       if (SUPPORTED_BINDINGS.contains(bindingId) == false)
-         throw new WSException(BundleUtils.getMessage(bundle, "UNSUPPORTED_BINDING",  bindingId));
+         throw new WSException("Unsupported binding: " + bindingId);
 
       this.bindingId = bindingId;
    }
@@ -236,7 +235,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
       if (wsMetaData.isEagerInitialized())
       {
          if (UnifiedMetaData.isFinalRelease() == false)
-            log.warn(BundleUtils.getMessage(bundle, "SET_SEI_NAME_AFTER_EAGER_INIT"));
+            log.warn("Set SEI name after eager initialization");
 
          // reinitialize
          initializeInternal();
@@ -264,13 +263,13 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
             tmpClass = classLoader.loadClass(seiName);
             if (serviceMetaData.getUnifiedMetaData().isEagerInitialized())
             {
-               log.warn(BundleUtils.getMessage(bundle, "LOADING_SEI_AFTER_EAGER_INIT"));
+               log.warn("Loading SEI after eager initialization");
                seiClass = tmpClass;
             }
          }
          catch (ClassNotFoundException ex)
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_LOAD_SEI",  seiName),  ex);
+            throw new WSException("Cannot load service endpoint interface: " + seiName, ex);
          }
       }
       return tmpClass;
@@ -290,7 +289,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
    public void setEncodingStyle(Use value)
    {
       if (value != null && use != null && !use.equals(value))
-         throw new WSException(BundleUtils.getMessage(bundle, "MIXED_STYLES_NOT_SUPPORTED"));
+         throw new WSException("Mixed encoding styles not supported");
 
       log.trace("setEncodingStyle: " + value);
       this.use = value;
@@ -310,7 +309,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
    public void setStyle(Style value)
    {
       if (value != null && style != null && !style.equals(value))
-         throw new WSException(BundleUtils.getMessage(bundle, "MIXED_STYLES_NOT_SUPPORTED"));
+         throw new WSException("Mixed styles not supported");
 
       if (log.isTraceEnabled())
          log.trace("setStyle: " + value);
@@ -331,7 +330,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
    public void setParameterStyle(ParameterStyle value)
    {
       if (value != null && parameterStyle != null && !parameterStyle.equals(value))
-         throw new WSException(BundleUtils.getMessage(bundle, "MIXED_SOAP_PARAMETER_STYLES_NOT_SUPPORTED"));
+         throw new WSException("Mixed SOAP parameter styles not supported");
 
       if (log.isDebugEnabled())
          log.debug("setParameterStyle: " + value);
@@ -430,7 +429,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
             }
             else
             {
-               throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_UNIQUELY_INDENTIFY_OP",  xmlName));
+               throw new WSException("Cannot uniquely indentify operation: " + xmlName);
             }
          }
       }
@@ -457,7 +456,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
                }
                else
                {
-                  throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_UNIQUELY_INDENTIFY_OP",  xmlName));
+                  throw new WSException("Cannot uniquely indentify operation: " + xmlName);
                }
             }
          }
@@ -471,7 +470,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
       if (opMetaDataCache.size() == 0)
       {
          // This can happen when the SEI mapping was not found
-         log.warn(BundleUtils.getMessage(bundle, "ACCESS_TO_EMPTY_OP_META_DATA_CACHE"));
+         log.warn("Access to empty operation meta data cache, reinitializing");
          initializeInternal();
       }
 
@@ -648,7 +647,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
                }
                catch (ClassNotFoundException e)
                {
-                  log.warn(BundleUtils.getMessage(bundle, "CANNOT_LOAD_CLASS", new Object[]{ xmlType,  javaTypeName}));
+                  log.warn("Cannot load class for type: " + xmlType + "," + javaTypeName);
                }
             }
          }
@@ -837,7 +836,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
       if (config == null)
       {
          // No base configuration. 
-         initEndpointConfigMetaData(ecmd);
+         initEndpointConfigMetaData(ecmd, null);
          config = ecmd.getConfig();
       }
 
@@ -857,7 +856,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
    private void setConfigNameInternal(String configName, String configFile)
    {
       if (configName == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CONFIG_NAME_CANNOT_BE_NULL"));
+         throw new IllegalArgumentException("Config name cannot be null");
 
       if (configFile == null)
       {
@@ -887,7 +886,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
       ecmd.setConfigName(configName);
       ecmd.setConfigFile(configFile);
 
-      initEndpointConfigMetaData(ecmd);
+      initEndpointConfigMetaData(ecmd, configMetaData);
 
       return ecmd;
    }
@@ -895,15 +894,19 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
    public void initEndpointConfig()
    {
       EndpointConfigMetaData ecmd = getEndpointConfigMetaData();
-      initEndpointConfigMetaData(ecmd);
+      // At the time this method is called initialisation may have already happened
+      // always take the current ECMD as a base in case there is anything to backup. 
+      initEndpointConfigMetaData(ecmd, ecmd);
    }
 
    /**
-    * Initialise the EndpointConfigMeta.
+    * Initialise the toInitialise EndpointConfigMeta but first backup the RM Meta Data from
+    * the base EndpointConfigMetaData.
     * 
     * @param toInitialise - The EndpointConfigMetaData to initialise.
+    * @param base - The base EndpointConfigMetaData to take the RMMD from.
     */
-   private void initEndpointConfigMetaData(EndpointConfigMetaData toInitialise)
+   private void initEndpointConfigMetaData(EndpointConfigMetaData toInitialise, EndpointConfigMetaData base)
    {
       String configName = toInitialise.getConfigName();
       String configFile = toInitialise.getConfigFile();
@@ -911,11 +914,61 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Con
       if (log.isDebugEnabled())
          log.debug("Create new config [name=" + configName + ",file=" + configFile + "]");
 
-      JBossWSConfigFactory factory = JBossWSConfigFactory.newInstance(getClassLoader());
+      JBossWSConfigFactory factory = JBossWSConfigFactory.newInstance();
+      List<RMPortConfig> rmPortMetaData = null;
+      if (base != null)
+      {
+         rmPortMetaData = backupRMMD(base.getConfig());
+      }
       CommonConfig config = factory.getConfig(getRootFile(), configName, configFile);
+      propagateRMMD(rmPortMetaData, config);
       toInitialise.setConfig(config);
 
       toInitialise.configHandlerMetaData();
+   }
+
+   private List<RMPortConfig> backupRMMD(CommonConfig config)
+   {
+      if ((config != null) && (config.getRMMetaData() != null))
+         return config.getRMMetaData().getPorts();
+
+      return null;
+   }
+
+   private void propagateRMMD(List<RMPortConfig> backedUpMD, CommonConfig config)
+   {
+      if ((backedUpMD != null) && (backedUpMD.size() > 0))
+      {
+         if (config.getRMMetaData() == null)
+         {
+            config.setRMMetaData(new RMConfig());
+            config.getRMMetaData().getPorts().addAll(backedUpMD);
+         }
+         else
+         {
+            // RM policy specified in config file will be always used
+            List<RMPortConfig> ports = config.getRMMetaData().getPorts();
+            for (RMPortConfig portMD : backedUpMD)
+            {
+               QName portName = portMD.getPortName();
+               if (!contains(ports, portName))
+               {
+                  ports.add(portMD);
+               }
+            }
+         }
+      }
+   }
+
+   private boolean contains(List<RMPortConfig> ports, QName portName)
+   {
+      for (RMPortConfig pMD : ports)
+      {
+         if (pMD.getPortName().equals(portName))
+            return true;
+      }
+
+      return false;
    }
 
    public List<Class> getRegisteredTypes()

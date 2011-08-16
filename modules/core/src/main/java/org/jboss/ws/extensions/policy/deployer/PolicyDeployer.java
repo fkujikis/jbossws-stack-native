@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import org.apache.ws.policy.AndCompositeAssertion;
 import org.apache.ws.policy.Assertion;
@@ -34,8 +33,6 @@ import org.apache.ws.policy.PrimitiveAssertion;
 import org.apache.ws.policy.XorCompositeAssertion;
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.addressing.AddressingConstants;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.addressing.policy.AddressingPolicyAssertionDeployer;
 import org.jboss.ws.extensions.policy.deployer.domainAssertion.AssertionDeployer;
 import org.jboss.ws.extensions.policy.deployer.domainAssertion.NopAssertionDeployer;
@@ -43,7 +40,10 @@ import org.jboss.ws.extensions.policy.deployer.domainAssertion.WSSecurityAsserti
 import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAlternative;
 import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAssertion;
 import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedPolicy;
+import org.jboss.ws.extensions.wsrm.policy.RM10PolicyAssertionDeployer;
+import org.jboss.ws.extensions.wsrm.policy.RM11PolicyAssertionDeployer;
 import org.jboss.ws.metadata.umdm.ExtensibleMetaData;
+import org.jboss.wsf.common.addressing.AddressingConstants;
 
 /**
  * @author Stefano Maestri <mailto:stefano.maestri@javalinux.it>
@@ -52,7 +52,6 @@ import org.jboss.ws.metadata.umdm.ExtensibleMetaData;
  */
 public class PolicyDeployer
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(PolicyDeployer.class);
    private final static Logger log = Logger.getLogger(PolicyDeployer.class);
    private static PolicyDeployer me;
    private Map<String, Class> domainDeployerMap = new HashMap<String, Class>();
@@ -61,6 +60,8 @@ public class PolicyDeployer
    {
       me = new PolicyDeployer();
       me.domainDeployerMap.put("http://www.jboss.com/ws-security/schema/jboss-ws-security_1_0.xsd", WSSecurityAssertionDeployer.class);
+      me.domainDeployerMap.put("http://docs.oasis-open.org/ws-rx/wsrmp/200702", RM11PolicyAssertionDeployer.class);
+      me.domainDeployerMap.put("http://schemas.xmlsoap.org/ws/2005/02/rm/policy", RM10PolicyAssertionDeployer.class);
       me.domainDeployerMap.put(AddressingConstants.Metadata.NS, AddressingPolicyAssertionDeployer.class);
       me.domainDeployerMap.put("http://www.w3.org/2006/05/addressing/wsdl", NopAssertionDeployer.class);
    }
@@ -100,7 +101,7 @@ public class PolicyDeployer
    public Policy deployServerside(Policy policy, ExtensibleMetaData extMetaData) throws UnsupportedPolicy
    {
       if (policy == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_DEPLOY_NULL_POLICY"));
+         throw new WSException("Cannot deploy null policy!");
 
       List<Assertion> returnedPolicyTerms = new LinkedList<Assertion>();
 
@@ -153,7 +154,7 @@ public class PolicyDeployer
    public void deployClientSide(Policy policy, ExtensibleMetaData extMetaData) throws UnsupportedPolicy
    {
       if (policy == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_DEPLOY_NULL_POLICY"));
+         throw new WSException("Cannot deploy null policy!");
 
       if (!policy.isNormalized())
       {
@@ -173,7 +174,7 @@ public class PolicyDeployer
                }
                catch (UnsupportedAssertion e)
                {
-                  log.error(BundleUtils.getMessage(bundle, "UNSUPPORTED_ASSERTION"));
+                  log.error("Unsupported assertion!");
                   throw new UnsupportedPolicy();
                }
             }

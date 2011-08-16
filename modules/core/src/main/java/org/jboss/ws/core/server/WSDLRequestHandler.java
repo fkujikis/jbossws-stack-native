@@ -27,12 +27,13 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ResourceBundle;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.spi.SPIProvider;
+import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.management.ServerConfig;
+import org.jboss.wsf.spi.management.ServerConfigFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -54,7 +55,6 @@ import org.w3c.dom.NodeList;
  */
 public class WSDLRequestHandler
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSDLRequestHandler.class);
    // provide logging
    private static Logger log = Logger.getLogger(WSDLRequestHandler.class);
 
@@ -106,7 +106,7 @@ public class WSDLRequestHandler
       Document wsdlDoc;
 
       if (wsdlLocation == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_WSDL_LOCATION"));
+         throw new IllegalStateException("Cannot obtain wsdl location");
 
       // get the root wsdl
       if (resPath == null)
@@ -142,7 +142,9 @@ public class WSDLRequestHandler
             log.debug("Importing resource file: " + impResourceFile.getCanonicalPath());
 
          String wsdlLocFilePath = wsdlLocFile.getParentFile().getCanonicalPath();
-         String wsdlDataLoc = config.getServerDataDir().getCanonicalPath() + File.separatorChar + "wsdl";
+         SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+         ServerConfig serverConfig = spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();
+         String wsdlDataLoc = serverConfig.getServerDataDir().getCanonicalPath() + File.separatorChar + "wsdl";
 
          //allow wsdl file's parent or server's data/wsdl or overriden wsdl publish directories only
          String resourceAbsPath = impResourceFile.getCanonicalPath(); 
@@ -156,7 +158,7 @@ public class WSDLRequestHandler
          }
          else
          {
-            throw new IOException(BundleUtils.getMessage(bundle, "ACCESS_IS_NOT_ALLOWED",  resourceAbsPath ));
+            throw new IOException("Access to '" + resourceAbsPath + "' resource is not allowed");
          }
       }
 
@@ -321,7 +323,7 @@ public class WSDLRequestHandler
       }
       catch (URISyntaxException e)
       {
-         log.error(BundleUtils.getMessage(bundle, "SKIPPING_REWRITE_OF_INVALID_ADDRESS",  orgLocation),  e);
+         log.error("Skipping rewrite of invalid address: " + orgLocation, e);
          return false;
       }
    }

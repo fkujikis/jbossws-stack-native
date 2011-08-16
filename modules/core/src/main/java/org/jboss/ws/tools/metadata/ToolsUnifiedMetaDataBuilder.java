@@ -24,20 +24,18 @@ package org.jboss.ws.tools.metadata;
 import java.rmi.Remote;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.jws.soap.SOAPBinding.ParameterStyle;
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.ResourceLoaderAdapter;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.tools.Configuration.OperationConfig;
+import org.jboss.wsf.common.ResourceLoaderAdapter;
 
 /**
  *  Builder class that builds the Tools Meta Data
@@ -46,7 +44,6 @@ import org.jboss.ws.tools.Configuration.OperationConfig;
  */
 public class ToolsUnifiedMetaDataBuilder
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ToolsUnifiedMetaDataBuilder.class);
    private static Logger log = Logger.getLogger(ToolsUnifiedMetaDataBuilder.class);
    private Class seiClass;
    private UnifiedMetaData um;
@@ -83,7 +80,7 @@ public class ToolsUnifiedMetaDataBuilder
    {
       //Check if it extends Remote Interface
       if (!Remote.class.isAssignableFrom(seiClass))
-         throw new WSException(BundleUtils.getMessage(bundle, "SEI_MUST_EXTEND_REMOTE", seiClass.getName()));
+         throw new WSException("A service endpoint interface should extend Remote");
 
       ClassLoader contextClassLoader = SecurityActions.getContextClassLoader();
       ResourceLoaderAdapter vfsRoot = new ResourceLoaderAdapter();
@@ -104,7 +101,7 @@ public class ToolsUnifiedMetaDataBuilder
       ServiceMetaData sm = um.getServices().get(0);
       ToolsEndpointMetaData em = (ToolsEndpointMetaData)sm.getEndpointByServiceEndpointInterface(seiClass.getName());
       if (em == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "ENDPOINTMETADATA_IS_NULL"));
+         throw new WSException("EndpointMetadata is null");
       ReflectiveMetaDataBuilder rmb = new ReflectiveMetaDataBuilder(em);
       rmb.setOperationMap(operationMap);
       em = rmb.generate();

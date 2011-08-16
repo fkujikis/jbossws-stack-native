@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.Name;
@@ -37,10 +36,9 @@ import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.Text;
 
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -61,7 +59,6 @@ import org.w3c.dom.TypeInfo;
  */
 public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisitable
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPElementImpl.class);
    // The org.w3c.dom.Element
    private Element element;
    // The element name
@@ -78,20 +75,13 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
    public SOAPElementImpl(String localPart, String prefix, String nsURI)
    {
       super(DOMUtils.createElement(localPart, prefix, nsURI));
-      this.element = (Element)domNode; 
+      this.element = (Element)domNode;
    }
 
    /** Called by SOAPFactory */
    public SOAPElementImpl(Name name)
    {
       this(name.getLocalName(), name.getPrefix(), name.getURI());
-   }
-   
-   /** Called by addChild */
-   private SOAPElementImpl(Element element) 
-   {
-	  super(element);
-	  this.element = element; 
    }
 
    /** Called by SOAPFactory */
@@ -138,7 +128,7 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
    public SOAPElement setElementQName(QName qname) throws SOAPException
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()) || Constants.NS_SOAP12_ENV.equals(getNamespaceURI()))
-         throw new SOAPException(BundleUtils.getMessage(bundle, "CHANGING_NAME_IS_NOT_ALLOWED",  getLocalName()));
+         throw new SOAPException("Changing the name of this SOAP Element is not allowed: " + getLocalName());
 
       return setElementQNameInternal(qname);
    }
@@ -190,8 +180,9 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
     */
    public SOAPElement addChildElement(String name) throws SOAPException
    {
-      Name nameImp = new NameImpl(name);
-      return addChildElement(nameImp);
+      SOAPElement soapElement = new SOAPElementImpl(name);
+      soapElement = addChildElement(soapElement);
+      return soapElement;
    }
 
    /**
@@ -206,10 +197,11 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
    {
       String nsURI = getNamespaceURI(prefix);
       if (nsURI == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_NAMESPACE_URI",  prefix));
+         throw new IllegalArgumentException("Cannot obtain namespace URI for prefix: " + prefix);
 
-      Name nameImp = new NameImpl(localName, prefix, nsURI);
-      return addChildElement(nameImp);
+      SOAPElement soapElement = new SOAPElementImpl(localName, prefix, nsURI);
+      soapElement = addChildElement(soapElement);
+      return soapElement;
    }
 
    /**
@@ -223,8 +215,9 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
     */
    public SOAPElement addChildElement(String localName, String prefix, String uri) throws SOAPException
    {
-      Name nameImpl = new NameImpl(localName, prefix, uri);
-      return addChildElement(nameImpl);
+      SOAPElement soapElement = new SOAPElementImpl(localName, prefix, uri);
+      soapElement = addChildElement(soapElement);
+      return soapElement;
    }
 
    /**
@@ -236,19 +229,9 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
     */
    public SOAPElement addChildElement(Name name) throws SOAPException
    {
-      Document doc = this.element.getOwnerDocument();
-      Element childEle = null;
-      if (name.getPrefix() == null || name.getPrefix().length() == 0)
-      {
-         childEle = doc.createElementNS(name.getURI(), name.getLocalName());
-      }
-      else
-      {
-         childEle = doc.createElementNS(name.getURI(), name.getPrefix() + ":" + name.getLocalName());
-      }
-
-      SOAPElement child = new SOAPElementImpl(childEle);
-      return addChildElement(child);
+      SOAPElement soapElement = new SOAPElementImpl(name);
+      soapElement = addChildElement(soapElement);
+      return soapElement;
    }
 
    public SOAPElement addChildElement(QName qname) throws SOAPException
@@ -277,17 +260,8 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
     */
    public SOAPElement addChildElement(SOAPElement child) throws SOAPException
    {
-      SOAPElementImpl soapElement = (SOAPElementImpl) child;
-
-      if (soapElement.domNode.getOwnerDocument() != element.getOwnerDocument())
-      {
-         Document oldDoc = DOMUtils.peekOwnerDocument();
-         DOMUtils.setOwnerDocument(element.getOwnerDocument());
-         soapElement = (SOAPElementImpl) new SOAPFactoryImpl().createElement((Element) (soapElement.domNode));
-         DOMUtils.setOwnerDocument(oldDoc);
-
-      }
-      soapElement = (SOAPElementImpl) appendChild(soapElement);
+      SOAPElementImpl soapElement = (SOAPElementImpl)child;
+      soapElement = (SOAPElementImpl)appendChild(soapElement);
       return soapElement.completeNamespaceDeclaration();
    }
 
@@ -302,9 +276,9 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
    public SOAPElement addNamespaceDeclaration(String prefix, String nsURI)
    {
       if (nsURI == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_'NULL'_NAMESPACE_URI"));
+         throw new IllegalArgumentException("Invalid 'null' namespace URI");
       if (nsURI.length() == 0)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_EMPTY_NAMESPACE_URI"));
+         throw new IllegalArgumentException("Invalid empty namespace URI");
 
       String qualifiedName = "xmlns";
       if (prefix != null && prefix.length() > 0)
@@ -459,7 +433,7 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
    {
       String nsURI = getNamespaceURI(prefix);
       if (nsURI == null)
-         throw new SOAPException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_NAMESPACE_URI",  prefix));
+         throw new SOAPException("CAnnot obtain namespace URI for prefix: " + prefix);
 
       return new QName(nsURI, localName, prefix);
    }
@@ -499,7 +473,7 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
    protected SOAPElement getFirstChildElementByLocalName(String localName)
    {
       if (localName == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "LOCALNAME_CANNOT_BE_NULL"));
+         throw new IllegalArgumentException("localName cannot be null");
       NodeList nodeList = getChildNodes();
       int len = nodeList.getLength();
       for (int i = 0; i < len; i++)
@@ -929,7 +903,7 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisita
             }
             else
             {
-               throw new WSException(BundleUtils.getMessage(bundle, "UNHANDLED_SOAP_NODE",  node.getClass().getName()));
+               throw new WSException("Unhandled soap node: " + node.getClass().getName());
             }
          }
       }

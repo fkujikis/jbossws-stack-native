@@ -69,10 +69,9 @@ WSCONSUME_CLASSPATH="$WSCONSUME_CLASSPATH:$JBOSS_HOME/client/wstx-lgpl.jar"
 WSCONSUME_CLASSPATH="$WSCONSUME_CLASSPATH:$JBOSS_HOME/client/jbossall-client.jar"
 WSCONSUME_CLASSPATH="$WSCONSUME_CLASSPATH:$JBOSS_HOME/client/log4j.jar"
 WSCONSUME_CLASSPATH="$WSCONSUME_CLASSPATH:$JBOSS_HOME/client/mail.jar"
-WSCONSUME_CLASSPATH="$WSCONSUME_CLASSPATH:$JBOSS_HOME/client/jbossws-api.jar"
 WSCONSUME_CLASSPATH="$WSCONSUME_CLASSPATH:$JBOSS_HOME/client/jbossws-spi.jar"
 WSCONSUME_CLASSPATH="$WSCONSUME_CLASSPATH:$JBOSS_HOME/client/jbossws-common.jar"
-WSCONSUME_CLASSPATH="$WSCONSUME_CLASSPATH:$JBOSS_HOME/client/jbossws-common-tools.jar"
+WSCONSUME_CLASSPATH="$WSCONSUME_CLASSPATH:$JBOSS_HOME/client/jbossws-framework.jar"
 
 # Shared jaxws libs
 WSCONSUME_CLASSPATH="$WSCONSUME_CLASSPATH:$JBOSS_HOME/client/jaxws-tools.jar"
@@ -116,4 +115,4 @@ fi
    -Dlog4j.configuration=log4j.xml \
    -Djava.endorsed.dirs="$JBOSS_ENDORSED_DIRS" \
    -classpath "$WSCONSUME_CLASSPATH" \
-   org.jboss.ws.tools.cmd.WSConsume "$@"
+   org.jboss.wsf.spi.tools.cmd.WSConsume "$@"

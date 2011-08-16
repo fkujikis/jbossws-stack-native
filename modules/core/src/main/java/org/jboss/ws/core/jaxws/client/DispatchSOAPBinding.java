@@ -24,7 +24,6 @@ package org.jboss.ws.core.jaxws.client;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
-import java.util.ResourceBundle;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -40,19 +39,18 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.ws.Service.Mode;
 import javax.xml.ws.WebServiceException;
+import javax.xml.ws.Service.Mode;
 import javax.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.DOMWriter;
 import org.jboss.ws.core.MessageAbstraction;
 import org.jboss.ws.core.soap.SOAPBodyElementDoc;
 import org.jboss.ws.core.soap.SOAPBodyImpl;
 import org.jboss.ws.core.soap.SOAPContentElement;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.core.soap.XMLFragment;
+import org.jboss.wsf.common.DOMWriter;
 
 /**
  * A helper that 
@@ -62,7 +60,6 @@ import org.jboss.ws.core.soap.XMLFragment;
  */
 public class DispatchSOAPBinding extends DispatchBinding
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(DispatchSOAPBinding.class);
    // provide logging
    private final Logger log = Logger.getLogger(DispatchSOAPBinding.class);
 
@@ -136,11 +133,11 @@ public class DispatchSOAPBinding extends DispatchBinding
       }
       catch (Exception ex)
       {
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_CREATE_REQUEST_MESSAGE"),  ex);
+         throw new WebServiceException("Cannot create request message", ex);
       }
 
       if (reqMsg == null)
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_CREATE_REQUEST_MESSAGE_FOR",  obj));
+         throw new WebServiceException("Cannot create request message for: " + obj);
 
       return reqMsg;
    }
@@ -205,7 +202,7 @@ public class DispatchSOAPBinding extends DispatchBinding
       }
       catch (Exception ex)
       {
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_PROCESS_RESPONSE_MESSAGE"),  ex);
+         throw new WebServiceException("Cannot process response message", ex);
       }
       return retObj;
    }

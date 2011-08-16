@@ -22,8 +22,6 @@
 package org.jboss.ws.core.jaxws.spi.http;
 
 import java.io.IOException;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -38,7 +36,7 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.server.netty.AbstractNettyRequestHandler;
 import org.jboss.wsf.spi.invocation.InvocationContext;
 
@@ -49,7 +47,6 @@ import org.jboss.wsf.spi.invocation.InvocationContext;
  */
 final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(NettyRequestHandlerImpl.class);
    /** Logger. */
    private static final Logger LOG = Logger.getLogger(NettyRequestHandlerImpl.class);
 
@@ -87,7 +84,7 @@ final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
          }
          catch (Exception e)
          {
-            NettyRequestHandlerImpl.LOG.error(BundleUtils.getMessage(bundle, ""));
+            NettyRequestHandlerImpl.LOG.error(e);
             this.sendError(event, HttpResponseStatus.INTERNAL_SERVER_ERROR);
          }
       }
@@ -119,7 +116,7 @@ final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
       else
       {
          final String errorMessage = "No callback handler registered for path: " + requestPath;
-         NettyRequestHandlerImpl.LOG.warn(BundleUtils.getMessage(bundle, ""));
+         NettyRequestHandlerImpl.LOG.warn(errorMessage);
          throw new IllegalArgumentException(errorMessage);
       }
    }
@@ -166,7 +163,7 @@ final class NettyRequestHandlerImpl extends AbstractNettyRequestHandler
          }
          catch (MalformedURLException mue)
          {
-            NettyRequestHandlerImpl.LOG.error(BundleUtils.getMessage(bundle, ""),  mue);
+            NettyRequestHandlerImpl.LOG.error(mue.getMessage(), mue);
          }
       }
       

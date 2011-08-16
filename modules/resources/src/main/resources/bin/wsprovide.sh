@@ -62,10 +62,9 @@ JBOSS_ENDORSED_DIRS="$JBOSS_HOME/lib/endorsed"
 
 # Shared libs
 WSPROVIDE_CLASSPATH="$WSPROVIDE_CLASSPATH:$JAVA_HOME/lib/tools.jar"
-WSPROVIDE_CLASSPATH="$WSPROVIDE_CLASSPATH:$JBOSS_HOME/client/jbossws-api.jar"
 WSPROVIDE_CLASSPATH="$WSPROVIDE_CLASSPATH:$JBOSS_HOME/client/jbossws-spi.jar"
 WSPROVIDE_CLASSPATH="$WSPROVIDE_CLASSPATH:$JBOSS_HOME/client/jbossws-common.jar"
-WSPROVIDE_CLASSPATH="$WSPROVIDE_CLASSPATH:$JBOSS_HOME/client/jbossws-common-tools.jar"
+WSPROVIDE_CLASSPATH="$WSPROVIDE_CLASSPATH:$JBOSS_HOME/client/jbossws-framework.jar"
 WSPROVIDE_CLASSPATH="$WSPROVIDE_CLASSPATH:$JBOSS_HOME/client/activation.jar"
 WSPROVIDE_CLASSPATH="$WSPROVIDE_CLASSPATH:$JBOSS_HOME/client/getopt.jar"
 WSPROVIDE_CLASSPATH="$WSPROVIDE_CLASSPATH:$JBOSS_HOME/client/jbossall-client.jar"
@@ -116,4 +115,4 @@ fi
    -Dlog4j.configuration=log4j.xml \
    -Djava.endorsed.dirs="$JBOSS_ENDORSED_DIRS" \
    -classpath "$WSPROVIDE_CLASSPATH" \
-   org.jboss.ws.tools.cmd.WSProvide "$@"
+   org.jboss.wsf.spi.tools.cmd.WSProvide "$@"

@@ -24,7 +24,6 @@ package org.jboss.ws.extensions.policy.metadata;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import org.apache.ws.policy.Policy;
@@ -33,9 +32,8 @@ import org.apache.ws.policy.util.DOMPolicyReader;
 import org.apache.ws.policy.util.PolicyFactory;
 import org.apache.ws.policy.util.PolicyRegistry;
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
 import org.jboss.ws.extensions.policy.PolicyScopeLevel;
 import org.jboss.ws.extensions.policy.annotation.PolicyAttachment;
 import org.jboss.ws.extensions.policy.deployer.PolicyDeployer;
@@ -61,7 +59,6 @@ import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
  */
 public class PolicyMetaDataBuilder
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(PolicyMetaDataBuilder.class);
    private static final Logger log = Logger.getLogger(PolicyMetaDataBuilder.class);
    private boolean serverSide = true;
    private boolean toolMode = false;
@@ -118,7 +115,7 @@ public class PolicyMetaDataBuilder
          {
             String policyFileLocation = anPolicy.policyFileLocation();
             if (policyFileLocation.length() == 0)
-               throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_POLICYFILELOCATION"));
+               throw new IllegalStateException("Cannot obtain @Policy.policyFileLocation");
             
             // The root virtual file is the uniform way to obtain resources
             // It should work in all containers, server/client side
@@ -136,7 +133,7 @@ public class PolicyMetaDataBuilder
             }
             else
             {
-               throw new WSException(BundleUtils.getMessage(bundle, "POLICY_SCOPE_NOT_SUPPORTED",  scope ));
+               throw new WSException("Policy scope " + scope + " not supported yet!");
             }
          }
          finally
@@ -180,12 +177,14 @@ public class PolicyMetaDataBuilder
          }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "CANNOT_GET_PORT",  endpointMD.getPortName()));
+            log.warn("Cannot get port '" + endpointMD.getPortName()
+                  + "' from the given wsdl definitions! Eventual policies attached to this port won't be considered.");
          }
       }
       else
       {
-         log.warn(BundleUtils.getMessage(bundle, "CANNOT_GET_SERVIC",  endpointMD.getServiceMetaData().getServiceName()));
+         log.warn("Cannot get service '" + endpointMD.getServiceMetaData().getServiceName()
+               + "' from the given wsdl definitions!  Eventual policies attached to this service won't be considered.");
       }
 
       //Binding scope
@@ -202,7 +201,8 @@ public class PolicyMetaDataBuilder
       }
       else
       {
-         log.warn(BundleUtils.getMessage(bundle, "CANNOT_GET_BINDING",  endpointMD.getPortTypeName()));
+         log.warn("Cannot get binding for portType '" + endpointMD.getPortTypeName()
+               + "' from the given wsdl definitions!  Eventual policies attached to this binding won't be considered.");
       }
 
       //PortType scope
@@ -219,7 +219,8 @@ public class PolicyMetaDataBuilder
       }
       else
       {
-         log.warn(BundleUtils.getMessage(bundle, "CANNOT_GET_PORTTYPE",  endpointMD.getPortTypeName()));
+         log.warn("Cannot get portType '" + endpointMD.getPortTypeName()
+               + "' from the given wsdl definitions! Eventual policies attached to this portType won't be considered.");
       }
    }
    
@@ -317,7 +318,7 @@ public class PolicyMetaDataBuilder
       }
       catch (UnsupportedPolicy e)
       {
-         log.warn(BundleUtils.getMessage(bundle, "POLICY_NOT_SUPPORTED",  policy.getPolicyURI()));
+         log.warn("Policy Not supported:" + policy.getPolicyURI());
       }
    }
 

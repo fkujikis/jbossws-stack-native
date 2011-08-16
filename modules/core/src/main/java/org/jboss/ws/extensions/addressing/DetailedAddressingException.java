@@ -22,8 +22,6 @@
 package org.jboss.ws.extensions.addressing;
 
 import javax.xml.namespace.QName;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import javax.xml.ws.addressing.AddressingException;
 
 /**
@@ -33,7 +31,6 @@ import javax.xml.ws.addressing.AddressingException;
  */
 public final class DetailedAddressingException extends AddressingException
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(DetailedAddressingException.class);
 
    private static final long serialVersionUID = 1L;
 
@@ -68,11 +65,11 @@ public final class DetailedAddressingException extends AddressingException
    private void setInternals(final QName code, final String reason, final Object detail)
    {
       if (code == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CODE_MUST_BE_SPECIFIED"));
+         throw new IllegalArgumentException("code must be specified");
       if (reason == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "REASON_MUST_BE_SPECIFIED"));
+         throw new IllegalArgumentException("reason must be specified");
       if (detail == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "DETAIL_MUST_BE_SPECIFIED"));
+         throw new IllegalArgumentException("detail must be specified");
       
       this.code = code;
       this.reason = reason;

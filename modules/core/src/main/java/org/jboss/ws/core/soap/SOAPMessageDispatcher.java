@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,7 +22,6 @@
 package org.jboss.ws.core.soap;
 
 import java.util.Iterator;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.Name;
@@ -34,7 +33,6 @@ import javax.xml.ws.addressing.AddressingProperties;
 import javax.xml.ws.addressing.JAXWSAConstants;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -47,7 +45,6 @@ import org.jboss.ws.metadata.umdm.OperationMetaData;
  */
 public class SOAPMessageDispatcher
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPMessageDispatcher.class);
    // provide logging
    private static Logger log = Logger.getLogger(SOAPMessageDispatcher.class);
 
@@ -102,8 +99,9 @@ public class SOAPMessageDispatcher
 
          if (soapBodyElement == null)
          {
-            if (epMetaData.getStyle() == Style.RPC)
-               throw new SOAPException(BundleUtils.getMessage(bundle, "EMPTY_SOAP_BODY_NOT_SUPPORTED"));
+            boolean wsrmDisabled = epMetaData.getConfig().getRMMetaData() == null; 
+            if ((epMetaData.getStyle() == Style.RPC) && (wsrmDisabled)) // RM hack
+               throw new SOAPException("Empty SOAP body with no child element not supported for RPC");
 
             // [JBWS-1125] Support empty soap body elements
             for (OperationMetaData opAux : epMetaData.getOperations())

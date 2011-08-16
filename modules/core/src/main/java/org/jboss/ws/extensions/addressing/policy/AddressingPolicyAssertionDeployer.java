@@ -33,7 +33,7 @@ import org.jboss.ws.extensions.policy.deployer.domainAssertion.AssertionDeployer
 import org.jboss.ws.extensions.policy.deployer.exceptions.UnsupportedAssertion;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.ExtensibleMetaData;
-import org.jboss.ws.api.addressing.AddressingConstants;
+import org.jboss.wsf.common.addressing.AddressingConstants;
 
 /**
  * Associates AddressingFeature with endpoint meta data if not set yet.

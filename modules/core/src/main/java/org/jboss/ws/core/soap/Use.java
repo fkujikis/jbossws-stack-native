@@ -21,10 +21,7 @@
  */
 package org.jboss.ws.core.soap;
 
-import java.util.ResourceBundle;
-
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 
 /** A type-safe enumeration for encoding use.
  *  
@@ -33,7 +30,6 @@ import org.jboss.ws.common.Constants;
  */
 public class Use
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(Use.class);
    private String use;
 
    public static final Use LITERAL = new Use("literal");
@@ -56,7 +52,7 @@ public class Use
       if (Constants.URI_SOAP11_ENC.equals(encodingStyle) || ENCODED.use.equals(encodingStyle))
          return ENCODED;
       
-      throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "UNSUPPORTED_ENCODING_STYLE",  encodingStyle));
+      throw new IllegalArgumentException("Unsupported encoding style: " + encodingStyle);
    }
 
    public String toURI()

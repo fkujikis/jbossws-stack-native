@@ -26,10 +26,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-import org.jboss.ws.api.tools.WSContractProvider;
 import org.jboss.ws.tools.wsdl.WSDLDefinitionsFactory;
 import org.jboss.wsf.test.JBossWSTest;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.spi.tools.WSContractProvider;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * Tests the WSContractProvider API.

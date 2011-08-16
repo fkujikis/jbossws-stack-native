@@ -21,9 +21,6 @@
  */
 package org.jboss.ws.extensions.security.element;
 
-import java.util.ResourceBundle;
-
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.security.Constants;
 import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.w3c.dom.Document;
@@ -42,7 +39,6 @@ import org.w3c.dom.Element;
  */
 public class DirectReference extends Reference
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(DirectReference.class);
 
    private Document doc;
 
@@ -68,17 +64,17 @@ public class DirectReference extends Reference
       this.doc = element.getOwnerDocument();
 
       if (!"Reference".equals(element.getLocalName()))
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "INVALID_LOCAL_NAME"));
+         throw new WSSecurityException("Invalid message, invalid local name on a DirectReference");
 
       String uri = element.getAttribute("URI");
       if (uri == null || uri.length() == 0)
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "MISSING_URI"));
+         throw new WSSecurityException("Inavliad message, Reference element is missing a URI");
 
       setUri(uri);
 
       String valueType = element.getAttribute("ValueType");
       if (valueType == null || valueType.length() == 0)
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "MISSING_VALUETYPE"));
+         throw new WSSecurityException("Inavliad message, Reference element is missing a ValueType");
 
       setValueType(valueType);
    }

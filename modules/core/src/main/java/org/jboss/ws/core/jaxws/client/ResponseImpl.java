@@ -23,7 +23,6 @@ package org.jboss.ws.core.jaxws.client;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -31,8 +30,6 @@ import java.util.concurrent.TimeoutException;
 
 import javax.xml.ws.Response;
 import javax.xml.ws.WebServiceException;
-
-import org.jboss.ws.api.util.BundleUtils;
 
 /**
  * The Response interface provides methods used to obtain the payload and context of a 
@@ -43,7 +40,6 @@ import org.jboss.ws.api.util.BundleUtils;
  */
 public class ResponseImpl implements Response
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ResponseImpl.class);
    private Future delegate;
    private Object result;
    private Exception exception;
@@ -57,7 +53,7 @@ public class ResponseImpl implements Response
    public Future getFuture()
    {
       if (delegate == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "FUTURE_NOT_AVAILABLE"));
+         throw new IllegalStateException("Future not available");
 
       if (exception != null)
       {
@@ -77,7 +73,7 @@ public class ResponseImpl implements Response
    private Future getFutureInternal()
    {
       if (delegate == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "FUTURE_NOT_AVAILABLE"));
+         throw new IllegalStateException("Future not available");
 
       return delegate;
    }

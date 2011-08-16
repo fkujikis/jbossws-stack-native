@@ -28,11 +28,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPFactory;
 import javax.xml.soap.SOAPFault;
 import javax.xml.soap.SOAPHeader;
 import javax.xml.soap.SOAPHeaderElement;
@@ -48,14 +48,13 @@ import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
 import javax.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.DOMUtils;
 import org.jboss.ws.core.soap.NameImpl;
 import org.jboss.ws.core.soap.SOAPFactoryImpl;
 import org.jboss.ws.core.soap.SOAPFaultImpl;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
 import org.jboss.ws.extensions.addressing.AddressingPropertiesImpl;
 import org.jboss.ws.extensions.addressing.EndpointReferenceImpl;
+import org.jboss.wsf.common.DOMUtils;
 import org.jboss.xb.binding.NamespaceRegistry;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -73,7 +72,6 @@ import org.w3c.dom.NamedNodeMap;
  */
 public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl implements SOAPAddressingProperties
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPAddressingPropertiesImpl.class);
    private static Logger log = Logger.getLogger(SOAPAddressingBuilderImpl.class);
    
 	private static AddressingConstants ADDR = new AddressingConstantsImpl();
@@ -98,7 +96,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 	   try
 	   {
 	      SOAPFault fault = new SOAPFaultImpl();
-	      fault.setFaultCode(org.jboss.ws.api.addressing.AddressingConstants.Core.Faults.MESSAGEADDRESSINGHEADERREQUIRED_QNAME);
+	      fault.setFaultCode(org.jboss.wsf.common.addressing.AddressingConstants.Core.Faults.MESSAGEADDRESSINGHEADERREQUIRED_QNAME);
 	      fault.setFaultString("A required header representing a Message Addressing Property is not present");
 	      throw new SOAPFaultException(fault);
 	   }
@@ -220,11 +218,11 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 		}
 		catch (SOAPException ex)
 		{
-			throw new AddressingException(BundleUtils.getMessage(bundle, "CANNOT_READ_HEADERS"),  ex);
+			throw new AddressingException("Cannot read headers", ex);
 		}
 		catch (URISyntaxException ex)
 		{
-			throw new AddressingException(BundleUtils.getMessage(bundle, "CANNOT_READ_HEADERS"),  ex);
+			throw new AddressingException("Cannot read headers", ex);
 		}
 	}
 
@@ -250,9 +248,9 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 
 	public void writeHeaders(SOAPMessage message) throws AddressingException
 	{
-      try
-      {
-            SOAPFactoryImpl factory = new SOAPFactoryImpl();
+		try
+		{
+			SOAPFactoryImpl factory = (SOAPFactoryImpl)SOAPFactory.newInstance();
 			SOAPHeader soapHeader = message.getSOAPHeader();					
 			
 			if (soapHeader == null)
@@ -305,7 +303,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 			// Write wsa:MessageID
 			if( (getReplyTo()!=null || getFaultTo()!=null) && null==getMessageID())
 			{
-				throw new AddressingException(BundleUtils.getMessage(bundle, "REQUIRED_ADDRESSING_HEADER_MISSING",  ADDR.getMessageIDQName()));
+				throw new AddressingException("Required addressing header missing:" + ADDR.getMessageIDQName());
 			}
 			else if (getMessageID() != null)
 			{
@@ -343,14 +341,14 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 		}
 		catch (SOAPException ex)
 		{
-			throw new AddressingException(BundleUtils.getMessage(bundle, "CANNOT_READ_WS_ADDRESSING_HEADERS"),  ex);
+			throw new AddressingException("Cannot read ws-addressing headers", ex);
 		}
 	}
 
 	private void appendRequiredHeader(SOAPHeader soapHeader, QName name, AttributedURI value) throws SOAPException
 	{
 		if(null == value)
-			throw new AddressingException(BundleUtils.getMessage(bundle, "REQUIRED_ADDRESSING_PROPERTY_MISSING",  name));
+			throw new AddressingException("Required addressing property missing: " + name);
 		
 		SOAPElement element = soapHeader.addChildElement(new NameImpl(name));
 		element.addTextNode(value.getURI().toString());
@@ -394,7 +392,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
 		}
 		catch (Exception ex)
 		{
-			throw new AddressingException(BundleUtils.getMessage(bundle, "CANNOT_APPEND_ELEMENTS"),  ex);
+			throw new AddressingException("Cannot append elements", ex);
 		}
 	}
 
@@ -403,7 +401,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
       SOAPElement child = null;
       try
       {
-         SOAPFactoryImpl factory = new SOAPFactoryImpl();
+         SOAPFactoryImpl factory = (SOAPFactoryImpl)SOAPFactory.newInstance();
          if (obj instanceof Element)
          {
             child = factory.createElement((Element)obj);
@@ -417,7 +415,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
          }
          else
          {
-            throw new AddressingException(BundleUtils.getMessage(bundle, "UNSUPPORTED_ELEMENT",  obj.getClass().getName()));
+            throw new AddressingException("Unsupported element: " + obj.getClass().getName());
          }
          return child;
       }
@@ -427,7 +425,7 @@ public class SOAPAddressingPropertiesImpl extends AddressingPropertiesImpl imple
       }
       catch (Exception ex)
       {
-         throw new AddressingException(BundleUtils.getMessage(bundle, "CANNOT_APPEND_ELEMENTS"),  ex);
+         throw new AddressingException("Cannot append elements", ex);
       }
    }
 

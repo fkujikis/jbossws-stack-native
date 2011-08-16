@@ -22,14 +22,12 @@
 package org.jboss.ws.core.jaxws.binding;
 
 import java.io.IOException;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.io.OutputStream;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.core.HTTPMessageImpl;
 import org.jboss.ws.core.client.Marshaller;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
 
 /**
@@ -39,7 +37,6 @@ import org.w3c.dom.Element;
  */
 public class HTTPMessageMarshaller implements Marshaller
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(HTTPMessageMarshaller.class);
    // Provide logging
    private static Logger log = Logger.getLogger(HTTPMessageMarshaller.class);
 
@@ -55,7 +52,7 @@ public class HTTPMessageMarshaller implements Marshaller
    public void write(Object dataObject, OutputStream output) throws IOException
    {
       if ((dataObject instanceof HTTPMessageImpl) == false)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "NOT_A_HTTPMESSAGE",  dataObject));
+         throw new IllegalArgumentException("Not a HTTPMessage: " + dataObject);
 
       HTTPMessageImpl httpMessage = (HTTPMessageImpl)dataObject;
       Element root = httpMessage.getXmlFragment().toElement();

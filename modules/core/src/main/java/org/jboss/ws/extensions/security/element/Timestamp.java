@@ -23,11 +23,9 @@ package org.jboss.ws.extensions.security.element;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.ResourceBundle;
 import java.util.TimeZone;
 
 import org.apache.xml.security.utils.XMLUtils;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.security.Constants;
 import org.jboss.ws.extensions.security.Util;
 import org.jboss.ws.extensions.security.exception.WSSecurityException;
@@ -40,7 +38,6 @@ import org.w3c.dom.Element;
  */
 public class Timestamp implements SecurityElement
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(Timestamp.class);
 
    private String id = "timestamp";
 
@@ -69,7 +66,7 @@ public class Timestamp implements SecurityElement
 
       Element child = Util.getFirstChildElement(element);
       if (child == null || !Constants.WSU_NS.equals(child.getNamespaceURI()) || !"Created".equals(child.getLocalName()))
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "CREATED_CHILD_EXPECTED"));
+         throw new WSSecurityException("Created child expected in Timestamp element");
 
       this.created = SimpleTypeBindings.unmarshalDateTime(XMLUtils.getFullTextChildrenFromElement(child));
 

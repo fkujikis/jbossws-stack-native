@@ -24,7 +24,7 @@ package org.jboss.ws.extensions.addressing.map;
 import javax.xml.ws.addressing.AddressingConstants;
 import javax.xml.ws.addressing.JAXWSAConstants;
 
-import org.jboss.ws.api.addressing.MAPConstants;
+import org.jboss.wsf.common.addressing.MAPConstants;
 
 public class NativeMAPConstants implements MAPConstants
 {

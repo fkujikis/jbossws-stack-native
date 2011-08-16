@@ -22,8 +22,6 @@
 package org.jboss.ws.tools.helpers;
 
 import java.beans.Introspector;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,7 +44,7 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.jaxrpc.LiteralTypeMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.ExceptionMapping;
@@ -85,7 +83,7 @@ import org.jboss.ws.tools.RPCSignature;
 import org.jboss.ws.tools.ToolsUtils;
 import org.jboss.ws.tools.WSToolsConstants;
 import org.jboss.ws.tools.mapping.MappingFileGenerator;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -96,7 +94,6 @@ import org.w3c.dom.Element;
  */
 public class MappingFileGeneratorHelper
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(MappingFileGeneratorHelper.class);
    // provide logging
    private static final Logger log = Logger.getLogger(MappingFileGeneratorHelper.class);
    private WSDLDefinitions wsdlDefinitions = null;
@@ -153,7 +150,7 @@ public class MappingFileGeneratorHelper
          javaServiceName += "_Service";
 
       if (this.serviceName == null || serviceName.length() == 0)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "IS_NULL", "serviceName"));
+         throw new IllegalArgumentException("MappingFileGenerator:Service Name is null");
 
       String targetNS = wsdlDefinitions.getTargetNamespace();
       String prefix = WSToolsConstants.WSTOOLS_CONSTANT_MAPPING_SERVICE_PREFIX;
@@ -183,7 +180,7 @@ public class MappingFileGeneratorHelper
    {
       serviceName = ser.getName().getLocalPart();
       if (this.serviceName == null || serviceName.length() == 0)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "IS_NULL", "serviceName"));
+         throw new IllegalArgumentException("MappingFileGenerator:Service Name is null");
 
       String targetNS = wsdlDefinitions.getTargetNamespace();
 
@@ -442,7 +439,7 @@ public class MappingFileGeneratorHelper
    {
       WSDLInterfaceOperationInput win = WSDLUtils.getWsdl11Input(wiop);
       if (win == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "RPC_ENDPOINTS_REQUIRE_INPUT_MESSAGE"));
+         throw new WSException("RPC endpoints require an input message");
       String wsdlMessageName = win.getMessageName().getLocalPart();
       JBossXSModel schemaModel = WSDLUtils.getSchemaModel(wsdlDefinitions.getWsdlTypes());
 
@@ -588,7 +585,7 @@ public class MappingFileGeneratorHelper
    private boolean unwrapRequest(ServiceEndpointMethodMapping methodMapping, String messageName, String containingElement, XSTypeDefinition xt)
    {
       if (xt instanceof XSComplexTypeDefinition == false)
-         throw new WSException(BundleUtils.getMessage(bundle, "TRIED_TO_UNWRAP"));
+         throw new WSException("Tried to unwrap a non-complex type.");
 
       List<MethodParamPartsMapping> partsMappings = new ArrayList<MethodParamPartsMapping>();
 
@@ -680,7 +677,7 @@ public class MappingFileGeneratorHelper
    private void checkEssentials()
    {
       if (typeMapping == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "TYPEMAPPING_IS_NULL"));
+         throw new WSException("typeMapping is null");
    }
 
    private XSTypeDefinition getXSType(WSDLInterfaceMessageReference part)

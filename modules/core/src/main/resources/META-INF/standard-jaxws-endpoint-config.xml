@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:javaee="http://java.sun.com/xml/ns/javaee"
-  xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 schema/jaxws-config_2_0.xsd">
+<jaxws-config xmlns="urn:jboss:jaxws-config:2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:javaee="http://java.sun.com/xml/ns/javaee"
+  xsi:schemaLocation="urn:jboss:jaxws-config:2.0 schema/jaxws-config_2_0.xsd">
   
   <endpoint-config>
     <config-name>Standard Endpoint</config-name>
@@ -10,7 +10,7 @@
         <javaee:protocol-bindings>##SOAP11_HTTP</javaee:protocol-bindings>
         <javaee:handler>
           <javaee:handler-name>Recording Handler</javaee:handler-name>
-          <javaee:handler-class>org.jboss.ws.common.invocation.RecordingServerHandler</javaee:handler-class>
+          <javaee:handler-class>org.jboss.wsf.framework.invocation.RecordingServerHandler</javaee:handler-class>
         </javaee:handler>
       </javaee:handler-chain>
     </pre-handler-chains>
@@ -22,7 +22,7 @@
   -->
   <endpoint-config>
     <config-name>.NET friendly Endpoint</config-name>
-    <feature><feature-name>http://org.jboss.ws/binding/wsdl/dotnet</feature-name></feature>
+    <feature>http://org.jboss.ws/binding/wsdl/dotnet</feature>
   </endpoint-config>
   
   <endpoint-config>
@@ -36,7 +36,7 @@
         </javaee:handler>
         <javaee:handler>
           <javaee:handler-name>Recording Handler</javaee:handler-name>
-          <javaee:handler-class>org.jboss.ws.common.invocation.RecordingServerHandler</javaee:handler-class>
+          <javaee:handler-class>org.jboss.wsf.framework.invocation.RecordingServerHandler</javaee:handler-class>
         </javaee:handler>
       </javaee:handler-chain>
     </post-handler-chains>
@@ -53,7 +53,7 @@
         </javaee:handler>
         <javaee:handler>
           <javaee:handler-name>Recording Handler</javaee:handler-name>
-          <javaee:handler-class>org.jboss.ws.common.invocation.RecordingServerHandler</javaee:handler-class>
+          <javaee:handler-class>org.jboss.wsf.framework.invocation.RecordingServerHandler</javaee:handler-class>
         </javaee:handler>
       </javaee:handler-chain>
     </post-handler-chains>
@@ -70,7 +70,7 @@
         </javaee:handler>
         <javaee:handler>
           <javaee:handler-name>Recording Handler</javaee:handler-name>
-          <javaee:handler-class>org.jboss.ws.common.invocation.RecordingServerHandler</javaee:handler-class>
+          <javaee:handler-class>org.jboss.wsf.framework.invocation.RecordingServerHandler</javaee:handler-class>
         </javaee:handler>
       </javaee:handler-chain>
     </post-handler-chains>

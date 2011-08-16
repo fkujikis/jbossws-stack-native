@@ -22,8 +22,6 @@
 package org.jboss.ws.core.server.netty;
 
 import java.net.InetSocketAddress;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.util.concurrent.Executors;
 
 import javax.xml.ws.WebServiceException;
@@ -44,7 +42,6 @@ import org.jboss.ws.core.client.transport.WSServerPipelineFactory;
  */
 final class NettyHttpServerImpl implements NettyHttpServer, Runnable
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(NettyHttpServerImpl.class);
 
    /** Wait period. */
    private static final long WAIT_PERIOD = 100;
@@ -152,7 +149,7 @@ final class NettyHttpServerImpl implements NettyHttpServer, Runnable
    {
       if (requestPath == null)
       {
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "NULL_REQUEST_PATH"));
+         throw new IllegalArgumentException("Null request path");
       }
 
       this.ensureUpAndRunning();
@@ -237,7 +234,7 @@ final class NettyHttpServerImpl implements NettyHttpServer, Runnable
    {
       if (this.stopped)
       {
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "SERVER_IS_DOWN"));
+         throw new IllegalStateException("Server is down");
       }
    }
 

@@ -102,11 +102,12 @@ public class AttachmentMarshallerImpl extends AttachmentMarshaller
    public String addMtomAttachment(byte[] data, int offset, int length,
                                    String mimeType, String elementNamespace, String elementLocalName)
    {
-           
-      String contentType = mimeType == null ? "application/octet-stream" : mimeType;
-      ByteArrayDataSource ds = new ByteArrayDataSource(data, offset, length);
-      ds.setContentType(contentType);
-      DataHandler dh = new DataHandler(ds);
+
+      if(true)
+         mimeType = null; // ignore the mime type. otherwise the content handlers will fail
+
+      String contentType = mimeType != null ? mimeType : "application/octet-stream";
+      DataHandler dh = new DataHandler(data, contentType);
       return addMtomAttachment(dh, elementNamespace, elementLocalName);
    }
 

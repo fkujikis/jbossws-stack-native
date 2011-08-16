@@ -24,11 +24,9 @@ package org.jboss.ws.extensions.security.operation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.security.QNameTarget;
 import org.jboss.ws.extensions.security.Target;
 import org.jboss.ws.extensions.security.Util;
@@ -41,7 +39,6 @@ import org.w3c.dom.Element;
 
 public class RequireTargetableOperation implements RequireOperation
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(RequireTargetableOperation.class);
    private List<Target> targets;
    
    public RequireTargetableOperation(List<Target> targets)
@@ -60,7 +57,7 @@ public class RequireTargetableOperation implements RequireOperation
          return result;
       }
 
-      throw new WSSecurityException(BundleUtils.getMessage(bundle, "UNKNOWN_TARGET"));
+      throw new WSSecurityException("Unknown target");
    }
 
    private Collection<String> resolveQNameTarget(Document message, QNameTarget target) throws WSSecurityException
@@ -69,12 +66,12 @@ public class RequireTargetableOperation implements RequireOperation
 
       Element element = Util.findElement(message.getDocumentElement(), name);
       if (element == null)
-         throw new FailedCheckException(BundleUtils.getMessage(bundle, "REQUIRED_QNAME",  name));
+         throw new FailedCheckException("Required QName was not present: " + name);
 
       String id = Util.getWsuId(element);
 
       if (id == null)
-         throw new FailedCheckException(BundleUtils.getMessage(bundle, "NOT_CONTAIN_WSU_ID"));
+         throw new FailedCheckException("Required element did not contain a wsu:id.");
 
       Collection<String> result = new ArrayList<String>(1);
       result.add(id);
@@ -96,7 +93,7 @@ public class RequireTargetableOperation implements RequireOperation
       {
           Collection<String> ids = resolveTarget(message, target);
           if (! processedIds.containsAll(ids))
-             throw new FailedCheckException(BundleUtils.getMessage(bundle, "REQUIRED_ELEMENTS"));
+             throw new FailedCheckException("Required elements for encryption and or signing are not all present.");
       }
    }
 }

@@ -29,7 +29,8 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import org.jboss.test.ws.tools.validation.WSDLValidator;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
+import org.jboss.ws.extensions.eventing.EventingConstants;
 import org.jboss.ws.metadata.wsdl.WSDLBinding;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
@@ -46,7 +47,7 @@ import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.tools.wsdl.WSDLDefinitionsFactory;
 import org.jboss.ws.tools.wsdl.WSDLWriter;
 import org.jboss.wsf.test.JBossWSTest;
-import org.jboss.ws.common.IOUtils;
+import org.jboss.wsf.common.IOUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -149,6 +150,32 @@ public class WSDL11TestCase extends JBossWSTest
       wsdlOutput = wsdlOperation.getOutputs()[0];
       childPart = wsdlOutput.getChildPart("result");
       assertEquals(new QName(TARGET_NAMESPACE, "SimpleUserType"), childPart.getType());
+   }
+
+
+   public void testEventSourceBinding() throws Exception
+   {
+      URL wsdlFile = getResourceURL("common/wsdl11/inherit/wind_inherit.wsdl");
+
+      WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
+      WSDLDefinitions wsdlDefinitions = factory.parse(wsdlFile);
+
+      WSDLService service = wsdlDefinitions.getService(new QName("http://schemas.xmlsoap.org/ws/2004/08/eventing", "EventingService"));
+      assertNotNull(service);
+      WSDLEndpoint[] endpoints = service.getEndpoints();
+      for (int i = 0; i < endpoints.length; i++)
+      {
+         WSDLEndpoint ep = endpoints[i];
+         assertEquals(EventingConstants.NS_EVENTING, ep.getName().getNamespaceURI());
+      }
+
+      WSDLInterface warningsInterface = wsdlDefinitions.getInterface(new QName(wsdlDefinitions.getTargetNamespace(), "Warnings"));
+      assertNotNull("Event source port type not parsed", warningsInterface);
+      assertEquals(warningsInterface.getName().getNamespaceURI(), "http://www.example.org/oceanwatch");
+
+      WSDLInterface eventSourceInterface = wsdlDefinitions.getInterface(new QName("http://schemas.xmlsoap.org/ws/2004/08/eventing", "EventSource"));
+      assertNotNull(eventSourceInterface);
+      assertEquals(eventSourceInterface.getName().getNamespaceURI(), EventingConstants.NS_EVENTING);
    }
 
    public void testSwaMessages() throws Exception

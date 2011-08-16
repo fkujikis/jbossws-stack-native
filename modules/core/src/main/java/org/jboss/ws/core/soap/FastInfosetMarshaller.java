@@ -23,13 +23,11 @@ package org.jboss.ws.core.soap;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ResourceBundle;
 
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.client.Marshaller;
 
 import com.sun.xml.fastinfoset.dom.DOMDocumentSerializer;
@@ -41,7 +39,6 @@ import com.sun.xml.fastinfoset.dom.DOMDocumentSerializer;
  */
 public class FastInfosetMarshaller implements Marshaller
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(FastInfosetMarshaller.class);
    /**
     * Marshaller will need to take the dataObject and convert
     * into primitive java data types and write to the
@@ -54,11 +51,11 @@ public class FastInfosetMarshaller implements Marshaller
    public void write(Object dataObject, OutputStream output) throws IOException
    {
       if ((dataObject instanceof SOAPMessage) == false)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "NOT_A_SOAPMESSAGE",  dataObject));
+         throw new IllegalArgumentException("Not a SOAPMessage: " + dataObject);
 
       SOAPMessageImpl soapMessage = (SOAPMessageImpl)dataObject;
       if (soapMessage.getAttachments().hasNext())
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "ATTACHMENTS_NOT_SUPPORTED_WITH_FASTINFOSET"));
+         throw new IllegalStateException("Attachments not supported with FastInfoset");
 
       try
       {
@@ -69,7 +66,7 @@ public class FastInfosetMarshaller implements Marshaller
       }
       catch (SOAPException ex)
       {
-         IOException ioex = new IOException(BundleUtils.getMessage(bundle, "CANNOT_SERIALIZE_SOAP_ENVELOPE"));
+         IOException ioex = new IOException("Cannot serialize SOAP Envelope");
          ioex.initCause(ex);
          throw ioex;
       }

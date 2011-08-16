@@ -268,13 +268,46 @@
           prefix="WEB-INF/wsdl"/>
     </war>
 
+    <!-- jaxws-samples-wseventing -->
+    <war warfile="${tests.output.dir}/test-libs/jaxws-samples-wseventing.war" webxml="${tests.output.dir}/test-resources/jaxws/samples/wseventing/WEB-INF/web.xml">
+      <classes dir="${tests.output.dir}/test-classes">
+        <include name="org/jboss/test/ws/jaxws/samples/wseventing/Sysmon**.class"/>
+      </classes>
+      <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wseventing/WEB-INF">
+        <include name="wsdl/jboss-web.xml"/>
+        <include name="wsdl/sysmon.wsdl"/>
+        <include name="wsdl/ws-eventing.wsdl"/>
+        <include name="wsdl/ws-eventing.xsd"/>
+        <include name="wsdl/ws-addr.xsd"/>
+      </webinf>
+    </war>
+    <jar destfile="${tests.output.dir}/test-libs/jaxws-samples-wseventing-sink.jar">
+      <fileset dir="${tests.output.dir}/test-classes">
+        <include name="org/jboss/test/ws/jaxws/samples/wseventing/EventSink*.class"/>
+        <include name="org/jboss/test/ws/jaxws/samples/wseventing/SystemStatus.class"/>
+      </fileset>
+    </jar>
+    
+    <!-- jaxws-samples-wsrm -->
+    <war warfile="${tests.output.dir}/test-libs/jaxws-samples-wsrm.war" webxml="${tests.output.dir}/test-resources/jaxws/samples/wsrm/WEB-INF/web.xml">
+      <classes dir="${tests.output.dir}/test-classes">
+        <include name="org/jboss/test/ws/jaxws/samples/wsrm/service/**"/>
+      </classes>
+      <zipfileset dir="${tests.output.dir}/test-resources/jaxws/samples/wsrm/WEB-INF/wsdl" prefix="WEB-INF/wsdl"/>
+      <zipfileset file="${tests.output.dir}/test-resources/jaxws/samples/wsrm/WEB-INF/wsrm-jaxws-endpoint-config.xml" prefix="META-INF"/>
+    </war>
+    
+    <jar jarfile="${tests.output.dir}/test-libs/jaxws-samples-wsrm-client.jar">
+      <metainf dir="${tests.output.dir}/test-resources/jaxws/samples/wsrm/META-INF">
+        <include name="wsrm-jaxws-client-config.xml"/>
+      </metainf>
+    </jar>
+    
     <!-- jaxws-samples-wssecurity-encrypt -->
     <war warfile="${tests.output.dir}/test-libs/jaxws-samples-wssecurity-encrypt.war"
       webxml="${tests.output.dir}/test-resources/jaxws/samples/wssecurity/WEB-INF/web.xml">
       <classes dir="${tests.output.dir}/test-classes">
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/Hello.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloException.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloException_Exception.class"/>
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloJavaBean.class"/>
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/UserType.class"/>
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/ObjectFactory.class"/>
@@ -286,17 +319,12 @@
         <include name="wsse.keystore"/>
         <include name="wsse.truststore"/>
       </webinf>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
     </war>
     
     <!-- jaxws-samples-wssecurity-sign -->
     <war warfile="${tests.output.dir}/test-libs/jaxws-samples-wssecurity-sign.war" webxml="${tests.output.dir}/test-resources/jaxws/samples/wssecurity/WEB-INF/web.xml">
       <classes dir="${tests.output.dir}/test-classes">
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/Hello.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloException.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloException_Exception.class"/>
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloJavaBean.class"/>
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/UserType.class"/>
         <include name="org/jboss/test/ws/jaxws/samples/wssecurity/ObjectFactory.class"/>
@@ -308,53 +336,6 @@
         <include name="wsse.keystore"/>
         <include name="wsse.truststore"/>
       </webinf>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
-    </war>
-    
-    <!-- jaxws-samples-wssecurity-sign-fault -->
-    <war warfile="${tests.output.dir}/test-libs/jaxws-samples-wssecurity-sign-fault.war" webxml="${tests.output.dir}/test-resources/jaxws/samples/wssecurity/WEB-INF/web.xml">
-      <classes dir="${tests.output.dir}/test-classes">
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/Hello.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloException.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloException_Exception.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloJavaBean.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/UserType.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/ObjectFactory.class"/>
-      </classes>
-      <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wssecurity/sign-fault/WEB-INF">
-        <include name="jboss-wsse-server.xml"/>
-      </webinf>
-      <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wssecurity">
-        <include name="wsse.keystore"/>
-        <include name="wsse.truststore"/>
-      </webinf>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
-    </war>
-    
-    <!-- jaxws-samples-wssecurity-sign-encrypt-fault -->
-    <war warfile="${tests.output.dir}/test-libs/jaxws-samples-wssecurity-sign-encrypt-fault.war" webxml="${tests.output.dir}/test-resources/jaxws/samples/wssecurity/WEB-INF/web.xml">
-      <classes dir="${tests.output.dir}/test-classes">
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/Hello.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloException.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloException_Exception.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/HelloJavaBean.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/UserType.class"/>
-        <include name="org/jboss/test/ws/jaxws/samples/wssecurity/ObjectFactory.class"/>
-      </classes>
-      <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wssecurity/sign-encrypt-fault/WEB-INF">
-        <include name="jboss-wsse-server.xml"/>
-      </webinf>
-      <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wssecurity">
-        <include name="wsse.keystore"/>
-        <include name="wsse.truststore"/>
-      </webinf>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
     </war>
     
     <!-- jaxws-samples-wssecurity-username -->
@@ -368,9 +349,6 @@
         <include name="jboss-web.xml"/>
         <include name="jboss-wsse-server.xml"/>
       </webinf>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
     </war>
     
     <!-- jaxws-samples-wssecurityAnnotatedpolicy-encrypt -->
@@ -389,9 +367,6 @@
       <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wssecurityAnnotatedpolicy/WEB-INF">
         <include name="Policy.xml"/>
       </webinf>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
     </war>
     
     <!-- jaxws-samples-wssecuritypolicy-encrypt -->
@@ -410,9 +385,6 @@
       <webinf dir="${tests.output.dir}/test-resources/jaxws/samples/wssecuritypolicy/WEB-INF">
         <include name="wsdl/**"/>
       </webinf>
-      <manifest>
-          <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
     </war>
 
     <!-- Please add alphabetically -->

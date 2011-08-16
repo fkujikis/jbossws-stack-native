@@ -24,7 +24,6 @@ package org.jboss.ws.core.soap;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Iterator;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.Name;
@@ -34,14 +33,13 @@ import javax.xml.transform.Source;
 import javax.xml.ws.handler.MessageContext.Scope;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.jaxws.handler.MessageContextJAXWS;
 import org.jboss.ws.core.soap.SOAPContent.State;
 import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
@@ -72,7 +70,6 @@ import org.w3c.dom.TypeInfo;
  */
 public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAccess
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPContentElement.class);
    // provide logging
    private static Logger log = Logger.getLogger(SOAPContentElement.class);
 
@@ -111,7 +108,7 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
    public ParameterMetaData getParamMetaData()
    {
       if (paramMetaData == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "PARAMETER_META_DATA_NOT_AVAILABLE"));
+         throw new IllegalStateException("Parameter meta data not available");
 
       return paramMetaData;
    }

@@ -25,19 +25,14 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.ResourceBundle;
 
 import javax.wsdl.Definition;
 import javax.wsdl.WSDLException;
 import javax.wsdl.factory.WSDLFactory;
 import javax.xml.namespace.QName;
 
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.addressing.AddressingConstants;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
 import org.jboss.ws.metadata.wsdl.Extendable;
 import org.jboss.ws.metadata.wsdl.WSDLBinding;
 import org.jboss.ws.metadata.wsdl.WSDLBindingMessageReference;
@@ -50,6 +45,7 @@ import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
 import org.jboss.ws.metadata.wsdl.WSDLExtensibilityElement;
 import org.jboss.ws.metadata.wsdl.WSDLImport;
 import org.jboss.ws.metadata.wsdl.WSDLInterface;
+import org.jboss.ws.metadata.wsdl.WSDLInterfaceFault;
 import org.jboss.ws.metadata.wsdl.WSDLInterfaceMessageReference;
 import org.jboss.ws.metadata.wsdl.WSDLInterfaceOperation;
 import org.jboss.ws.metadata.wsdl.WSDLInterfaceOperationInput;
@@ -58,9 +54,12 @@ import org.jboss.ws.metadata.wsdl.WSDLInterfaceOperationOutput;
 import org.jboss.ws.metadata.wsdl.WSDLProperty;
 import org.jboss.ws.metadata.wsdl.WSDLRPCPart;
 import org.jboss.ws.metadata.wsdl.WSDLRPCSignatureItem;
-import org.jboss.ws.metadata.wsdl.WSDLRPCSignatureItem.Direction;
 import org.jboss.ws.metadata.wsdl.WSDLSOAPHeader;
 import org.jboss.ws.metadata.wsdl.WSDLService;
+import org.jboss.ws.metadata.wsdl.WSDLRPCSignatureItem.Direction;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
+import org.jboss.wsf.common.addressing.AddressingConstants;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -74,7 +73,6 @@ import org.w3c.dom.NodeList;
  */
 public class WSDL11Writer extends WSDLWriter
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSDL11Writer.class);
    //Used Internally
    private String wsdlStyle = Constants.RPC_LITERAL;
 
@@ -327,7 +325,7 @@ public class WSDL11Writer extends WSDLWriter
       String namespaceURI = name.getNamespaceURI();
       String prefix = wsdl.getPrefix(namespaceURI);
       if (prefix == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "PREFIX_NOT_BOUND",  namespaceURI));
+         throw new WSException("Prefix not bound for namespace: " + namespaceURI);
 
       return prefix + ":" + name.getLocalPart();
    }
@@ -382,7 +380,7 @@ public class WSDL11Writer extends WSDLWriter
          bindingReferences = bindingOperation.getOutputs();
 
       if (bindingReferences.length > 1)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "WSDL_1.1_ONLY_SUPPORTS_MEPS_BINDING_REF"));
+         throw new IllegalArgumentException("WSDl 1.1 only supports In-Only, and In-Out MEPS, more than reference input found");
 
       if (bindingReferences.length == 1)
          return bindingReferences[0];
@@ -529,7 +527,7 @@ public class WSDL11Writer extends WSDLWriter
          buffer.append("<binding name='" + binding.getName().getLocalPart() + "' type='" + getQNameRef(binding.getInterfaceName()) + "'>");
          //TODO:Need to derive the WSDLStyle from the Style attribute of InterfaceOperation
          if (wsdlStyle == null)
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "WSDL_STYLE_IS_NULL"));
+            throw new IllegalArgumentException("WSDL Style is null (should be rpc or document");
          String style = "rpc";
          if (wsdlStyle.equals(Constants.DOCUMENT_LITERAL))
             style = "document";
@@ -557,7 +555,7 @@ public class WSDL11Writer extends WSDLWriter
 
          WSDLInterface wsdlInterface = wsdl.getInterface(interfaceName);
          if (wsdlInterface == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "WSDL_INTERFACE_SHOULD_NOT_BE_NULL"));
+            throw new WSException("WSDL Interface should not be null");
          WSDLInterfaceOperation interfaceOperation = wsdlInterface.getOperation(operation.getRef());
 
          buffer.append("<operation name='" + interfaceOperation.getName().getLocalPart() + "'>");
@@ -567,7 +565,7 @@ public class WSDL11Writer extends WSDLWriter
 
          WSDLBindingOperationInput[] inputs = operation.getInputs();
          if (inputs.length != 1)
-            throw new WSException(BundleUtils.getMessage(bundle, "WSDL11_SUPPORT_MEPS"));
+            throw new WSException("WSDl 1.1 only supports In-Only, and In-Out MEPS.");
 
          buffer.append("<input>");
          appendUnknownExtensibilityElements(buffer, inputs[0]);

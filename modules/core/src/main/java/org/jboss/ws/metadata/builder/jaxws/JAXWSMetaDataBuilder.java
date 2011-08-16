@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.jws.HandlerChain;
 import javax.jws.Oneway;
@@ -42,36 +41,34 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.soap.SOAPBinding;
-import javax.jws.soap.SOAPBinding.ParameterStyle;
 import javax.jws.soap.SOAPMessageHandlers;
+import javax.jws.soap.SOAPBinding.ParameterStyle;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
-import javax.xml.ws.Action;
 import javax.xml.ws.BindingType;
 import javax.xml.ws.FaultAction;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
 import javax.xml.ws.WebFault;
+import javax.xml.ws.Action;
 import javax.xml.ws.addressing.AddressingProperties;
 import javax.xml.ws.soap.AddressingFeature;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.annotation.Documentation;
-import org.jboss.ws.api.binding.BindingCustomization;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.jaxws.DynamicWrapperGenerator;
 import org.jboss.ws.core.jaxws.JAXBContextFactory;
 import org.jboss.ws.core.jaxws.WrapperGenerator;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.core.soap.Use;
 import org.jboss.ws.core.utils.HolderUtils;
+import org.jboss.ws.core.utils.JBossWSEntityResolver;
 import org.jboss.ws.extensions.addressing.AddressingPropertiesImpl;
 import org.jboss.ws.extensions.addressing.metadata.AddressingOpMetaExt;
 import org.jboss.ws.extensions.xop.jaxws.AttachmentScanResult;
@@ -96,12 +93,17 @@ import org.jboss.ws.metadata.wsdl.WSDLInterface;
 import org.jboss.ws.metadata.wsdl.WSDLInterfaceOperation;
 import org.jboss.ws.metadata.wsdl.WSDLMIMEPart;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
+import org.jboss.wsf.common.JavaUtils;
+import org.jboss.wsf.spi.binding.BindingCustomization;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.HandlerChainsObjectFactory;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainsMetaData;
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainsMetaDataParser;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+import org.jboss.xb.binding.ObjectModelFactory;
+import org.jboss.xb.binding.Unmarshaller;
+import org.jboss.xb.binding.UnmarshallerFactory;
 
 import com.sun.xml.bind.api.JAXBRIContext;
 import com.sun.xml.bind.api.TypeReference;
@@ -115,7 +117,6 @@ import com.sun.xml.bind.api.TypeReference;
 @SuppressWarnings("deprecation")
 public class JAXWSMetaDataBuilder extends MetaDataBuilder
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JAXWSMetaDataBuilder.class);
 
    protected static final Logger log = Logger.getLogger(JAXWSWebServiceMetaDataBuilder.class);
    protected List<Class<?>> javaTypes = new ArrayList<Class<?>>();
@@ -160,7 +161,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
 
          SOAPBinding.Use attrUse = anSoapBinding.use();
          if (attrUse == SOAPBinding.Use.ENCODED)
-            throw new WSException(BundleUtils.getMessage(bundle, "SOAP_ENCODING_IS_NOT_SUPPORTED"));
+            throw new WSException("SOAP encoding is not supported for JSR-181 deployments");
 
          epMetaData.setEncodingStyle(Use.LITERAL);
 
@@ -183,7 +184,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
    protected void processHandlerChain(EndpointMetaData epMetaData, Class<?> wsClass)
    {
       if (wsClass.isAnnotationPresent(SOAPMessageHandlers.class))
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_COMBINE"));
+         throw new WSException("Cannot combine @HandlerChain with @SOAPMessageHandlers");
 
       if (wsClass.isAnnotationPresent(HandlerChain.class))
       {
@@ -274,7 +275,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       }
 
       if (fileURL == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_RESOLVE_HANDLER_FILE", new Object[]{ filename ,  wsClass.getName()}));
+         throw new WSException("Cannot resolve handler file '" + filename + "' on " + wsClass.getName());
 
       if (debugEnabled)
          log.debug("Loading handler chain: " + fileURL);
@@ -285,7 +286,12 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
          InputStream is = fileURL.openStream();
          try
          {
-            handlerChainsMetaData = UnifiedHandlerChainsMetaDataParser.parse(is);
+            Unmarshaller unmarshaller = UnmarshallerFactory.newInstance().newUnmarshaller();
+            unmarshaller.setValidation(true);
+            unmarshaller.setSchemaValidation(true);
+            unmarshaller.setEntityResolver(new JBossWSEntityResolver());
+            ObjectModelFactory factory = new HandlerChainsObjectFactory();
+            handlerChainsMetaData = (UnifiedHandlerChainsMetaData)unmarshaller.unmarshal(is, factory, null);
          }
          finally
          {
@@ -299,7 +305,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       }
       catch (Exception ex)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_PROCESS_HANDLER_CHAIN",  filename),  ex);
+         throw new WSException("Cannot process handler chain: " + filename, ex);
       }
 
       return handlerChainsMetaData;
@@ -308,7 +314,8 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
    private void addFault(OperationMetaData opMetaData, Class<?> exception)
    {
       if (opMetaData.isOneWay())
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "REPORT_AN_ERROR_IF_OPERATION_MARKED"));
+         throw new IllegalStateException("JSR-181 4.3.1 - A JSR-181 processor is REQUIRED to report an error if an operation marked "
+               + "@Oneway has a return value, declares any checked exceptions or has any INOUT or OUT parameters.");
 
       WebFault anWebFault = exception.getAnnotation(WebFault.class);
 
@@ -465,7 +472,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       }
       catch (SecurityException e)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "UNEXPECTED_SECURITY_EXCEPTION",  e.getMessage()),  e);
+         throw new WSException("Unexpected security exception: " + e.getMessage(), e);
       }
       catch (NoSuchMethodException e)
       {
@@ -591,7 +598,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
          webMethodAction = webMethodAnn.action();
       
       if ((actionInput != null) && (webMethodAction != null) && !actionInput.equals(webMethodAction))
-         throw new RuntimeException(BundleUtils.getMessage(bundle, "MUST_HAVE_SAME_VALUE",  method));
+         throw new RuntimeException("@Action.input and @WebMethod.action must have same value if both specified: " + method);
       
       if (actionInput != null)
          return actionInput;
@@ -754,7 +761,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       {
          SOAPBinding anBinding = method.getAnnotation(SOAPBinding.class);
          if (anBinding.style() != SOAPBinding.Style.DOCUMENT || epMetaData.getStyle() != Style.DOCUMENT)
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "SOAPBINDING_MUST_BE_SPECIFIED"));
+            throw new IllegalArgumentException("@SOAPBinding must be specified using DOCUMENT style when placed on a method");
          opMetaData.setParameterStyle(anBinding.parameterStyle());
       }
 
@@ -805,7 +812,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
 
          // Assert one-way
          if (opMetaData.isOneWay() && mode != ParameterMode.IN)
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CAN_NOT_HAVE_OUTPUT_PARAMETERS", new Object[]{method.getName() , i }));
+            throw new IllegalArgumentException("A one-way operation can not have output parameters [" + "method = " + method.getName() + ", parameter = " + i + "]");
 
          if (HolderUtils.isHolderType(javaType))
          {
@@ -884,7 +891,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       if (!(returnType == void.class))
       {
          if (opMetaData.isOneWay())
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CAN_NOT_HAVE_A_RETURN",  method.getName() ));
+            throw new IllegalArgumentException("[JSR-181 2.5.1] The method '" + method.getName() + "' can not have a return value if it is marked OneWay");
 
          WebResult anWebResult = method.getAnnotation(WebResult.class);
          boolean isHeader = anWebResult != null && anWebResult.header();
@@ -1078,7 +1085,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       }
 
       if (!webMethodFound)
-         throw new WSException(BundleUtils.getMessage(bundle, "EXPOSABLE_METHODS_NOT_FOUND",  wsClass));
+         throw new WSException("Exposable methods not found: " + wsClass);
    }
 
    protected void initWrapperGenerator(ClassLoader loader)
@@ -1121,7 +1128,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
       }
       catch (WSException ex)
       {
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_BUILD_JAXB_CONTEXT"),  ex);
+         throw new IllegalStateException("Cannot build JAXB context", ex);
       }
    }
 
@@ -1154,7 +1161,7 @@ public class JAXWSMetaDataBuilder extends MetaDataBuilder
          }
          catch (IllegalArgumentException e)
          {
-            throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_XML_TYPE", new Object[]{ xmlName ,  javaName }));
+            throw new IllegalStateException("Cannot obtain xml type for: [xmlName=" + xmlName + ",javaName=" + javaName + "]");
          }
 
          /* Anonymous type.

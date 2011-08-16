@@ -24,8 +24,6 @@ package org.jboss.ws.core.soap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.nio.charset.Charset;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.Name;
@@ -39,11 +37,10 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.dom.DOMSource;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMUtils;
 import org.jboss.ws.core.CommonSOAPFaultException;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -60,7 +57,6 @@ import org.xml.sax.InputSource;
  */
 public class EnvelopeBuilderDOM implements EnvelopeBuilder
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(EnvelopeBuilderDOM.class);
    // provide logging
    private static Logger log = Logger.getLogger(EnvelopeBuilderDOM.class);
 
@@ -93,7 +89,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          {
             return null;
          }
-         log.error(BundleUtils.getMessage(bundle, "EXCEPTION_WHILE_BUILDING_ENVELOPE"),  ex);
+         log.error("Exception while building envelope", ex);
          QName faultCode = Constants.SOAP11_FAULT_CODE_CLIENT;
          throw new CommonSOAPFaultException(faultCode, ex.getMessage());
       }
@@ -129,22 +125,9 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
       String encoding = (String)soapMessage.getProperty(SOAPMessage.CHARACTER_SET_ENCODING);
       if (encoding == null)
       {
-         return "UTF-8";
-      }
-
-      try
-      {
-         Charset cs = Charset.forName(encoding);
-         encoding = cs.name();
-      }
-      catch (IllegalArgumentException e)
-      {
-         if (log.isDebugEnabled())
-            log.debug("Unsupported charset '" + encoding + "' switching to 'UTF-8'");
          encoding = "UTF-8";
       }
-
-      return encoding;
+      return encoding;  
    }
    
    public SOAPEnvelope build(SOAPMessage soapMessage, Element domEnv) throws SOAPException
@@ -173,7 +156,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
             }
             else
             {
-               log.warn(BundleUtils.getMessage(bundle, "IGNORE_ENVELOPE_CHILD",  elName));
+               log.warn("Ignore envelope child: " + elName);
             }
          }
       }
@@ -217,7 +200,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "IGNORE_CHILD_TYPE",  childType));
+            log.warn("Ignore child type: " + childType);
          }
       }
 
@@ -270,7 +253,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "IGNORE_CHILD_TYPE",  childType));
+            log.warn("Ignore child type: " + childType);
          }
       }
 
@@ -325,7 +308,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "UNSUPPORTED_MESSAGE_STYLE",  style));
+            throw new WSException("Unsupported message style: " + style);
          }
       }
 
@@ -383,7 +366,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "IGNORE_CHILD_TYPE",  childType));
+            log.warn("Ignore child type: " + childType);
          }
       }
 
@@ -423,7 +406,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "IGNORE_CHILD_TYPE",  childType));
+            log.warn("Ignore child type: " + childType);
          }
       }
 

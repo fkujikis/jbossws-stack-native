@@ -21,15 +21,12 @@
  */
 package org.jboss.ws.extensions.xop.jaxrpc;
 
-import java.util.ResourceBundle;
-
 import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
 import javax.xml.soap.AttachmentPart;
 
 import org.jboss.logging.Logger;
 import org.jboss.util.NotImplementedException;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
@@ -49,7 +46,6 @@ import org.jboss.xb.binding.sunday.xop.XOPObject;
  * @since May 9, 2006
  */
 public class XOPMarshallerImpl implements XOPMarshaller {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(XOPMarshallerImpl.class);
 
    private static final Logger log = Logger.getLogger(XOPMarshallerImpl.class);
 
@@ -97,7 +93,7 @@ public class XOPMarshallerImpl implements XOPMarshaller {
             elementNamespace, elementName
       );*/
 
-      throw new NotImplementedException(BundleUtils.getMessage(bundle, "NOT_IMPLEMENTED_YET"));
+      throw new NotImplementedException("Not implemented yet");
    }
 
    public String addSwaRefAttachment(Object obj)

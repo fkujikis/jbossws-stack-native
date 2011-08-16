@@ -28,21 +28,19 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.wsdl.Definition;
 
 import org.jboss.logging.Logger;
 import org.jboss.util.NotImplementedException;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.IOUtils;
-import org.jboss.ws.common.utils.AbstractWSDLFilePublisher;
+import org.jboss.ws.core.utils.AbstractWSDLFilePublisher;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.tools.wsdl.WSDLWriter;
+import org.jboss.wsf.common.IOUtils;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.w3c.dom.Document;
 
@@ -54,7 +52,6 @@ import org.w3c.dom.Document;
  */
 public class WSDLFilePublisher extends AbstractWSDLFilePublisher
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSDLFilePublisher.class);
    // provide logging
    private static final Logger log = Logger.getLogger(WSDLFilePublisher.class);
 
@@ -107,7 +104,7 @@ public class WSDLFilePublisher extends AbstractWSDLFilePublisher
             }
             else
             {
-               throw new NotImplementedException(BundleUtils.getMessage(bundle, "NOT_SUPPORTED_WSDL20"));
+               throw new NotImplementedException("WSDL-2.0 imports");
             }
          }
          catch (RuntimeException rte)
@@ -116,7 +113,7 @@ public class WSDLFilePublisher extends AbstractWSDLFilePublisher
          }
          catch (Exception e)
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_PUBLISH_WSDL",  wsdlFile),  e);
+            throw new WSException("Cannot publish wsdl to: " + wsdlFile, e);
          }
          finally
          {
@@ -143,7 +140,7 @@ public class WSDLFilePublisher extends AbstractWSDLFilePublisher
    {
       if (wsdlLocation == null)
       {
-         log.warn(BundleUtils.getMessage(bundle, "CANNOT_GET_WSDL_PUBLISH_LOCATION"));
+         log.warn("Cannot get wsdl publish location for null wsdl location!");
          return null;
       }
 
@@ -172,7 +169,7 @@ public class WSDLFilePublisher extends AbstractWSDLFilePublisher
          }
          catch (MalformedURLException e)
          {
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_PUBLISH_LOCATION",  e.getMessage()));
+            throw new IllegalArgumentException("Invalid publish location: " + e.getMessage());
          }
       }
 
@@ -191,7 +188,7 @@ public class WSDLFilePublisher extends AbstractWSDLFilePublisher
       }
       else
       {
-         throw new RuntimeException(BundleUtils.getMessage(bundle, "INVALID_WSDLFILE_", new Object[]{ wsdlLocation ,  expLocation}));
+         throw new RuntimeException("Invalid wsdlFile '" + wsdlLocation + "', expected in: " + expLocation);
       }
 
       return result;

@@ -22,10 +22,8 @@
 package org.jboss.ws.extensions.security.element;
 
 import java.security.cert.X509Certificate;
-import java.util.ResourceBundle;
 
 import org.apache.xml.security.utils.XMLUtils;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.security.Constants;
 import org.jboss.ws.extensions.security.Util;
 import org.jboss.ws.extensions.security.exception.InvalidSecurityHeaderException;
@@ -45,7 +43,6 @@ import org.w3c.dom.Element;
  */
 public class X509IssuerSerial extends Reference
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(X509IssuerSerial.class);
    private Document doc;
 
    private String issuer;
@@ -65,18 +62,18 @@ public class X509IssuerSerial extends Reference
       this.doc = element.getOwnerDocument();
 
       if (! "X509Data".equals(element.getLocalName()))
-         throw new InvalidSecurityHeaderException(BundleUtils.getMessage(bundle, "INVALID_LOCAL_NAME_ON_X509"));
+         throw new InvalidSecurityHeaderException("Invalid message, invalid local name on a X509Data element");
 
       element = Util.getFirstChildElement(element);
       if (element == null)
-         throw new InvalidSecurityHeaderException(BundleUtils.getMessage(bundle, "X509DATAELEMENT_EMPTY"));
+         throw new InvalidSecurityHeaderException("X509DataElement empty");
 
       if (! element.getLocalName().equals("X509IssuerSerial"))
-         throw new InvalidSecurityHeaderException(BundleUtils.getMessage(bundle, "ONLY_X509ISSUERSERIAL_SUPPORTED"));
+         throw new InvalidSecurityHeaderException("Only X509IssuerSerial is supported for an X509Data element");
 
       element = Util.getFirstChildElement(element);
       if (element == null)
-         throw new InvalidSecurityHeaderException(BundleUtils.getMessage(bundle, "X509ISSUERSERIAL_EMPTY"));
+         throw new InvalidSecurityHeaderException("X509IssuerSerial empty");
 
 
       while (element != null)
@@ -91,16 +88,16 @@ public class X509IssuerSerial extends Reference
       }
 
       if (serial == null)
-         throw new InvalidSecurityHeaderException(BundleUtils.getMessage(bundle, "X509SERIALNUMBER_MISSING"));
+         throw new InvalidSecurityHeaderException("X509SerialNumber missing from X509IssuerSerial");
 
       if (issuer == null)
-         throw new InvalidSecurityHeaderException(BundleUtils.getMessage(bundle, "X509ISSUERNAME_MISSING"));
+         throw new InvalidSecurityHeaderException("X509IssuerName missing from X509IssuerSerial");
    }
 
    public void referenceToken(BinarySecurityToken token) throws WSSecurityException
    {
       if (! (token instanceof X509Token))
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "X509ISSUERSERIAL_TRIED_TO_REFERENCE"));
+         throw new WSSecurityException("X509IssuerSerial tried to reference something besides an X509 token");
 
       X509Token x509 = (X509Token) token;
       X509Certificate cert = x509.getCert();

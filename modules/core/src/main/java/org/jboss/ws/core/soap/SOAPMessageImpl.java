@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.mail.MessagingException;
 import javax.xml.soap.AttachmentPart;
@@ -48,9 +47,8 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.SOAPMessageAbstraction;
 import org.jboss.ws.core.soap.SOAPContent.State;
@@ -61,7 +59,6 @@ import org.jboss.ws.core.soap.attachment.MultipartRelatedEncoder;
 import org.jboss.ws.core.soap.attachment.MultipartRelatedSwAEncoder;
 import org.jboss.ws.core.soap.attachment.MultipartRelatedXOPEncoder;
 import org.jboss.ws.extensions.xop.XOPContext;
-import org.jboss.ws.feature.FastInfosetFeature;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.w3c.dom.Node;
@@ -76,14 +73,12 @@ import org.w3c.dom.NodeList;
  */
 public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstraction
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPMessageImpl.class);
    private static Logger log = Logger.getLogger(SOAPMessageImpl.class);
    private Map<String, Object> properties = new HashMap<String, Object>();
    private boolean saveRequired = true;
    private MimeHeaders mimeHeaders = new MimeHeaders();
    private List<AttachmentPart> attachments = new LinkedList<AttachmentPart>();
    private CIDGenerator cidGenerator = new CIDGenerator();
-   private boolean faultMessage;
    private boolean isXOPMessage;
    private boolean isSWARefMessage;
    private SOAPPartImpl soapPart;   
@@ -122,7 +117,7 @@ public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstracti
             return soapBody;
          }
       }
-      throw new SOAPException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_SOAPBODY"));
+      throw new SOAPException("Cannot obtain SOAPBody from SOAPMessage");
    }
 
    public SOAPHeader getSOAPHeader() throws SOAPException
@@ -137,24 +132,12 @@ public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstracti
             return soapHeader;
          }
       }
-      throw new SOAPException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_SOAPHEADER"));
+      throw new SOAPException("Cannot obtain SOAPHeader from SOAPMessage");
    }
 
    public CIDGenerator getCidGenerator()
    {
       return cidGenerator;
-   }
-   
-   /**
-    * Marks this <code>SOAPMessage</code> as a fault. Otherwise, the message
-    * will be checked for a SOAPFault. The reason for this is to allow for
-    * faults to be encrypted, in which case there is no SOAPFault.
-    *
-    * @param faultMessage whether this message is a fault
-    */
-   public void setFaultMessage(boolean faultMessage)
-   {
-      this.faultMessage = faultMessage;
    }
 
    public boolean isXOPMessage()
@@ -219,7 +202,7 @@ public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstracti
       }
       catch (UnsupportedEncodingException ex)
       {
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_DECODE_NAME",  ex));
+         log.error("Cannot decode name for cid: " + ex);
       }
       
       return cidDecoded;
@@ -239,7 +222,7 @@ public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstracti
       catch (SOAPException ex)
       {
          // this used to not throw SOAPException
-         log.error(BundleUtils.getMessage(bundle, "IGNORE_SOAPEXCEPTION",  ex));
+         log.error("Ignore SOAPException: " + ex);
       }
 
       return null;
@@ -281,7 +264,7 @@ public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstracti
    public void setMimeHeaders(MimeHeaders headers)
    {
       if (headers == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "MIMEHEADERS_CANNOT_BE_NULL"));
+         throw new IllegalArgumentException("MimeHeaders cannot be null");
       this.mimeHeaders = headers;
    }
 
@@ -311,14 +294,15 @@ public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstracti
    public Iterator getAttachments(MimeHeaders headers)
    {
       if (headers == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "MIMEHEADERS_CANNOT_BE_NULL"));
+         throw new WSException("MimeHeaders can not be null");
 
       return new MimeMatchingAttachmentsIterator(headers, attachments);
    }
    
-   private String getSOAPContentType(CommonMessageContext msgContext) throws SOAPException
+   private String getSOAPContentType() throws SOAPException
    {
       //Check binding type in the endpoint metadata
+      CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext != null && Constants.SOAP12HTTP_BINDING.equalsIgnoreCase(msgContext.getEndpointMetaData().getBindingId()))
       {
          return SOAPConstants.SOAP_1_2_CONTENT_TYPE;
@@ -342,11 +326,10 @@ public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstracti
             boolean hasAttachments = attachments.size() > 0;
 
             if (isXOPMessage() && !XOPContext.isMTOMEnabled() && hasAttachments)
-               throw new IllegalStateException(BundleUtils.getMessage(bundle, "XOP_PARAMETER_NOT_PROPERLY_INLINED"));
+               throw new IllegalStateException("XOP parameter not properly inlined");
 
             // default content-type
-            CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
-            String contentType = getSOAPContentType(msgContext) + "; charset=" + getCharSetEncoding();
+            String contentType = getSOAPContentType() + "; charset=" + getCharSetEncoding();
 
             if (hasAttachments)
             {
@@ -362,10 +345,6 @@ public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstracti
                   multipartRelatedEncoder.encodeMultipartRelatedMessage();
                   contentType = multipartRelatedEncoder.getContentType();
                }
-            }
-            else if (msgContext != null && msgContext.getEndpointMetaData().getFeatures().isFeatureEnabled(FastInfosetFeature.class))
-            {
-               contentType = MimeConstants.TYPE_FASTINFOSET;
             }
             //JBWS-2964:Create a new mimeHeaders to avoid changing another referenced mimeHeaders
             MimeHeaders newMimeHeaders = new MimeHeaders();            
@@ -458,9 +437,6 @@ public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstracti
 
    public boolean isFaultMessage()
    {
-      if (faultMessage)
-         return true;
-      
       SOAPFault soapFault = null;
       try
       {

@@ -21,8 +21,8 @@
  */
 package org.jboss.ws.core.client;
 
-import org.jboss.ws.core.jaxrpc.client.serviceref.NativeServiceRefBinderJAXRPC;
-import org.jboss.ws.core.jaxws.client.serviceref.NativeServiceRefBinderJAXWS;
+import org.jboss.ws.core.jaxrpc.client.NativeServiceRefBinderJAXRPC;
+import org.jboss.ws.core.jaxws.client.NativeServiceRefBinderJAXWS;
 import org.jboss.wsf.spi.serviceref.ServiceRefBinder;
 import org.jboss.wsf.spi.serviceref.ServiceRefBinderFactory;
 import org.jboss.wsf.spi.serviceref.ServiceRefHandler.Type;
