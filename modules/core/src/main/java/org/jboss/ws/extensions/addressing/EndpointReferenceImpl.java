@@ -22,8 +22,6 @@
 package org.jboss.ws.extensions.addressing;
 
 import java.io.IOException;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.Iterator;
@@ -41,8 +39,8 @@ import javax.xml.ws.addressing.soap.SOAPAddressingBuilder;
 
 import org.jboss.ws.WSException;
 import org.jboss.ws.extensions.addressing.soap.SOAPAddressingBuilderImpl;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
 
 /** 
@@ -53,7 +51,6 @@ import org.w3c.dom.Element;
  */
 public class EndpointReferenceImpl extends AttributeElementExtensibleImpl implements EndpointReference
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(EndpointReferenceImpl.class);
    private static AddressingConstants ADDR = new AddressingConstantsImpl();
 
    // The REQUIRED root element name 
@@ -103,7 +100,7 @@ public class EndpointReferenceImpl extends AttributeElementExtensibleImpl implem
    private void initFromElement(Element elRoot)
    {
       if (elRoot == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_INITIALIZE_FROM_NULL_ELEMENT"));
+         throw new IllegalArgumentException("Cannot initialize from null element");
 
       try
       {
@@ -176,7 +173,7 @@ public class EndpointReferenceImpl extends AttributeElementExtensibleImpl implem
       }
       catch (Exception ex)
       {
-         throw new AddressingException(BundleUtils.getMessage(bundle, "CANNOT_INIT_EPR_FROM_ELEMENT"),  ex);
+         throw new AddressingException("Cannot init EPR from element", ex);
       }
    }
 
@@ -189,7 +186,7 @@ public class EndpointReferenceImpl extends AttributeElementExtensibleImpl implem
       }
       catch (IOException ex)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_PARSE",  xmlString),  ex);
+         throw new WSException("Cannot parse: " + xmlString, ex);
       }
    }
 
@@ -281,7 +278,7 @@ public class EndpointReferenceImpl extends AttributeElementExtensibleImpl implem
          }
          else
          {
-            throw new AddressingException(BundleUtils.getMessage(bundle, "UNSUPPORTED_ELEMENT",  obj.getClass().getName()));
+            throw new AddressingException("Unsupported element: " + obj.getClass().getName());
          }
       }
    }

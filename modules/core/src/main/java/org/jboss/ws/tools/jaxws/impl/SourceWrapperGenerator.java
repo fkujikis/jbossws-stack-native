@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.SortedMap;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -41,13 +40,12 @@ import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.jaxws.AbstractWrapperGenerator;
 import org.jboss.ws.metadata.umdm.FaultMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.WrappedParameter;
+import org.jboss.wsf.common.JavaUtils;
 
 import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
@@ -66,7 +64,6 @@ import com.sun.codemodel.JMod;
  */
 public class SourceWrapperGenerator extends AbstractWrapperGenerator implements WritableWrapperGenerator
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SourceWrapperGenerator.class);
    private static Logger log = Logger.getLogger(SourceWrapperGenerator.class);
    private PrintStream stream;
    private JCodeModel codeModel;
@@ -98,17 +95,16 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
 
       if (operationMetaData.isDocumentWrapped() == false)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "OPERATION_IS_NOT_DOC_LIT"));
+         throw new WSException("Operation is not document/literal (wrapped)");
       }
 
       if (wrappedParameters == null)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_GENERATE_TYPE"));
+         throw new WSException("Cannot generate a type when there is no type information");
       }
 
       String wrapperName = parameterMD.getJavaTypeName();
-      if (log.isDebugEnabled())
-         log.debug("Generating wrapper: " + wrapperName);
+      log.debug("Generating wrapper: " + wrapperName);
 
       try
       {
@@ -121,7 +117,7 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
       }
       catch (Exception e)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "COULD_NOT_GENERATE_WRAPPER",  wrapperName),  e);
+         throw new WSException("Could not generate wrapper type: " + wrapperName, e);
       }
    }
    
@@ -146,7 +142,7 @@ public class SourceWrapperGenerator extends AbstractWrapperGenerator implements 
       }
       catch (Exception e)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "COULD_NOT_GENERATE_WRAPPER",  faultBeanName),  e);
+         throw new WSException("Could not generate wrapper type: " + faultBeanName, e);
       }
    }
 

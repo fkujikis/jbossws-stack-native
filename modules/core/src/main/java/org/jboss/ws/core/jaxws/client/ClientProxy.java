@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -45,14 +44,12 @@ import javax.xml.ws.WebServiceException;
 import javax.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.metadata.umdm.FeatureAwareEndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * The dynamic proxy that delegates to the underlying client implementation
@@ -62,7 +59,6 @@ import org.jboss.ws.metadata.umdm.OperationMetaData;
  */
 public class ClientProxy implements InvocationHandler
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ClientProxy.class);
    // provide logging
    private static final Logger log = Logger.getLogger(ClientProxy.class);
 
@@ -94,7 +90,6 @@ public class ClientProxy implements InvocationHandler
       this.executor = executor;
       this.stubMethods = new ArrayList(Arrays.asList(BindingProvider.class.getMethods()));
       this.stubMethods.addAll(Arrays.asList(StubExt.class.getMethods()));
-      this.stubMethods.addAll(Arrays.asList(FeatureAwareEndpointMetaData.class.getMethods()));
       this.objectMethods = Arrays.asList(Object.class.getMethods());
    }
 
@@ -131,7 +126,7 @@ public class ClientProxy implements InvocationHandler
          EndpointMetaData epMetaData = client.getEndpointMetaData();
          OperationMetaData opMetaData = epMetaData.getOperation(method);
          if (opMetaData == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_OPERATION_META_DATA",  methodName));
+            throw new WSException("Cannot obtain operation meta data for: " + methodName);
 
          QName opName = opMetaData.getQName();
 
@@ -177,7 +172,7 @@ public class ClientProxy implements InvocationHandler
       if (retObj != null)
       {
          if (retType == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "RETURN_VALUE_NOT_SUPPORTED",  opName));
+            throw new WSException("Return value not supported by: " + opName);
 
          if (JavaUtils.isPrimitive(retType))
             retObj = JavaUtils.getPrimitiveValueArray(retObj);

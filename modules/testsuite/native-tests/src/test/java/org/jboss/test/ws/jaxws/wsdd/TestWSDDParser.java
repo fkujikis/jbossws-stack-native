@@ -31,6 +31,9 @@ import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesFactory;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 import org.jboss.wsf.test.JBossWSTest;
+import org.jboss.xb.binding.ObjectModelFactory;
+import org.jboss.xb.binding.Unmarshaller;
+import org.jboss.xb.binding.UnmarshallerFactory;
 
 /**
  * Tets webservice.xml additions that are related to JAX-WS
@@ -49,7 +52,9 @@ public class TestWSDDParser extends JBossWSTest
       InputStream is = webservicesURL.openStream();
       try
       {
-         webservices = WebservicesFactory.parse(is, webservicesURL);
+         Unmarshaller unmarshaller = UnmarshallerFactory.newInstance().newUnmarshaller();
+         ObjectModelFactory factory = new WebservicesFactory(webservicesURL);
+         webservices = (WebservicesMetaData)unmarshaller.unmarshal(is, factory, null);
       }
       finally
       {
@@ -70,7 +75,7 @@ public class TestWSDDParser extends JBossWSTest
       assertTrue(portComp.getWsdlService().getLocalPart().equals("WSDDEndpointImplService"));
 
       // mtom
-      assertTrue(portComp.isMtomEnabled());
+      assertTrue(portComp.isEnableMtom());
 
       // handler chains
       UnifiedHandlerChainMetaData handlerChain = portComp.getHandlerChains().getHandlerChains().get(0);

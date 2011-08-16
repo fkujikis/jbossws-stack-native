@@ -26,22 +26,20 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ResourceBundle;
 
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceProvider;
 
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.tools.WSContractProvider;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.ResourceLoaderAdapter;
-import org.jboss.ws.common.utils.NullPrintStream;
 import org.jboss.ws.metadata.builder.jaxws.JAXWSWebServiceMetaDataBuilder;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
+import org.jboss.ws.tools.io.NullPrintStream;
+import org.jboss.wsf.common.ResourceLoaderAdapter;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
+import org.jboss.wsf.spi.tools.WSContractProvider;
 
 /**
  * The default WSContractProvider implementation.
@@ -50,7 +48,6 @@ import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
  */
 final class JBossWSProviderImpl extends WSContractProvider
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JBossWSProviderImpl.class);
    private ClassLoader loader;
    private boolean generateWsdl;
    private boolean extension;
@@ -64,15 +61,15 @@ final class JBossWSProviderImpl extends WSContractProvider
    {
       if (!outputDir.exists())
          if (!outputDir.mkdirs())
-            throw new WSException(BundleUtils.getMessage(bundle, "COULD_NOT_CREATE_DIRECTORY",  outputDir));
+            throw new WSException("Could not create directory: " + outputDir);
 
       if (generateWsdl && !resourceDir.exists())
          if (!resourceDir.mkdirs())
-            throw new WSException(BundleUtils.getMessage(bundle, "COULD_NOT_CREATE_DIRECTORY",  resourceDir));
+            throw new WSException("Could not create directory: " + resourceDir);
 
       if (generateSource && !sourceDir.exists())
          if (!sourceDir.mkdirs())
-            throw new WSException(BundleUtils.getMessage(bundle, "COULD_NOT_CREATE_DIRECTORY",  sourceDir));
+            throw new WSException("Could not create directory: " + sourceDir);
    }
 
    @Override
@@ -126,26 +123,20 @@ final class JBossWSProviderImpl extends WSContractProvider
       }
       catch (IOException io)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "COULD_NOT_WRITE_OUTPUT_FILES"),  io);
+         throw new WSException("Could not write output files:", io);
       }
    }
 
    @Override
    public void provide(String endpointClass)
    {
-      final ClassLoader origLoader = SecurityActions.getContextClassLoader();
       try
       {
-         SecurityActions.setContextClassLoader(loader);
          provide(loader.loadClass(endpointClass));
       }
       catch (ClassNotFoundException e)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "CLASS_NOT_FOUND",  endpointClass));
-      }
-      finally
-      {
-          SecurityActions.setContextClassLoader(origLoader);
+         throw new WSException("Class not found: " + endpointClass);
       }
    }
 

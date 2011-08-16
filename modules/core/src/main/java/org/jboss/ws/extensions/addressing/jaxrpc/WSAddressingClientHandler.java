@@ -21,8 +21,6 @@
  */
 package org.jboss.ws.extensions.addressing.jaxrpc;
 
-import java.util.ResourceBundle;
-
 import javax.xml.namespace.QName;
 import javax.xml.rpc.handler.GenericHandler;
 import javax.xml.rpc.handler.HandlerInfo;
@@ -37,7 +35,6 @@ import javax.xml.ws.addressing.soap.SOAPAddressingBuilder;
 import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
 import org.jboss.ws.extensions.addressing.soap.SOAPAddressingPropertiesImpl;
 
@@ -50,7 +47,6 @@ import org.jboss.ws.extensions.addressing.soap.SOAPAddressingPropertiesImpl;
  */
 public class WSAddressingClientHandler extends GenericHandler
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSAddressingClientHandler.class);
    // Provide logging
    private static Logger log = Logger.getLogger(WSAddressingClientHandler.class);
 
@@ -119,7 +115,7 @@ public class WSAddressingClientHandler extends GenericHandler
       }
       catch (SOAPException ex)
       {
-         throw new AddressingException(BundleUtils.getMessage(bundle, "CANNOT_HANDLE_RESPONSE"),  ex);
+         throw new AddressingException("Cannot handle response", ex);
       }
 
       return true;

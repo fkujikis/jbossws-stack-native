@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.jaxrpc.jbws1316;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.jboss.ws.metadata.wsse.TimestampVerification;
@@ -39,8 +40,10 @@ public class JBWS1316ConfigurationTestCase extends JBossWSTest
 
    private WSSecurityConfiguration load(final String fileName) throws IOException
    {
+      File configFile = getResourceFile("jaxrpc/jbws1316/config/" + fileName);
       WSSecurityOMFactory factory = WSSecurityOMFactory.newInstance();
-      return factory.parse(getResourceURL("jaxrpc/jbws1316/config/" + fileName));
+
+      return factory.parse(configFile.toURL());
    }
 
    /**

@@ -44,7 +44,7 @@ public class JBWS3182TestCase extends JBossWSTest
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS3182TestCase.class, "jaxws-jbws3182-client.jar jaxws-jbws3182-service.sar jaxws-jbws3182.jar");
+      return new JBossWSTestSetup(JBWS3182TestCase.class, "jaxws-jbws3182-client.jar jaxws-jbws3182.sar jaxws-jbws3182.jar");
    }
 
    public void testCall() throws Exception

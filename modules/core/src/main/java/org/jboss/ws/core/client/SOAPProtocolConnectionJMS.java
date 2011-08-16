@@ -25,7 +25,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import javax.jms.BytesMessage;
@@ -42,7 +41,8 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.xml.ws.addressing.EndpointReference;
 
-import org.jboss.ws.api.util.BundleUtils;
+import org.jboss.remoting.marshal.Marshaller;
+import org.jboss.remoting.marshal.UnMarshaller;
 import org.jboss.ws.core.MessageAbstraction;
 import org.jboss.ws.core.soap.SOAPMessageMarshaller;
 import org.jboss.ws.core.soap.SOAPMessageUnMarshaller;
@@ -55,7 +55,6 @@ import org.jboss.ws.core.soap.SOAPMessageUnMarshaller;
  */
 public class SOAPProtocolConnectionJMS implements RemoteConnection
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPProtocolConnectionJMS.class);
    private boolean waitForResponse;
 
    public UnMarshaller getUnmarshaller()
@@ -67,16 +66,11 @@ public class SOAPProtocolConnectionJMS implements RemoteConnection
    {
       return new SOAPMessageMarshaller();
    }
-   
+
    public MessageAbstraction invoke(MessageAbstraction reqMessage, Object endpoint, boolean oneway) throws IOException
    {
-      return this.invoke(reqMessage, endpoint, oneway, true);
-   }
-
-   public MessageAbstraction invoke(MessageAbstraction reqMessage, Object endpoint, boolean oneway, boolean maintainSession) throws IOException
-   {
       if (endpoint == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "GIVEN_ENDPOINT_CANNOT_BE_NULL"));
+         throw new IllegalArgumentException("Given endpoint cannot be null");
 
       // Get target address
       String targetAddress;
@@ -149,7 +143,7 @@ public class SOAPProtocolConnectionJMS implements RemoteConnection
             }
 
             ByteArrayInputStream bais = new ByteArrayInputStream(responseListener.resMessage.getBytes());
-            resMessage = (MessageAbstraction)getUnmarshaller().read(bais, null, null);
+            resMessage = (MessageAbstraction)getUnmarshaller().read(bais, null);
          }
 
          con.stop();

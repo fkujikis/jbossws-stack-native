@@ -22,8 +22,6 @@
 package javax.xml.ws.addressing;
 
 import static javax.xml.ws.addressing.JAXWSAConstants.ADDRESSING_BUILDER_PROPERTY;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import static javax.xml.ws.addressing.JAXWSAConstants.DEFAULT_ADDRESSING_BUILDER;
 
 import java.net.URI;
@@ -38,7 +36,6 @@ import javax.xml.namespace.QName;
 
 public abstract class AddressingBuilder implements AddressingType
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(AddressingBuilder.class);
    // provide logging
    private static Logger log = Logger.getLogger(AddressingBuilder.class.getName());
 
@@ -80,33 +77,26 @@ public abstract class AddressingBuilder implements AddressingType
 
    private static AddressingBuilder newInstance(String className, ClassLoader classLoader)
    {
-      Class cls = null;
       try
       {
-         cls = loadClass(classLoader, className);
-      }
-      catch (Exception x)
-      {
-         //ignore
-      }
-      if (cls == null)
-      {
-         try
+         Class cls;
+         if (classLoader == null)
          {
             cls = Class.forName(className);
          }
-         catch (ClassNotFoundException x)
+         else
          {
-            throw new AddressingException(BundleUtils.getMessage(bundle, "PROVIDER_NOT_FOUND",  className ),  x);
+            cls = loadClass(classLoader, className);
          }
-      }
-      try
-      {
          return (AddressingBuilder)cls.newInstance();
+      }
+      catch (ClassNotFoundException x)
+      {
+         throw new AddressingException("Provider " + className + " not found", x);
       }
       catch (Exception x)
       {
-         throw new AddressingException(BundleUtils.getMessage(bundle, "PROVIDER_COULD_NOT_BE_INSTANTIATED", new Object[]{ className,  x}),  x);
+         throw new AddressingException("Provider " + className + " could not be instantiated: " + x, x);
       }
    }
 

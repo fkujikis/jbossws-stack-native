@@ -23,7 +23,6 @@ package org.jboss.ws.extensions.security;
 
 import java.util.List;
 
-import org.apache.xml.security.Init;
 import org.jboss.ws.extensions.security.element.SecurityHeader;
 import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.jboss.ws.extensions.security.operation.EncodingOperation;
@@ -44,16 +43,7 @@ public class SecurityEncoder
 
    public SecurityEncoder(List<EncodingOperation> operations, SecurityStore store)
    {
-      final ClassLoader origCL = SecurityActions.getContextClassLoader();
-      try 
-      {
-         SecurityActions.setContextClassLoader(Init.class.getClassLoader());
-         Init.init();
-      }
-      finally
-      {
-         SecurityActions.setContextClassLoader(origCL);
-      }
+      org.apache.xml.security.Init.init();
       this.operations = operations;
       this.store = store;
    }

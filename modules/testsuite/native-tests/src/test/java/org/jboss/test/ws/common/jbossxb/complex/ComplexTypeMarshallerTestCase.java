@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.common.jbossxb.complex;
 
+import java.io.File;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.URL;
@@ -33,7 +34,7 @@ import org.jboss.ws.core.jaxrpc.binding.jbossxb.JBossXBConstants;
 import org.jboss.ws.core.jaxrpc.binding.jbossxb.JBossXBMarshallerImpl;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMappingFactory;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.wsf.common.DOMUtils;
 
 /**
  * Test the JAXB marshalling of complex types
@@ -49,7 +50,10 @@ public class ComplexTypeMarshallerTestCase extends WSToolsBase
    /** Get the URL to the defining schema */
    protected XSModel getSchemaModel(QName xmlType, Class javaType) throws Exception
    {
-      return parseSchema(getResourceURL("common/jbossxb/ComplexTypesService_RPC.xsd"));
+      File xsdFile = getResourceFile("common/jbossxb/ComplexTypesService_RPC.xsd");
+      assertTrue(xsdFile.exists());
+
+      return parseSchema(xsdFile.toURL());
    }
 
    public void testBaseType() throws Exception
