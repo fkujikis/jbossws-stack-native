@@ -61,7 +61,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
    // provide logging
    private static Logger log = Logger.getLogger(EnvelopeBuilderDOM.class);
    
-   private static final String IGNORE_PARSE_ERROR_PROPERTY = System.getProperty("ignore.parse.error", "true");
+   private static final String IGNORE_PARSE_ERROR_PROPERTY = System.getProperty("org.jboss.ws.IgnoreParseError", "true");
 
    private SOAPFactoryImpl soapFactory = new SOAPFactoryImpl();
    private Style style;
