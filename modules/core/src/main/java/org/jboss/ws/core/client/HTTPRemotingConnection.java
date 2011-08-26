@@ -271,7 +271,7 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
          }else {
             io = new IOException("Could not transmit message");
          }
-            
+         
          io.initCause(th);
          throw io;
       }
