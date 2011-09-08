@@ -30,6 +30,8 @@ import org.jboss.ws.common.utils.DelegateClassLoader;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.Endpoint.EndpointType;
+import org.jboss.wsf.spi.deployment.EndpointTypeFilter;
 
 /**
  * A server side meta data builder that is based on JSR-181 annotations
@@ -60,7 +62,18 @@ public class JAXWSMetaDataBuilderJSE
          wsMetaData.setClassLoader(new DelegateClassLoader(runtimeClassLoader, SecurityActions.getContextClassLoader()));
 
          // For every bean
-         for (Endpoint ep : dep.getService().getEndpoints())
+         for (Endpoint ep : dep.getService().getEndpoints((new EndpointTypeFilter() {
+
+            @Override
+            public boolean accept(EndpointType type)
+            {
+               if (EndpointType.JAXWS_JSE == type) {
+                  return true;
+               }
+               return false;
+            }
+            
+         })))
          {
             String shortName = ep.getShortName();
             Class beanClass = ep.getTargetBeanClass();
