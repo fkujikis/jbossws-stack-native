@@ -22,27 +22,29 @@
 package org.jboss.ws.core.jaxws.binding;
 
 import java.io.IOException;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.io.OutputStream;
 
 import javax.xml.soap.SOAPBodyElement;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.core.client.Marshaller;
+import org.jboss.logging.Logger;
+import org.jboss.remoting.InvocationRequest;
+import org.jboss.remoting.invocation.OnewayInvocation;
+import org.jboss.remoting.marshal.Marshaller;
 import org.jboss.ws.core.soap.SOAPBodyImpl;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.extensions.json.BadgerFishDOMDocumentSerializer;
 
 /**
  * @author Thomas.Diesler@jboss.org
- * @author alessio.soldano@jboss.com
  * @since 25-Nov-2004
  */
 public class JsonMessageMarshaller implements Marshaller
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JsonMessageMarshaller.class);
+   // Provide logging
+   private static Logger log = Logger.getLogger(JsonMessageMarshaller.class);
+
    /**
     * Marshaller will need to take the dataObject and convert
     * into primitive java data types and write to the
@@ -54,9 +56,15 @@ public class JsonMessageMarshaller implements Marshaller
     */
    public void write(Object dataObject, OutputStream output) throws IOException
    {
+      if (dataObject instanceof InvocationRequest)
+         dataObject = ((InvocationRequest)dataObject).getParameter();
+
+      if (dataObject instanceof OnewayInvocation)
+         dataObject = ((OnewayInvocation)dataObject).getParameters()[0];
+
       // TODO: this should not be a SOAP message
       if ((dataObject instanceof SOAPMessageImpl) == false)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "NOT_A_SOAPMESSAGEIMPL",  dataObject));
+         throw new IllegalArgumentException("Not a SOAPMessageImpl: " + dataObject);
 
       try
       {
@@ -67,9 +75,14 @@ public class JsonMessageMarshaller implements Marshaller
       }
       catch (SOAPException ex)
       {
-         IOException ioex = new IOException(BundleUtils.getMessage(bundle, "CANNOT_SERIALIZE",  dataObject));
+         IOException ioex = new IOException("Cannot serialize: " + dataObject);
          ioex.initCause(ex);
          throw ioex;
       }
+   }
+
+   public Marshaller cloneMarshaller() throws CloneNotSupportedException
+   {
+      return new JsonMessageMarshaller();
    }
 }

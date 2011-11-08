@@ -23,11 +23,8 @@ package org.jboss.ws.metadata.umdm;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
-
-import org.jboss.ws.api.util.BundleUtils;
 
 
 /**
@@ -38,7 +35,6 @@ import org.jboss.ws.api.util.BundleUtils;
  */
 public class TypeMappingMetaData
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(TypeMappingMetaData.class);
    // The parent meta data.
    private TypesMetaData typesMetaData;
 
@@ -55,9 +51,9 @@ public class TypeMappingMetaData
    public TypeMappingMetaData(TypesMetaData typesMetaData, QName xmlType, String javaTypeName)
    {
       if (xmlType == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_NULL_XMLTYPE"));
+         throw new IllegalArgumentException("Invalid null xmlType");
       if (javaTypeName == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_NULL_JAVATYPENAME"));
+         throw new IllegalArgumentException("Invalid null javaTypeName");
       
       this.typesMetaData = typesMetaData;
       this.javaTypeName = javaTypeName;
@@ -88,7 +84,7 @@ public class TypeMappingMetaData
    public void setQNameScope(String qnameScope)
    {
       if (allowedScopes.contains(qnameScope) == false)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_QNAME_SCOPE",  qnameScope));
+         throw new IllegalArgumentException("Invalid qname scope: " + qnameScope);
       
       this.qnameScope = qnameScope;
    }

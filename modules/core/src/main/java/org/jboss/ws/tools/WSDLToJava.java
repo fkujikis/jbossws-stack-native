@@ -28,7 +28,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -42,10 +41,8 @@ import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.jaxrpc.LiteralTypeMapping;
 import org.jboss.ws.metadata.wsdl.WSDLBindingOperation;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
@@ -65,6 +62,7 @@ import org.jboss.ws.metadata.wsdl.xsd.SchemaUtils;
 import org.jboss.ws.tools.helpers.ReturnTypeUnwrapper;
 import org.jboss.ws.tools.interfaces.WSDLToJavaIntf;
 import org.jboss.ws.tools.wsdl.WSDLDefinitionsFactory;
+import org.jboss.wsf.common.JavaUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -77,13 +75,12 @@ import org.w3c.dom.Element;
  * <br> Please also have a look at the features that can be passed via {@link #setFeature(String name, boolean value) setFeature}
  * <br>
  * <br>Features are:
- * <br>@see org.jboss.ws.common.Constants.USE_ANNOTATIONS : Should the generated Java Types use annotations
+ * <br>@see org.jboss.ws.Constants.USE_ANNOTATIONS : Should the generated Java Types use annotations
  * @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
  * @since Dec 28, 2004
  */
 public class WSDLToJava implements WSDLToJavaIntf
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSDLToJava.class);
    private String newline = "\n";
 
    protected LiteralTypeMapping typeMapping = null;
@@ -132,12 +129,12 @@ public class WSDLToJava implements WSDLToJavaIntf
    public boolean getFeature(String name)
    {
       if (name == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_NULL_ARGUMENT", "name"));
+         throw new IllegalArgumentException("Illegal null argument:name");
 
       if (name.equalsIgnoreCase(WSToolsConstants.WSTOOLS_FEATURE_USE_ANNOTATIONS))
          return annotate;
 
-      throw new WSException(BundleUtils.getMessage(bundle, "FEATURE_NOT_RECOGNIZED",  name ));
+      throw new WSException("Feature:" + name + " not recognized");
    }
 
    /* (non-Javadoc)
@@ -146,7 +143,7 @@ public class WSDLToJava implements WSDLToJavaIntf
    public void setFeature(String name, boolean value)
    {
       if (name == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_NULL_ARGUMENT", "name"));
+         throw new IllegalArgumentException("Illegal null argument:name");
 
       if (name.equalsIgnoreCase(WSToolsConstants.WSTOOLS_FEATURE_USE_ANNOTATIONS))
          annotate = value;
@@ -284,7 +281,7 @@ public class WSDLToJava implements WSDLToJavaIntf
       String itfname = intf.getName().getLocalPart();
       WSDLInterfaceOperation[] ops = intf.getOperations();
       if (ops == null || ops.length == 0)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INTERFACE_NO_OPERATIONS",  itfname ));
+         throw new IllegalArgumentException("Interface " + itfname + " doesn't have operations");
       int len = ops != null ? ops.length : 0;
 
       for (int i = 0; i < len; i++)
@@ -482,13 +479,14 @@ public class WSDLToJava implements WSDLToJavaIntf
       {
          int inputs = in.getWsdlOperation().getInputs().length;
          if (inputs > 1)
-            throw new WSException(BundleUtils.getMessage(bundle, "JAXRPC_CAN_NOT_UNWRAP_MUTLIPLE_INPUTS",  inputs));
+            throw new WSException("[JAX-RPC - 2.3.1.2] Can not unwrap parameters for operation with mutliple inputs. inputs=" + inputs);
 
          String operationName = in.getWsdlOperation().getName().getLocalPart();
          String elementName = in.getElement().getLocalPart();
 
          if (elementName.equals(operationName) == false)
-            throw new WSException(BundleUtils.getMessage(bundle,"WRAPPER_ELEMENT_MUST_MATCH"));
+            throw new WSException("[JAX-RPC - 2.3.1.2] Unable to unwrap parameters, wrapper element name must match operation name. operationName=" + operationName
+                  + " elementName=" + elementName);
 
          wrapped = unwrapElementParameters(buf, containingElement, xt);
       }
@@ -515,7 +513,7 @@ public class WSDLToJava implements WSDLToJavaIntf
 
       boolean hasAttributes = wrapper.getAttributeUses().getLength() > 0;
       if (hasAttributes)
-         throw new WSException(BundleUtils.getMessage(bundle, "COMPLEX_TYPE_CONTAINS_ATTRIBUTES"));
+         throw new WSException("[JAX-RPC 2.3.1.2] Can not unwrap, complex type contains attributes.");
 
       boolean unwrappedElement = false;
 
@@ -691,7 +689,7 @@ public class WSDLToJava implements WSDLToJavaIntf
    {
       WSDLInterface[] intarr = wsdl.getInterfaces();
       if (intarr == null || intarr.length == 0)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INTERFACES_CANNOT_BE_ZERO"));
+         throw new IllegalArgumentException("Interfaces cannot be zero");
       int len = intarr.length;
       for (int i = 0; i < len; i++)
       {
@@ -777,7 +775,7 @@ public class WSDLToJava implements WSDLToJavaIntf
    private void checkTypeMapping()
    {
       if (typeMapping == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "TYPEMAPPING_HAS_NOT_BEEN_SET"));
+         throw new WSException("TypeMapping has not been set.");
    }
 
    private Class getJavaType(QName qname, boolean primitive)

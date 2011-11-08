@@ -21,27 +21,31 @@
  */
 package org.jboss.ws.extensions.validation;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.FileInputStream;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Map;
 import java.util.List;
-import java.util.ResourceBundle;
-import java.util.regex.Matcher;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
+import org.jboss.wsf.common.IOUtils;
 import org.w3c.dom.Element;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  * Extracts the schema from a given WSDL
@@ -51,7 +55,6 @@ import org.w3c.dom.Element;
  */
 public class SchemaExtractor
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SchemaExtractor.class);
    // provide logging
    private static Logger log = Logger.getLogger(SchemaExtractor.class);
 
@@ -68,12 +71,14 @@ public class SchemaExtractor
       // parse the wsdl
       Element root = DOMUtils.parse(wsdlURL.openStream());
 
+      List<Attr> nsAttrs = getNamespaceAttrs(root);
+
       // get the types element
       QName typesQName = new QName(root.getNamespaceURI(), "types");
       Element typesEl = DOMUtils.getFirstChildElement(root, typesQName);
       if (typesEl == null)
       {
-         log.warn(BundleUtils.getMessage(bundle, "CANNOT_FIND_ELEMENT",  typesQName));
+         log.warn("Cannot find element: " + typesQName);
          return null;
       }
 
@@ -82,14 +87,24 @@ public class SchemaExtractor
       List<Element> schemaElements = DOMUtils.getChildElementsAsList(typesEl, schemaQName);
       if (schemaElements.size() == 0)
       {
-         log.warn(BundleUtils.getMessage(bundle, "CANNOT_FIND_ELEMENT",  schemaQName));
+         log.warn("Cannot find element: " + schemaQName);
          return null;
       }
       if (schemaElements.size() > 1)
       {
-         log.warn(BundleUtils.getMessage(bundle, "MULTIPLE_SCHEMA_ELEMENTS_NOT_SUPPORTED"));
+         log.warn("Multiple schema elements not supported.");
       }
       Element schemaElement = schemaElements.get(0);
+
+      //Add namespace declarations from root element
+      for(Attr nsAttr : nsAttrs)
+      {
+         Attr replacedAttr = schemaElement.setAttributeNodeNS(nsAttr);
+         if(replacedAttr != null) //then put it back
+         {
+            schemaElement.setAttributeNodeNS(replacedAttr);
+         }
+      }
 
       List<InputStream> streams = new ArrayList<InputStream>();
 
@@ -105,6 +120,23 @@ public class SchemaExtractor
       streams.add(new ByteArrayInputStream(outStream.toByteArray()));
 
       return streams.toArray(new InputStream[streams.size()]);
+   }
+
+   private List<Attr> getNamespaceAttrs(Element element)
+   {
+      List<Attr> nsAttrs = new ArrayList<Attr>();
+
+      NamedNodeMap nodes = element.getAttributes();
+
+      for(int i=0; i < nodes.getLength(); i++)
+      {
+         Node node = nodes.item(i);
+         Attr attr = (Attr)node;
+         if(attr.getName().startsWith("xmlns"))
+            nsAttrs.add((Attr)attr.cloneNode(true));
+      }
+
+      return nsAttrs;
    }
 
    private void pullImportedSchemas(Element schemaElement, List<InputStream> streams)
@@ -147,7 +179,7 @@ public class SchemaExtractor
          }
          catch(IOException ioe)
          {
-            log.warn(BundleUtils.getMessage(bundle, "ERROR_OBTAINING_SCHEMA",  path ));
+            log.warn("Error obtaining schema: " + path + schemaLocation);
          }
       }
    }

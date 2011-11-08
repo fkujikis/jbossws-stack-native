@@ -22,7 +22,6 @@
 package org.jboss.ws.core.jaxws;
 
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -52,8 +51,6 @@ import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.utils.JavassistUtils;
 import org.jboss.ws.metadata.umdm.FaultMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -61,10 +58,10 @@ import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.TypeMappingMetaData;
 import org.jboss.ws.metadata.umdm.TypesMetaData;
 import org.jboss.ws.metadata.umdm.WrappedParameter;
+import org.jboss.wsf.common.JavaUtils;
 
 public class DynamicWrapperGenerator extends AbstractWrapperGenerator
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(DynamicWrapperGenerator.class);
    private static Logger log = Logger.getLogger(DynamicWrapperGenerator.class);
 
    protected ClassPool pool;
@@ -104,10 +101,10 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
       OperationMetaData opMetaData = pmd.getOperationMetaData();
 
       if (opMetaData.isDocumentWrapped() == false)
-         throw new WSException(BundleUtils.getMessage(bundle, "OPERATION_IS_NOT_WRAPPED"));
+         throw new WSException("Operation is not document/literal (wrapped)");
 
       if (wrappedParameters == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_GENERATE_A_TYPE"));
+         throw new WSException("Cannot generate a type when their is no wrapper parameters");
 
       if(log.isDebugEnabled()) log.debug("Generating wrapper: " + wrapperName);
 
@@ -136,7 +133,7 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
       }
       catch (Exception e)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "COULD_NOT_GENERATE_WRAPPER_TYPE",  wrapperName),  e);
+         throw new WSException("Could not generate wrapper type: " + wrapperName, e);
       }
 
       // Add the generated type to the types meta data
@@ -173,7 +170,7 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
       }
       catch (Exception e)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "COULD_NOT_GENERATE_FAULT_WRAPPER_BEAN",  faultBeanName),  e);
+         throw new WSException("Could not generate fault wrapper bean: " + faultBeanName, e);
       }
 
       // Add the generated type to the types meta data
@@ -312,7 +309,7 @@ public class DynamicWrapperGenerator extends AbstractWrapperGenerator
 
       // Add @XmlType;
       annotation = JavassistUtils.createAnnotation(XmlType.class, constPool);
-      if (xmlType.getNamespaceURI() != null && xmlType.getNamespaceURI().length() > 0)
+      if (xmlType.getNamespaceURI() != null & xmlType.getNamespaceURI().length() > 0)
          annotation.addParameter("namespace", xmlType.getNamespaceURI());
       annotation.addParameter("name", xmlType.getLocalPart());
       if (propertyOrder != null)

@@ -38,15 +38,9 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
-@WebServiceRef(name = "Service1", type=TestEndpointService.class)
+@WebServiceRef(name = "Service1")
 // Test multiple on type
-@WebServiceRefs
-(
-   {
-      @WebServiceRef(name = "Service2", type=TestEndpointService.class),
-      @WebServiceRef(name = "Port1", type = TestEndpoint.class)
-   }
-)
+@WebServiceRefs( { @WebServiceRef(name = "Service2"), @WebServiceRef(name = "Port1", type = TestEndpoint.class) })
 public class TestEndpointClientTwo
 {
    // provide logging

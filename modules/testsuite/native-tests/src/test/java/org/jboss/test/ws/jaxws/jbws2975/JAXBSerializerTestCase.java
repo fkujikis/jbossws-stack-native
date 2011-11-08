@@ -33,8 +33,9 @@ import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
 import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.util.xml.BufferedStreamResult;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Element;
+
 
 /**
  * A JAXBSerializerTestCase.
@@ -78,7 +79,7 @@ public class JAXBSerializerTestCase extends junit.framework.TestCase
         Element element = DOMUtils.parse(result.toString());
         List<Element> elements = DOMUtils.getChildElementsAsList(element, "return");
         for (Element ele : elements) 
-        {
+        {  
            String typeValue = DOMUtils.getAttributeValue(ele, new QName("http://www.w3.org/2001/XMLSchema-instance", "type"));
            assertEquals("The namespace prefix is not serialized", true ,typeValue.indexOf(":") > 0);
         }

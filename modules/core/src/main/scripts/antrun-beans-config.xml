@@ -11,31 +11,31 @@
 
 <project default="main">
 
-  <property name="src.dir" value="${basedir}/src/main/resources"/>
-  <property name="dest.dir" value="${basedir}/target/resources"/>
+  <property name="project.resources.directory" value="${basedir}/src/main/resources"/>
+  <property name="project.build.directory" value="${basedir}/target"/>
+  <property name="project.build.resources.directory" value="${project.build.directory}/resources"/>
 
-  <target name="main">
+  <property name="thirdparty.dir" value="${project.build.directory}/thirdparty"/>
 
-    <copy
-      file="${src.dir}/jbossws-native-config-as6.xml"
-      tofile="${dest.dir}/jbossws-jboss600/jbossws.beans/META-INF/stack-specific-jboss-beans.xml"
-    />
+  <!-- ================================================================== -->
+  <!-- Initialization                                                     -->
+  <!-- ================================================================== -->
 
-    <copy
-      file="${src.dir}/jbossws-native-config-as6.xml"
-      tofile="${dest.dir}/jbossws-jboss610/jbossws.beans/META-INF/stack-specific-jboss-beans.xml"
-    />
+  <target name="init">
+  </target>
 
-    <copy
-      file="${src.dir}/jbossws-native-config-as7.xml"
-      tofile="${dest.dir}/jbossws-jboss700/jbossws.beans/META-INF/stack-specific-deployment-aspects.xml"
-    />
+  <!-- Compile resource files -->
+  <target name="main" depends="init">
 
-    <copy
-      file="${src.dir}/jbossws-native-config-as7.xml"
-      tofile="${dest.dir}/jbossws-jboss710/jbossws.beans/META-INF/stack-specific-deployment-aspects.xml"
-    />
-
+    <!-- Concat jbossws-jboss510/jbossws.beans -->
+    <echo message="Concat jbossws-jboss510/jbossws.beans"/>
+    <concat destfile="${project.build.resources.directory}/jbossws-jboss510/jbossws.beans/META-INF/jboss-beans.xml">
+      <header trimleading="yes">
+        &lt;deployment xmlns="urn:jboss:bean-deployer:2.0"&gt; </header>
+      <fileset file="${project.resources.directory}/jbossws-native-config.xml"/>
+      <footer trimleading="yes">
+        &lt;/deployment&gt; </footer>
+    </concat>
 
   </target>
 

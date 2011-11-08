@@ -22,8 +22,6 @@
 package org.jboss.ws.core.jaxws.binding;
 
 import java.util.List;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
@@ -54,7 +52,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  */
 public class MessageBinding implements CommonBinding, BindingExt
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(MessageBinding.class);
    // provide logging
    private static final Logger log = Logger.getLogger(MessageBinding.class);
 
@@ -70,7 +67,7 @@ public class MessageBinding implements CommonBinding, BindingExt
    /** On the server side, extract the IN parameters from the payload and populate an Invocation object */
    public EndpointInvocation unbindRequestMessage(OperationMetaData opMetaData, MessageAbstraction reqMessage) throws BindingException
    {
-      log.debugf("unbindRequestMessage: %s", opMetaData.getQName());
+      log.debug("unbindRequestMessage: " + opMetaData.getQName());
       try
       {
          // Construct the endpoint invocation object
@@ -78,7 +75,7 @@ public class MessageBinding implements CommonBinding, BindingExt
 
          SOAPMessageContextJAXWS msgContext = (SOAPMessageContextJAXWS)MessageContextAssociation.peekMessageContext();
          if (msgContext == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "MESSAGECONTEXT_NOT_AVAILABLE"));
+            throw new WSException("MessageContext not available");
 
          ParameterMetaData paramMetaData = opMetaData.getParameters().get(0);
          QName xmlName = paramMetaData.getXmlName();
@@ -96,12 +93,12 @@ public class MessageBinding implements CommonBinding, BindingExt
    /** On the server side, generate the payload from OUT parameters. */
    public MessageAbstraction bindResponseMessage(OperationMetaData opMetaData, EndpointInvocation epInv) throws BindingException
    {
-      log.debugf("bindResponseMessage: %s", opMetaData.getQName());
+      log.debug("bindResponseMessage: " + opMetaData.getQName());
       try
       {
          SOAPMessageContextJAXWS msgContext = (SOAPMessageContextJAXWS)MessageContextAssociation.peekMessageContext();
          if (msgContext == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "MESSAGECONTEXT_NOT_AVAILABLE"));
+            throw new WSException("MessageContext not available");
 
          // Associate current message with message context
          MessageAbstraction resMessage = (MessageAbstraction)epInv.getReturnValue();
@@ -133,7 +130,7 @@ public class MessageBinding implements CommonBinding, BindingExt
       }
       else
       {
-         log.warn(BundleUtils.getMessage(bundle, "CANNOT_SET_FAULT_MESSAGE_IN_MESSAGE_CONTEXT"));
+         log.warn("Cannot set fault message in message context");
       }
       return faultMessage;
    }

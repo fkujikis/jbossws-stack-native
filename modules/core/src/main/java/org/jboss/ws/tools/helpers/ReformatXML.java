@@ -22,13 +22,11 @@
 package org.jboss.ws.tools.helpers;
 
 import java.io.FileInputStream;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
 
 
@@ -37,12 +35,11 @@ import org.w3c.dom.Element;
  * @since Sep 27, 2006
  */
 public class ReformatXML {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ReformatXML.class);
 
    public static void main(String[] args) throws Exception
    {
       if(args.length == 0)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "SPECIFY_A_FILENAME"));
+         throw new IllegalArgumentException("Please specify a filename");
 
       ReformatXML formatter = new ReformatXML();
       try

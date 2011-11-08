@@ -16,20 +16,16 @@
   <!-- ================================================================== -->
 
   <property name="stack.dir" value="${basedir}"/>
-  <property name="dist.dir" value="${stack.dir}/modules/dist"/>
-  <property name="dist.distro.dir" value="${dist.dir}/src/main/distro"/>
-  <property name="dist.output.dir" value="${dist.dir}/target"/>
   <property name="stack.distro.dir" value="${stack.dir}/src/main/distro"/>
   <property name="stack.output.dir" value="${stack.dir}/target"/>
   <property name="stack.resources.dir" value="${stack.dir}/modules/resources/src/main/resources"/>
-  <property name="deploy.artifacts.dir" value="${dist.output.dir}/assembly/deploy-artifacts"/>
+  <property name="deploy.artifacts.dir" value="${stack.output.dir}/deploy-artifacts"/>
 
-  <import file="${dist.distro.dir}/build-setup.xml"/>
-  <import file="${dist.distro.dir}/build-deploy.xml"/>
+  <import file="${stack.distro.dir}/build-setup.xml"/>
+  <import file="${stack.distro.dir}/build-deploy.xml"/>
   <import file="${stack.resources.dir}/resources/jbossws-deploy-macros.xml"/>
 
-  <property name="jbossws.default.deploy.conf" value="${stack.resources.dir}/resources/deploy.conf"/>
-  <property name="jbossws.default.server.deploy.conf" value="${stack.resources.dir}/resources/server-deploy.conf"/>
+  <property name="jbossws.default.deploy.conf" value="${stack.resources.dir}/resources/default-deploy.conf"/>
   <property name="target.properties.file" value="${basedir}/target.properties"/>
 
   <!-- ================================================================== -->
@@ -47,51 +43,24 @@
   </target>
 
   <target name="mvn-settings" depends="os-init">
+    <!-- Use a system property to overwrite the empty default value -->
+    <property name="maven.opts" value=""/>
     <!-- Loads the properties from the effective maven settings -->
-    <mkdir dir="${dist.output.dir}"/>
+    <mkdir dir="${stack.output.dir}"/>
     <exec dir="${basedir}" executable="${mvn}" failonerror="true">
-      <arg value="-Doutput=${dist.output.dir}/effective-settings.xml"/>
-      <arg value="help:effective-settings"/>
+      <arg line="${maven.opts} -Doutput=${stack.output.dir}/effective-settings.xml help:effective-settings"/>
     </exec>
-    <xmlproperty file="${dist.output.dir}/effective-settings.xml" keeproot="false"/>
-    <condition property="jboss600.home" value="${profiles.profile.properties.jboss600.home}">
-      <isset property="profiles.profile.properties.jboss600.home"/>
-    </condition>
-    <condition property="jboss610.home" value="${profiles.profile.properties.jboss610.home}">
-      <isset property="profiles.profile.properties.jboss610.home"/>
-    </condition>
-    <condition property="jboss700.home" value="${profiles.profile.properties.jboss700.home}">
-      <isset property="profiles.profile.properties.jboss700.home"/>
+    <xmlproperty file="${stack.output.dir}/effective-settings.xml" keeproot="false"/>
+    <condition property="jboss510.home" value="${profiles.profile.properties.jboss510.home}">
+      <isset property="profiles.profile.properties.jboss510.home"/>
     </condition>
 
-    <condition property="jboss710.home" value="${profiles.profile.properties.jboss710.home}">
-      <isset property="profiles.profile.properties.jboss710.home"/>
-    </condition>
-
-    <fail message="jboss home not set, use -Djboss600.home=value or -Djboss610.home=value, -Djboss700.home=value or -Djboss710.home=value to set">
-     <condition>
-      <and>
-       <not>
-         <isset property="jboss600.home"/>
-       </not>
-       <not>
-         <isset property="jboss610.home"/>
-       </not>
-       <not>
-         <isset property="jboss700.home"/>
-       </not>
-       <not>
-         <isset property="jboss710.home"/>
-       </not>
-      </and>
-     </condition>
-    </fail>
+    <!-- Loads the properties from the user profile -->
+    <xmlproperty file="${basedir}/profiles.xml" keeproot="false"/>
+    <property name="jboss510.home" value="${profiles.profile.properties.jboss510.home}"/>
 
     <echo/>
-    <echo message="jboss600.home=${jboss600.home}"/>
-    <echo message="jboss610.home=${jboss610.home}"/>
-    <echo message="jboss700.home=${jboss700.home}"/>
-    <echo message="jboss710.home=${jboss710.home}"/>
+    <echo message="jboss510.home=${jboss510.home}"/>
   </target>
 
   <target name="init" depends="mvn-settings,prepare,os-init">
@@ -104,7 +73,7 @@
     <echo message="integration.target=${jbossws.integration.target}"/>
 
     <fail message="jbossws.integration.target not set" unless="jbossws.integration.target"/>
-    <property name="deploy.structure" value="${dist.output.dir}/deploy-${jbossws.integration.target}"/>
+    <property name="deploy.structure" value="${stack.output.dir}/deploy-${jbossws.integration.target}"/>
   </target>
 
   <!-- ================================================================== -->
@@ -117,64 +86,49 @@
     <property name="maven.opts" value=""/>
 
     <echo/>
-    <echo message="${mvn} ${maven.opts} -Pdist -Dno-testsuite install"/>
+    <echo message="${mvn} ${maven.opts} package assembly:directory"/>
     <echo/>
 
     <delete dir="${deploy.artifacts.dir}"/>
     <exec dir="${basedir}" executable="${mvn}" failonerror="true">
-      <arg line="${maven.opts} -Pdist -Dno-testsuite install"/>
+      <arg line="${maven.opts} package assembly:directory"/>
     </exec>
   </target>
 
-  <target name="build-bin-dist" depends="prepare,os-init,makedir" description="Build the binary distribution">
-    <!-- Use a system property to overwrite the empty default value -->
-    <property name="maven.opts" value=""/>
-
+  <target name="build-bin-dist" depends="prepare-deploy,os-init" description="Build the binary distribution">
     <echo/>
-    <echo message="${mvn} ${maven.opts} -Pdist -Dbindist -Dno-testsuite install"/>
+    <echo message="${mvn} ${maven.opts} -Pbindist package assembly:directory"/>
     <echo/>
 
-    <delete dir="${dist.output.dir}/jbossws-native-bin-dist"/>
+    <delete dir="${stack.output.dir}/jbossws-native-bin-dist"/>
     <exec dir="${basedir}" executable="${mvn}" failonerror="true">
-      <arg line="${maven.opts} -Pdist -Dbindist -Dno-testsuite install"/>
+      <arg line="${maven.opts} -Pbindist package assembly:directory"/>
     </exec>
 
     <zip destfile="${stack.output.dir}/jbossws-native-bin-dist.zip">
       <zipfileset
-        dir="${dist.output.dir}/assembly/jbossws-native-bin-dist"
+        dir="${stack.output.dir}/jbossws-native-bin-dist"
         includes="build/ deploy/ docs/ tests/ build.xml ant.properties.example"
         prefix="jbossws-native-bin-dist"/>
     </zip>
   </target>
 
-  <target name="build-src-dist" depends="prepare,os-init,makedir" description="Build the source distribution">
-    <!-- Use a system property to overwrite the empty default value -->
-    <property name="maven.opts" value=""/>
-
+  <target name="build-src-dist" depends="prepare-deploy,os-init" description="Build the source distribution">
     <echo/>
-    <echo message="${mvn} ${maven.opts} -Pdist -Dsrcdist -Dno-testsuite install"/>
+    <echo message="${mvn} ${maven.opts} -Psrcdist package assembly:directory"/>
     <echo/>
 
     <delete dir="${stack.output.dir}/jbossws-native-src-dist"/>
     <exec dir="${basedir}" executable="${mvn}" failonerror="true">
-      <arg line="${maven.opts} -Pdist -Dsrcdist -Dno-testsuite install"/>
+      <arg line="${maven.opts} -Psrcdist package assembly:directory"/>
     </exec>
 
     <zip destfile="${stack.output.dir}/jbossws-native-src-dist.zip">
       <zipfileset
-        dir="${dist.output.dir}/assembly/jbossws-native-src-dist"
+        dir="${stack.output.dir}/jbossws-native-src-dist"
         includes="modules/ src/ eclipse/ build.xml pom.xml profiles.xml.example .classpath .project "
         prefix="jbossws-native-src-dist"/>
     </zip>
   </target>
-
-   <target name="check.exist">
-       <available file="${stack.output.dir}" property="file.exists" value="true" />
-   </target>
-
-   <target name="makedir" depends="check.exist" unless="file.exists">
-       <mkdir dir="${stack.output.dir}" />
-   </target>
-
 
 </project>

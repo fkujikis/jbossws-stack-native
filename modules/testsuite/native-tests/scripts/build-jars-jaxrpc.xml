@@ -98,7 +98,7 @@
       </fileset>
       <metainf dir="${tests.output.dir}/test-resources/benchmark/jaxrpc/rpclit/META-INF">
         <include name="ejb-jar.xml"/>
-        <include name="jboss-webservices.xml"/>
+        <include name="jboss.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="webservices.xml"/>
         <include name="wsdl/**"/>
@@ -142,7 +142,7 @@
       </fileset>
       <metainf dir="${tests.output.dir}/test-resources/benchmark/jaxrpc/doclit/META-INF">
         <include name="ejb-jar.xml"/>
-        <include name="jboss-webservices.xml"/>
+        <include name="jboss.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="webservices.xml"/>
         <include name="wsdl/**"/>
@@ -278,7 +278,7 @@
       </metainf>
       <metainf dir="${tests.output.dir}/test-resources/jaxrpc/enventry/META-INF">
         <include name="ejb-jar.xml"/>
-        <include name="jboss-webservices.xml"/>
+        <include name="jboss.xml"/>
         <include name="webservices.xml"/>
       </metainf>
     </jar>
@@ -306,7 +306,7 @@
       </fileset>
       <metainf dir="${tests.output.dir}/test-resources/jaxrpc/jbas897/META-INF">
         <include name="ejb-jar.xml"/>
-        <include name="jboss-webservices.xml"/>
+        <include name="jboss.xml"/>
         <include name="webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
@@ -318,7 +318,7 @@
         <include name="org/jboss/test/ws/jaxrpc/jbas897/HelloSLSB.class"/>
       </fileset>
       <metainf dir="${tests.output.dir}/test-resources/jaxrpc/jbas897/META-INF">
-        <include name="jboss-webservices.xml"/>
+        <include name="jboss.xml"/>
         <include name="webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
@@ -697,7 +697,6 @@
         <include name="webservices.xml"/>
         <include name="ejb-jar.xml"/>
         <include name="jboss.xml"/>
-        <include name="jboss-webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
       </metainf>
@@ -711,7 +710,6 @@
         <include name="webservices.xml"/>
         <include name="ejb-jar.xml"/>
         <include name="jboss.xml"/>
-        <include name="jboss-webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
       </metainf>
@@ -725,7 +723,6 @@
         <include name="webservices.xml"/>
         <include name="ejb-jar.xml"/>
         <include name="jboss.xml"/>
-        <include name="jboss-webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
       </metainf>
@@ -739,7 +736,6 @@
         <include name="webservices.xml"/>
         <include name="ejb-jar.xml"/>
         <include name="jboss.xml"/>
-        <include name="jboss-webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
       </metainf>
@@ -927,7 +923,7 @@
       </fileset>
       <metainf dir="${tests.output.dir}/test-resources/jaxrpc/jbws331/WS-META-INF">
         <include name="ejb-jar.xml"/>
-        <include name="jboss-webservices.xml"/>
+        <include name="jboss.xml"/>
         <include name="webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
@@ -1002,7 +998,7 @@
       </fileset>
       <metainf dir="${tests.output.dir}/test-resources/jaxrpc/jbws358/META-INF">
         <include name="ejb-jar.xml"/>
-        <include name="jboss-webservices.xml"/>
+        <include name="jboss.xml"/>
         <include name="webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
@@ -1418,7 +1414,7 @@
       </fileset>
       <metainf dir="${tests.output.dir}/test-resources/jaxrpc/jbws626/META-INF">
         <include name="ejb-jar.xml"/>
-        <include name="jboss-webservices.xml"/>
+        <include name="jboss.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="webservices.xml"/>
         <include name="wsdl/TestService.wsdl"/>
@@ -1752,7 +1748,6 @@
         <include name="webservices.xml"/>
         <include name="ejb-jar.xml"/>
         <include name="jboss.xml"/>
-        <include name="jboss-webservices.xml"/>
         <include name="wsdl/**"/>
       </metainf>
     </jar>
@@ -1835,7 +1830,7 @@
       </fileset>
       <metainf dir="${tests.output.dir}/test-resources/jaxrpc/jbws772/META-INF-ONE">
         <include name="ejb-jar.xml"/>
-        <include name="jboss-webservices.xml"/>
+        <include name="jboss.xml"/>
         <include name="webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
@@ -1950,9 +1945,6 @@
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
       </webinf>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.common"/>
-      </manifest>
     </war>
     <jar destfile="${tests.output.dir}/test-libs/jaxrpc-jbws812-client.jar">
       <fileset dir="${tests.output.dir}/test-classes">
@@ -2036,7 +2028,7 @@
       </fileset>
       <metainf dir="${tests.output.dir}/test-resources/jaxrpc/jbws1011/META-INF">
         <include name="ejb-jar.xml"/>
-        <include name="jboss-webservices.xml"/>
+        <include name="jboss.xml"/>
         <include name="jbosscmp-jdbc.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="webservices.xml"/>
@@ -2316,9 +2308,6 @@
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
       </webinf>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
     </war>
     
     <!-- jaxrpc-jbws1188 -->
@@ -2575,9 +2564,6 @@
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
       </webinf>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.common"/>
-      </manifest>
     </war>
     <war warfile="${tests.output.dir}/test-libs/jaxrpc-jbws1647-doclit.war" webxml="${tests.output.dir}/test-resources/jaxrpc/jbws1647/doclit/WEB-INF/web.xml">
       <classes dir="${tests.output.dir}/test-classes">
@@ -2593,9 +2579,6 @@
         <include name="jaxrpc-mapping.xml"/>
         <include name="wsdl/**"/>
       </webinf>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.common"/>
-      </manifest>
     </war>
     
     <!-- jbossws-jbws1653 -->
@@ -2623,6 +2606,77 @@
         <include name="wsdl/**"/>
       </metainf>
     </jar>
+    
+    <!-- jaxrpc-jbws1762 -->
+    <jar destfile="${tests.output.dir}/test-libs/jaxrpc-jbws1762-packaged.jar">
+      <fileset dir="${tests.output.dir}/test-classes">
+        <include name="org/jboss/test/ws/jaxrpc/jbws1762/services/EJB2Iface.class"/>
+        <include name="org/jboss/test/ws/jaxrpc/jbws1762/services/EJB2Bean.class"/>
+      </fileset>
+      <metainf dir="${tests.output.dir}/test-resources/jaxrpc/jbws1762/META-INF">
+        <include name="webservices.xml"/>
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="ejb-jar.xml"/>
+        <include name="wsdl/**"/>
+      </metainf>
+      <metainf dir="${tests.output.dir}/test-resources/jaxrpc/jbws1762/META-INF/packaged">
+        <include name="jboss.xml"/>
+      </metainf>
+    </jar>
+    <mkdir dir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.jar"/>
+    <unjar src="${tests.output.dir}/test-libs/jaxrpc-jbws1762-packaged.jar" dest="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.jar"/>
+    <copy todir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.jar/META-INF"
+      file="${tests.output.dir}/test-resources/jaxrpc/jbws1762/META-INF/exploded/jboss.xml" overwrite="true"/>
+    
+    <war warfile="${tests.output.dir}/test-libs/jaxrpc-jbws1762-packaged.war" webxml="${tests.output.dir}/test-resources/jaxrpc/jbws1762/WEB-INF/web.xml">
+      <classes dir="${tests.output.dir}/test-classes">
+        <include name="org/jboss/test/ws/jaxrpc/jbws1762/services/POJOIface.class"/>
+        <include name="org/jboss/test/ws/jaxrpc/jbws1762/services/POJOBean.class"/>
+      </classes>
+      <webinf dir="${tests.output.dir}/test-resources/jaxrpc/jbws1762/WEB-INF">
+        <include name="webservices.xml"/>
+        <include name="jaxrpc-mapping.xml"/>
+        <include name="jboss-web.xml"/>
+        <include name="wsdl/**"/>
+      </webinf>
+    </war>
+    <mkdir dir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.war"/>
+    <unwar src="${tests.output.dir}/test-libs/jaxrpc-jbws1762-packaged.war" dest="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.war"/>
+    
+    <ear jarfile="${tests.output.dir}/test-libs/jaxrpc-jbws1762-packaged.ear"
+      appxml="${tests.output.dir}/test-resources/jaxrpc/jbws1762/META-INF/packaged/application.xml">
+      <fileset dir="${tests.output.dir}/test-libs">
+        <include name="jaxrpc-jbws1762-packaged.jar"/>
+        <include name="jaxrpc-jbws1762-packaged.war"/>
+      </fileset>
+    </ear>
+    <mkdir dir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.ear"/>
+    <mkdir dir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.ear/META-INF"/>
+    <copy file="${tests.output.dir}/test-resources/jaxrpc/jbws1762/META-INF/exploded/application.xml"
+      todir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.ear/META-INF"/>
+    <mkdir dir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.ear/jaxrpc-jbws1762-exploded.war"/>
+    <copy todir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.ear/jaxrpc-jbws1762-exploded.war">
+      <fileset dir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.war"/>
+    </copy>
+    <mkdir dir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.ear/jaxrpc-jbws1762-exploded.jar"/>
+    <copy todir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.ear/jaxrpc-jbws1762-exploded.jar">
+      <fileset dir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.jar"/>
+    </copy>
+    
+    <jar jarfile="${tests.output.dir}/test-libs/jaxrpc-jbws1762-packaged.sar">
+      <fileset dir="${tests.output.dir}/test-libs">
+        <include name="jaxrpc-jbws1762-packaged.war"/>
+      </fileset>
+      <metainf dir="${tests.output.dir}/test-resources/jaxrpc/jbws1762/META-INF">
+        <include name="jboss-service.xml"/>
+      </metainf>
+    </jar>
+    <mkdir dir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.sar"/>
+    <mkdir dir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.sar/META-INF"/>
+    <copy todir="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.sar/META-INF"
+      file="${tests.output.dir}/test-resources/jaxrpc/jbws1762/META-INF/jboss-service.xml"/>
+    <unwar src="${tests.output.dir}/test-libs/jaxrpc-jbws1762-packaged.war"
+      dest="${tests.output.dir}/test-libs/jaxrpc-jbws1762-exploded.sar/jaxrpc-jbws1762-exploded.war"/>
     
     <!-- jaxrpc-jbws1792 -->
     <war warfile="${tests.output.dir}/test-libs/jaxrpc-jbws1792.war" webxml="${tests.output.dir}/test-resources/jaxrpc/jbws1792/WEB-INF/web.xml">
@@ -2827,7 +2881,7 @@
       <webinf dir="${tests.output.dir}/test-resources/jaxrpc/wsdlpublish/WEB-INF">
         <include name="webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
-        <include name="jboss-webservices.xml"/>
+        <include name="jboss-web.xml"/>
         <include name="wsdl/**"/>
       </webinf>
     </war>
@@ -2844,7 +2898,7 @@
         <include name="org/jboss/test/ws/jaxrpc/wsse/signup/CreditCardInfo.class"/>
       </classes>
       <webinf dir="${tests.output.dir}/test-resources/jaxrpc/wsse/account-signup/WEB-INF">
-        <include name="jboss-webservices.xml"/>
+        <include name="jboss-web.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="webservices.xml"/>
         <include name="jboss-wsse-server.xml"/>
@@ -2883,7 +2937,6 @@
       </classes>
       <webinf dir="${tests.output.dir}/test-resources/jaxrpc/wsse/rpc/WEB-INF">
         <include name="jboss-web.xml"/>
-        <include name="jboss-webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="webservices.xml"/>
         <include name="jboss-wsse-server.xml"/>
@@ -2939,7 +2992,6 @@
       <webinf dir="${tests.output.dir}/test-resources/jaxrpc/wsse/rpc/WEB-INF">
         <include name="jaxrpc-mapping.xml"/>
         <include name="jboss-web.xml"/>
-        <include name="jboss-webservices.xml"/>
         <include name="webservices.xml"/>
         <include name="wsdl/**"/>
       </webinf>
@@ -2981,7 +3033,6 @@
       <webinf dir="${tests.output.dir}/test-resources/jaxrpc/wsse/rpc/WEB-INF">
         <include name="jaxrpc-mapping.xml"/>
         <include name="jboss-web.xml"/>
-        <include name="jboss-webservices.xml"/>
         <include name="webservices.xml"/>
         <include name="wsdl/**"/>
       </webinf>
@@ -3023,7 +3074,6 @@
       <webinf dir="${tests.output.dir}/test-resources/jaxrpc/wsse/rpc/WEB-INF">
         <include name="jaxrpc-mapping.xml"/>
         <include name="jboss-web.xml"/>
-        <include name="jboss-webservices.xml"/>
         <include name="webservices.xml"/>
         <include name="wsdl/**"/>
       </webinf>
@@ -3067,7 +3117,6 @@
       <webinf dir="${tests.output.dir}/test-resources/jaxrpc/wsse/rpc/WEB-INF">
         <include name="jaxrpc-mapping.xml"/>
         <include name="jboss-web.xml"/>
-        <include name="jboss-webservices.xml"/>
         <include name="webservices.xml"/>
         <include name="wsdl/**"/>
       </webinf>
@@ -3115,7 +3164,6 @@
       </webinf>
       <webinf dir="${tests.output.dir}/test-resources/jaxrpc/wsse/webclient/WEB-INF">
         <include name="jboss-web.xml"/>
-        <include name="jboss-webservices.xml"/>
         <include name="jboss-wsse-client.xml"/>
       </webinf>
       <webinf dir="${tests.output.dir}/test-resources/jaxrpc/wsse">
@@ -3138,7 +3186,6 @@
       <metainf dir="${tests.output.dir}/test-resources/jaxrpc/wsse/username/META-INF">
         <include name="ejb-jar.xml"/>
         <include name="jboss.xml"/>
-        <include name="jboss-webservices.xml"/>
         <include name="jaxrpc-mapping.xml"/>
         <include name="jboss-wsse-server.xml"/>
         <include name="webservices.xml"/>

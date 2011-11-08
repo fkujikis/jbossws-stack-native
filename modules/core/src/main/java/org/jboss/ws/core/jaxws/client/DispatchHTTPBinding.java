@@ -21,7 +21,10 @@
  */
 package org.jboss.ws.core.jaxws.client;
 
-import java.util.ResourceBundle;
+import org.jboss.logging.Logger;
+import org.jboss.ws.core.HTTPMessageImpl;
+import org.jboss.ws.core.MessageAbstraction;
+import org.jboss.ws.util.xml.BufferedStreamResult;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -29,12 +32,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.ws.Service.Mode;
 import javax.xml.ws.WebServiceException;
-
-import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.core.HTTPMessageImpl;
-import org.jboss.ws.core.MessageAbstraction;
-import org.jboss.ws.util.xml.BufferedStreamResult;
 
 /**
  * The Dispatch interface provides support for the dynamic invocation of a service endpoint operations. 
@@ -45,7 +42,6 @@ import org.jboss.ws.util.xml.BufferedStreamResult;
  */
 public class DispatchHTTPBinding extends DispatchBinding
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(DispatchHTTPBinding.class);
    // provide logging
    private final Logger log = Logger.getLogger(DispatchHTTPBinding.class);
 
@@ -88,11 +84,11 @@ public class DispatchHTTPBinding extends DispatchBinding
       }
       catch (Exception ex)
       {
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_CREATE_REQUEST_MESSAGE"),  ex);
+         throw new WebServiceException("Cannot create request message", ex);
       }
 
       if (reqMsg == null)
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_CREATE_REQUEST_MESSAGE_FOR",  obj));
+         throw new WebServiceException("Cannot create request message for: " + obj);
 
       return reqMsg;
    }
@@ -121,7 +117,7 @@ public class DispatchHTTPBinding extends DispatchBinding
       }
       catch (Exception ex)
       {
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_PROCESS_RESPONSE_MESSAGE"),  ex);
+         throw new WebServiceException("Cannot process response message", ex);
       }
       return retObj;
    }

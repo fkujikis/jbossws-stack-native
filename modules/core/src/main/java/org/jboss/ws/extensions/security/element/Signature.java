@@ -22,12 +22,10 @@
 package org.jboss.ws.extensions.security.element;
 
 import java.security.PublicKey;
-import java.util.ResourceBundle;
 
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignature;
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.security.KeyResolver;
 import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.w3c.dom.Element;
@@ -37,7 +35,6 @@ import org.w3c.dom.Element;
  */
 public class Signature implements SecurityProcess
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(Signature.class);
    private static Logger log = Logger.getLogger(Signature.class);
    private XMLSignature signature;
 
@@ -66,13 +63,12 @@ public class Signature implements SecurityProcess
          catch (Exception e)
          {
             //log exception and ignore, KeyInfo might not reference a security token
-            if (log.isDebugEnabled())
-               log.debug("KeyInfo does not contain any reference to a binary security token.", e);
+            log.debug("KeyInfo does not contain any reference to a binary security token.", e);
          }
       }
       catch (XMLSecurityException e)
       {
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "ERROR_DECODING_XML_SIGNATURE",  e.getMessage()),  e);
+         throw new WSSecurityException("Error decoding xml signature: " + e.getMessage(), e);
       }
    }
 

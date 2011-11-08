@@ -22,8 +22,6 @@
 package org.jboss.ws.tools.helpers;
 
 import java.io.IOException;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,7 +35,7 @@ import javax.xml.rpc.encoding.TypeMapping;
 import javax.xml.rpc.holders.Holder;
 
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.metadata.jaxrpcmapping.ExceptionMapping;
@@ -71,7 +69,7 @@ import org.jboss.ws.tools.JavaToXSD;
 import org.jboss.ws.tools.interfaces.JavaToXSDIntf;
 import org.jboss.ws.tools.interfaces.SchemaCreatorIntf;
 import org.jboss.ws.tools.wsdl.WSDLGenerator;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  *  Java To WSDL Helper which uses UnifiedMetaData
@@ -80,7 +78,6 @@ import org.jboss.ws.common.JavaUtils;
  */
 public class JavaToWSDLHelper extends WSDLGenerator
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JavaToWSDLHelper.class);
    private JavaToXSDIntf javaToXSD = new JavaToXSD();
    private JavaWsdlMapping javaWsdlMapping = new JavaWsdlMapping();
    private Map<QName, JavaXmlTypeMapping> mappedTypes = new HashMap<QName, JavaXmlTypeMapping>();
@@ -367,7 +364,7 @@ public class JavaToWSDLHelper extends WSDLGenerator
       //  ask JavaToXSD to provide a list of xsmodels to be plugged
       //  into WSDLTypes
       if (xsModel == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "IS_NULL", "xsModel"));
+         throw new WSException("XSModel is null");
 
       WSDLTypes wsdlTypes = wsdl.getWsdlTypes();
       WSDLUtils.addSchemaModel(wsdlTypes, namespace, xsModel);

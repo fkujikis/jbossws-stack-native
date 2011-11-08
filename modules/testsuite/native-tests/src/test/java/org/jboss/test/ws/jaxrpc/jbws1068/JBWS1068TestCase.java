@@ -43,7 +43,6 @@ public class JBWS1068TestCase extends JBossWSTest
       assertTrue(wsdlFile.exists());
 
       WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
-      WSDLDefinitions wsdlDefinitions = factory.parse(wsdlFile.toURI().toURL());
-      assertNotNull(wsdlDefinitions);
+      WSDLDefinitions wsdlDefinitions = factory.parse(wsdlFile.toURL());
    }
 }

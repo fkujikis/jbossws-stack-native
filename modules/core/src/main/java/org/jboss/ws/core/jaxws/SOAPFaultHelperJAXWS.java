@@ -22,12 +22,12 @@
 package org.jboss.ws.core.jaxws;
 
 import java.util.Iterator;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.rpc.encoding.TypeMapping;
 import javax.xml.soap.Detail;
 import javax.xml.soap.DetailEntry;
+import javax.xml.soap.MessageFactory;
 import javax.xml.soap.Name;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPConstants;
@@ -38,35 +38,33 @@ import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.ws.WebServiceException;
-import javax.xml.ws.addressing.AddressingException;
 import javax.xml.ws.addressing.MapRequiredException;
 import javax.xml.ws.soap.SOAPBinding;
 import javax.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.CommonSOAPFaultException;
-import org.jboss.ws.core.binding.AbstractDeserializerFactory;
-import org.jboss.ws.core.binding.AbstractSerializerFactory;
 import org.jboss.ws.core.binding.BindingException;
+import org.jboss.ws.core.binding.AbstractDeserializerFactory;
 import org.jboss.ws.core.binding.DeserializerSupport;
 import org.jboss.ws.core.binding.SerializationContext;
+import org.jboss.ws.core.binding.AbstractSerializerFactory;
 import org.jboss.ws.core.binding.SerializerSupport;
 import org.jboss.ws.core.jaxrpc.SOAPFaultHelperJAXRPC;
 import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.core.soap.MessageFactoryImpl;
 import org.jboss.ws.core.soap.NameImpl;
 import org.jboss.ws.core.soap.SOAPFactoryImpl;
-import org.jboss.ws.core.soap.SOAPFaultImpl;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.core.soap.XMLFragment;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.FaultMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+
+import com.ibm.wsdl.extensions.soap12.SOAP12Constants;
 
 /**
  * Helper methods to translate between SOAPFault and SOAPFaultException
@@ -75,7 +73,6 @@ import org.w3c.dom.Node;
  */
 public class SOAPFaultHelperJAXWS
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPFaultHelperJAXWS.class);
    // provide logging
    private static Logger log = Logger.getLogger(SOAPFaultHelperJAXWS.class);
 
@@ -83,7 +80,7 @@ public class SOAPFaultHelperJAXWS
    public static SOAPFaultException getSOAPFaultException(SOAPFault soapFault)
    {
       if (soapFault == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "SOAPFAULT_CANNOT_BE_NULL"));
+         throw new IllegalArgumentException("SOAPFault cannot be null");
 
       SOAPFaultException faultEx = new SOAPFaultException(soapFault);
 
@@ -96,27 +93,24 @@ public class SOAPFaultHelperJAXWS
          TypeMapping typeMapping = serContext.getTypeMapping();
 
          Iterator it = detail.getDetailEntries();
-         boolean debugEnabled = log.isDebugEnabled();
          while (it.hasNext())
          {
             DetailEntry deElement = (DetailEntry)it.next();
             QName xmlName = deElement.getElementQName();
-            if (debugEnabled)
-               log.debug("Processing detail entry: " + xmlName);
+            log.debug("Processing detail entry: " + xmlName);
 
             OperationMetaData opMetaData = msgContext.getOperationMetaData();
             FaultMetaData faultMetaData = opMetaData.getFault(xmlName);
             if (faultMetaData != null)
             {
-               if (debugEnabled)
-                  log.debug("Deserialize fault: " + faultMetaData);
+               log.debug("Deserialize fault: " + faultMetaData);
                QName xmlType = faultMetaData.getXmlType();
                Class<?> faultBeanClass = faultMetaData.getFaultBean();
 
                // Get the deserializer from the type mapping
                AbstractDeserializerFactory desFactory = (AbstractDeserializerFactory)typeMapping.getDeserializer(faultBeanClass, xmlType);
                if (desFactory == null)
-                  throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_DESERIALIZER_FACTORY", new Object[]{ xmlType ,  faultBeanClass}));
+                  throw new WebServiceException("Cannot obtain deserializer factory: xmlType=" + xmlType + ", javaType=" + faultBeanClass);
 
                // http://jira.jboss.org/jira/browse/JBWS-955
                // Cannot deserialize fault detail
@@ -132,7 +126,7 @@ public class SOAPFaultHelperJAXWS
                      }
                      catch (SOAPException e)
                      {
-                        log.warn(BundleUtils.getMessage(bundle, "DECLARATION_OF_DETAIL_ENTRY_NAMESPACE_FAILED"),  e);
+                        log.warn("Declaration of detail entry namespace failed", e);
                      }
                   }
                }
@@ -156,10 +150,7 @@ public class SOAPFaultHelperJAXWS
                }
             }
             else
-            {
-               if (debugEnabled)
-                  log.debug("Cannot find fault meta data for: " + xmlName);
-            }
+               log.debug("Cannot find fault meta data for: " + xmlName);
          }
       }
 
@@ -169,7 +160,7 @@ public class SOAPFaultHelperJAXWS
    /** Translate the request exception into a SOAPFault message. */
    public static SOAPMessageImpl exceptionToFaultMessage(Exception reqEx)
    {
-      log.error(BundleUtils.getMessage(bundle, "SOAP_REQUEST_EXCEPTION"),  reqEx);
+      log.error("SOAP request exception", reqEx);
 
       try
       {
@@ -201,8 +192,8 @@ public class SOAPFaultHelperJAXWS
       }
       catch (SOAPException ex)
       {
-         log.error(BundleUtils.getMessage(bundle, "ERROR_CREATING_SOAPFAULT_MESSAGE"),  ex);
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_CREATE_SOAPFAULT_MESSAGE",  reqEx));
+         log.error("Error creating SOAPFault message", ex);
+         throw new WebServiceException("Cannot create SOAPFault message for: " + reqEx);
       }
    }
 
@@ -273,33 +264,11 @@ public class SOAPFaultHelperJAXWS
          MapRequiredException addrException = (MapRequiredException)ex;
          soapFault = soapBody.addFault(addrException.getSubcode(), addrException.getMessage());
       } 
-      else if (ex instanceof AddressingException)
-      {
-         try
-         {
-            AddressingException addrException = (AddressingException) ex;
-            SOAPFault fault = new SOAPFaultImpl();
-            fault.setFaultCode(addrException.getCode());
-            fault.setFaultString(addrException.getReason());
-            Detail detail = fault.addDetail();
-            Object detailElement = addrException.getDetail();
-            if (detailElement instanceof Node)
-            {
-               detail.appendChild((Node)detailElement);
-            }
-
-            return toSOAPMessage(new SOAPFaultException(fault));
-         }
-         catch (SOAPException e)
-         {
-            log.warn(BundleUtils.getMessage(bundle, ""));
-         }
-      }
       else 
       {
          soapFault = soapBody.addFault(getFallbackFaultCode(), getFallbackFaultString(ex));
       }
-      
+
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       SerializationContext serContext = msgContext.getSerializationContext();
 
@@ -319,17 +288,15 @@ public class SOAPFaultHelperJAXWS
          detail.addChildElement(detailEntry);
       }
       else
-      {
-         if (log.isDebugEnabled())
-            log.debug("Cannot obtain fault meta data for: " + exClass);
-      }
+         log.debug("Cannot obtain fault meta data for: " + exClass);
 
       return soapMessage;
    }
 
    private static SOAPMessageImpl createSOAPMessage() throws SOAPException
    {
-      MessageFactoryImpl factory = new MessageFactoryImpl();
+      MessageFactoryImpl factory = (MessageFactoryImpl)MessageFactory.newInstance();
+
       if (isSOAP12() == true)
       {
          factory.setEnvNamespace(Constants.NS_SOAP12_ENV);
@@ -394,7 +361,7 @@ public class SOAPFaultHelperJAXWS
       serContext.setJavaType(javaType);
       AbstractSerializerFactory serFactory = (AbstractSerializerFactory)serContext.getTypeMapping().getSerializer(javaType, xmlType);
       if (serFactory == null)
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_SERIALIZER_FACTORY", new Object[]{ xmlType ,  javaType}));
+         throw new WebServiceException("Cannot obtain serializer factory: xmlType=" + xmlType + ", javaType=" + javaType);
 
       try
       {
@@ -402,8 +369,7 @@ public class SOAPFaultHelperJAXWS
          Result result = ser.serialize(xmlName, xmlType, faultObject, serContext, null);
          XMLFragment xmlFragment = new XMLFragment(result);
          String xmlStr = xmlFragment.toXMLString();
-         if (log.isDebugEnabled())
-            log.debug("Fault detail: " + xmlStr);
+         log.debug("Fault detail: " + xmlStr);
 
          Element domElement = xmlFragment.toElement();
          SOAPFactoryImpl soapFactory = new SOAPFactoryImpl();
