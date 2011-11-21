@@ -34,11 +34,12 @@ import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.annotation.EndpointConfig;
+import org.jboss.ws.annotation.EndpointConfig;
 
 @WebService(name = "SOAPEndpoint", targetNamespace = "http://org.jboss.ws/jaxws/handlerlifecycle")
 @HandlerChain(file = "jaxws-server-handlers.xml")
 @SOAPBinding(style = Style.RPC)
+
 @EndpointConfig(configName = "Custom Server Config", configFile = "WEB-INF/jaxws-endpoint-config.xml")
 public class SOAPEndpointBean
 {

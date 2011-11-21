@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.jaxws.samples.wssecurity;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class SimpleUsernameTestCase extends JBossWSTest
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(SimpleUsernameTestCase.class, "jaxws-samples-wssecurity-username.war", !isTargetJBoss6());
+      return new JBossWSTestSetup(SimpleUsernameTestCase.class, "jaxws-samples-wssecurity-username.war");
    }
 
    @Override
@@ -70,11 +71,7 @@ public class SimpleUsernameTestCase extends JBossWSTest
    public void testUsernameTokenNegative() throws Exception
    {
       try
-      {  
-    	   //When testUsernameToken() execute before, need to clear reqContext  
-    	   Map<String, Object> reqContext = ((BindingProvider)port).getRequestContext();
-         reqContext.remove(BindingProvider.USERNAME_PROPERTY);
-         reqContext.remove(BindingProvider.PASSWORD_PROPERTY);
+      {
          port.getUsernameToken();
          fail("Server should respond with [401] - Unauthorized");
       }

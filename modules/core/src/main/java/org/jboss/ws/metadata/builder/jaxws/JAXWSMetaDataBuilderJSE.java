@@ -21,14 +21,8 @@
  */
 package org.jboss.ws.metadata.builder.jaxws;
 
-import static org.jboss.ws.common.integration.WSHelper.isJaxwsJseEndpoint;
-
-import java.util.ResourceBundle;
-
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.utils.DelegateClassLoader;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -42,7 +36,6 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  */
 public class JAXWSMetaDataBuilderJSE
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JAXWSMetaDataBuilderJSE.class);
    // provide logging
    private final Logger log = Logger.getLogger(JAXWSMetaDataBuilderJSE.class);
 
@@ -50,30 +43,25 @@ public class JAXWSMetaDataBuilderJSE
     */
    public UnifiedMetaData buildMetaData(ArchiveDeployment dep)
    {
-      if (log.isDebugEnabled())
-         log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
+      log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
       try
       {
          UnifiedMetaData wsMetaData = new UnifiedMetaData(dep.getRootFile());
          wsMetaData.setDeploymentName(dep.getCanonicalName());
          ClassLoader runtimeClassLoader = dep.getRuntimeClassLoader();
          if(null == runtimeClassLoader)
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "RUNTIME_CLASSLOADER_CANNOT_BE_NULL"));
-         wsMetaData.setClassLoader(new DelegateClassLoader(runtimeClassLoader, SecurityActions.getContextClassLoader()));
+            throw new IllegalArgumentException("Runtime classloader cannot be null");
+         wsMetaData.setClassLoader(runtimeClassLoader);
 
          // For every bean
          for (Endpoint ep : dep.getService().getEndpoints())
          {
-            if (isJaxwsJseEndpoint(ep))
-            {
-               String shortName = ep.getShortName();
-               Class<?> beanClass = ep.getTargetBeanClass();
-               JAXWSServerMetaDataBuilder.setupProviderOrWebService(dep, wsMetaData, beanClass, shortName);
-            }
+            String shortName = ep.getShortName();
+            Class beanClass = ep.getTargetBeanClass();
+            JAXWSServerMetaDataBuilder.setupProviderOrWebService(dep, wsMetaData, beanClass, shortName);
          }
          
-         if (log.isDebugEnabled())
-            log.debug("END buildMetaData: " + wsMetaData);
+         log.debug("END buildMetaData: " + wsMetaData);
          return wsMetaData;
       }
       catch (RuntimeException rte)
@@ -82,7 +70,7 @@ public class JAXWSMetaDataBuilderJSE
       }
       catch (Exception ex)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_BUILD_META_DATA",  ex.getMessage()),  ex);
+         throw new WSException("Cannot build meta data: " + ex.getMessage(), ex);
       }
    }
 }

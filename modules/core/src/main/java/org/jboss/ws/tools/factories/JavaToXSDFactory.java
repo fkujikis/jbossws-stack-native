@@ -21,9 +21,6 @@
  */
 package org.jboss.ws.tools.factories;
 
-import java.util.ResourceBundle;
-
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.tools.JavaToXSD;
 import org.jboss.ws.tools.exceptions.JBossWSToolsException;
 import org.jboss.ws.tools.interfaces.JavaToXSDIntf;
@@ -37,7 +34,6 @@ import org.jboss.ws.tools.interfaces.JavaToXSDIntf;
 
 public class JavaToXSDFactory
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JavaToXSDFactory.class);
    /**
     * Create a JavaToXSDFactory
     * @return
@@ -51,13 +47,13 @@ public class JavaToXSDFactory
       {
          String defaultName = "org.jboss.ws.tools.factories.JavaToXSDFactory";
          factoryName = System.getProperty("org.jboss.ws.tools.JavaToXSDFactory", defaultName);
-         ClassLoader loader = SecurityActions.getContextClassLoader();
-         Class factoryClass = SecurityActions.loadClass(loader, factoryName);
+         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+         Class factoryClass = loader.loadClass(factoryName);
          factory = (JavaToXSDFactory) factoryClass.newInstance();
       }
       catch(Throwable e)
       {
-         throw new JBossWSToolsException(BundleUtils.getMessage(bundle, "CANNOT_CREATE_JAVATOXSDFACTORY"), e);
+         throw new JBossWSToolsException("Cannot create JavaToXSDFactory",e);
       }
       return factory;
    }

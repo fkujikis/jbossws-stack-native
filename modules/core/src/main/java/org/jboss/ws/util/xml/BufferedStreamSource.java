@@ -29,15 +29,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.util.ResourceBundle;
 
 import javax.xml.transform.stream.StreamSource;
 
-import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.IOUtils;
+import org.jboss.wsf.common.IOUtils;
 
 /**
  * A StreamSource that can be read repeatedly. 
@@ -47,8 +43,6 @@ import org.jboss.ws.common.IOUtils;
  */
 public final class BufferedStreamSource extends StreamSource
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(BufferedStreamSource.class);
-   private static final Logger log = Logger.getLogger(BufferedStreamSource.class);
    private byte[] bytes;
    private char[] chars;
 
@@ -76,22 +70,6 @@ public final class BufferedStreamSource extends StreamSource
                countOfReadChars = sourceReader.read(buffer);
             }
             chars = charArrayWriter.toCharArray();
-         }
-         //JBWS-3164:try to create InputStream from systemId
-         String systemId = source.getSystemId();
-         if (sourceInputStream == null && sourceReader == null && systemId != null) 
-         {
-            try
-            {
-               URL url = new URL(systemId);
-               ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-               IOUtils.copyStream(baos, url.openStream());
-               bytes = baos.toByteArray();
-            }
-            catch (Exception e)
-            {
-               log.warn(BundleUtils.getMessage(bundle, "FAILED_TO_CREATE_INPUTSTREAM"));
-            }
          }
       }
       catch (IOException ex)

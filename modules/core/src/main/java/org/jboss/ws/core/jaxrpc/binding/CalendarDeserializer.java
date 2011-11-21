@@ -22,14 +22,12 @@
 package org.jboss.ws.core.jaxrpc.binding;
 
 import java.util.Calendar;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.DeserializerSupport;
 import org.jboss.ws.core.binding.SerializationContext;
@@ -43,7 +41,6 @@ import org.w3c.dom.Element;
  */
 public class CalendarDeserializer extends DeserializerSupport
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(CalendarDeserializer.class);
    // provide logging
    private static final Logger log = Logger.getLogger(CalendarDeserializer.class);
 
@@ -68,7 +65,7 @@ public class CalendarDeserializer extends DeserializerSupport
             value = SimpleTypeBindings.unmarshalTime(valueStr);
          else if (Constants.TYPE_LITERAL_DATETIME.equals(xmlType))
             value = SimpleTypeBindings.unmarshalDateTime(valueStr);
-         else throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_XMLTYPE",  xmlType));
+         else throw new IllegalArgumentException("Invalid xmlType: " + xmlType);
       }
 
       return value;

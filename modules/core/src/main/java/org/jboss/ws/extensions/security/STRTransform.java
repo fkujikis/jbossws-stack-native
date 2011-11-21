@@ -22,7 +22,6 @@
 package org.jboss.ws.extensions.security;
 
 import java.io.IOException;
-import java.util.ResourceBundle;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -36,7 +35,6 @@ import org.apache.xml.security.transforms.TransformationException;
 import org.apache.xml.security.utils.XMLUtils;
 import org.jboss.util.NotImplementedException;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.utils.ThreadLocalAssociation;
 import org.jboss.ws.extensions.security.element.BinarySecurityToken;
 import org.jboss.ws.extensions.security.element.SecurityTokenReference;
@@ -56,7 +54,6 @@ import org.xml.sax.SAXException;
  */
 public class STRTransform extends TransformSpi
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(STRTransform.class);
    public static final String STR_URI = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#STR-Transform";
 
    static
@@ -74,11 +71,11 @@ public class STRTransform extends TransformSpi
    private String canonicalize(Element element, Element method) throws TransformationException, InvalidCanonicalizerException, CanonicalizationException
    {
       if (method == null || ! method.getLocalName().equals("CanonicalizationMethod"))
-         throw new TransformationException(BundleUtils.getMessage(bundle, "CANONICALIZATIONMETHOD_EXPECTED"));
+         throw new TransformationException("CanonicalizationMethod expected!");
 
       String algorithm = method.getAttribute("Algorithm");
       if (algorithm == null || algorithm.length() == 0)
-         throw new TransformationException(BundleUtils.getMessage(bundle, "CANONICALIZATIONMETHOD_MISSING_ALGORITHM"));
+         throw new TransformationException("CanonicalizationMethod missing algorithm!");
 
       Canonicalizer canon = Canonicalizer.getInstance(algorithm);
 
@@ -100,12 +97,12 @@ public class STRTransform extends TransformSpi
       SecurityStore store = ThreadLocalAssociation.localStrTransformAssoc().get();
 
       if (store == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "THREAD_LOCAL_NOT_INITIALIZED"));
+         throw new WSException("SecurityStore Thread Local not initialized before call!");
 
       try
       {
          if (! input.isElement())
-            throw new NotImplementedException(BundleUtils.getMessage(bundle, "ONLY_ELEMENT_INPUT_IS_SUPPORTED"));
+            throw new NotImplementedException("Only element input is supported");
 
          // Resolve the BinarySecurityToken associated with this SecurityTokenReference
          Element element = (Element)input.getSubNode();
@@ -120,7 +117,7 @@ public class STRTransform extends TransformSpi
          Element parameters = XMLUtils.selectNode(this._transformObject.getElement().getFirstChild(), Constants.WSSE_NS,
                "TransformationParameters", 0);
          if (parameters == null)
-            throw new TransformationException(BundleUtils.getMessage(bundle, "TRANSFORMATIONPARAMETERS_EXPECTED"));
+            throw new TransformationException("wsse:TransformationParameters expected!");
 
          Element method = Util.getFirstChildElement(parameters);
          String transformed = canonicalize(element, method);

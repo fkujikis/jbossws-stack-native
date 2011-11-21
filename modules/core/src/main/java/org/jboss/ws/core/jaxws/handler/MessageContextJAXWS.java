@@ -21,14 +21,16 @@
  */
 package org.jboss.ws.core.jaxws.handler;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ResourceBundle;
 
 import javax.xml.ws.handler.MessageContext;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
+import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.binding.SerializationContext;
 import org.jboss.ws.core.jaxws.SerializationContextJAXWS;
@@ -36,7 +38,9 @@ import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
+import org.jboss.wsf.common.IOUtils;
 import org.jboss.xb.binding.NamespaceRegistry;
+import org.xml.sax.InputSource;
 
 /**
  * The interface MessageContext abstracts the message context that is processed by a handler in the handle  method.
@@ -49,7 +53,6 @@ import org.jboss.xb.binding.NamespaceRegistry;
  */
 public abstract class MessageContextJAXWS extends CommonMessageContext implements MessageContext
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(MessageContextJAXWS.class);
    private static Logger log = Logger.getLogger(MessageContextJAXWS.class);
 
    public MessageContextJAXWS()
@@ -84,7 +87,7 @@ public abstract class MessageContextJAXWS extends CommonMessageContext implement
    {
       ScopedProperty prop = scopedProps.get(key);
       if (prop == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_FIND_SCOPED_PROPERTY",  key));
+         throw new IllegalArgumentException("Cannot find scoped property: " + key);
 
       scopedProps.put(key, new ScopedProperty(key, prop.getValue(), scope));
    }
@@ -94,7 +97,7 @@ public abstract class MessageContextJAXWS extends CommonMessageContext implement
    {
       ScopedProperty prop = scopedProps.get(key);
       if (prop == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_FIND_SCOPED_PROPERTY",  key));
+         throw new IllegalArgumentException("Cannot find scoped property: " + key);
 
       return prop.getScope();
    }
@@ -105,7 +108,7 @@ public abstract class MessageContextJAXWS extends CommonMessageContext implement
 
       Boolean outbound = (Boolean)reqContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
       if (outbound == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_FIND_PROPERTY",  MessageContext.MESSAGE_OUTBOUND_PROPERTY));
+         throw new IllegalStateException("Cannot find property: " + MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
       MessageContextAssociation.popMessageContext(false);
       SOAPMessageContextJAXWS resContext = new SOAPMessageContextJAXWS(reqContext);
@@ -115,6 +118,7 @@ public abstract class MessageContextJAXWS extends CommonMessageContext implement
       resContext.put(MessageContext.MESSAGE_OUTBOUND_PROPERTY, Boolean.valueOf(!outbound));
 
       MessageContextAssociation.pushMessageContext(resContext);
+      cleanupAttachments(reqContext);
 
       return resContext;
    }
@@ -139,18 +143,10 @@ public abstract class MessageContextJAXWS extends CommonMessageContext implement
             }
             catch (URISyntaxException e)
             {
-               if (log.isTraceEnabled())
-               {
-                  log.trace("Cannot convert the WSDL URL to a URI", e);
-               }
-               else
-               {
-                  log.debug("Cannot convert the WSDL URL to a URI");
-               }
+               log.warn("Cannot get the wsdl url", e);
             }
          }
 
-         
          put(MessageContext.WSDL_SERVICE, serviceMetaData.getServiceName());
          put(MessageContext.WSDL_PORT, epMetaData.getPortName());
          put(MessageContext.WSDL_INTERFACE, epMetaData.getPortTypeName());

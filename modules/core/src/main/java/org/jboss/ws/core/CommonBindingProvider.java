@@ -22,7 +22,6 @@
 package org.jboss.ws.core;
 
 import java.util.Observable;
-import java.util.ResourceBundle;
 
 import javax.xml.ws.EndpointReference;
 import javax.xml.ws.http.HTTPBinding;
@@ -31,7 +30,6 @@ import javax.xml.ws.wsaddressing.W3CEndpointReference;
 import javax.xml.ws.wsaddressing.W3CEndpointReferenceBuilder;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.jaxrpc.SOAP11BindingJAXRPC;
 import org.jboss.ws.core.jaxrpc.SOAP12BindingJAXRPC;
 import org.jboss.ws.core.jaxws.binding.HTTPBindingJAXWS;
@@ -51,7 +49,6 @@ import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
  */
 public class CommonBindingProvider implements Configurable
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(CommonBindingProvider.class);
    private static Logger log = Logger.getLogger(CommonBindingProvider.class);
 
    protected EndpointMetaData epMetaData;
@@ -114,7 +111,7 @@ public class CommonBindingProvider implements Configurable
    {
       if (binding instanceof HTTPBinding )
       {
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "CANNOT_GET_EPR"));
+         throw new UnsupportedOperationException("Cannot get EPR for BindingProvider instances using the XML/HTTP binding");
       }
       return getEndpointReference(W3CEndpointReference.class);
    }
@@ -129,22 +126,20 @@ public class CommonBindingProvider implements Configurable
 
       if (binding instanceof HTTPBinding )
       {
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "CANNOT_GET_EPR"));
+         throw new UnsupportedOperationException("Cannot get epr for BindingProvider instances using the XML/HTTP binding");
       }
-      if (epMetaData == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_GET_EPR_FROM_EMD"));
-         
-      if (epMetaData.getEndpointReference() != null)
-      {
-         return EndpointReferenceUtil.transform(clazz, epMetaData.getEndpointReference());      
-      }
-      
       W3CEndpointReferenceBuilder builder = new W3CEndpointReferenceBuilder();
-      builder.address(epMetaData.getEndpointAddress());
-      builder.serviceName(epMetaData.getServiceMetaData().getServiceName());
-      builder.endpointName(epMetaData.getPortName());
-      builder.wsdlDocumentLocation(epMetaData.getEndpointAddress() + "?wsdl");
-      
+      if (epMetaData != null)
+      {
+         builder.address(epMetaData.getEndpointAddress());
+         builder.serviceName(epMetaData.getServiceMetaData().getServiceName());
+         builder.endpointName(epMetaData.getPortName());
+         builder.wsdlDocumentLocation(epMetaData.getEndpointAddress() + "?wsdl");
+      }
+      else
+      {
+         log.warn("Cannot get endpoint reference info from endpoint metadata!");
+      }
       return EndpointReferenceUtil.transform(clazz, builder.build());
    }
 

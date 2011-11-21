@@ -21,20 +21,16 @@
  */
 package org.jboss.ws.metadata.builder.jaxws;
 
-import static org.jboss.ws.common.integration.WSHelper.isJaxwsJseDeployment;
-
-import java.util.ResourceBundle;
-
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceProvider;
 
-import org.jboss.ws.api.annotation.EndpointConfig;
-import org.jboss.ws.api.annotation.WebContext;
-import org.jboss.ws.api.util.BundleUtils;
+import org.jboss.ws.annotation.EndpointConfig;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
+import org.jboss.wsf.spi.annotation.WebContext;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
 
@@ -46,7 +42,6 @@ import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
  */
 public abstract class JAXWSServerMetaDataBuilder extends JAXWSMetaDataBuilder
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JAXWSServerMetaDataBuilder.class);
    static void setupProviderOrWebService(ArchiveDeployment dep, UnifiedMetaData umd, Class<?> beanClass, String beanName) throws Exception
    {
       if (beanClass.isAnnotationPresent(WebService.class))
@@ -105,14 +100,14 @@ public abstract class JAXWSServerMetaDataBuilder extends JAXWSMetaDataBuilder
       if (anWebContext == null)
          return;
 
-      boolean isJSEEndpoint = isJaxwsJseDeployment(dep);
+      boolean isJSEEndpoint = (dep.getType() == DeploymentType.JAXWS_JSE);
 
       // context-root
       if (anWebContext.contextRoot().length() > 0)
       {
          if (isJSEEndpoint)
          {
-            log.warn(BundleUtils.getMessage(bundle, "CONTEXTROOT_IS_ONLY_VALID_ON_EJB_ENDPOINTS"));
+            log.warn("@WebContext.contextRoot is only valid on EJB endpoints");
          }
          else
          {
@@ -129,7 +124,7 @@ public abstract class JAXWSServerMetaDataBuilder extends JAXWSMetaDataBuilder
       {
          if (isJSEEndpoint)
          {
-            log.warn(BundleUtils.getMessage(bundle, "URLPATTERN_IS_ONLY_VALID_ON_EJB_ENDPOINTS"));
+            log.warn("@WebContext.urlPattern is only valid on EJB endpoints");
          }
          else
          {
@@ -143,7 +138,7 @@ public abstract class JAXWSServerMetaDataBuilder extends JAXWSMetaDataBuilder
       {
          if (isJSEEndpoint)
          {
-            log.warn(BundleUtils.getMessage(bundle, "AUTHMETHOD_IS_ONLY_VALID_ON_EJB_ENDPOINTS"));
+            log.warn("@WebContext.authMethod is only valid on EJB endpoints");
          }
          else
          {
@@ -157,7 +152,7 @@ public abstract class JAXWSServerMetaDataBuilder extends JAXWSMetaDataBuilder
       {
          if (isJSEEndpoint)
          {
-            log.warn(BundleUtils.getMessage(bundle, "TRANSPORTGUARANTEE_IS_ONLY_VALID_ON_EJB_ENDPOINTS"));
+            log.warn("@WebContext.transportGuarantee is only valid on EJB endpoints");
          }
          else
          {

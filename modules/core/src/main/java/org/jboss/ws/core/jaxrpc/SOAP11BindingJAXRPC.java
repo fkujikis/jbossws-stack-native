@@ -21,12 +21,10 @@
  */
 package org.jboss.ws.core.jaxrpc;
 
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.CommonSOAP11Binding;
 import org.jboss.ws.core.RoleSource;
 import org.jboss.ws.core.soap.SOAPFaultImpl;
@@ -40,7 +38,6 @@ import org.jboss.ws.metadata.umdm.OperationMetaData;
  */
 public class SOAP11BindingJAXRPC extends CommonSOAP11Binding
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAP11BindingJAXRPC.class);
    // Delegate to JAXWS SOAP binding
    private SOAPBindingJAXRPC delegate = new SOAPBindingJAXRPC();
 
@@ -73,7 +70,7 @@ public class SOAP11BindingJAXRPC extends CommonSOAP11Binding
    public Set<String> getRoles()
    {
       if (!(headerSource instanceof RoleSource))
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "ROLESOURCE_WAS_NOT_AVAILABLE"));
+         throw new IllegalStateException("RoleSource was not available");
 
       return ((RoleSource)headerSource).getRoles();
    }

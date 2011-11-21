@@ -45,9 +45,10 @@ public class JBWS1999ConfigurationTestCase extends JBossWSTest
 
    private WSSecurityConfiguration load(final String fileName) throws IOException
    {
+      File configFile = getResourceFile("jaxws/jbws1999/config/" + fileName);
       WSSecurityOMFactory factory = WSSecurityOMFactory.newInstance();
 
-      return factory.parse(getResourceURL("jaxws/jbws1999/config/" + fileName));
+      return factory.parse(configFile.toURL());
    }
 
    /**

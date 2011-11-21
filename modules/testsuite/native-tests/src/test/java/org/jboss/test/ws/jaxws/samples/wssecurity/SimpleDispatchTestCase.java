@@ -37,8 +37,8 @@ import javax.xml.ws.Service.Mode;
 import junit.framework.Test;
 
 import org.jboss.ws.core.ConfigProvider;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 import org.w3c.dom.Element;
@@ -59,7 +59,7 @@ public class SimpleDispatchTestCase extends JBossWSTest
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(SimpleDispatchTestCase.class, "jaxws-samples-wssecurity-username.war jaxws-samples-wssecurity-encrypt.war", !isTargetJBoss6());
+      return new JBossWSTestSetup(SimpleDispatchTestCase.class, "jaxws-samples-wssecurity-username.war jaxws-samples-wssecurity-encrypt.war");
    }
 
    @Override
@@ -100,11 +100,7 @@ public class SimpleDispatchTestCase extends JBossWSTest
    {
       try
       {
-    	 //When testUsernameToken() execute before, need to clear reqContext 
-     	 Map<String, Object> reqContext = usernameDispatch.getRequestContext();
-       reqContext.remove(BindingProvider.USERNAME_PROPERTY);
-       reqContext.remove(BindingProvider.PASSWORD_PROPERTY);
-    	 String payload = "<ns1:getUsernameToken xmlns:ns1='http://org.jboss.ws/samples/wssecurity'/>";
+         String payload = "<ns1:getUsernameToken xmlns:ns1='http://org.jboss.ws/samples/wssecurity'/>";
          usernameDispatch.invoke(new StreamSource(new StringReader(payload)));
          fail("Server should respond with [401] - Unauthorized");
       }

@@ -25,12 +25,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPException;
@@ -38,16 +36,14 @@ import javax.xml.soap.SOAPFactory;
 import javax.xml.soap.SOAPFault;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.ws.AsyncHandler;
 import javax.xml.ws.Binding;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Dispatch;
 import javax.xml.ws.EndpointReference;
 import javax.xml.ws.Response;
-import javax.xml.ws.Service.Mode;
 import javax.xml.ws.WebServiceException;
-import javax.xml.ws.WebServiceFeature;
+import javax.xml.ws.Service.Mode;
 import javax.xml.ws.handler.Handler;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.PortInfo;
@@ -55,11 +51,10 @@ import javax.xml.ws.http.HTTPBinding;
 import javax.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
+import org.jboss.util.NotImplementedException;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.ConfigProvider;
-import org.jboss.ws.core.EndpointMetadataProvider;
 import org.jboss.ws.core.MessageAbstraction;
 import org.jboss.ws.core.client.EndpointInfo;
 import org.jboss.ws.core.client.HTTPProtocolConnection;
@@ -75,17 +70,15 @@ import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.config.ConfigurationProvider;
+import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointConfigMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.metadata.umdm.FeatureAwareClientEndpointMetaDataAdapter;
-import org.jboss.ws.metadata.umdm.FeatureAwareEndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.wsse.WSSecurityConfigFactory;
 import org.jboss.ws.metadata.wsse.WSSecurityConfiguration;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
-import org.w3c.dom.Node;
 
 
 /**
@@ -95,15 +88,14 @@ import org.w3c.dom.Node;
  * @author Thomas.Diesler@jboss.com
  * @since 04-Jul-2006
  */
-public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMetadataProvider, FeatureAwareEndpointMetaData
+public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(DispatchImpl.class);
    // provide logging
    private final Logger log = Logger.getLogger(DispatchImpl.class);
 
    private BindingProvider bindingProvider;
    private HandlerResolverImpl handlerResolver;
-   private FeatureAwareClientEndpointMetaDataAdapter epMetaData;
+   private ClientEndpointMetaData epMetaData;
    private JAXBContext jaxbContext;
    private ExecutorService executor;
    private String securityConfig;
@@ -115,7 +107,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
    public DispatchImpl(ExecutorService executor, EndpointMetaData epMetaData, Class<T> type, Mode mode)
    {
       this.bindingProvider = new BindingProviderImpl(epMetaData);
-      this.epMetaData = (FeatureAwareClientEndpointMetaDataAdapter)epMetaData;
+      this.epMetaData = (ClientEndpointMetaData)epMetaData;
       this.executor = executor;
       this.type = type;
       this.mode = mode;
@@ -125,7 +117,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
    public DispatchImpl(ExecutorService executor, EndpointMetaData epMetaData, JAXBContext jbc, Mode mode)
    {
       this.bindingProvider = new BindingProviderImpl(epMetaData);
-      this.epMetaData = (FeatureAwareClientEndpointMetaDataAdapter)epMetaData;
+      this.epMetaData = (ClientEndpointMetaData)epMetaData;
       this.executor = executor;
       this.type = Object.class;
       this.jaxbContext = jbc;
@@ -164,13 +156,17 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
             handlerResolver.initHandlerChain(ecmd, HandlerType.PRE, true);
             handlerResolver.initHandlerChain(ecmd, HandlerType.ENDPOINT, true);
             handlerResolver.initHandlerChain(ecmd, HandlerType.POST, true);
-
+            
             PortInfo portInfo = epMetaData.getPortInfo();
-            this.appendHandlers(HandlerType.PRE, portInfo, binding);
-            this.appendHandlers(HandlerType.ENDPOINT, portInfo, binding);
-            this.appendHandlers(HandlerType.POST, portInfo, binding);
+            List<Handler> preChain = handlerResolver.getHandlerChain(portInfo, HandlerType.PRE);
+            List<Handler> epChain = handlerResolver.getHandlerChain(portInfo, HandlerType.ENDPOINT);
+            List<Handler> postChain = handlerResolver.getHandlerChain(portInfo, HandlerType.POST);
+            
+            binding.setHandlerChain(preChain, HandlerType.PRE);
+            binding.setHandlerChain(epChain, HandlerType.ENDPOINT);
+            binding.setHandlerChain(postChain, HandlerType.POST);
          }
-
+         
          retObj = invokeInternalSOAP(obj);
       }
       else
@@ -178,21 +174,6 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
          retObj = invokeInternalNonSOAP(obj);
       }
       return retObj;
-   }
-   
-   private void appendHandlers(final HandlerType handlerType, final PortInfo portInfo, final BindingExt binding)
-   {
-      final List<Handler> resolverHandlerChain = this.handlerResolver.getHandlerChain(portInfo, handlerType);
-      final List<Handler> bindingHandlerChain = binding.getHandlerChain(handlerType);
-      
-      if (bindingHandlerChain == null || bindingHandlerChain.size() == 0)
-      {
-         binding.setHandlerChain(resolverHandlerChain, handlerType);
-      }
-      else
-      {
-         bindingHandlerChain.addAll(resolverHandlerChain);
-      }
    }
 
    private Object invokeInternalSOAP(Object obj) throws Exception
@@ -209,15 +190,16 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
       // R2745 A HTTP request MESSAGE MUST contain a SOAPAction HTTP header field
       // with a quoted empty string value, if in the corresponding WSDL description,
       // the soapAction attribute of soapbind:operation is either not present, or
-      // present with an empty string as its value.      
+      // present with an empty string as its value.
+      String soapAction = null;
       Map<String, Object> reqContext = getRequestContext();
-      String soapAction = (String) reqContext.get(BindingProvider.SOAPACTION_URI_PROPERTY);;
-      Boolean useSOAPAction = (Boolean) reqContext.get(BindingProvider.SOAPACTION_USE_PROPERTY);
-      if (Boolean.TRUE.equals(useSOAPAction) && soapAction == null)
+      Boolean useSOAPAction = (Boolean)reqContext.get(BindingProvider.SOAPACTION_USE_PROPERTY);
+      if (Boolean.TRUE.equals(useSOAPAction))
       {
-            throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN",  BindingProvider.SOAPACTION_URI_PROPERTY));
+         soapAction = (String)reqContext.get(BindingProvider.SOAPACTION_URI_PROPERTY);
+         if (soapAction == null)
+            throw new IllegalStateException("Cannot obtain: " + BindingProvider.SOAPACTION_URI_PROPERTY);
       }
-      
       MimeHeaders mimeHeaders = reqMsg.getMimeHeaders();
       mimeHeaders.addHeader("SOAPAction", soapAction != null ? soapAction : "");
 
@@ -225,10 +207,8 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
       HandlerType[] handlerType = new HandlerType[] { HandlerType.PRE, HandlerType.ENDPOINT, HandlerType.POST };
       HandlerType[] faultType = new HandlerType[] { HandlerType.PRE, HandlerType.ENDPOINT, HandlerType.POST };
 
-      
       // Associate a message context with the current thread
       CommonMessageContext msgContext = new SOAPMessageContextJAXWS();
-      CommonMessageContext reqMsgContext = msgContext;
       MessageContextAssociation.pushMessageContext(msgContext);
       try
       {
@@ -281,7 +261,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
 
             if (handlerPass)
             {
-               retObj = getReturnObject(resMsg, obj);
+               retObj = getReturnObject(resMsg);
             }
          }
          catch (Exception ex)
@@ -298,8 +278,6 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
          }
          finally
          {
-            //cleanup attachment if there is any
-            CommonMessageContext.cleanupAttachments(reqMsgContext);
             closeHandlerChain(portName, handlerType[2]);
             closeHandlerChain(portName, handlerType[1]);
             closeHandlerChain(portName, handlerType[0]);
@@ -321,7 +299,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
          targetAddress = (String) callProps.get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY);
       }
       MessageAbstraction resMsg = getRemotingConnection().invoke(reqMsg, targetAddress, false);
-      Object retObj = getReturnObject(resMsg, obj);
+      Object retObj = getReturnObject(resMsg);
       return retObj;
    }
 
@@ -329,7 +307,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
    {
       String bindingID = bindingProvider.getBinding().getBindingID();
       if (EndpointMetaData.SUPPORTED_BINDINGS.contains(bindingID) == false)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "UNSUPPORTED_BINDING",  bindingID));
+         throw new IllegalStateException("Unsupported binding: " + bindingID);
 
       RemoteConnection remotingConnection;
       if (HTTPBinding.HTTP_BINDING.equals(bindingID))
@@ -397,7 +375,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
       }
 
       String msg = "Cannot dispatch message";
-      log.error(BundleUtils.getMessage(bundle, ""),  ex);
+      log.error(msg, ex);
       throw new WebServiceException(msg, ex);
    }
 
@@ -432,7 +410,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
       }
       else
       {
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "ILLEGAL_ARGUMENT", new Object[]{ (type != null ? type.getName() : null) ,  mode }));
+         throw new WebServiceException("Illegal argument combination [type=" + (type != null ? type.getName() : null) + ",mode=" + mode + "]");
       }
    }
 
@@ -456,7 +434,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
 
       String bindingID = bindingProvider.getBinding().getBindingID();
       if (EndpointMetaData.SUPPORTED_BINDINGS.contains(bindingID) == false)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "UNSUPPORTED_BINDING",  bindingID));
+         throw new IllegalStateException("Unsupported binding: " + bindingID);
 
       MessageAbstraction message;
       if (HTTPBinding.HTTP_BINDING.equals(bindingID))
@@ -474,39 +452,24 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
       return message;
    }
 
-   private Object getReturnObject(MessageAbstraction resMsg, Object reqObj)
+   private Object getReturnObject(MessageAbstraction resMsg)
    {
       String bindingID = bindingProvider.getBinding().getBindingID();
       if (EndpointMetaData.SUPPORTED_BINDINGS.contains(bindingID) == false)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "UNSUPPORTED_BINDING",  bindingID));
+         throw new IllegalStateException("Unsupported binding: " + bindingID);
 
-      boolean unwrap = !(reqObj instanceof JAXBElement);
-      Object resObj = null;
+      Object retObj = null;
       if (HTTPBinding.HTTP_BINDING.equals(bindingID))
       {
          DispatchHTTPBinding helper = new DispatchHTTPBinding(mode, type, jaxbContext);
-         resObj = helper.getReturnObject(resMsg);
+         retObj = helper.getReturnObject(resMsg);
       }
       else
       {
          DispatchSOAPBinding helper = new DispatchSOAPBinding(mode, type, jaxbContext);
-         resObj = helper.getReturnObject(resMsg, unwrap);
+         retObj = helper.getReturnObject(resMsg);
       }
-      
-      // HACK - handle null because of TCK requirement
-      if ((reqObj instanceof Source) && (resObj instanceof DOMSource))
-      {
-         resObj = this.handleNull((DOMSource)resObj);
-      }
-      
-      return resObj;
-   }
-   
-   private Source handleNull(final DOMSource from)
-   {
-      final Node node = from.getNode();
-      
-      return node != null ? from : null;
+      return retObj;
    }
 
    class AsyncRunnable implements Runnable
@@ -518,9 +481,9 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
       public AsyncRunnable(ResponseImpl response, AsyncHandler handler, Object payload)
       {
          if (response == null)
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ASYNC_RESPONSE_CANNOT_BE_NULL"));
+            throw new IllegalArgumentException("Async response cannot be null");
          if (payload == null)
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ASYNC_PAYLOAD_CANNOT_BE_NULL"));
+            throw new IllegalArgumentException("Async payload cannot be null");
 
          this.response = response;
          this.handler = handler;
@@ -554,7 +517,7 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
       private void handleAsynInvokeException(Exception ex)
       {
          String msg = "Cannot dispatch message";
-         log.error(BundleUtils.getMessage(bundle, ""),  ex);
+         log.error(msg, ex);
 
          WebServiceException wsex;
          if (ex instanceof WebServiceException)
@@ -676,26 +639,4 @@ public class DispatchImpl<T> implements Dispatch<T>, ConfigProvider, EndpointMet
          log.debug("Cannot find the right operation metadata!");
       return opMetaData;
    }
-
-   public EndpointMetaData getEndpointMetaData()
-   {
-      return epMetaData;
-   }
-
-   //////////////////////////////////////////
-   // FeatureAwareEndpointMetaData support //
-   //////////////////////////////////////////
-   
-   @Override
-   public <T extends WebServiceFeature> T getFeature(Class<T> key)
-   {
-      return this.epMetaData.getFeature(key);
-   }
-
-   @Override
-   public void setFeature(WebServiceFeature feature)
-   {
-      this.epMetaData.setFeature(feature);
-   }
-
 }

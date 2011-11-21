@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,14 +22,17 @@
 package org.jboss.test.ws.common.config;
 
 import java.io.File;
+import java.util.List;
 
+import javax.xml.namespace.QName;
+
+import org.jboss.ws.metadata.config.EndpointProperty;
 import org.jboss.ws.metadata.config.JBossWSConfigFactory;
 import org.jboss.ws.metadata.config.jaxrpc.CommonConfigJAXRPC;
 import org.jboss.ws.metadata.config.jaxrpc.ConfigRootJAXRPC;
 import org.jboss.ws.metadata.config.jaxrpc.EndpointConfigJAXRPC;
-import org.jboss.wsf.spi.metadata.config.ConfigRoot;
-import org.jboss.wsf.spi.metadata.config.EndpointConfig;
-import org.jboss.wsf.spi.metadata.config.Feature;
+import org.jboss.ws.metadata.config.jaxws.ConfigRootJAXWS;
+import org.jboss.ws.metadata.config.jaxws.EndpointConfigJAXWS;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
 import org.jboss.wsf.test.JBossWSTest;
@@ -49,7 +52,7 @@ public class ConfigFactoryTestCase extends JBossWSTest
       assertTrue(confFile.exists());
 
       JBossWSConfigFactory factory = JBossWSConfigFactory.newInstance();
-      ConfigRootJAXRPC config = (ConfigRootJAXRPC)factory.parse(confFile.toURI().toURL());
+      ConfigRootJAXRPC config = (ConfigRootJAXRPC)factory.parse(confFile.toURL());
 
       assertNotNull("Null config", config);
 
@@ -76,14 +79,14 @@ public class ConfigFactoryTestCase extends JBossWSTest
       assertTrue(confFile.exists());
       JBossWSConfigFactory factory = JBossWSConfigFactory.newInstance();
 
-      ConfigRoot config = (ConfigRoot)factory.parse(confFile.toURI().toURL());
+      ConfigRootJAXWS config = (ConfigRootJAXWS)factory.parse(confFile.toURL());
       assertNotNull("Null config", config);
 
-      EndpointConfig epConfig = (EndpointConfig)config.getConfigByName("Standard MTOM Endpoint");
+      EndpointConfigJAXWS epConfig = (EndpointConfigJAXWS)config.getConfigByName("Standard MTOM Endpoint");
       assertTrue("Feature not set", epConfig.hasFeature("http://org.jboss.ws/mtom"));
 
       // disable feature
-      epConfig.setFeature(new Feature("http://org.jboss.ws/mtom"), false);
+      epConfig.setFeature("http://org.jboss.ws/mtom", false);
       assertFalse("Feature still set", epConfig.hasFeature("http://org.jboss.ws/mtom"));
    }
 
@@ -92,7 +95,7 @@ public class ConfigFactoryTestCase extends JBossWSTest
       File confFile = getResourceFile("common/config/jaxrpc-endpoint-config.xml");
       assertTrue(confFile.exists());
       JBossWSConfigFactory factory = JBossWSConfigFactory.newInstance();
-      ConfigRootJAXRPC config = (ConfigRootJAXRPC)factory.parse(confFile.toURI().toURL());
+      ConfigRootJAXRPC config = (ConfigRootJAXRPC)factory.parse(confFile.toURL());
       assertNotNull("Null config", config);
 
       CommonConfigJAXRPC epConfig = (CommonConfigJAXRPC)config.getConfigByName("Standard MTOM Endpoint");
@@ -109,12 +112,13 @@ public class ConfigFactoryTestCase extends JBossWSTest
       assertTrue(confFile.exists());
 
       JBossWSConfigFactory factory = JBossWSConfigFactory.newInstance();
-      ConfigRoot config = (ConfigRoot)factory.parse(confFile.toURI().toURL());
+      ConfigRootJAXWS config = (ConfigRootJAXWS)factory.parse(confFile.toURL());
       assertNotNull("Null config", config);
 
-      EndpointConfig epConfig = (EndpointConfig)config.getConfigByName("Standard WSSecurity Endpoint");
-      String value = epConfig.getProperty("http://org.jboss.ws/mtom#threshold");
+      EndpointConfigJAXWS epConfig = (EndpointConfigJAXWS)config.getConfigByName("Standard WSSecurity Endpoint");
+      String value = epConfig.getProperty(EndpointProperty.MTOM_THRESHOLD);
       assertNotNull("Property does not exist", value);
       assertEquals("Wrong property valule", value, "5000");
    }
+
 }

@@ -26,20 +26,22 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
 import org.jboss.ws.tools.interfaces.WebservicesXMLCreator;
 import org.jboss.wsf.spi.metadata.webservices.PortComponentMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesFactory;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
+import org.jboss.xb.binding.JBossXBException;
+import org.jboss.xb.binding.ObjectModelFactory;
+import org.jboss.xb.binding.Unmarshaller;
+import org.jboss.xb.binding.UnmarshallerFactory;
 import org.w3c.dom.Element;
 
 /**
@@ -49,7 +51,6 @@ import org.w3c.dom.Element;
  */
 public class WebservicesXMLCreatorImpl implements WebservicesXMLCreator
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WebservicesXMLCreatorImpl.class);
    // provide logging
    protected static final Logger log = Logger.getLogger(WebservicesXMLCreatorImpl.class);
    protected String targetNamespace = null;
@@ -131,11 +132,13 @@ public class WebservicesXMLCreatorImpl implements WebservicesXMLCreator
          InputStream wsXmlStream = new FileInputStream(wsXmlFile);
          try
          {
-            existingWebservices = WebservicesFactory.parse(wsXmlStream, wsXmlFile.toURI().toURL());
+            Unmarshaller unmarshaller = UnmarshallerFactory.newInstance().newUnmarshaller();
+            ObjectModelFactory factory = new WebservicesFactory(wsXmlFile.toURL());
+            existingWebservices = (WebservicesMetaData)unmarshaller.unmarshal(wsXmlStream, factory, null);
          }
-         catch (Exception e)
+         catch (JBossXBException e)
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "COULD_NOT_UNMARSHAL_DESCRIPTOR",  wsXmlFile),  e);
+            throw new WSException("Could not unmarshal existing webservices descriptor: " + wsXmlFile, e);
          }
          finally
          {
@@ -186,20 +189,20 @@ public class WebservicesXMLCreatorImpl implements WebservicesXMLCreator
    private void checkEssentials()
    {
       if (serviceName == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "SERVICENAME_IS_NULL"));
+         throw new WSException("serviceName is null");
       if (wsdlFile == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "WSDLFILE_IS_NULL"));
+         throw new WSException("wsdlFile is null");
       if (mappingFile == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "MAPPINGFILE_IS_NULL"));
+         throw new WSException("mappingFile is null");
       if (targetNamespace == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "TARGETNAMESPACE_IS_NULL"));
+         throw new WSException("targetNamespace is null");
       if (portName == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "PORTNAME_IS_NULL"));
+         throw new WSException("portName is null");
       if (seiName == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "SEINAME_IS_NULL"));
+         throw new WSException("seiName is null");
       if (servletLink == null && ejbLink == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "EITHER_SERVLETLINK_OR_EJBLINK_SHOULD_NOT_BE_NULL"));
+         throw new WSException("Either servletLink or ejbLink should not be null");
       if (servletLink != null && ejbLink != null)
-         throw new WSException(BundleUtils.getMessage(bundle, "ONE_OF_SERVLETLINK_OR_EJBLINK_SHOULD_BE_NULL"));
+         throw new WSException("One of servletLink or ejbLink should be null");
    }
 }

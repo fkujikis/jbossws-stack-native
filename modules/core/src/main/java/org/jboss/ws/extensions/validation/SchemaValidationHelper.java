@@ -22,16 +22,15 @@
 package org.jboss.ws.extensions.validation;
 
 import java.io.InputStream;
-import java.io.StringReader;
 import java.net.URL;
+import java.io.StringReader;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.jboss.logging.Logger;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -45,19 +44,11 @@ import org.xml.sax.InputSource;
 public class SchemaValidationHelper
 {
    private URL xsdURL;
-   private InputStream[] xsdStreams;
    private ErrorHandler errorHandler = new StrictlyValidErrorHandler();
-
-   private static Logger log = Logger.getLogger(SchemaValidationHelper.class);
    
    public SchemaValidationHelper(URL xsdURL)
    {
       this.xsdURL = xsdURL;
-   }
-
-   public SchemaValidationHelper(InputStream[] xsdStreams)
-   {
-      this.xsdStreams = xsdStreams;
    }
 
    public SchemaValidationHelper setErrorHandler(ErrorHandler errorHandler)
@@ -88,23 +79,14 @@ public class SchemaValidationHelper
       DocumentBuilder builder = getDocumentBuilder();
       builder.parse(inxml);
    }
-
+   
    private DocumentBuilder getDocumentBuilder() throws ParserConfigurationException
    {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setValidating(true);
       factory.setNamespaceAware(true);
       factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-
-      if(xsdStreams != null)
-      {
-         factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdStreams);
-      }
-      else //use xsdURL
-      {
-         factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdURL.toExternalForm());
-      }
-
+      factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", xsdURL.toExternalForm());
       factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
       DocumentBuilder builder = factory.newDocumentBuilder();
       builder.setErrorHandler(errorHandler);

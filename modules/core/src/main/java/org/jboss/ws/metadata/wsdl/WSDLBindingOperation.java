@@ -27,7 +27,7 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 
 /**
  * The Binding Operation component describes the concrete message format(s) and protocol interaction(s)

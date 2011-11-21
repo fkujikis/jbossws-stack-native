@@ -22,15 +22,13 @@
 package org.jboss.ws.tools.wsdl;
 
 import java.io.IOException;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.io.Writer;
 import java.util.Iterator;
 
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.metadata.wsdl.DOMTypes;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
@@ -39,8 +37,8 @@ import org.jboss.ws.metadata.wsdl.WSDLTypes;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.metadata.wsdl.XSModelTypes;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
 
 /**
@@ -52,7 +50,6 @@ import org.w3c.dom.Element;
  */
 public class WSDLWriter
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSDLWriter.class);
    // provide logging
    protected static final Logger log = Logger.getLogger(WSDLWriter.class);
 
@@ -70,7 +67,7 @@ public class WSDLWriter
    public WSDLWriter(WSDLDefinitions wsdl)
    {
       if (wsdl == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "WSDL_DEFINITIONS_IS_NULL"));
+         throw new IllegalArgumentException("WSDL definitions is NULL");
 
       this.wsdl = wsdl;
    }
@@ -91,7 +88,7 @@ public class WSDLWriter
       }
       else
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "UNSUPPORTED_WSDL_VERSION",  wsdlNamespace));
+         throw new WSException("Unsupported wsdl version: " + wsdlNamespace);
       }
    }
 

@@ -23,7 +23,6 @@ package org.jboss.ws.core.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ResourceBundle;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -33,13 +32,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
-import org.jboss.wsf.spi.SPIProvider;
-import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.management.EndpointRegistry;
 import org.jboss.wsf.spi.management.EndpointRegistryFactory;
+import org.jboss.wsf.spi.SPIProvider;
+import org.jboss.wsf.spi.SPIProviderResolver;
 
 /**
  * A servlet that reports the serviceURL for a given service ID.
@@ -58,7 +56,6 @@ import org.jboss.wsf.spi.management.EndpointRegistryFactory;
  */
 public class PortComponentLinkServlet extends HttpServlet
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(PortComponentLinkServlet.class);
    // provide logging
    private static final Logger log = Logger.getLogger(PortComponentLinkServlet.class);
 
@@ -78,11 +75,11 @@ public class PortComponentLinkServlet extends HttpServlet
    {
       String pcLink = req.getParameter("pcLink");
       if (pcLink == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_PCLINK"));
+         throw new IllegalArgumentException("Cannot obtain request parameter 'pcLink'");
 
       Endpoint endpoint = epRegistry.resolve( new PortComponentResolver(pcLink) );
       if (endpoint == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_RESOLVE_PORT_COMPONENT_LINK",  pcLink));
+         throw new WSException("Cannot resolve port-component-link: " + pcLink);
 
       res.setContentType("text/plain");
       PrintWriter out = res.getWriter();
@@ -91,8 +88,7 @@ public class PortComponentLinkServlet extends HttpServlet
       String endpointAddress = sepMetaData.getEndpointAddress();
       out.println(endpointAddress);
 
-      if (log.isDebugEnabled())
-         log.debug("Resolved " + pcLink + " to: " + endpointAddress);
+      log.debug("Resolved " + pcLink + " to: " + endpointAddress);
       out.close();
    }
 }

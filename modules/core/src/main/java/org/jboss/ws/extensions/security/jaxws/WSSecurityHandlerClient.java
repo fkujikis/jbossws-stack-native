@@ -42,15 +42,6 @@ public class WSSecurityHandlerClient extends WSSecurityHandler
    {
       return handleOutboundSecurity(msgContext);
    }
-   
-   @Override
-   public boolean handleFault(MessageContext msgContext)
-   {
-      if (thrownByMe(msgContext))
-         return true;
-
-      return handleInboundSecurity(msgContext);
-   }
 
    protected String getConfigResourceName() {
       return WSSecurityOMFactory.CLIENT_RESOURCE_NAME;

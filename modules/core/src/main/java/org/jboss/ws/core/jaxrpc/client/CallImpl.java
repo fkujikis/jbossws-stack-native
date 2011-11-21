@@ -22,8 +22,6 @@
 package org.jboss.ws.core.jaxrpc.client;
 
 import java.rmi.RemoteException;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,11 +44,10 @@ import javax.xml.rpc.soap.SOAPFaultException;
 import javax.xml.soap.SOAPException;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.CommonBindingProvider;
 import org.jboss.ws.core.CommonClient;
 import org.jboss.ws.core.CommonMessageContext;
-import org.jboss.ws.core.EndpointInvocation;
 import org.jboss.ws.core.RoleSource;
 import org.jboss.ws.core.WSTimeoutException;
 import org.jboss.ws.core.binding.TypeMappingImpl;
@@ -69,7 +66,7 @@ import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.TypesMetaData;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 /** Provides support for the dynamic invocation of a service endpoint.
  * The javax.xml.rpc.Service interface acts as a factory for the creation of Call instances.
@@ -81,7 +78,6 @@ import org.jboss.ws.common.JavaUtils;
  */
 public class CallImpl extends CommonClient implements Call, RoleSource
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(CallImpl.class);
    // provide logging
    private static Logger log = Logger.getLogger(CallImpl.class);
 
@@ -91,8 +87,6 @@ public class CallImpl extends CommonClient implements Call, RoleSource
    private QName portType;
    // A Map<String,Object> of Call properties
    private Map<String, Object> properties = new HashMap<String, Object>();
-   // The EndpointInvocation for the call.
-   private EndpointInvocation epInv;
 
    // The set of supported properties
    private static final Set<String> standardProperties = new HashSet<String>();
@@ -159,14 +153,6 @@ public class CallImpl extends CommonClient implements Call, RoleSource
    {
       return properties;
    }
-   
-   @Override
-   protected EndpointInvocation createEndpointInvocation(OperationMetaData opMetaData)
-   {
-      epInv = super.createEndpointInvocation(opMetaData);
-
-      return epInv;
-   }
 
    /** Gets the address of a target service endpoint.
     */
@@ -198,7 +184,7 @@ public class CallImpl extends CommonClient implements Call, RoleSource
       // the javaType can be derived from the xmlType
       if (javaType == null)
       {
-         log.warn(BundleUtils.getMessage(bundle, "REGISTER_UNQUALIFIED_PARAMETER",  xmlType));
+         log.warn("Register unqualified call parameter for: " + xmlType);
          javaType = new UnqualifiedCallParameter(xmlType).getClass();
          typeMapping.register(javaType, xmlType, null, null);
       }
@@ -220,7 +206,7 @@ public class CallImpl extends CommonClient implements Call, RoleSource
    public void addParameter(QName xmlName, QName xmlType, Class javaType, ParameterMode mode, boolean inHeader)
    {
       if (xmlType == null || javaType == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_NULL_PARAMETER"));
+         throw new IllegalArgumentException("Invalid null parameter");
 
       OperationMetaData opMetaData = getOperationMetaData();
       ParameterMetaData paramMetaData = new ParameterMetaData(opMetaData, xmlName, xmlType, javaType.getName());
@@ -257,7 +243,7 @@ public class CallImpl extends CommonClient implements Call, RoleSource
    public void setReturnType(QName xmlType, Class javaType)
    {
       if (xmlType == null || javaType == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_NULL_PARAMETER"));
+         throw new IllegalArgumentException("Invalid null parameter");
 
       OperationMetaData opMetaData = getOperationMetaData();
       QName xmlName = new QName("");
@@ -309,7 +295,7 @@ public class CallImpl extends CommonClient implements Call, RoleSource
    public List getOutputValues()
    {
       if (epInv == null)
-         throw new JAXRPCException(BundleUtils.getMessage(bundle, "OUTPUT_PARAMS_NOT_AVAILABLE"));
+         throw new JAXRPCException("Output params not available");
 
       try
       {
@@ -333,7 +319,7 @@ public class CallImpl extends CommonClient implements Call, RoleSource
       }
       catch (SOAPException ex)
       {
-         throw new JAXRPCException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_RESPONSE_PAYLOAD"),  ex);
+         throw new JAXRPCException("Cannot obtain response payload", ex);
       }
    }
 
@@ -346,7 +332,7 @@ public class CallImpl extends CommonClient implements Call, RoleSource
    public Map getOutputParams()
    {
       if (epInv == null)
-         throw new JAXRPCException(BundleUtils.getMessage(bundle, "OUTPUT_PARAMS_NOT_AVAILABLE"));
+         throw new JAXRPCException("Output params not available");
 
       try
       {
@@ -360,7 +346,7 @@ public class CallImpl extends CommonClient implements Call, RoleSource
       }
       catch (SOAPException ex)
       {
-         throw new JAXRPCException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_RESPONSE_PAYLOAD"),  ex);
+         throw new JAXRPCException("Cannot obtain response payload", ex);
       }
    }
 
@@ -449,10 +435,10 @@ public class CallImpl extends CommonClient implements Call, RoleSource
    public Object getProperty(String name)
    {
       if (null == name)
-         throw new JAXRPCException(BundleUtils.getMessage(bundle, "UNSUPPORTED_PROPERTY",  name));
+         throw new JAXRPCException("Unsupported property: " + name);
       // CTS: com/sun/ts/tests/jaxrpc/api/javax_xml_rpc/Call/Client.java#SetGetPropertyTest2
       if (name.startsWith("javax.xml.rpc") && standardProperties.contains(name) == false)
-         throw new JAXRPCException(BundleUtils.getMessage(bundle, "UNSUPPORTED_PROPERTY",  name));
+         throw new JAXRPCException("Unsupported property: " + name);
 
       return properties.get(name);
    }
@@ -462,11 +448,11 @@ public class CallImpl extends CommonClient implements Call, RoleSource
    public void setProperty(String name, Object value)
    {
       if (null == name)
-         throw new JAXRPCException(BundleUtils.getMessage(bundle, "UNSUPPORTED_PROPERTY",  name));
+         throw new JAXRPCException("Unsupported property: " + name);
 
       // CTS: com/sun/ts/tests/jaxrpc/api/javax_xml_rpc/Call/Client.java#SetGetPropertyTest2
       if (name.startsWith("javax.xml.rpc") && standardProperties.contains(name) == false)
-         throw new JAXRPCException(BundleUtils.getMessage(bundle, "UNSUPPORTED_PROPERTY",  name));
+         throw new JAXRPCException("Unsupported property: " + name);
 
       if (log.isDebugEnabled())
          log.debug("setProperty: [name=" + name + ",value=" + value + "]");
@@ -532,9 +518,9 @@ public class CallImpl extends CommonClient implements Call, RoleSource
       }
       catch (SOAPFaultException ex)
       {
-         log.error(BundleUtils.getMessage(bundle, "CALL_INVOCATION_FAILED"),  ex);
+         log.error("Call invocation failed", ex);
          String faultCode = ex.getFaultCode().getLocalPart();
-         throw new RemoteException(BundleUtils.getMessage(bundle, "CALL_INVOCATION_FAILED_CAUSE", new Object[]{ faultCode ,  ex.getFaultString()}),  ex);
+         throw new RemoteException("Call invocation failed with code [" + faultCode + "] because of: " + ex.getFaultString(), ex);
       }
       catch (RemoteException rex)
       {
@@ -546,7 +532,7 @@ public class CallImpl extends CommonClient implements Call, RoleSource
       }
       catch (Exception ex)
       {
-         throw new RemoteException(BundleUtils.getMessage(bundle, "CALL_INVOCATION_FAILED"),  ex);
+         throw new RemoteException("Call invocation failed", ex);
       }
       finally
       {
@@ -656,7 +642,7 @@ public class CallImpl extends CommonClient implements Call, RoleSource
          }
          else if (regJavaType != null && JavaUtils.isAssignableFrom(regJavaType, javaType) == false)
          {
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ALREADY_REGISTERED",  regJavaType.getName()));
+            throw new IllegalArgumentException("Different java type already registered: " + regJavaType.getName());
          }
       }
    }

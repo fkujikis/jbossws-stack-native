@@ -22,6 +22,7 @@
 package org.jboss.test.ws.jaxrpc.jbws1186;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.net.URL;
 
 import javax.xml.namespace.QName;

@@ -21,20 +21,14 @@
  */
 package org.jboss.ws.core.jaxws;
 
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
-import java.util.ResourceBundle;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.binding.BindingCustomization;
-import org.jboss.ws.api.binding.JAXBBindingCustomization;
-import org.jboss.ws.api.util.BundleUtils;
+import org.jboss.wsf.spi.binding.BindingCustomization;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.invocation.EndpointAssociation;
 
@@ -61,7 +55,6 @@ import com.sun.xml.bind.v2.model.annotation.RuntimeAnnotationReader;
  */
 public class CustomizableJAXBContextFactory extends JAXBContextFactory
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(CustomizableJAXBContextFactory.class);
    protected Logger log = Logger.getLogger(CustomizableJAXBContextFactory.class);
 
    public JAXBContext createContext(Class clazz) throws WSException
@@ -86,65 +79,22 @@ public class CustomizableJAXBContextFactory extends JAXBContextFactory
       }
       catch (JAXBException e)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_CREATE_JAXBCONTEXT"),  e);
+         throw new WSException("Failed to create JAXBContext", e);
       }
    }
 
-   public JAXBContext createContext(final Class[] clazzes, final BindingCustomization bcust) throws WSException
+   public JAXBContext createContext(Class[] clazzes, BindingCustomization bcust) throws WSException
    {
-      JAXBContext jaxbCtx = null;
       try
       {
-         jaxbCtx = AccessController.doPrivileged(new PrivilegedExceptionAction<JAXBContext>() {
-            public JAXBContext run() throws PrivilegedActionException
-            {
-               try
-               {
-                  return JAXBContext.newInstance(clazzes, bcust);
-               }
-               catch (JAXBException e)
-               {
-                  throw new PrivilegedActionException(e);
-               }
-            }
-         });
+         JAXBContext jaxbCtx = JAXBContext.newInstance(clazzes, bcust);
          incrementContextCount();
+         return jaxbCtx;
       }
-      catch (Exception e)
-      {  
-         if (bcust != null && bcust.get("com.sun.xml.bind.defaultNamespaceRemap") != null)
-         {
-            String dns = (String) bcust.get("com.sun.xml.bind.defaultNamespaceRemap");
-            bcust.remove("com.sun.xml.bind.defaultNamespaceRemap");
-            bcust.put("com.sun.xml.internal.bind.defaultNamespaceRemap", dns);                       
-            try
-            {
-               jaxbCtx = AccessController.doPrivileged(new PrivilegedExceptionAction<JAXBContext>() {
-                  public JAXBContext run() throws PrivilegedActionException
-                  {
-                     try
-                     {
-                        return JAXBContext.newInstance(clazzes, bcust);
-                     }
-                     catch (JAXBException e)
-                     {
-                        throw new PrivilegedActionException(e);
-                     }
-                  }
-               });
-               incrementContextCount();
-            }
-            catch (Exception ex)
-            {
-               throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_CREATE_JAXBCONTEXT"),  ex);
-            }
-         }
-         else
-         {
-            throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_CREATE_JAXBCONTEXT"),  e);
-         }      
+      catch (JAXBException e)
+      {
+         throw new WSException("Failed to create JAXBContext", e);
       }
-      return jaxbCtx;
    }
 
    public JAXBRIContext createContext(Class[] classes, Collection<TypeReference> refs, String defaultNS, boolean c14n, BindingCustomization bcust)
@@ -161,7 +111,7 @@ public class CustomizableJAXBContextFactory extends JAXBContextFactory
       }
       catch (JAXBException e)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_CREATE_JAXBCONTEXT"),  e);
+         throw new WSException("Failed to create JAXBContext", e);
       }
    }
 

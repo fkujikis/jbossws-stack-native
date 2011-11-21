@@ -23,25 +23,23 @@ package org.jboss.ws.core.jaxws.handler;
 
 import java.util.List;
 import java.util.Observable;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.handler.Handler;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.PortInfo;
+import javax.xml.soap.SOAPMessage;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.core.CommonMessageContext;
-import org.jboss.ws.core.MessageAbstraction;
 import org.jboss.ws.core.server.ServerHandlerDelegate;
 import org.jboss.ws.core.soap.MessageContextAssociation;
-import org.jboss.ws.extensions.xop.XOPContext;
+import org.jboss.ws.core.MessageAbstraction;
+import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.metadata.umdm.EndpointConfigMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
+import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 
 /**
@@ -52,7 +50,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  */
 public class HandlerDelegateJAXWS extends ServerHandlerDelegate
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(HandlerDelegateJAXWS.class);
    // provide logging
    private static Logger log = Logger.getLogger(HandlerDelegateJAXWS.class);
    private HandlerResolverImpl resolver = new HandlerResolverImpl();
@@ -77,8 +74,7 @@ public class HandlerDelegateJAXWS extends ServerHandlerDelegate
 
    public boolean callRequestHandlerChain(ServerEndpointMetaData sepMetaData, HandlerType type)
    {
-      if (log.isDebugEnabled())
-         log.debug("callRequestHandlerChain: " + type);
+      log.debug("callRequestHandlerChain: " + type);
 
       // Initialize the handler chain
       if (isInitialized() == false)
@@ -103,8 +99,7 @@ public class HandlerDelegateJAXWS extends ServerHandlerDelegate
 
    public boolean callResponseHandlerChain(ServerEndpointMetaData sepMetaData, HandlerType type)
    {
-      if (log.isDebugEnabled())
-         log.debug("callResponseHandlerChain: " + type);
+      log.debug("callResponseHandlerChain: " + type);
       HandlerChainExecutor executor =  getExecutor(type);
       MessageContext msgContext = (MessageContext)MessageContextAssociation.peekMessageContext();
       boolean status = (executor != null ? executor.handleMessage(msgContext) : true);
@@ -118,8 +113,7 @@ public class HandlerDelegateJAXWS extends ServerHandlerDelegate
 
    public void closeHandlerChain(ServerEndpointMetaData sepMetaData, HandlerType type)
    {
-      if (log.isDebugEnabled())
-         log.debug("closeHandlerChain");
+      log.debug("closeHandlerChain");
       HandlerChainExecutor executor =  getExecutor(type);
       MessageContext msgContext = (MessageContext)MessageContextAssociation.peekMessageContext();
       if (executor != null)
@@ -131,11 +125,9 @@ public class HandlerDelegateJAXWS extends ServerHandlerDelegate
    
    public boolean callFaultHandlerChain(ServerEndpointMetaData sepMetaData, HandlerType type, Exception ex)
    {
-      if (log.isDebugEnabled())
-         log.debug("callFaultHandlerChain: " + type);
+      log.debug("callFaultHandlerChain: " + type);
       HandlerChainExecutor executor =  getExecutor(type);
       MessageContext msgContext = (MessageContext)MessageContextAssociation.peekMessageContext();
-      ((CommonMessageContext)msgContext).setCurrentException(ex);
       boolean status = (executor != null ? executor.handleFault(msgContext, ex) : true);
 
       MessageAbstraction msg = ((CommonMessageContext)msgContext).getMessageAbstraction();
@@ -168,7 +160,7 @@ public class HandlerDelegateJAXWS extends ServerHandlerDelegate
    private HandlerChainExecutor createExecutor(ServerEndpointMetaData sepMetaData, HandlerType type)
    {
       if (type == HandlerType.ALL)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_HANDLER_TYPE",  type));
+         throw new IllegalArgumentException("Invalid handler type: " + type);
 
       HandlerChainExecutor executor = new HandlerChainExecutor(sepMetaData, getHandlerChain(sepMetaData, type), true);
       if (type == HandlerType.PRE)
@@ -184,7 +176,7 @@ public class HandlerDelegateJAXWS extends ServerHandlerDelegate
    private HandlerChainExecutor getExecutor(HandlerType type)
    {
       if (type == HandlerType.ALL)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_HANDLER_TYPE",  type));
+         throw new IllegalArgumentException("Invalid handler type: " + type);
       
       HandlerChainExecutor executor = null;
       if (type == HandlerType.PRE)
@@ -200,7 +192,7 @@ public class HandlerDelegateJAXWS extends ServerHandlerDelegate
    private void removeExecutor(HandlerType type)
    {
       if (type == HandlerType.ALL)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_HANDLER_TYPE",  type));
+         throw new IllegalArgumentException("Invalid handler type: " + type);
       
       if (type == HandlerType.PRE)
          preExecutor.remove();

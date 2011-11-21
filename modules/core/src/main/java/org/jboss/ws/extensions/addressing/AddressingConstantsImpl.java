@@ -25,7 +25,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.addressing.AddressingConstants;
 
 import org.jboss.util.NotImplementedException;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 
 /**
  * Encapsulation for version-specific WS-Addressing constants.
@@ -155,7 +155,7 @@ public class AddressingConstantsImpl implements AddressingConstants
 
    public QName getMapRequiredQName()
    {
-      return new QName(URI_ADDRESSING, "MessageAddressingHeaderRequired", PREFIX_ADDRESSING);
+      return new QName(URI_ADDRESSING, "MessageInformationHeaderRequired", PREFIX_ADDRESSING);
    }
 
    public QName getDestinationUnreachableQName()
@@ -200,6 +200,6 @@ public class AddressingConstantsImpl implements AddressingConstants
 
    public String getMapRequiredText()
    {
-      return "A required header representing a Message Addressing Property is not present";
+      return "Map Required";
    }
 }

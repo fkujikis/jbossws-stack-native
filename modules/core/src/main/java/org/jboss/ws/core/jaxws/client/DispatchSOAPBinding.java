@@ -24,10 +24,8 @@ package org.jboss.ws.core.jaxws.client;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
-import java.util.ResourceBundle;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.soap.MessageFactory;
@@ -40,19 +38,18 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.ws.Service.Mode;
 import javax.xml.ws.WebServiceException;
+import javax.xml.ws.Service.Mode;
 import javax.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.DOMWriter;
 import org.jboss.ws.core.MessageAbstraction;
 import org.jboss.ws.core.soap.SOAPBodyElementDoc;
 import org.jboss.ws.core.soap.SOAPBodyImpl;
 import org.jboss.ws.core.soap.SOAPContentElement;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.core.soap.XMLFragment;
+import org.jboss.wsf.common.DOMWriter;
 
 /**
  * A helper that 
@@ -62,7 +59,6 @@ import org.jboss.ws.core.soap.XMLFragment;
  */
 public class DispatchSOAPBinding extends DispatchBinding
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(DispatchSOAPBinding.class);
    // provide logging
    private final Logger log = Logger.getLogger(DispatchSOAPBinding.class);
 
@@ -136,16 +132,16 @@ public class DispatchSOAPBinding extends DispatchBinding
       }
       catch (Exception ex)
       {
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_CREATE_REQUEST_MESSAGE"),  ex);
+         throw new WebServiceException("Cannot create request message", ex);
       }
 
       if (reqMsg == null)
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_CREATE_REQUEST_MESSAGE_FOR",  obj));
+         throw new WebServiceException("Cannot create request message for: " + obj);
 
       return reqMsg;
    }
 
-   public Object getReturnObject(MessageAbstraction message, boolean unwrap)
+   public Object getReturnObject(MessageAbstraction message)
    {
       SOAPMessage resMsg = (SOAPMessage)message;
 
@@ -153,12 +149,7 @@ public class DispatchSOAPBinding extends DispatchBinding
       try
       {
          if (SOAPMessage.class.isAssignableFrom(type))
-         {  
-            //Throw Exception if this is soap fault message
-            SOAPBodyImpl soapBody = (SOAPBodyImpl)resMsg.getSOAPBody();
-            SOAPFault soapFault = soapBody.getFault();
-            if (soapFault != null)
-               throw new SOAPFaultException(soapFault);
+         {
             retObj = resMsg;
          }
          else if (Source.class.isAssignableFrom(type))
@@ -186,17 +177,9 @@ public class DispatchSOAPBinding extends DispatchBinding
             SOAPBodyImpl soapBody = (SOAPBodyImpl)resMsg.getSOAPBody();
             SOAPElement soapElement = soapBody.getBodyElement();
 
-            if (log.isDebugEnabled())
-               log.debug("JAXB unmarshal: " + DOMWriter.printNode(soapElement, false));
+            log.debug("JAXB unmarshal: " + DOMWriter.printNode(soapElement, false));
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            if (soapElement != null)
-            {
-               retObj = unmarshaller.unmarshal(soapElement);
-               if ((retObj instanceof JAXBElement<?>) && unwrap)
-               {
-                  retObj = ((JAXBElement<?>)retObj).getValue();
-               }
-            }
+            retObj = unmarshaller.unmarshal(soapElement);
          }
       }
       catch (RuntimeException rte)
@@ -205,7 +188,7 @@ public class DispatchSOAPBinding extends DispatchBinding
       }
       catch (Exception ex)
       {
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_PROCESS_RESPONSE_MESSAGE"),  ex);
+         throw new WebServiceException("Cannot process response message", ex);
       }
       return retObj;
    }
