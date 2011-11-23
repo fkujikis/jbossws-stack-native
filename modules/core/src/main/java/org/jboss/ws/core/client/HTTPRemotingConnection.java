@@ -301,6 +301,7 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
 
          // Enable chunked encoding. This is the default size. 
          int chunkSizeValue = (chunkedLength != null ? chunkedLength : 1024);
+         boolean fastInfosetEnabled = false;
 
          // Overwrite, through endpoint config
          if (msgContext != null)
@@ -313,7 +314,17 @@ public abstract class HTTPRemotingConnection implements RemoteConnection
                chunkSizeValue = Integer.valueOf(sizeValue);
 
             if (epMetaData.isFeatureEnabled(FastInfosetFeature.class))
+            {
+               fastInfosetEnabled = true;
                chunkSizeValue = 0;
+            }
+         }
+
+         if (fastInfosetEnabled == false)
+         {
+            String sizeValue = (String)callProps.get(StubExt.PROPERTY_CHUNKED_ENCODING_SIZE);
+            if (sizeValue != null)
+               chunkSizeValue = Integer.valueOf(sizeValue);
          }
 
          if (chunkSizeValue > 0)
