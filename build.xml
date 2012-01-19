@@ -1,190 +1,384 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!--
-  ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2010, Red Hat, Inc., and individual contributors
-  ~ as indicated by the @author tags. See the copyright.txt file in the
-  ~ distribution for a full listing of individual contributors.
-  ~
-  ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License as
-  ~ published by the Free Software Foundation; either version 2.1 of
-  ~ the License, or (at your option) any later version.
-  ~
-  ~ This software is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this software; if not, write to the Free
-  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  -->
+<!-- ====================================================================== -->
+<!--                                                                        -->
+<!--  JBoss, the OpenSource J2EE webOS                                      -->
+<!--                                                                        -->
+<!--  Distributable under LGPL license.                                     -->
+<!--  See terms of license at http://www.gnu.org.                           -->
+<!--                                                                        -->
+<!-- ====================================================================== -->
 
-<project basedir="." name="JBossWS-Native">
+<!-- $Id$ -->
 
-  <!-- ================================================================== -->
-  <!-- Setup                                                              -->
-  <!-- ================================================================== -->
+<project default="main" basedir="." name="JBossWS-Native">
 
-  <property name="stack.dir" value="${basedir}"/>
-  <property name="dist.dir" value="${stack.dir}/modules/dist"/>
-  <property name="dist.distro.dir" value="${dist.dir}/src/main/distro"/>
-  <property name="dist.output.dir" value="${dist.dir}/target"/>
-  <property name="stack.distro.dir" value="${stack.dir}/src/main/distro"/>
-  <property name="stack.output.dir" value="${stack.dir}/target"/>
-  <property name="stack.resources.dir" value="${stack.dir}/modules/resources/src/main/resources"/>
-  <property name="deploy.artifacts.dir" value="${dist.output.dir}/assembly/deploy-artifacts"/>
+	<property name="core.dir" value="${basedir}"/>
+  
+	<import file="${basedir}/ant-import/build-setup.xml"/>
+	<import file="${basedir}/ant-import/build-bin-dist.xml"/>
+	<import file="${basedir}/ant-import/build-deploy.xml"/>
+	<import file="${basedir}/ant-import/build-release.xml"/>
+	<import file="${basedir}/ant-import/build-thirdparty.xml"/>
+	<import file="${basedir}/ant-import-tests/build-testsuite.xml"/>
 
-  <import file="${dist.distro.dir}/build-setup.xml"/>
-  <import file="${dist.distro.dir}/build-deploy.xml"/>
-  <import file="${stack.resources.dir}/resources/jbossws-deploy-macros.xml"/>
+	<property name="core.src.dir" value="${core.dir}/src/main"/>
+	<property name="core.etc.dir" value="${core.src.dir}/etc"/>
+	<property name="core.distro.dir" value="${core.src.dir}/distro"/>
+	<property name="core.java.dir" value="${core.src.dir}/java"/>
+	<property name="core.resources.dir" value="${core.src.dir}/resources"/>
+	<property name="core.output.dir" value="${core.dir}/output"/>
+	<property name="core.output.apidocs.dir" value="${core.output.dir}/apidocs"/>
+	<property name="core.output.etc.dir" value="${core.output.dir}/etc"/>
+	<property name="core.output.classes.dir" value="${core.output.dir}/classes"/>
+	<property name="core.output.classes14.dir" value="${core.output.dir}/classes14"/>
+	<property name="core.output.lib.dir" value="${core.output.dir}/lib"/>
 
-  <property name="target.properties.file" value="${basedir}/target.properties"/>
+	<target name="init" depends="prepare,thirdparty">
+	</target>
 
-  <!-- ================================================================== -->
-  <!-- Initialization                                                     -->
-  <!-- ================================================================== -->
+	<!-- ================================================================== -->
+	<!-- Compile                                                            -->
+	<!-- ================================================================== -->
 
-  <target name="os-init">
-    <condition property="ext" value=".bat">
-      <not>
-        <os family="unix"/>
-      </not>
-    </condition>
-    <property name="ext" value=""/>
-    <property name="mvn" value="mvn${ext}"/>
+	<!--
+	  | Compile everything.
+	  |
+	  | This target should depend on other compile-* targets for each
+	  | different type of compile that needs to be performed, short of
+	  | documentation compiles.
+	  -->
+
+	<target name="compile" depends="init,compile-classes,compile-etc"
+			  description="Compile all source files."/>
+
+	<!-- Compile java sources -->
+	<target name="compile-classes" depends="init">
+
+		<!-- Compile interfaces with jdk1.4 -->
+		<mkdir dir="${core.output.classes14.dir}"/>
+		<javac srcdir="${core.java.dir}" destdir="${core.output.classes14.dir}" encoding="utf-8" debug="${javac.debug}" verbose="${javac.verbose}" deprecation="${javac.deprecation}"
+				 failonerror="${javac.fail.onerror}" source="1.4" target="1.4">
+			<include name="javax/xml/rpc/**"/>
+			<include name="javax/xml/soap/**"/>
+			<classpath refid="thirdparty.classpath"/>
+		</javac>
+
+		<!-- Compile core classes with jdk1.5 -->
+		<mkdir dir="${core.output.classes.dir}"/>
+		<javac srcdir="${core.java.dir}" sourcepath="" destdir="${core.output.classes.dir}" encoding="utf-8" debug="${javac.debug}" verbose="${javac.verbose}"
+				 deprecation="${javac.deprecation}" failonerror="${javac.fail.onerror}" source="1.5" target="1.5">
+			<include name="javax/annotation/**"/>
+			<include name="javax/xml/ws/**"/>
+			<include name="javax/jws/**"/>
+			<include name="org/jboss/annotation/**"/>
+			<include name="org/jboss/ws/**"/>
+      <include name="org/jboss/wsf/stack/jbws/**"/>
+			<classpath path="${core.output.classes14.dir}"/>
+			<classpath refid="thirdparty.classpath"/>
+		</javac>
+	</target>
+
+	<!-- Compile etc files (manifests and such) -->
+	<target name="compile-etc" depends="init">
+		<mkdir dir="${core.output.etc.dir}"/>
+		<copy todir="${core.output.etc.dir}" filtering="yes" overwrite="true">
+			<fileset dir="${core.etc.dir}"/>
+			<filterset>
+				<filter token="java.vm.version" value="${java.vm.version}"/>
+				<filter token="java.vm.vendor" value="${java.vm.vendor}"/>
+				<filter token="build.id" value="${build.id}"/>
+				<filter token="implementation.version" value="jbossws-native-${version.id}"/>
+				<filtersfile file="${core.dir}/version.properties"/>
+			</filterset>
+		</copy>
+	</target>
+	
+	<!-- ================================================================== -->
+	<!-- Archives                                                           -->
+	<!-- ================================================================== -->
+
+	<!--
+	  | Build all jar files.
+	  -->
+	<target name="jars" depends="compile,jars-jboss40,jars-jboss42,jars-jboss50" description="Builds all jar files.">
+	</target>
+
+	<!--
+	  |  Build all jar files.
+	  -->
+	<target name="jars-common" depends="compile">
+
+		<!-- Build jboss-jaxrpc.jar -->
+		<mkdir dir="${core.output.lib.dir}"/>
+		<jar jarfile="${core.output.lib.dir}/jboss-jaxrpc.jar" manifest="${core.output.etc.dir}/default.mf">
+			<fileset dir="${core.output.classes14.dir}">
+				<include name="javax/xml/rpc/**"/>
+			</fileset>
+		</jar>
+
+		<!-- Build jboss-saaj.jar -->
+		<mkdir dir="${core.output.lib.dir}"/>
+		<jar jarfile="${core.output.lib.dir}/jboss-saaj.jar" manifest="${core.output.etc.dir}/default.mf">
+			<fileset dir="${core.output.classes14.dir}">
+				<include name="javax/xml/soap/**"/>
+			</fileset>
+			<metainf dir="${core.resources.dir}/jboss-saaj.jar/META-INF"/>
+		</jar>
+
+		<!-- Build jboss-jaxws.jar -->
+		<mkdir dir="${core.output.lib.dir}"/>
+		<jar jarfile="${core.output.lib.dir}/jboss-jaxws.jar" manifest="${core.output.etc.dir}/default.mf">
+			<fileset dir="${core.output.classes.dir}">
+				<include name="javax/annotation/**"/>
+				<include name="javax/jws/**"/>
+				<include name="javax/xml/ws/**"/>
+			</fileset>
+			<metainf dir="${core.resources.dir}/jboss-jaxws.jar/META-INF"/>
+		</jar>
+
+		<!-- Build jbossws-core.jar -->
+		<mkdir dir="${core.output.lib.dir}"/>
+		<jar jarfile="${core.output.lib.dir}/jbossws-core.jar" manifest="${core.output.etc.dir}/default.mf">
+			<fileset dir="${core.output.classes.dir}">
+				<include name="org/jboss/annotation/**"/>
+				<include name="org/jboss/ws/**"/>
+			</fileset>
+			<fileset dir="${core.resources.dir}">
+				<include name="schema/**"/>
+				<include name="dtd/**"/>
+			</fileset>			
+			<metainf dir="${core.resources.dir}/jbossws-core.jar/META-INF"/>
+		</jar>
+
+		<!-- Build jbossws-client.jar -->
+		<jar jarfile="${core.output.lib.dir}/jbossws-client.jar" manifest="${core.output.etc.dir}/default.mf">
+			<fileset dir="${core.output.classes.dir}">
+				<include name="org/jboss/wsf/**"/>
+				<include name="org/jboss/ws/**"/>
+			</fileset>
+			<fileset dir="${core.resources.dir}">
+				<include name="schema/**"/>
+				<include name="dtd/**"/>
+			</fileset>
+			<fileset dir="${core.etc.dir}">
+				<include name="log4j.properties"/>
+				<include name="ws*.bat"/>
+				<include name="ws*.sh"/>
+			</fileset>
+			<metainf dir="${core.resources.dir}/jbossws-core.jar/META-INF"/>
+			<metainf dir="${core.resources.dir}/standard-config"/>
+		</jar>
+
+    <!-- Build jbossws-native.jar -->
+    <jar jarfile="${core.output.lib.dir}/jbossws-native.jar" manifest="${core.output.etc.dir}/default.mf">
+      <fileset dir="${core.output.classes.dir}">
+        <include name="org/jboss/wsf/stack/jbws/**"/>
+      </fileset>
+      <metainf dir="${core.resources.dir}/jbossws-native.jar/META-INF"/>
+    </jar>
+    
+    <!-- Build jbossws-context.war -->
+    <copy todir="${core.output.lib.dir}/jbossws-context.war">
+      <fileset dir="${core.resources.dir}/jbossws-context.war">
+        <include name="index.html"/>
+        <include name="styles.css"/>
+        <include name="WEB-INF/**"/>
+      </fileset>
+    </copy>
+    
+		<!-- Build jbossws-core-scripts.zip -->
+		<zip zipfile="${core.output.lib.dir}/jbossws-core-scripts.zip" >
+			<fileset dir="${core.output.etc.dir}">
+				<include name="wsrunclient.bat"/>
+				<include name="wstools.bat"/>
+			</fileset>
+			<zipfileset dir="${core.output.etc.dir}" filemode="755">
+				<include name="wsrunclient.sh"/>
+				<include name="wstools.sh"/>
+			</zipfileset>
+		</zip>
+
+		<!-- Build jbossws-core-src.zip -->
+		<zip zipfile="${core.output.lib.dir}/jbossws-core-src.zip" >
+			<fileset dir="${core.java.dir}"/>
+		</zip>
+
+	</target>
+
+  <target name="jars-jboss50" depends="jars-common" if="jboss50.home">
+    
+    <!-- Concat jbossws-beans.xml -->
+    <concat destfile="${core.output.lib.dir}/jbossws-native50/jbossws-beans.xml">
+      <header trimleading="yes">
+        &lt;deployment xmlns="urn:jboss:bean-deployer:2.0"&gt;
+      </header>
+      <fileset file="${core.resources.dir}/jbossws-native-config.xml"/>
+      <footer trimleading="yes">
+        &lt;/deployment&gt;
+      </footer>
+    </concat>
+    
+    <!-- Build jbossws-native50.sar -->
+    <jar jarfile="${core.output.lib.dir}/jbossws-native50.sar" manifest="${core.output.etc.dir}/default.mf">
+      <fileset dir="${core.output.lib.dir}">
+        <include name="jbossws-context.war/**"/>
+        <include name="jbossws-native.jar"/>
+      </fileset>
+      <fileset dir="${core.dir}/output/lib">
+        <include name="jbossws-core.jar"/>
+      </fileset>
+      <fileset dir="${core.dir}/thirdparty">
+        <include name="policy.jar"/>
+        <include name="wsdl4j.jar"/>
+        <include name="xmlsec.jar"/>
+      	<include name="wstx.jar"/>
+        <include name="jboss-jaxb-intros.jar"/>
+      </fileset>
+      <metainf dir="${core.dir}/src/main/resources/standard-config">
+        <include name="standard-*-config.xml"/>
+      </metainf>
+      <metainf dir="${core.output.lib.dir}/jbossws-native50">
+        <include name="jbossws-beans.xml"/>
+      </metainf>
+    </jar>
+    
+  </target>
+  
+  <target name="jars-jboss42" depends="jars-common" if="jboss42.home">
+    
+    <unzip dest="${core.output.dir}/resources" src="${thirdparty.dir}/jbossws-jboss42-resources.zip"/>
+    
+    <!-- Concat jboss-beans.xml -->
+    <concat destfile="${core.output.lib.dir}/jbossws-native42/jbossws.beans/META-INF/jboss-beans.xml">
+      <header trimleading="yes">
+        &lt;deployment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:jboss:bean-deployer bean-deployer_1_0.xsd" xmlns="urn:jboss:bean-deployer"&gt;
+      </header>
+      <fileset file="${core.resources.dir}/jbossws-native-config.xml"/>
+      <fileset file="${core.output.dir}/resources/jbossws-jboss42-config.xml"/>
+      <footer trimleading="yes">
+        &lt;/deployment&gt;
+      </footer>
+    </concat>
+    
+    <!-- Build jbossws-native42.sar -->
+    <jar jarfile="${core.output.lib.dir}/jbossws-native42.sar" manifest="${core.output.etc.dir}/default.mf">
+      <fileset dir="${core.output.lib.dir}">
+        <include name="jbossws-context.war/**"/>
+        <include name="jbossws-native.jar"/>
+      </fileset>
+      <fileset dir="${core.dir}/output/lib">
+        <include name="jboss-jaxws.jar"/>
+        <include name="jboss-jaxrpc.jar"/>
+        <include name="jboss-saaj.jar"/>
+        <include name="jbossws-core.jar"/>
+      </fileset>
+      <fileset dir="${core.dir}/thirdparty">
+        <include name="jaxb-api.jar"/>
+        <include name="jaxb-impl.jar"/>
+        <include name="policy.jar"/>
+        <include name="stax-api.jar"/>
+        <include name="wsdl4j.jar"/>
+        <include name="xmlsec.jar"/>
+      	<include name="wstx.jar"/>
+        <include name="jboss-jaxb-intros.jar"/>
+      </fileset>
+      <fileset dir="${core.output.lib.dir}/jbossws-native42">
+        <include name="jbossws.beans/**"/>
+      </fileset>
+      <metainf dir="${core.output.dir}/resources/jbossws-jboss42.sar/META-INF">
+        <include name="jboss-service.xml"/>
+      </metainf>
+      <metainf dir="${core.dir}/src/main/resources/standard-config">
+        <include name="standard-*-config.xml"/>
+      </metainf>
+    </jar>
+  </target>
+  
+  <target name="jars-jboss40" depends="jars-common" if="jboss40.home">
+    
+    <unzip dest="${core.output.dir}/resources" src="${thirdparty.dir}/jbossws-jboss40-resources.zip"/>
+    
+    <!-- Concat jboss-beans.xml -->
+    <concat destfile="${core.output.lib.dir}/jbossws-native40/jbossws.beans/META-INF/jboss-beans.xml">
+      <header trimleading="yes">
+        &lt;deployment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:jboss:bean-deployer bean-deployer_1_0.xsd" xmlns="urn:jboss:bean-deployer"&gt;
+      </header>
+      <fileset file="${core.resources.dir}/jbossws-native-config.xml"/>
+      <fileset file="${core.output.dir}/resources/jbossws-jboss40-config.xml"/>
+      <footer trimleading="yes">
+        &lt;/deployment&gt;
+      </footer>
+    </concat>
+    
+    <!-- Build jbossws-native40.sar -->
+    <jar jarfile="${core.output.lib.dir}/jbossws-native40.sar" manifest="${core.output.etc.dir}/default.mf">
+      <fileset dir="${core.output.lib.dir}">
+        <include name="jbossws-context.war/**"/>
+        <include name="jbossws-native.jar"/>
+      </fileset>
+      <fileset dir="${core.dir}/output/lib">
+        <include name="jboss-jaxws.jar"/>
+        <include name="jbossws-core.jar"/>
+      </fileset>
+      <fileset dir="${core.dir}/thirdparty">
+        <include name="jaxb-api.jar"/>
+        <include name="jaxb-impl.jar"/>
+        <include name="policy.jar"/>
+        <include name="stax-api.jar"/>
+        <include name="wsdl4j.jar"/>
+        <include name="xmlsec.jar"/>
+      	<include name="wstx.jar"/>
+        <include name="jboss-jaxb-intros.jar"/>
+      </fileset>
+      <fileset dir="${core.output.lib.dir}/jbossws-native40">
+        <include name="jbossws.beans/**"/>
+      </fileset>
+      <metainf dir="${core.output.dir}/resources/jbossws-jboss40.sar/META-INF">
+        <include name="jboss-service.xml"/>
+      </metainf>
+      <metainf dir="${core.dir}/src/main/resources/standard-config">
+        <include name="standard-*-config.xml"/>
+      </metainf>
+    </jar>
   </target>
 
-  <target name="mvn-settings" depends="os-init">
-    <!-- Loads the properties from the effective maven settings -->
-    <mkdir dir="${dist.output.dir}"/>
-    <exec dir="${basedir}" executable="${mvn}" failonerror="true">
-      <arg value="-Doutput=${dist.output.dir}/effective-settings.xml"/>
-      <arg value="help:effective-settings"/>
-    </exec>
-    <xmlproperty file="${dist.output.dir}/effective-settings.xml" keeproot="false"/>
-    <condition property="jboss700.home" value="${profiles.profile.properties.jboss700.home}">
-      <isset property="profiles.profile.properties.jboss700.home"/>
-    </condition>
-  	<condition property="jboss701.home" value="${profiles.profile.properties.jboss701.home}">
-      <isset property="profiles.profile.properties.jboss701.home"/>
-    </condition>
-    <condition property="jboss702.home" value="${profiles.profile.properties.jboss702.home}">
-      <isset property="profiles.profile.properties.jboss702.home"/>
-    </condition>
-    <condition property="jboss710.home" value="${profiles.profile.properties.jboss710.home}">
-      <isset property="profiles.profile.properties.jboss710.home"/>
-    </condition>
+	<!-- ================================================================== -->
+	<!-- Documentation                                                      -->
+	<!-- ================================================================== -->
 
-  	<fail message="jboss home not set, use jboss700.home=value, jboss701.home=value, jboss702.home=value or jboss710.home=value to set">
-     <condition>
-      <and>
-       <not>
-         <isset property="jboss701.home"/>
-       </not>
-       <not>
-         <isset property="jboss702.home"/>
-       </not>
-       <not>
-         <isset property="jboss700.home"/>
-       </not>
-       <not>
-         <isset property="jboss710.home"/>
-       </not>
-      </and>
-     </condition>
-    </fail>
+	<!-- Generate the JavaDoc -->
+	<target name="javadoc" depends="init" description="Generate the Javadoc" if="javadoc">
 
-    <echo/>
-    <echo message="jboss700.home=${jboss700.home}"/>
-    <echo message="jboss701.home=${jboss701.home}"/>
-    <echo message="jboss702.home=${jboss702.home}"/>
-    <echo message="jboss710.home=${jboss710.home}"/>
-  </target>
+		<mkdir dir="${core.output.apidocs.dir}"/>
+		<javadoc destdir="${core.output.apidocs.dir}" author="true" version="true" use="true" windowtitle="JBossWS API">
+			<classpath refid="thirdparty.classpath"/>
+			<packageset dir="${core.java.dir}" defaultexcludes="yes">
+				<include name="org/jboss/ws/**"/>
+			</packageset>
+			<doctitle><![CDATA[<h1>JBossWS Native</h1>]]></doctitle>
+			<tag name="todo" scope="all" description="To do:"/>
+			<group title="Core" packages="org.jboss.ws.core*"/>
+			<group title="Metadata" packages="org.jboss.ws.metadata*"/>
+			<group title="Integration" packages="org.jboss.ws.integration*"/>
+			<group title="Extensions" packages="org.jboss.ws.extensions*"/>
+			<group title="Tools" packages="org.jboss.ws.tools*"/>
+		</javadoc>
+	</target>
 
-  <target name="init" depends="mvn-settings,prepare,os-init">
+	<target name="clean" depends="prepare" description="Cleans up most generated files.">
+		<delete dir="${core.output.dir}"/>
+	</target>
 
-    <xmlproperty file="${stack.dir}/pom.xml"/>
-    <property name="version.id" value="${project.version}"/>
+	<target name="clobber" depends="clean" description="Cleans up all generated files.">
+		<delete dir="${core.dir}/thirdparty"/>
+	</target>
 
-    <echo message="java.version=${java.version}"/>          
-    <echo message="version.id=${version.id}"/>
-    <echo message="integration.target=${jbossws.integration.target}"/>
+	<target name="main" description="Executes the default target (most)." depends="most"/>
 
-    <fail message="jbossws.integration.target not set" unless="jbossws.integration.target"/>
-    <property name="deploy.structure" value="${dist.output.dir}/deploy-${jbossws.integration.target}"/>
-  </target>
+	<target name="most" description="Builds almost everything." depends="jars,tests-main"/>
 
-  <!-- ================================================================== -->
-  <!-- Distribution                                                       -->
-  <!-- ================================================================== -->
-
-  <target name="prepare-deploy" depends="prepare,os-init">
-
-    <!-- Use a system property to overwrite the empty default value -->
-    <property name="maven.opts" value=""/>
-
-    <echo/>
-    <echo message="${mvn} ${maven.opts} -Pdist -Dno-testsuite install"/>
-    <echo/>
-
-    <delete dir="${deploy.artifacts.dir}"/>
-    <exec dir="${basedir}" executable="${mvn}" failonerror="true">
-      <arg line="${maven.opts} -Pdist -Dno-testsuite install"/>
-    </exec>
-  </target>
-
-  <target name="build-bin-dist" depends="prepare,os-init,makedir" description="Build the binary distribution">
-    <!-- Use a system property to overwrite the empty default value -->
-    <property name="maven.opts" value=""/>
-
-    <echo/>
-    <echo message="${mvn} ${maven.opts} -Pdist -Dbindist -Dno-testsuite install"/>
-    <echo/>
-
-    <delete dir="${dist.output.dir}/jbossws-native-bin-dist"/>
-    <exec dir="${basedir}" executable="${mvn}" failonerror="true">
-      <arg line="${maven.opts} -Pdist -Dbindist -Dno-testsuite install"/>
-    </exec>
-
-    <zip destfile="${stack.output.dir}/jbossws-native-bin-dist.zip">
-      <zipfileset
-        dir="${dist.output.dir}/assembly/jbossws-native-bin-dist"
-        includes="build/ deploy/ docs/ tests/ build.xml ant.properties.example"
-        prefix="jbossws-native-bin-dist"/>
-    </zip>
-  </target>
-
-  <target name="build-src-dist" depends="prepare,os-init,makedir" description="Build the source distribution">
-    <!-- Use a system property to overwrite the empty default value -->
-    <property name="maven.opts" value=""/>
-
-    <echo/>
-    <echo message="${mvn} ${maven.opts} -Pdist -Dsrcdist -Dno-testsuite install"/>
-    <echo/>
-
-    <delete dir="${stack.output.dir}/jbossws-native-src-dist"/>
-    <exec dir="${basedir}" executable="${mvn}" failonerror="true">
-      <arg line="${maven.opts} -Pdist -Dsrcdist -Dno-testsuite install"/>
-    </exec>
-
-    <zip destfile="${stack.output.dir}/jbossws-native-src-dist.zip">
-      <zipfileset
-        dir="${dist.output.dir}/assembly/jbossws-native-src-dist"
-        includes="modules/ src/ eclipse/ build.xml pom.xml profiles.xml.example .classpath .project "
-        prefix="jbossws-native-src-dist"/>
-    </zip>
-  </target>
-
-   <target name="check.exist">
-       <available file="${stack.output.dir}" property="file.exists" value="true" />
-   </target>
-
-   <target name="makedir" depends="check.exist" unless="file.exists">
-       <mkdir dir="${stack.output.dir}" />
-   </target>
-
+	<target name="all" description="Create a distribution zip file" depends="most">
+	</target>
 
 </project>
