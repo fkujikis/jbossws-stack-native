@@ -47,7 +47,6 @@ public class WSSecurityConfiguration implements Serializable
    private HashMap<String, String> keyPasswords = new HashMap<String, String>();
    private String nonceFactory;
    private TimestampVerification timestampVerification;
-   private SecurityDomain securityDomain;
 
    public WSSecurityConfiguration()
    {
@@ -187,14 +186,5 @@ public class WSSecurityConfiguration implements Serializable
    {
       this.timestampVerification = timestampVerification;
    }
-   
-   public SecurityDomain getSecurityDomain()
-   {
-      return securityDomain;
-   }
 
-   public void setSecurityDomain(SecurityDomain securityDomain)
-   {
-      this.securityDomain = securityDomain;
-   }
 }

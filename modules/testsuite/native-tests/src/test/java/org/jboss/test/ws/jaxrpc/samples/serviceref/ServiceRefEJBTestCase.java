@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.jaxrpc.samples.serviceref;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -75,7 +76,7 @@ public class ServiceRefEJBTestCase extends JBossWSTest
    public void testEJBClient() throws Exception
    {
       InitialContext iniCtx = getInitialContext();
-      EJBRemoteHome ejbHome = (EJBRemoteHome)iniCtx.lookup("ejb:/jaxrpc-samples-serviceref-ejb-client//EJBClient!" + EJBRemoteHome.class.getName());
+      EJBRemoteHome ejbHome = (EJBRemoteHome)iniCtx.lookup("/EJBClient");
       EJBRemote ejbRemote = ejbHome.create();
 
       String helloWorld = "Hello World!";

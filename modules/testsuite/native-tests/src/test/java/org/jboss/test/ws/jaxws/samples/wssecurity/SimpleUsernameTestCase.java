@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.jaxws.samples.wssecurity;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class SimpleUsernameTestCase extends JBossWSTest
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(SimpleUsernameTestCase.class, "jaxws-samples-wssecurity-username.war", true);
+      return new JBossWSTestSetup(SimpleUsernameTestCase.class, "jaxws-samples-wssecurity-username.war");
    }
 
    @Override

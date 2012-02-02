@@ -22,18 +22,14 @@
 package org.jboss.ws.metadata.builder.jaxws;
 
 import java.util.Iterator;
-import java.util.ResourceBundle;
 
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceProvider;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.utils.DelegateClassLoader;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
-import org.jboss.wsf.spi.deployment.Service;
 import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
 
@@ -46,31 +42,25 @@ import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
  */
 public class JAXWSMetaDataBuilderEJB3
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JAXWSMetaDataBuilderEJB3.class);
    // provide logging
    private final Logger log = Logger.getLogger(JAXWSMetaDataBuilderEJB3.class);
 
-   protected Class<?> annotatedClass;
+   protected Class annotatedClass;
 
    /** Build from webservices.xml
     */
    public UnifiedMetaData buildMetaData(ArchiveDeployment dep)
    {
-      if (log.isDebugEnabled())
-         log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
+      log.debug("START buildMetaData: [name=" + dep.getCanonicalName() + "]");
       try
       {
-         UnifiedMetaData wsMetaData = dep.getAttachment(UnifiedMetaData.class);
-         if (wsMetaData == null)
-         {
-            wsMetaData = new UnifiedMetaData(dep.getRootFile());
-            wsMetaData.setDeploymentName(dep.getCanonicalName());
+         UnifiedMetaData wsMetaData = new UnifiedMetaData(dep.getRootFile());
+         wsMetaData.setDeploymentName(dep.getCanonicalName());
 
-            ClassLoader runtimeClassLoader = dep.getRuntimeClassLoader();
-            if (null == runtimeClassLoader)
-               throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "RUNTIME_LOADER_CANNOT_BE_NULL"));
-            wsMetaData.setClassLoader(new DelegateClassLoader(runtimeClassLoader, SecurityActions.getContextClassLoader()));
-         } 
+         ClassLoader runtimeClassLoader = dep.getRuntimeClassLoader();
+         if(null == runtimeClassLoader)
+            throw new IllegalArgumentException("Runtime loader cannot be null");
+         wsMetaData.setClassLoader(runtimeClassLoader);
 
          // The container objects below provide access to all of the ejb metadata
          EJBArchiveMetaData apMetaData = dep.getAttachment(EJBArchiveMetaData.class);
@@ -80,10 +70,9 @@ public class JAXWSMetaDataBuilderEJB3
             EJBMetaData beanMetaData = it.next();
             String ejbClassName = beanMetaData.getEjbClass();
             Class<?> beanClass = wsMetaData.getClassLoader().loadClass(ejbClassName);
-            Service service = dep.getService();
-            String ejbLink = beanMetaData.getEjbName();
-            if (service.getEndpointByName(ejbLink) != null && (beanClass.isAnnotationPresent(WebService.class) || beanClass.isAnnotationPresent(WebServiceProvider.class)))
+            if (beanClass.isAnnotationPresent(WebService.class) || beanClass.isAnnotationPresent(WebServiceProvider.class))
             {
+               String ejbLink = beanMetaData.getEjbName();
                JAXWSServerMetaDataBuilder.setupProviderOrWebService(dep, wsMetaData, beanClass, ejbLink);
 
                /* Resolve dependency on @SecurityDomain
@@ -94,7 +83,7 @@ public class JAXWSMetaDataBuilderEJB3
                   String lastDomain = wsMetaData.getSecurityDomain();
                   String securityDomain = anSecurityDomain.value();
                   if (lastDomain != null && lastDomain.equals(securityDomain) == false)
-                     throw new IllegalStateException(BundleUtils.getMessage(bundle, "MULTIPLE_SECURITY_DOMAINS_NOT_SUPPORTED",  securityDomain));
+                     throw new IllegalStateException("Multiple security domains not supported: " + securityDomain);
 
                   wsMetaData.setSecurityDomain(securityDomain);
                }
@@ -102,8 +91,7 @@ public class JAXWSMetaDataBuilderEJB3
             }
          }
 
-         if (log.isDebugEnabled())
-            log.debug("END buildMetaData: " + wsMetaData);
+         log.debug("END buildMetaData: " + wsMetaData);
          return wsMetaData;
       }
       catch (RuntimeException rte)
@@ -112,7 +100,7 @@ public class JAXWSMetaDataBuilderEJB3
       }
       catch (Exception ex)
       {
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_BUILD_META_DATA",  ex.getMessage()),  ex);
+         throw new WSException("Cannot build meta data: " + ex.getMessage(), ex);
       }
    }
 }

@@ -21,9 +21,6 @@
  */
 package org.jboss.wsf.stack.jbws;
 
-import java.security.Principal;
-import java.util.ResourceBundle;
-
 import javax.xml.ws.EndpointReference;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.handler.MessageContext;
@@ -31,7 +28,6 @@ import javax.xml.ws.http.HTTPBinding;
 import javax.xml.ws.wsaddressing.W3CEndpointReference;
 import javax.xml.ws.wsaddressing.W3CEndpointReferenceBuilder;
 
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.jaxws.wsaddressing.EndpointReferenceUtil;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
@@ -39,59 +35,44 @@ import org.jboss.wsf.spi.invocation.ExtensibleWebServiceContext;
 import org.w3c.dom.Element;
 
 /**
- * A WebServiceContext implementing the getEndpointReference jaxws methods. 
+ * An ExtensibileWebServiceContext implementing the getEndpointReference jaxws 2.1 methods 
  * 
  * @author alessio.soldano@jboss.com
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @since 27-Jan-2009
  */
-public final class NativeWebServiceContext extends ExtensibleWebServiceContext
+public abstract class NativeWebServiceContext extends ExtensibleWebServiceContext
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(NativeWebServiceContext.class);
-   public NativeWebServiceContext(final MessageContext messageContext)
+   public NativeWebServiceContext(MessageContext messageContext)
    {
       super(messageContext);
    }
    
-   public EndpointReference getEndpointReference(final Element... referenceParameters)
+   public EndpointReference getEndpointReference(Element... referenceParameters)
    {
-      return this.getEndpointReference(W3CEndpointReference.class, referenceParameters);
+      return getEndpointReference(W3CEndpointReference.class, referenceParameters);
    }
 
-   public <T extends EndpointReference> T getEndpointReference(final Class<T> clazz, final Element... referenceParameters)
+   public <T extends EndpointReference> T getEndpointReference(Class<T> clazz, Element... referenceParameters)
    {
-      EndpointMetaData endpointMD = ((CommonMessageContext)getMessageContext()).getEndpointMetaData();
-      if (endpointMD == null)
+      EndpointMetaData epMetaData = ((CommonMessageContext)getMessageContext()).getEndpointMetaData();
+      if (epMetaData == null)
       {
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_ENDPOINTMD"));
+         throw new WebServiceException("Cannot get EndpointMetaData!");
       }
-      if (HTTPBinding.HTTP_BINDING.equals(endpointMD.getBindingId()))
+      if (HTTPBinding.HTTP_BINDING.equals(epMetaData.getBindingId()))
       {
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "CANNOT_GET_EPR"));
+         throw new UnsupportedOperationException("Cannot get epr when using the XML/HTTP binding");
       }
       W3CEndpointReferenceBuilder builder = new W3CEndpointReferenceBuilder();
-      String address = endpointMD.getEndpointAddress();
+      String address = epMetaData.getEndpointAddress();
       builder.address(address);
       builder.wsdlDocumentLocation(address +  "?wsdl");
-      builder.serviceName(endpointMD.getServiceMetaData().getServiceName());
-      builder.endpointName(endpointMD.getPortName());
-
+      //TODO set other parameters in the builder
       if (referenceParameters != null && W3CEndpointReference.class.getName().equals(clazz.getName()))
       {
          for (Element el : referenceParameters)
             builder.referenceParameter(el);
       }
       return EndpointReferenceUtil.transform(clazz, builder.build());
-   }
-
-   @Override
-   public Principal getUserPrincipal()
-   {
-      throw new UnsupportedOperationException();
-   }
-
-   @Override
-   public boolean isUserInRole(String role)
-   {
-      throw new UnsupportedOperationException();
    }
 }

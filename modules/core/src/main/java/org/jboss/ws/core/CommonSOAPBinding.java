@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,7 +24,6 @@ package org.jboss.ws.core;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.activation.DataHandler;
@@ -48,11 +47,8 @@ import javax.xml.ws.handler.MessageContext;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.jaxrpc.ParameterWrapping;
 import org.jboss.ws.core.jaxws.handler.MessageContextJAXWS;
@@ -78,6 +74,8 @@ import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.TypesMetaData;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.JavaUtils;
 import org.jboss.xb.binding.NamespaceRegistry;
 import org.w3c.dom.Element;
 
@@ -89,7 +87,6 @@ import org.w3c.dom.Element;
  */
 public abstract class CommonSOAPBinding implements CommonBinding
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(CommonSOAPBinding.class);
    // provide logging
    protected Logger log = Logger.getLogger(getClass());
 
@@ -139,15 +136,14 @@ public abstract class CommonSOAPBinding implements CommonBinding
    public MessageAbstraction bindRequestMessage(OperationMetaData opMetaData, EndpointInvocation epInv, Map<QName, UnboundHeader> unboundHeaders)
          throws BindingException
    {
-      boolean debugEnabled = log.isDebugEnabled();
-      if (debugEnabled)
+      if (log.isDebugEnabled())
          log.debug("bindRequestMessage: " + opMetaData.getQName());
 
       try
       {
          CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
          if (msgContext == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "MESSAGECONTEXT_NOT_AVAILABLE"));
+            throw new WSException("MessageContext not available");
 
          // Disable MTOM for rpc/encoded
          if (opMetaData.isRPCEncoded())
@@ -170,21 +166,26 @@ public abstract class CommonSOAPBinding implements CommonBinding
          SOAPElement soapBodyElement = soapBody;
          if (style == Style.RPC)
          {
-            QName opQName = opMetaData.getQName();
-            Name opName = new NameImpl(namespaceRegistry.registerQName(opQName));
+            boolean serialize = true;
 
-            if (debugEnabled)
-               log.debug("Create RPC body element: " + opName);
-
-            soapBodyElement = new SOAPBodyElementRpc(opName);
-            soapBodyElement = (SOAPBodyElement)soapBody.addChildElement(soapBodyElement);
-
-            // Add soap encodingStyle
-            if (opMetaData.getUse() == Use.ENCODED)
+            if (serialize)
             {
-               String envURI = soapEnvelope.getNamespaceURI();
-               String envPrefix = soapEnvelope.getPrefix();
-               soapBodyElement.setAttributeNS(envURI, envPrefix + ":encodingStyle", Constants.URI_SOAP11_ENC);
+               QName opQName = opMetaData.getQName();
+               Name opName = new NameImpl(namespaceRegistry.registerQName(opQName));
+
+               if (log.isDebugEnabled())
+                  log.debug("Create RPC body element: " + opName);
+
+               soapBodyElement = new SOAPBodyElementRpc(opName);
+               soapBodyElement = (SOAPBodyElement)soapBody.addChildElement(soapBodyElement);
+
+               // Add soap encodingStyle
+               if (opMetaData.getUse() == Use.ENCODED)
+               {
+                  String envURI = soapEnvelope.getNamespaceURI();
+                  String envPrefix = soapEnvelope.getPrefix();
+                  soapBodyElement.setAttributeNS(envURI, envPrefix + ":encodingStyle", Constants.URI_SOAP11_ENC);
+               }
             }
          }
 
@@ -230,8 +231,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
                   xmlName = namespaceRegistry.registerQName(xmlName);
                   Name soapName = new NameImpl(xmlName.getLocalPart(), xmlName.getPrefix(), xmlName.getNamespaceURI());
 
-                  if (debugEnabled)
-                     log.debug("Add unboundHeader element: " + soapName);
+                  log.debug("Add unboundHeader element: " + soapName);
                   SOAPContentElement contentElement = new SOAPHeaderElementImpl(soapName);
                   contentElement.setParamMetaData(unboundHeader.toParameterMetaData(opMetaData));
 
@@ -281,7 +281,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
 
          CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
          if (msgContext == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "MESSAGECONTEXT_NOT_AVAILABLE"));
+            throw new WSException("MessageContext not available");
 
          // Disable MTOM for rpc/encoded
          if (opMetaData.isRPCEncoded())
@@ -308,7 +308,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
                }
 
                if (payloadParent == null)
-                  throw new SOAPException(BundleUtils.getMessage(bundle, "CANNOT_FIND_RPC_ELEMENT"));
+            	   throw new SOAPException("Cannot find RPC element in");
 
                QName elName = payloadParent.getElementQName();
                elName = namespaceRegistry.registerQName(elName);
@@ -328,6 +328,14 @@ public abstract class CommonSOAPBinding implements CommonBinding
                   {
                      AttachmentPart part = getAttachmentFromMessage(paramMetaData, reqMessage);
                      epInv.setRequestParamValue(xmlName, part);
+
+                     // Add the attachment to the standard property
+                     if (part.getDataHandler() != null && msgContext instanceof MessageContextJAXWS)
+                     {
+                        DataHandler dataHandler = part.getDataHandler();
+                        Map<String, DataHandler> attachments = (Map<String, DataHandler>)msgContext.get(MessageContext.INBOUND_MESSAGE_ATTACHMENTS);
+                        attachments.put(part.getContentId(), dataHandler);
+                     }
                   }
                   else
                   {
@@ -347,12 +355,12 @@ public abstract class CommonSOAPBinding implements CommonBinding
             Iterator itElements = payloadParent.getChildElements();
             while (itElements.hasNext())
             {
-               Node node = (Node)itElements.next();
-               if (node instanceof SOAPElement)
-                  numChildElements++;
+            	Node node = (Node)itElements.next();
+            	if (node instanceof SOAPElement)
+            		numChildElements++;
             }
             if (numChildElements != numParameters)
-               throw new WSException(BundleUtils.getMessage(bundle, "INVALID_NUMBER_OF_PAYLOAD_ELEMENTS",  numChildElements));
+            	throw new WSException("Invalid number of payload elements: " + numChildElements);
          }
 
          // Generic message endpoint
@@ -365,9 +373,6 @@ public abstract class CommonSOAPBinding implements CommonBinding
                epInv.setRequestParamValue(xmlName, value);
             }
          }
-
-         // Add all attachments to the standard property
-         this.propagateAttachmentsToJAXWSMessageContext(reqMessage, msgContext);
 
          return epInv;
       }
@@ -388,7 +393,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
       {
          CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
          if (msgContext == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "MESSAGECONTEXT_NOT_AVAILABLE"));
+            throw new WSException("MessageContext not available");
 
          // Disable MTOM for rpc/encoded
          if (opMetaData.isRPCEncoded())
@@ -428,13 +433,11 @@ public abstract class CommonSOAPBinding implements CommonBinding
             // Add soap encodingStyle
             if (opMetaData.getUse() == Use.ENCODED)
             {
-               String envURI = soapEnvelope.getNamespaceURI();
-               String envPrefix = soapEnvelope.getPrefix();
-               soapBodyElement.setAttributeNS(envURI, envPrefix + ":encodingStyle", Constants.URI_SOAP11_ENC);
+            	String envURI = soapEnvelope.getNamespaceURI();
+            	String envPrefix = soapEnvelope.getPrefix();
+            	soapBodyElement.setAttributeNS(envURI, envPrefix + ":encodingStyle", Constants.URI_SOAP11_ENC);
             }
          }
-
-         this.propagateAttachmentsFromJAXWSMessageContext(resMessage, msgContext);
 
          // Add the return to the message
          ParameterMetaData retMetaData = opMetaData.getReturnParameter();
@@ -500,38 +503,13 @@ public abstract class CommonSOAPBinding implements CommonBinding
                }
             }
          }
-         
+
          return resMessage;
       }
       catch (Exception e)
       {
          handleException(e);
          return null;
-      }
-   }
-   
-   /**
-    * Propagates attachments from JAXWS message context to soap message.
-    *
-    * @param message soap message to bind attachments to
-    * @param msgContext message context to read attachments from
-    */
-   private void propagateAttachmentsFromJAXWSMessageContext(final SOAPMessage message, final CommonMessageContext msgContext)
-   {
-      if (msgContext instanceof MessageContextJAXWS)
-      {
-         @SuppressWarnings("unchecked")
-         final Map<String, DataHandler> attachments = (Map<String, DataHandler>)msgContext.get(MessageContext.OUTBOUND_MESSAGE_ATTACHMENTS);
-         final Iterator<?> attachmentsIterator = attachments.keySet().iterator();
-
-         AttachmentPart part = null;
-         while (attachmentsIterator.hasNext())
-         {
-            final String contentId = (String)attachmentsIterator.next();
-            final DataHandler handler = attachments.get(contentId);
-            part = this.createAttachmentPart(contentId, handler);
-            ((SOAPMessageImpl)message).addAttachmentPart(part);
-         }
       }
    }
 
@@ -565,7 +543,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
          // Get the SOAP message context that is associated with the current thread
          CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
          if (msgContext == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "MESSAGECONTEXT_NOT_AVAILABLE"));
+            throw new WSException("MessageContext not available");
 
          // Disable MTOM for rpc/encoded
          if (opMetaData.isRPCEncoded())
@@ -610,7 +588,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
          if (style == Style.RPC)
          {
             if (soapBodyElement == null)
-               throw new WSException(BundleUtils.getMessage(bundle, "EMPTY_SOAP_BODY"));
+               throw new WSException("Cannot unbind response message with empty soap body");
             soapElement = soapBodyElement;
          }
 
@@ -621,6 +599,14 @@ public abstract class CommonSOAPBinding implements CommonBinding
             {
                AttachmentPart part = getAttachmentFromMessage(retMetaData, resMessage);
                epInv.setReturnValue(part);
+
+               // Add the attachment to the standard property
+               if (part.getDataHandler() != null && msgContext instanceof MessageContextJAXWS)
+               {
+                  DataHandler dataHandler = part.getDataHandler();
+                  Map<String, DataHandler> attachments = (Map<String, DataHandler>)msgContext.get(MessageContext.INBOUND_MESSAGE_ATTACHMENTS);
+                  attachments.put(part.getContentId(), dataHandler);
+               }
             }
             else
             {
@@ -636,6 +622,14 @@ public abstract class CommonSOAPBinding implements CommonBinding
             {
                AttachmentPart part = getAttachmentFromMessage(paramMetaData, resMessage);
                epInv.setResponseParamValue(xmlName, part);
+
+               // Add the attachment to the standard property
+               if (part.getDataHandler() != null && msgContext instanceof MessageContextJAXWS)
+               {
+                  DataHandler dataHandler = part.getDataHandler();
+                  Map<String, DataHandler> attachments = (Map<String, DataHandler>)msgContext.get(MessageContext.INBOUND_MESSAGE_ATTACHMENTS);
+                  attachments.put(part.getContentId(), dataHandler);
+               }
             }
             else
             {
@@ -644,37 +638,10 @@ public abstract class CommonSOAPBinding implements CommonBinding
                epInv.setResponseParamValue(xmlName, value);
             }
          }
-         
-         // Add all attachments to the standard property
-         this.propagateAttachmentsToJAXWSMessageContext(resMessage, msgContext);
       }
       catch (Exception e)
       {
          handleException(e);
-      }
-   }
-   
-   /**
-    * Propagates all the attachments from SOAPMessage to JAXWS Message context standard property.
-    *
-    * @param message soap message to read attachments from
-    * @param msgContext to propagate attachments to
-    * @throws SOAPException if something went wrong
-    */
-   private void propagateAttachmentsToJAXWSMessageContext(final SOAPMessage message, final CommonMessageContext msgContext) throws SOAPException
-   {
-      if (msgContext instanceof MessageContextJAXWS)
-      {
-         final SOAPMessageImpl implMessage = (SOAPMessageImpl)message;
-         final Iterator<?> attachmentsIterator = implMessage.getAttachments();
-         final Map<String, DataHandler> attachments = (Map<String, DataHandler>)msgContext.get(MessageContext.INBOUND_MESSAGE_ATTACHMENTS);
-
-         AttachmentPart part = null;
-         while (attachmentsIterator.hasNext())
-         {
-            part = (AttachmentPart)attachmentsIterator.next();
-            attachments.put(part.getContentId(), part.getDataHandler()); // TODO: test on getDataHandler() == null?
-         }
       }
    }
 
@@ -688,7 +655,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
       }
       else
       {
-         log.warn(BundleUtils.getMessage(bundle, "CANNOT_SET_FAULT_MESSAGE"));
+         log.warn("Cannot set fault message in message context");
       }
       return faultMessage;
    }
@@ -700,10 +667,10 @@ public abstract class CommonSOAPBinding implements CommonBinding
       String envNS = soapEnvelope.getNamespaceURI();
       String bindingId = opMetaData.getEndpointMetaData().getBindingId();
       if (CommonSOAPBinding.SOAP11HTTP_BINDING.equals(bindingId) && Constants.NS_SOAP11_ENV.equals(envNS) == false)
-         log.warn(BundleUtils.getMessage(bundle, "EXPECTED_SOAP11",  envNS));
+         log.warn("Expected SOAP-1.1 envelope, but got: " + envNS);
 
       if (CommonSOAPBinding.SOAP12HTTP_BINDING.equals(bindingId) && Constants.NS_SOAP12_ENV.equals(envNS) == false)
-         log.warn(BundleUtils.getMessage(bundle, "EXPECTED_SOAP12",  envNS));
+         log.warn("Expected SOAP-1.2 envelope, but got: " + envNS);
    }
 
    private AttachmentPart createAttachmentPart(ParameterMetaData paramMetaData, Object value, CIDGenerator cidGenerator) throws SOAPException, BindingException
@@ -721,7 +688,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
          // Conformance (MIME type mismatch): On receipt of a message where the MIME type of a part does not
          // match that described in the WSDL an implementation SHOULD throw a WebServiceException.
          if (mimeTypes != null && !MimeUtils.isMemberOf(mimeType, mimeTypes))
-            log.warn(BundleUtils.getMessage(bundle, "MIME_TYPE_NOT_ALLOWED", new Object[]{ mimeType ,  partName ,  mimeTypes}));
+            log.warn("Mime type " + mimeType + " not allowed for parameter " + partName + " allowed types are " + mimeTypes);
 
          part.setDataHandler((DataHandler)value);
       }
@@ -738,7 +705,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
          }
 
          if (mimeType == null)
-            throw new BindingException(BundleUtils.getMessage(bundle, "COULD_NOT_DETERMINE_MIME_TYPE",  partName));
+            throw new BindingException("Could not determine mime type for attachment parameter: " + partName);
 
          part.setContent(value, mimeType);
       }
@@ -757,22 +724,13 @@ public abstract class CommonSOAPBinding implements CommonBinding
       return part;
    }
 
-   private AttachmentPart createAttachmentPart(final String contentId, final DataHandler value)
-   {
-      AttachmentPart part = new AttachmentPartImpl();
-      part.setContentId(contentId);
-      part.setDataHandler(value);
-
-      return part;
-   }
-
    private AttachmentPart getAttachmentFromMessage(ParameterMetaData paramMetaData, SOAPMessage message) throws SOAPException, BindingException
    {
       QName xmlName = paramMetaData.getXmlName();
 
       AttachmentPart part = ((SOAPMessageImpl)message).getAttachmentByPartName(xmlName.getLocalPart());
       if (part == null)
-         throw new BindingException(BundleUtils.getMessage(bundle, "COULD_NOT_LOCATE_ATTACHMENT",  paramMetaData.getXmlName()));
+         throw new BindingException("Could not locate attachment for parameter: " + paramMetaData.getXmlName());
 
       return part;
    }
@@ -787,7 +745,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
       {
          Class valueType = value.getClass();
          if (JavaUtils.isAssignableFrom(javaType, valueType) == false)
-            throw new BindingException(BundleUtils.getMessage(bundle, "JAVATYPE_IS_NOT_ASSIGNABLE", new Object[]{ javaType.getName() ,  valueType.getName()}));
+            throw new BindingException("javaType " + javaType.getName() + " is not assignable from: " + valueType.getName());
       }
 
       // Make sure we have a prefix on qualified names
@@ -880,15 +838,24 @@ public abstract class CommonSOAPBinding implements CommonBinding
 
             if (SOAP_ARRAY_NAME.equals(elName))
             {
-               QName compXMLName = paramMetaData.getXmlName();
-               Element compElement = DOMUtils.getFirstChildElement(aux);
-               // NPE when the soap encoded array size is 0 on the return path
-               // http://jira.jboss.org/jira/browse/JBWS-1285
-               if (compElement == null || compElement.getNodeName().equals(compXMLName.getLocalPart()))
+               CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
+               msgContext.put(CommonMessageContext.ALLOW_EXPAND_TO_DOM, Boolean.TRUE);
+               try
                {
-                  soapContentElement = aux;
-                  soapContentElement.setParamMetaData(paramMetaData);
-                  break;
+                  QName compXMLName = paramMetaData.getXmlName();
+                  Element compElement = DOMUtils.getFirstChildElement(aux);
+                  // NPE when the soap encoded array size is 0 on the return path
+                  // http://jira.jboss.org/jira/browse/JBWS-1285
+                  if (compElement == null || compElement.getNodeName().equals(compXMLName.getLocalPart()))
+                  {
+                     soapContentElement = aux;
+                     soapContentElement.setParamMetaData(paramMetaData);
+                     break;
+                  }
+               }
+               finally
+               {
+                  msgContext.remove(CommonMessageContext.ALLOW_EXPAND_TO_DOM);
                }
             }
          }
@@ -935,7 +902,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
       }
 
       if (soapContentElement == null && optional == false)
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_FIND_CHILD_ELEMENT",  xmlName));
+         throw new WSException("Cannot find child element: " + xmlName);
 
       // When a potential XOP parameter is detected and
       // the incomming request is actuall XOP encoded we flag
@@ -962,7 +929,7 @@ public abstract class CommonSOAPBinding implements CommonBinding
    {
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "MESSAGECONTEXT_NOT_AVAILABLE"));
+         throw new WSException("MessageContext not available");
 
       SOAPMessageImpl soapMessage = (SOAPMessageImpl)msgContext.getSOAPMessage();
       SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();

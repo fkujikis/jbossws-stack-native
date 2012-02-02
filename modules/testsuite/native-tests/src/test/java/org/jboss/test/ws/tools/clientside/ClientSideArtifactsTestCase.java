@@ -34,8 +34,8 @@ import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.tools.WSDLToJava;
 import org.jboss.ws.tools.client.ServiceCreator;
 import org.jboss.ws.tools.mapping.MappingFileGenerator;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
 
 /**
@@ -67,9 +67,9 @@ public class ClientSideArtifactsTestCase extends WSToolsBase
    public void testSimpleCase() throws Exception
    {
       WSDLToJava wsdlJava = new WSDLToJava();
-      URL wsdlFile = getResourceURL("tools/jbws-161/wscompile/simple/wsdl/HelloWsService.wsdl");
+      File wsdlFile = getResourceFile("tools/jbws-161/wscompile/simple/wsdl/HelloWsService.wsdl");
       wsdlJava.setTypeMapping(new LiteralTypeMapping());
-      WSDLDefinitions wsdl = wsdlJava.convertWSDL2Java(wsdlFile);
+      WSDLDefinitions wsdl = wsdlJava.convertWSDL2Java(wsdlFile.toURL());
       wsdlJava.generateSEI(wsdl, createResourceFile("tools/jbws-160/jbossws/simple/sei"));
 
       //Create the Service File
@@ -120,19 +120,19 @@ public class ClientSideArtifactsTestCase extends WSToolsBase
       }
 
       //Compare mapping files
-      URL expFile = getResourceURL("tools/jbws-160/wscompile/simple/mapping/jaxrpc-mapping.xml");
-      URL genFile = getResourceURL("tools/jbws-160/jbossws/simple/mapping/jaxrpc-mapping.xml");
+      File expFile = getResourceFile("tools/jbws-160/wscompile/simple/mapping/jaxrpc-mapping.xml");
+      File genFile = createResourceFile("tools/jbws-160/jbossws/simple/mapping/jaxrpc-mapping.xml");
 
-      compareXMLFiles(expFile, genFile);
+      compareXMLFiles(expFile.toURL(), genFile.toURL());
    }
 
    /** Test a custom SEI that uses custom types */
    public void testCustomCase() throws Exception
    {
       WSDLToJava wsdlJava = new WSDLToJava();
-      URL wsdlFile = getResourceURL("tools/jbws-161/wscompile/custom/wsdl/HelloCustomService.wsdl");
+      File wsdlFile = getResourceFile("tools/jbws-161/wscompile/custom/wsdl/HelloCustomService.wsdl");
       wsdlJava.setTypeMapping(new LiteralTypeMapping());
-      WSDLDefinitions wsdl = wsdlJava.convertWSDL2Java(wsdlFile);
+      WSDLDefinitions wsdl = wsdlJava.convertWSDL2Java(wsdlFile.toURL());
       wsdlJava.setTypeMapping(new LiteralTypeMapping());
       wsdlJava.generateSEI(wsdl, createResourceFile("tools/jbws-160/jbossws/custom/sei"));
 

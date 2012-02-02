@@ -22,8 +22,6 @@
 package org.jboss.ws.core.server;
 
 import org.jboss.logging.Logger;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.management.EndpointResolver;
@@ -36,10 +34,10 @@ import java.util.Iterator;
  */
 public class PortComponentResolver implements EndpointResolver
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(PortComponentResolver.class);
    private static final Logger log = Logger.getLogger(PortComponentResolver.class);
 
    private String pcLink;
+   private Endpoint result;
 
    public PortComponentResolver(String pcref)
    {
@@ -65,7 +63,7 @@ public class PortComponentResolver implements EndpointResolver
          {
             if (endpoint != null)
             {
-               log.warn(BundleUtils.getMessage(bundle, "MULTIPLE_SERVICE_ENDOINTS_FOUND",  pcLink));
+               log.warn("Multiple service endoints found for: " + pcLink);
                endpoint = null;
                break;
             }

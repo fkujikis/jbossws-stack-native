@@ -79,11 +79,6 @@ public class Config implements Serializable
    {
       this.username = username;
    }
-   
-   public boolean includesFaults()
-   {
-      return (sign != null && sign.isIncludeFaults()) || (encrypt != null && encrypt.isIncludeFaults());
-   }
 
    public Requires getRequires()
    {

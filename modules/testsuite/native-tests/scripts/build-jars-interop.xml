@@ -1,26 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!--
-  ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2011, Red Hat, Inc., and individual contributors
-  ~ as indicated by the @author tags. See the copyright.txt file in the
-  ~ distribution for a full listing of individual contributors.
-  ~
-  ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License as
-  ~ published by the Free Software Foundation; either version 2.1 of
-  ~ the License, or (at your option) any later version.
-  ~
-  ~ This software is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this software; if not, write to the Free
-  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  -->
+<!-- ============================================================ -->
+<!--  JBoss, the OpenSource J2EE webOS                            -->
+<!--  Distributable under LGPL license.                           -->
+<!--  See terms of license at http://www.gnu.org.                 -->
+<!-- ============================================================ -->
 
 <project>
   
@@ -131,9 +115,6 @@
       <fileset dir="${tests.output.dir}/test-resources/interop/wsse/">
         <include name="*.*"/>
       </fileset>
-      <manifest>
-          <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
     </war>
     <!-- jbossws-interop-wsse10Encrypt-client.jar -->
     <jar destfile="${tests.output.dir}/test-libs/jbossws-interop-wsse10Encrypt-client.jar">
@@ -160,9 +141,6 @@
       <fileset dir="${tests.output.dir}/test-resources/interop/wsse/">
         <include name="*.*"/>
       </fileset>
-      <manifest>
-          <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
     </war>
     <!-- jbossws-interop-wsse10Sign-client.jar -->
     <jar destfile="${tests.output.dir}/test-libs/jbossws-interop-wsse10Sign-client.jar">
@@ -197,9 +175,6 @@
       webxml="${tests.output.dir}/test-resources/interop/nov2007/wsse/encrypt/WEB-INF/web.xml">
       <classes dir="${tests.output.dir}/test-classes">
         <include name="org/jboss/test/ws/interop/nov2007/wsse/**/*.class"/>
-        <exclude name="org/jboss/test/ws/interop/nov2007/wsse/UsernameTokenHTTPSTestService.class"/>
-        <exclude name="org/jboss/test/ws/interop/nov2007/wsse/Encrypt3DESTestService.class"/>
-        <exclude name="org/jboss/test/ws/interop/nov2007/wsse/*TestCase.class"/>
         <include name="org/jboss/test/ws/interop/*.class"/>
       </classes>
       
@@ -218,9 +193,6 @@
       <fileset dir="${tests.output.dir}/test-resources/interop/nov2007/wsse/">
         <include name="*.*"/>
       </fileset>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
     </war>
     <!-- jbossws-interop-nov2007-wsseEncrypt.jar -->
     <jar destfile="${tests.output.dir}/test-libs/jbossws-interop-nov2007-wsseEncrypt-client.jar">
@@ -232,9 +204,6 @@
       webxml="${tests.output.dir}/test-resources/interop/nov2007/wsse/encrypt3DES/WEB-INF/web.xml">
       <classes dir="${tests.output.dir}/test-classes">
         <include name="org/jboss/test/ws/interop/nov2007/wsse/**/*.class"/>
-        <exclude name="org/jboss/test/ws/interop/nov2007/wsse/UsernameTokenHTTPSTestService.class"/>
-        <exclude name="org/jboss/test/ws/interop/nov2007/wsse/EncryptTestService.class"/>
-        <exclude name="org/jboss/test/ws/interop/nov2007/wsse/*TestCase.class"/>
         <include name="org/jboss/test/ws/interop/*.class"/>
       </classes>
       
@@ -253,9 +222,6 @@
       <fileset dir="${tests.output.dir}/test-resources/interop/nov2007/wsse/">
         <include name="*.*"/>
       </fileset>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
     </war>
     <!-- jbossws-interop-nov2007-wsseEncrypt3DES.jar -->
     <jar destfile="${tests.output.dir}/test-libs/jbossws-interop-nov2007-wsseEncrypt3DES-client.jar">
@@ -267,9 +233,6 @@
       webxml="${tests.output.dir}/test-resources/interop/nov2007/wsse/usernameTokenHTTPS/WEB-INF/web.xml">
       <classes dir="${tests.output.dir}/test-classes">
         <include name="org/jboss/test/ws/interop/nov2007/wsse/**/*.class"/>
-        <exclude name="org/jboss/test/ws/interop/nov2007/wsse/Encrypt3DESTestService.class"/>
-        <exclude name="org/jboss/test/ws/interop/nov2007/wsse/EncryptTestService.class"/>
-        <exclude name="org/jboss/test/ws/interop/nov2007/wsse/*TestCase.class"/>
         <include name="org/jboss/test/ws/interop/*.class"/>
       </classes>
       <webinf dir="${tests.output.dir}/test-resources/interop/nov2007/wsse/usernameTokenHTTPS/WEB-INF">
@@ -282,9 +245,6 @@
       <fileset dir="${tests.output.dir}/test-resources/interop/nov2007/wsse/">
         <include name="*.*"/>
       </fileset>
-      <manifest>
-        <attribute name="Dependencies" value="org.jboss.ws.native.jbossws-native-core"/>
-      </manifest>
     </war>
     <!-- jbossws-interop-nov2007-wsseUsernameTokenHTTPS-client.jar -->
     <jar destfile="${tests.output.dir}/test-libs/jbossws-interop-nov2007-wsseUsernameTokenHTTPS-client.jar">

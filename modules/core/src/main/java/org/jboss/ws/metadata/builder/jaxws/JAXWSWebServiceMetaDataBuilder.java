@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,9 +26,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Writer;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.jws.HandlerChain;
 import javax.jws.WebService;
@@ -37,22 +34,16 @@ import javax.management.ObjectName;
 import javax.xml.namespace.QName;
 import javax.xml.ws.WebServiceProvider;
 
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
 import org.jboss.ws.annotation.Documentation;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.IOUtils;
-import org.jboss.ws.extensions.policy.annotation.PolicyAttachment;
-import org.jboss.ws.extensions.policy.metadata.PolicyMetaDataBuilder;
 import org.jboss.ws.metadata.builder.MetaDataBuilder;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
+import org.jboss.ws.metadata.umdm.HandlerMetaDataJAXWS;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
-import org.jboss.ws.metadata.wsdl.WSDLBinding;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
-import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
-import org.jboss.ws.metadata.wsdl.WSDLService;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
 import org.jboss.ws.metadata.wsse.WSSecurityConfigFactory;
@@ -60,13 +51,22 @@ import org.jboss.ws.metadata.wsse.WSSecurityConfiguration;
 import org.jboss.ws.metadata.wsse.WSSecurityOMFactory;
 import org.jboss.ws.tools.ToolsUtils;
 import org.jboss.ws.tools.wsdl.JAXBWSDLGenerator;
-import org.jboss.ws.tools.wsdl.WSDLDefinitionsFactory;
 import org.jboss.ws.tools.wsdl.WSDLGenerator;
 import org.jboss.ws.tools.wsdl.WSDLWriter;
 import org.jboss.ws.tools.wsdl.WSDLWriterResolver;
+import org.jboss.wsf.common.IOUtils;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainsMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+import org.jboss.wsf.spi.metadata.webservices.PortComponentMetaData;
+import org.jboss.wsf.spi.metadata.webservices.WebserviceDescriptionMetaData;
+import org.jboss.wsf.spi.metadata.webservices.WebservicesFactory;
+import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
 /**
  * An abstract annotation meta data builder.
@@ -74,14 +74,12 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  * @author Thomas.Diesler@jboss.org
  * @author <a href="mailto:jason.greene@jboss.com">Jason T. Greene</a>
  * @author Heiko.Braun@jboss.org
- * @author alessio.soldano@jboss.com
  *
  * @since 15-Oct-2005
  */
 @SuppressWarnings("deprecation")
 public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JAXWSWebServiceMetaDataBuilder.class);
    private boolean generateWsdl = true;
    private boolean extension;
    private boolean toolMode = false;
@@ -116,7 +114,7 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
          // Clear the java types, etc.
          ClassLoader runtimeClassLoader = dep.getRuntimeClassLoader();
          if(null == runtimeClassLoader)
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "RUNTIME_LOADER_CANNOT_BE_NULL"));
+            throw new IllegalArgumentException("Runtime loader cannot be null");
          
          resetMetaDataBuilder(runtimeClassLoader);
 
@@ -151,34 +149,20 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
          if (seiClass.isAnnotationPresent(Documentation.class))
             sepMetaData.setDocumentation(seiClass.getAnnotation(Documentation.class).content());
          
-         if (!toolMode)
-         {
-            processPolicies(serviceMetaData, sepMetaData);
-            setupOperationsFromWSDL(serviceMetaData, sepMetaData);
-         }
-
          // Process web methods
          processWebMethods(sepMetaData, seiClass);
-         
-         processXmlSeeAlso(seiClass);
 
-         // Init the transport guarantee
-         initTransportGuaranteeJSE(dep, sepMetaData, linkName);
+         // Init the transport guarantee for JSE deployments.
+         if (dep.getType() == DeploymentType.JAXWS_JSE)
+            initTransportGuaranteeJSE(dep, sepMetaData, linkName);
 
          // Initialize types
          createJAXBContext(sepMetaData);
          populateXmlTypes(sepMetaData);
 
-         //Process an optional @PolicyAttachment annotation
-         if (sepClass.isAnnotationPresent(PolicyAttachment.class))
-         {
-            PolicyMetaDataBuilder policyBuilder = PolicyMetaDataBuilder.getServerSidePolicyMetaDataBuilder(toolMode);
-            policyBuilder.processPolicyAnnotations(sepMetaData, sepClass);
-         }
-
          // The server must always generate WSDL
          if (generateWsdl || !toolMode)
-            generateWSDL(seiClass, serviceMetaData, sepMetaData);
+            processOrGenerateWSDL(seiClass, serviceMetaData, result.wsdlLocation, sepMetaData);
 
          // No need to process endpoint items if we are in tool mode
          if (toolMode)
@@ -202,20 +186,21 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
          else if (seiClass.isAnnotationPresent(HandlerChain.class))
             processHandlerChain(sepMetaData, seiClass);
          
-         // process webservices.xml contributions
-         processWSDDContribution(dep, sepMetaData);
-         
          //setup web service feature contributions
          epFeatureProcessor.setupEndpointFeatures(sepMetaData);
+
+         // process webservices.xml contributions
+         processWSDDContribution(sepMetaData);
 
          // Init the endpoint address
          initEndpointAddress(dep, sepMetaData);
 
          // Process an optional @SOAPMessageHandlers annotation
          if (sepClass.isAnnotationPresent(SOAPMessageHandlers.class) || seiClass.isAnnotationPresent(SOAPMessageHandlers.class))
-            log.warn(BundleUtils.getMessage(bundle, "SOAPMESSAGEHANDLERS_IS_DEPRECATED"));
+            log.warn("@SOAPMessageHandlers is deprecated as of JAX-WS 2.0 with no replacement.");
 
          MetaDataBuilder.replaceAddressLocation(sepMetaData);
+         processEndpointMetaDataExtensions(sepMetaData, wsdlDefinitions);
 
          // init service endpoint id
          ObjectName sepID = MetaDataBuilder.createServiceEndpointID(dep, sepMetaData);
@@ -234,82 +219,75 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
       }
    }
 
-   private void processPolicies(ServiceMetaData serviceMetaData, EndpointMetaData epMetaData)
+   /**
+    * With JAX-WS the use of webservices.xml is optional since the annotations can be used
+    * to specify most of the information specified in this deployment descriptor file.
+    * The deployment descriptors are only used to override or augment the annotation member attributes.
+    * @param sepMetaData
+    */
+   private void processWSDDContribution(ServerEndpointMetaData sepMetaData)
    {
-      final URL wsdlLocation = serviceMetaData.getWsdlLocation(); 
-
-      if (wsdlLocation != null)
+      WebservicesMetaData webservices = WebservicesFactory.loadFromVFSRoot(sepMetaData.getRootFile());
+      if (webservices != null)
       {
-         PolicyMetaDataBuilder policyBuilder = PolicyMetaDataBuilder.getServerSidePolicyMetaDataBuilder(toolMode);
-         WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
-         //we can no longer use the user provided wsdl without parsing it right now, since we
-         //need to look for policies and eventually choose the supported policy alternatives
-         WSDLDefinitions wsdlDefinitions = factory.parse(wsdlLocation);
-         policyBuilder.processPolicyExtensions(epMetaData, wsdlDefinitions);
-         //now we have the UMDM containing policy data; anyway we can't write a new wsdl file with
-         //the supported alternatives and so on, since we need to publish the file the user provided
-         serviceMetaData.setWsdlLocation(wsdlLocation);
-      }
-   }
-
-   private void setupOperationsFromWSDL(ServiceMetaData serviceMetaData, EndpointMetaData epMetaData)
-   {
-      WSDLDefinitions wsdlDefinitions = serviceMetaData.getWsdlDefinitions();
-      if (wsdlDefinitions == null)
-         return; // nothing to parse - WSDL will be generated
-      
-      QName serviceName = serviceMetaData.getServiceName();
-
-      // Get the WSDL service
-      WSDLService wsdlService = null;
-      if (serviceName == null)
-      {
-         if (wsdlDefinitions.getServices().length != 1)
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "EXPECTED_A_SINGLE_SERVICE_ELEMENT"));
-
-         wsdlService = wsdlDefinitions.getServices()[0];
-         serviceMetaData.setServiceName(wsdlService.getName());
-      }
-      else
-      {
-         wsdlService = wsdlDefinitions.getService(serviceName);
-      }
-      if (wsdlService == null)
-      {
-         List<QName> serviceNames = new ArrayList<QName>();
-         for (WSDLService wsdls : wsdlDefinitions.getServices())
-            serviceNames.add(wsdls.getName());
-
-         log.warn(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_WSDL_SERVICE", new Object[]{ serviceName ,  serviceNames}));
-         return;
-      }
-
-      WSDLEndpoint wsdlEndpoint = this.getWsdlEndpoint(wsdlDefinitions, epMetaData.getPortName());
-      if (wsdlEndpoint == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_FIND_PORT_IN_WSDL",  epMetaData.getPortName()));
-      
-      QName bindingName = wsdlEndpoint.getBinding();
-      WSDLBinding wsdlBinding = wsdlEndpoint.getWsdlService().getWsdlDefinitions().getBinding(bindingName);
-      String bindingType = wsdlBinding.getType();
-      if (Constants.NS_SOAP11.equals(bindingType) || Constants.NS_SOAP12.equals(bindingType))
-      {
-         setupOperationsFromWSDL(epMetaData, wsdlEndpoint);
-      }
-   }
-   
-   private WSDLEndpoint getWsdlEndpoint(WSDLDefinitions wsdlDefinitions, QName portName)
-   {
-      WSDLEndpoint wsdlEndpoint = null;
-      for (WSDLService wsdlService : wsdlDefinitions.getServices())
-      {
-         WSDLEndpoint auxEndpoint = wsdlService.getEndpoint(portName);
-         if (auxEndpoint != null)
+         for (WebserviceDescriptionMetaData wsDesc : webservices.getWebserviceDescriptions())
          {
-            wsdlEndpoint = auxEndpoint;
-            break;
+            for (PortComponentMetaData portComp : wsDesc.getPortComponents())
+            {
+               // We match portComp's by SEI first and portQName second
+               // In the first case the portComp may override the portQName that derives from the annotation
+               String portCompSEI = portComp.getServiceEndpointInterface();
+               boolean doesMatch = portCompSEI != null ? portCompSEI.equals(sepMetaData.getServiceEndpointInterfaceName()) : false;
+               if (!doesMatch)
+               {
+                  doesMatch = portComp.getWsdlPort().equals(sepMetaData.getPortName());
+               }
+
+               if (doesMatch)
+               {
+
+                  log.debug("Processing 'webservices.xml' contributions on EndpointMetaData");
+
+                  // PortQName overrides
+                  if (portComp.getWsdlPort() != null)
+                  {
+                     log.debug("Override EndpointMetaData portName " + sepMetaData.getPortName() + " with " + portComp.getWsdlPort());
+                     sepMetaData.setPortName(portComp.getWsdlPort());
+                  }
+
+                  // HandlerChain contributions
+                  UnifiedHandlerChainsMetaData chainWrapper = portComp.getHandlerChains();
+                  if (chainWrapper != null)
+                  {
+                     for (UnifiedHandlerChainMetaData handlerChain : chainWrapper.getHandlerChains())
+                     {
+                        for (UnifiedHandlerMetaData uhmd : handlerChain.getHandlers())
+                        {
+                           log.debug("Contribute handler from webservices.xml: " + uhmd.getHandlerName());
+                           HandlerMetaDataJAXWS hmd = HandlerMetaDataJAXWS.newInstance(uhmd, HandlerType.ENDPOINT);
+                           sepMetaData.addHandler(hmd);
+                        }
+                     }
+                  }
+
+                  // MTOM settings
+                  if (portComp.isEnableMtom())
+                  {
+                     log.debug("Enabling MTOM");
+
+                     String bindingId = sepMetaData.getBindingId();
+                     if (bindingId.equals(Constants.SOAP11HTTP_BINDING))
+                        sepMetaData.setBindingId(Constants.SOAP11HTTP_MTOM_BINDING);
+                     else if (bindingId.equals(Constants.SOAP12HTTP_BINDING))
+                        sepMetaData.setBindingId(Constants.SOAP12HTTP_MTOM_BINDING);
+
+                  }
+
+               }
+            }
          }
+
       }
-      return wsdlEndpoint;
    }
 
    private EndpointResult processWebService(Deployment dep, UnifiedMetaData wsMetaData, Class<?> sepClass, String linkName) throws ClassNotFoundException, IOException
@@ -317,7 +295,7 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
       WebService anWebService = sepClass.getAnnotation(WebService.class);
       WebServiceProvider anWebServiceProvider = sepClass.getAnnotation(WebServiceProvider.class);
       if ((anWebService == null) && (anWebServiceProvider == null))
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_ANNOTATION",  sepClass.getName()));
+         throw new WSException("Cannot obtain neither @WebService nor @WebServiceProvider annotation from: " + sepClass.getName());
 
       Endpoint ep = dep.getService().getEndpointByName(linkName);
       
@@ -349,16 +327,16 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
          seiName = anWebService.endpointInterface();
          ClassLoader runtimeClassLoader = dep.getRuntimeClassLoader();
          if(null == runtimeClassLoader)
-            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "RUNTIME_LOADER_CANNOT_BE_NULL"));
+            throw new IllegalArgumentException("Runtime loader cannot be null");
          
          seiClass = runtimeClassLoader.loadClass(seiName);
          WebService seiAnnotation = seiClass.getAnnotation(WebService.class);
 
          if (seiAnnotation == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "DOES_NOT_HAVE_WEBSERVICE_ANNOTATION",  seiName));
+            throw new WSException("Interface does not have a @WebService annotation: " + seiName);
 
          if (seiAnnotation.portName().length() > 0 || seiAnnotation.serviceName().length() > 0 || seiAnnotation.endpointInterface().length() > 0)
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_HAVE_ATTRIBUTES" + seiName));
+            throw new WSException("@WebService cannot have attribute 'portName', 'serviceName', 'endpointInterface' on: " + seiName);
 
          // Redefine the interface or "PortType" name
          name = seiAnnotation.name();
@@ -389,29 +367,34 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
       wsMetaData.addService(result.serviceMetaData);
 
       if (dep instanceof ArchiveDeployment)
-         result.wsdlLocation = ((ArchiveDeployment)dep).getResourceResolver().resolve(wsdlLocation);
+         result.wsdlLocation = ((ArchiveDeployment)dep).getMetaDataFileURL(wsdlLocation);
 
       return result;
    }
 
-   private void generateWSDL(Class wsClass, ServiceMetaData serviceMetaData, EndpointMetaData epMetaData)
+   private void processOrGenerateWSDL(Class wsClass, ServiceMetaData serviceMetaData, URL wsdlLocation, EndpointMetaData epMetaData)
    {
-      final URL wsdlLocation = serviceMetaData.getWsdlLocation();
-
-      if (wsdlLocation == null)
+      try
       {
-         try
+         WSDLGenerator generator = new JAXBWSDLGenerator(jaxbCtx);
+         generator.setExtension(extension);
+         if (wsdlLocation != null)
          {
-            WSDLGenerator generator = new JAXBWSDLGenerator(jaxbCtx);
-            generator.setExtension(extension);
-
+            serviceMetaData.setWsdlLocation(wsdlLocation);
+         }
+         else
+         {
             WSDLDefinitions wsdlDefinitions = generator.generate(serviceMetaData);
             writeWsdl(serviceMetaData, wsdlDefinitions, epMetaData);
          }
-         catch (IOException e)
-         {
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_WRITE_GENERATED_WSDL"),  e);
-         }
+      }
+      catch (RuntimeException rte)
+      {
+         throw rte;
+      }
+      catch (IOException e)
+      {
+         throw new WSException("Cannot write generated wsdl", e);
       }
    }
 

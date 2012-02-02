@@ -36,20 +36,16 @@ public class Encrypt extends Targetable implements Serializable
    private String type;
    private String alias;
    private String algorithm;
-   private boolean includeFaults;
    private String keyWrapAlgorithm;
    private String tokenRefType;
-   private String securityDomainAliasLabel;
 
-   public Encrypt(String type, String alias, String algorithm, String wrap, String tokenRefType, String securityDomainAliasLabel, boolean includeFaults)
+   public Encrypt(String type, String alias, String algorithm, String wrap, String tokenRefType)
    {
       this.type = type;
       this.alias = alias;
       this.algorithm = algorithm;
       this.keyWrapAlgorithm = wrap;
       this.tokenRefType = tokenRefType;
-      this.securityDomainAliasLabel = securityDomainAliasLabel;
-      this.includeFaults = includeFaults;
    }
 
    public String getAlias()
@@ -100,25 +96,5 @@ public class Encrypt extends Targetable implements Serializable
    public void setTokenRefType(String tokenRefType)
    {
       this.tokenRefType = tokenRefType;
-   }
-
-   public String getSecurityDomainAliasLabel()
-   {
-      return securityDomainAliasLabel;
-   }
-
-   public void setSecurityDomainAliasLabel(String securityDomainAliasLabel)
-   {
-      this.securityDomainAliasLabel = securityDomainAliasLabel;
-   }
-   
-   public boolean isIncludeFaults()
-   {
-      return includeFaults;
-   }
-
-   public void setIncludeFaults(boolean includeFaults)
-   {
-      this.includeFaults = includeFaults;
    }
 }

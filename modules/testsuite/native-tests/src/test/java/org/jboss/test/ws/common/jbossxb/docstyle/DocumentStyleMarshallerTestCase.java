@@ -34,7 +34,7 @@ import org.jboss.ws.core.jaxrpc.binding.jbossxb.JBossXBConstants;
 import org.jboss.ws.core.jaxrpc.binding.jbossxb.JBossXBMarshallerImpl;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMappingFactory;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.wsf.common.DOMUtils;
 
 /**
  * Test the JAXB marshalling of complex types
@@ -52,7 +52,7 @@ public class DocumentStyleMarshallerTestCase extends WSToolsBase
       File xsdFile = getResourceFile("common/jbossxb/DocumentStyle.xsd");
       assertTrue(xsdFile.exists());
 
-      return parseSchema(xsdFile.toURI().toURL());
+      return parseSchema(xsdFile.toURL());
    }
 
    /** Release the schema URL, used for removing temp files */

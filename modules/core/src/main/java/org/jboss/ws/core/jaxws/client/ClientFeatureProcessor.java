@@ -22,8 +22,6 @@
 package org.jboss.ws.core.jaxws.client;
 
 import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.RespectBindingFeature;
@@ -35,17 +33,12 @@ import javax.xml.ws.soap.MTOMFeature;
 import javax.xml.ws.soap.SOAPBinding;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.DOMWriter;
-import org.jboss.ws.core.StubExt;
 import org.jboss.ws.core.jaxws.binding.BindingExt;
 import org.jboss.ws.extensions.addressing.jaxws.WSAddressingClientHandler;
-import org.jboss.ws.feature.ChunkedEncodingFeature;
 import org.jboss.ws.feature.FastInfosetFeature;
 import org.jboss.ws.feature.JsonEncodingFeature;
 import org.jboss.ws.feature.SchemaValidationFeature;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.metadata.umdm.FeatureAwareEndpointMetaData;
 import org.jboss.ws.metadata.umdm.FeatureSet;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.wsdl.Extendable;
@@ -54,6 +47,7 @@ import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
 import org.jboss.ws.metadata.wsdl.WSDLExtensibilityElement;
 import org.jboss.ws.metadata.wsdl.WSDLService;
+import org.jboss.wsf.common.DOMWriter;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 
 /**
@@ -65,7 +59,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  */
 public class ClientFeatureProcessor
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ClientFeatureProcessor.class);
    private static Logger log = Logger.getLogger(ClientFeatureProcessor.class);
    
    private static FeatureSet supportedFeatures = new FeatureSet();
@@ -77,27 +70,23 @@ public class ClientFeatureProcessor
       supportedFeatures.addFeature(new AddressingFeature());
       supportedFeatures.addFeature(new MTOMFeature());
       supportedFeatures.addFeature(new RespectBindingFeature());
-      supportedFeatures.addFeature(new ChunkedEncodingFeature());
    }
    
    public static <T> void processFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
    {
       if (!supportedFeatures.hasFeature(feature.getClass()))
       {
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "UNSUPPORTED_FEATURE",  feature));
+         throw new IllegalArgumentException("Unsupported feature: " + feature);
       }
       processAddressingFeature(feature, epMetaData, stub);
       processMTOMFeature(feature, epMetaData, stub);
       processRespectBindingFeature(feature, epMetaData, stub);
-      processChunkedEncodingFeature(feature, epMetaData, stub);
-
-      // overriding feature for this stub
-      FeatureAwareEndpointMetaData featureOverridableMetaData = (FeatureAwareEndpointMetaData)stub;
-      featureOverridableMetaData.setFeature(feature);
+      epMetaData.addFeature(feature);
    }
    
    /**
-    * Setup addressing
+    * Returns true or false depending on the provided WebServiceFeature being an AddressingFeature or not.
+    * In the former case, addressing is setup.
     * 
     * @param <T>
     * @param feature
@@ -108,62 +97,18 @@ public class ClientFeatureProcessor
    @SuppressWarnings("unchecked")
    private static <T> void processAddressingFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
    {
-      if (feature instanceof AddressingFeature)
+      if (feature instanceof AddressingFeature && feature.isEnabled())
       {
-         BindingExt bindingExt = (BindingExt) ((BindingProvider) stub).getBinding();
+         BindingExt bindingExt = (BindingExt)((BindingProvider)stub).getBinding();
          List<Handler> handlers = bindingExt.getHandlerChain(HandlerType.POST);
-         int addressingHandlerIndex = getAddressingHandlerIndex(handlers);
-
-         if (feature.isEnabled())
-         {
-            if (addressingHandlerIndex == -1)
-            {
-               handlers.add(new WSAddressingClientHandler());
-               bindingExt.setHandlerChain(handlers, HandlerType.POST);
-            }
-         }
-         else if (addressingHandlerIndex != -1)
-         {
-            handlers.remove(addressingHandlerIndex);
-            bindingExt.setHandlerChain(handlers, HandlerType.POST);
-         }
-      }
-   }
-   
-   private static int getAddressingHandlerIndex(final List<Handler> handlers)
-   {
-      if (handlers != null)
-      {
-         for (int i = 0; i < handlers.size(); i++)
-         {
-            if (handlers.get(i) instanceof WSAddressingClientHandler)
-               return i;
-         }
-      }
-      
-      return -1;
-   }
-   
-   /**
-    * Setup http chunked encoding
-    * 
-    * @param <T>
-    * @param feature
-    * @param epMetaData
-    * @param stub
-    * @return
-    */
-   private static <T> void processChunkedEncodingFeature(WebServiceFeature feature, EndpointMetaData epMetaData, T stub)
-   {
-      if (feature instanceof ChunkedEncodingFeature)
-      {
-         Map<String, Object> ctx = ((BindingProvider)stub).getRequestContext();
-         ctx.put(StubExt.PROPERTY_CHUNKED_ENCODING_SIZE, ((ChunkedEncodingFeature)feature).getChunkSize());
+         handlers.add(new WSAddressingClientHandler());
+         bindingExt.setHandlerChain(handlers, HandlerType.POST);
       }
    }
    
    /**
-    * Setup MTOM
+    * Returns true or false depending on the provided WebServiceFeature being an MTOMFeature or not.
+    * In the former case, mtom is setup.
     * 
     * @param <T>
     * @param feature
@@ -181,8 +126,8 @@ public class ClientFeatureProcessor
    }
    
    /**
-    * 
-    * Perform respect binding checks
+    * Returns true or false depending on the provided WebServiceFeature being an RespectBindingFeature or not.
+    * In the former case, the respect binding checks are performed.
     * 
     * @param <T>
     * @param feature
@@ -214,7 +159,7 @@ public class ClientFeatureProcessor
             }
             else
             {
-               log.warn(BundleUtils.getMessage(bundle, "CANNOT_FIND_PORT",  epMetaData.getPortName()));
+               log.warn("Cannot find port " + epMetaData.getPortName());
             }
          }
       }
@@ -229,7 +174,7 @@ public class ClientFeatureProcessor
          if (el.isRequired() && !disabledByFeature)
          {
             String s = DOMWriter.printNode(el.getElement(), true);
-            throw new WebServiceException(BundleUtils.getMessage(bundle, "NOT_UNDERSTOOD_ELEMENT_WAS_FOUND",  s));
+            throw new WebServiceException("RespectBindingFeature enabled and a required not understood element was found: " + s);
          }
       }
    }

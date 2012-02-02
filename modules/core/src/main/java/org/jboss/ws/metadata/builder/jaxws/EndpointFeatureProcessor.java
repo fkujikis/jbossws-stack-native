@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.xml.ws.RespectBinding;
 import javax.xml.ws.RespectBindingFeature;
@@ -42,8 +41,6 @@ import org.jboss.ws.WSException;
 import org.jboss.ws.annotation.FastInfoset;
 import org.jboss.ws.annotation.JsonEncoding;
 import org.jboss.ws.annotation.SchemaValidation;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.DOMWriter;
 import org.jboss.ws.extensions.addressing.jaxws.WSAddressingServerHandler;
 import org.jboss.ws.feature.FastInfosetFeature;
 import org.jboss.ws.feature.JsonEncodingFeature;
@@ -57,6 +54,8 @@ import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
 import org.jboss.ws.metadata.wsdl.WSDLExtensibilityElement;
 import org.jboss.ws.metadata.wsdl.WSDLService;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
@@ -70,7 +69,6 @@ import org.xml.sax.ErrorHandler;
  */
 public class EndpointFeatureProcessor
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(EndpointFeatureProcessor.class);
    private static final Logger log = Logger.getLogger(EndpointFeatureProcessor.class);
    
    protected void processEndpointFeatures(Deployment dep, ServerEndpointMetaData sepMetaData, Class<?> sepClass)
@@ -83,7 +81,7 @@ public class EndpointFeatureProcessor
             if (an.annotationType() == Addressing.class)
             {
                Addressing anFeature = sepClass.getAnnotation(Addressing.class);
-               AddressingFeature feature = new AddressingFeature(anFeature.enabled(), anFeature.required(), anFeature.responses());
+               AddressingFeature feature = new AddressingFeature(anFeature.enabled(), anFeature.required());
                sepMetaData.addFeature(feature);
             }
             else if (an.annotationType() == MTOM.class)
@@ -116,7 +114,7 @@ public class EndpointFeatureProcessor
             }
             else
             {
-               throw new WebServiceException(BundleUtils.getMessage(bundle, "UNSUPPORTED_FEATURE",  wsfa.bean()));
+               throw new WebServiceException("Unsupported feature: " + wsfa.bean());
             }
          }
       }
@@ -152,14 +150,12 @@ public class EndpointFeatureProcessor
          String bindingId = sepMetaData.getBindingId();
          if (SOAPBinding.SOAP11HTTP_BINDING.equals(bindingId))
          {
-            if (log.isDebugEnabled())
-               log.debug("MTOMFeature found, setting binding to " + SOAPBinding.SOAP11HTTP_MTOM_BINDING);
+            log.debug("MTOMFeature found, setting binding to " + SOAPBinding.SOAP11HTTP_MTOM_BINDING);
             sepMetaData.setBindingId(SOAPBinding.SOAP11HTTP_MTOM_BINDING);
          }
          else if (SOAPBinding.SOAP12HTTP_BINDING.equals(bindingId))
          {
-            if (log.isDebugEnabled())
-               log.debug("MTOMFeature found, setting binding to " + SOAPBinding.SOAP12HTTP_MTOM_BINDING);
+            log.debug("MTOMFeature found, setting binding to " + SOAPBinding.SOAP12HTTP_MTOM_BINDING);
             sepMetaData.setBindingId(SOAPBinding.SOAP12HTTP_MTOM_BINDING);
          }
       }
@@ -191,7 +187,7 @@ public class EndpointFeatureProcessor
             }
             else
             {
-               log.warn(BundleUtils.getMessage(bundle, "CANNOT_FIND_PORT",  sepMetaData.getPortName()));
+               log.warn("Cannot find port " + sepMetaData.getPortName());
             }
          }
       }
@@ -206,7 +202,7 @@ public class EndpointFeatureProcessor
          if (el.isRequired() && !disabledByFeature)
          {
             String s = DOMWriter.printNode(el.getElement(), true);
-            throw new WebServiceException(BundleUtils.getMessage(bundle, "NOT_UNDERSTOOD_ELEMENT_WAS_FOUND",  s));
+            throw new WebServiceException("RespectBindingFeature enabled and a required not understood element was found: " + s);
          }
       }
    }
@@ -223,12 +219,12 @@ public class EndpointFeatureProcessor
          {
             try
             {
-               URL xsdURL = ((ArchiveDeployment)dep).getResourceResolver().resolve(xsdLoc);
+               URL xsdURL = ((ArchiveDeployment)dep).getMetaDataFileURL(xsdLoc);
                xsdLoc = xsdURL.toExternalForm();
             }
             catch (IOException ex)
             {
-               throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_LOAD_SCHEMA",  xsdLoc),  ex);
+               throw new WSException("Cannot load schema: " + xsdLoc, ex);
             }
          }
          feature.setSchemaLocation(xsdLoc);
@@ -244,7 +240,7 @@ public class EndpointFeatureProcessor
          }
          catch (Exception ex)
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_INSTANCIATE_ERROR_HANDLER",  handlerClass),  ex);
+            throw new WSException("Cannot instanciate error handler: " + handlerClass, ex);
          }
       }
       sepMetaData.addFeature(feature);

@@ -22,8 +22,6 @@
 package org.jboss.ws.core.jaxws.binding;
 
 import java.util.List;
-import java.util.ResourceBundle;
-import org.jboss.ws.api.util.BundleUtils;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
@@ -57,7 +55,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  */
 public class HTTPBindingJAXWS implements CommonBinding, BindingExt, HTTPBinding
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(HTTPBindingJAXWS.class);
    // provide logging
    private static final Logger log = Logger.getLogger(HTTPBindingJAXWS.class);
 
@@ -71,8 +68,7 @@ public class HTTPBindingJAXWS implements CommonBinding, BindingExt, HTTPBinding
 
    public EndpointInvocation unbindRequestMessage(OperationMetaData opMetaData, MessageAbstraction reqMessage) throws BindingException
    {
-      if (log.isDebugEnabled())
-         log.debug("unbindRequestMessage: " + opMetaData.getQName());
+      log.debug("unbindRequestMessage: " + opMetaData.getQName());
       try
       {
          // Construct the endpoint invocation object
@@ -80,7 +76,7 @@ public class HTTPBindingJAXWS implements CommonBinding, BindingExt, HTTPBinding
 
          CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
          if (msgContext == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "MESSAGECONTEXT_NOT_AVAILABLE"));
+            throw new WSException("MessageContext not available");
 
          ParameterMetaData paramMetaData = opMetaData.getParameters().get(0);
          QName xmlName = paramMetaData.getXmlName();
@@ -101,13 +97,12 @@ public class HTTPBindingJAXWS implements CommonBinding, BindingExt, HTTPBinding
 
    public MessageAbstraction bindResponseMessage(OperationMetaData opMetaData, EndpointInvocation epInv) throws BindingException
    {
-      if (log.isDebugEnabled())
-         log.debug("bindResponseMessage: " + opMetaData.getQName());
+      log.debug("bindResponseMessage: " + opMetaData.getQName());
       try
       {
          CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
          if (msgContext == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "MESSAGECONTEXT_NOT_AVAILABLE"));
+            throw new WSException("MessageContext not available");
 
          // Associate current message with message context
          Source source = (Source)epInv.getReturnValue();
@@ -150,7 +145,7 @@ public class HTTPBindingJAXWS implements CommonBinding, BindingExt, HTTPBinding
       {
          if (!(handler instanceof LogicalHandler))
          {
-            throw new WebServiceException(BundleUtils.getMessage(bundle, "ADDING_HANDLER_INCOMPATIABLE",  handler.getClass()));
+            throw new WebServiceException("The adding handler in HTTPBinding is incompatiable " + handler.getClass());
          }
       }
       delegate.setHandlerChain(handlerChain);
