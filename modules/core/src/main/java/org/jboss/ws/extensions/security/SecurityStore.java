@@ -49,6 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.security.auth.x500.X500Principal;
+
 import org.jboss.logging.Logger;
 import org.jboss.ws.extensions.security.exception.FailedAuthenticationException;
 import org.jboss.ws.extensions.security.exception.WSSecurityException;
@@ -437,11 +439,12 @@ public class SecurityStore
                continue;
 
             X509Certificate x509 = (X509Certificate)cert;
-            if (issuer.equals(x509.getIssuerDN().toString()) && serial.equals(x509.getSerialNumber().toString()))
+            X500Principal principal = new X500Principal(issuer);
+            if (principal.equals(x509.getIssuerX500Principal()) && serial.equals(x509.getSerialNumber().toString()))
                return x509;
          }
       }
-      catch (KeyStoreException e)
+      catch (Exception e)
       {
          throw new WSSecurityException("Problems retrieving cert: " + e.getMessage(), e);
       }
