@@ -23,19 +23,16 @@ package org.jboss.ws.core.jaxws.binding;
 
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.ws.handler.Handler;
 
 import org.jboss.logging.Logger;
 import org.jboss.util.NotImplementedException;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
 import org.jboss.ws.core.CommonBinding;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.EndpointInvocation;
@@ -63,7 +60,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  */
 public class PayloadBinding implements CommonBinding, BindingExt
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(PayloadBinding.class);
    // provide logging
    private static final Logger log = Logger.getLogger(PayloadBinding.class);
 
@@ -80,7 +76,7 @@ public class PayloadBinding implements CommonBinding, BindingExt
    /** On the server side, extract the IN parameters from the payload and populate an Invocation object */
    public EndpointInvocation unbindRequestMessage(OperationMetaData opMetaData, MessageAbstraction payload) throws BindingException
    {
-      log.debugf("unbindRequestMessage: %s", opMetaData.getQName());
+      log.debug("unbindRequestMessage: " + opMetaData.getQName());
       try
       {
          // Construct the endpoint invocation object
@@ -88,7 +84,7 @@ public class PayloadBinding implements CommonBinding, BindingExt
 
          CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
          if (msgContext == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "MESSAGECONTEXT_NOT_AVAILABLE"));
+            throw new WSException("MessageContext not available");
 
          ParameterMetaData paramMetaData = opMetaData.getParameters().get(0);
          QName xmlName = paramMetaData.getXmlName();
@@ -97,15 +93,9 @@ public class PayloadBinding implements CommonBinding, BindingExt
          SOAPBodyImpl body = (SOAPBodyImpl)reqMessage.getSOAPBody();
          
          SOAPContentElement bodyElement = (SOAPContentElement)body.getBodyElement();
-         Source source = null;
-         if (bodyElement != null)
-         {
-            source = bodyElement.getXMLFragment().getSource();
-         }
-         else 
-         {
-            source = new DOMSource();
-         }
+         Source source = bodyElement.getXMLFragment().getSource();
+         if (source == null)
+            throw new IllegalStateException("Payload cannot be null");
 
          epInv.setRequestParamValue(xmlName, source);
 
@@ -121,13 +111,13 @@ public class PayloadBinding implements CommonBinding, BindingExt
    /** On the server side, generate the payload from OUT parameters. */
    public MessageAbstraction bindResponseMessage(OperationMetaData opMetaData, EndpointInvocation epInv) throws BindingException
    {
-      log.debugf("bindResponseMessage: %s", opMetaData.getQName());
+      log.debug("bindResponseMessage: " + opMetaData.getQName());
 
       try
       {
          SOAPMessageContextJAXWS msgContext = (SOAPMessageContextJAXWS)MessageContextAssociation.peekMessageContext();
          if (msgContext == null)
-            throw new WSException(BundleUtils.getMessage(bundle, "MESSAGECONTEXT_NOT_AVAILABLE"));
+            throw new WSException("MessageContext not available");
 
          // Associate current message with message context
          MessageFactoryImpl factory = new MessageFactoryImpl();
@@ -170,7 +160,7 @@ public class PayloadBinding implements CommonBinding, BindingExt
       }
       else
       {
-         log.warn(BundleUtils.getMessage(bundle, "CANNOT_SET_FAULT_MESSAGE_IN_MESSAGE_CONTEXT"));
+         log.warn("Cannot set fault message in message context");
       }
       return faultMessage;
    }

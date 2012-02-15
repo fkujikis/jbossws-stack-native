@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,14 +21,11 @@
  */
 package org.jboss.ws.core.server;
 
-import static org.jboss.ws.common.integration.WSHelper.isJaxwsEndpoint;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
@@ -45,18 +42,16 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.http.HTTPBinding;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.CommonBinding;
 import org.jboss.ws.core.CommonBindingProvider;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.CommonSOAPBinding;
 import org.jboss.ws.core.CommonSOAPFaultException;
 import org.jboss.ws.core.DirectionHolder;
-import org.jboss.ws.core.DirectionHolder.Direction;
 import org.jboss.ws.core.EndpointInvocation;
 import org.jboss.ws.core.MessageAbstraction;
+import org.jboss.ws.core.DirectionHolder.Direction;
 import org.jboss.ws.core.jaxrpc.ServletEndpointContextImpl;
 import org.jboss.ws.core.jaxrpc.handler.HandlerDelegateJAXRPC;
 import org.jboss.ws.core.jaxrpc.handler.MessageContextJAXRPC;
@@ -73,14 +68,18 @@ import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
+import org.jboss.wsf.common.JavaUtils;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 import org.jboss.wsf.spi.invocation.Invocation;
 import org.jboss.wsf.spi.invocation.InvocationContext;
 import org.jboss.wsf.spi.invocation.InvocationHandler;
+import org.jboss.wsf.spi.invocation.InvocationType;
 import org.jboss.wsf.spi.invocation.WebServiceContextFactory;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+import org.jboss.wsf.spi.serviceref.ServiceRefHandler.Type;
 
 /** An implementation handles invocations on the endpoint
  *
@@ -89,7 +88,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  */
 public class ServiceEndpointInvoker
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ServiceEndpointInvoker.class);
    // provide logging
    private static final Logger log = Logger.getLogger(ServiceEndpointInvoker.class);
 
@@ -112,7 +110,7 @@ public class ServiceEndpointInvoker
 
       ServerEndpointMetaData sepMetaData = endpoint.getAttachment(ServerEndpointMetaData.class);
       if (sepMetaData == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_ENDPOINT_META_DATA"));
+         throw new IllegalStateException("Cannot obtain endpoint meta data");
 
       if (sepMetaData.getType() == EndpointMetaData.Type.JAXRPC)
       {
@@ -208,45 +206,63 @@ public class ServiceEndpointInvoker
 
          if (handlersPass)
          {
-            // Check if protocol handlers modified the payload
-            if (msgContext.isModified())
-            {
-               log.debug("Handler modified payload, unbind message again");
-               reqMessage = msgContext.getMessageAbstraction();
-               sepInv = binding.unbindRequestMessage(opMetaData, reqMessage);
-            }
-            //JBWS-2969:check if the RPC/Lit input paramter is null
-            if (opMetaData.getEndpointMetaData().getType() != EndpointMetaData.Type.JAXRPC
-                  && opMetaData.isRPCLiteral() && sepInv.getRequestParamNames() != null)
-            {  
-
-               for (QName qname : sepInv.getRequestParamNames())
-               {
-                  ParameterMetaData paramMetaData = opMetaData.getParameter(qname);
-                  if ((paramMetaData.getMode().equals(ParameterMode.IN) || paramMetaData.getMode().equals(ParameterMode.INOUT)) && sepInv.getRequestParamValue(qname) == null)
-                  {
-                     throw new WebServiceException(BundleUtils.getMessage(bundle, "RPC/LITERAL_PAPAMETERS_IS_NULL",  opMetaData.getQName()));
-                  }
-               }
-            }
-
-            // Invoke an instance of the SEI implementation bean 
-            Invocation inv = setupInvocation(endpoint, sepInv, invContext);
-            InvocationHandler invHandler = endpoint.getInvocationHandler();
-
+            msgContext.put(CommonMessageContext.ALLOW_EXPAND_TO_DOM, Boolean.TRUE);
             try
             {
-               invHandler.invoke(endpoint, inv);
-            }
-            catch (InvocationTargetException th)
-            {
-               //Unwrap the throwable raised by the service endpoint implementation
-               Throwable targetEx = th.getTargetException();
-               throw (targetEx instanceof Exception ? (Exception)targetEx : new UndeclaredThrowableException(targetEx));
-            }
+               // Check if protocol handlers modified the payload
+               if (msgContext.isModified())
+               {
+                  log.debug("Handler modified payload, unbind message again");
+                  reqMessage = msgContext.getMessageAbstraction();
+                  sepInv = binding.unbindRequestMessage(opMetaData, reqMessage);
+               }
+               //JBWS-2969:check if the RPC/Lit input paramter is null
+               if (opMetaData.getEndpointMetaData().getType() != EndpointMetaData.Type.JAXRPC
+                     && opMetaData.isRPCLiteral() && sepInv.getRequestParamNames() != null)
+               {  
+                  
+                  for (QName qname : sepInv.getRequestParamNames())
+                  {
+                     ParameterMetaData paramMetaData = opMetaData.getParameter(qname);
+                     if ((paramMetaData.getMode().equals(ParameterMode.IN) || paramMetaData.getMode().equals(ParameterMode.INOUT)) && sepInv.getRequestParamValue(qname) == null)
+                     {
+                        throw new WebServiceException("The RPC/Literal Operation [" + opMetaData.getQName()
+                              + "] parameters can not be null");
+                     }
+                  }
+               }
+               
+               // Invoke an instance of the SEI implementation bean 
+               Invocation inv = setupInvocation(endpoint, sepInv, invContext);
+               InvocationHandler invHandler = endpoint.getInvocationHandler();
+               
+               try
+               {
+                  invHandler.invoke(endpoint, inv);
+                  
+               }
+               catch (InvocationTargetException th)
+               {
+                  //Unwrap the throwable raised by the service endpoint implementation
+                  Throwable targetEx = th.getTargetException();
+                  throw (targetEx instanceof Exception ? (Exception)targetEx : new UndeclaredThrowableException(targetEx));
+               }
+               finally
+               {
+                  // JBWS-2486
+                  if (endpoint.getAttachment(Object.class) == null)
+                  {
+                     endpoint.addAttachment(Object.class, inv.getInvocationContext().getTargetBean());
+                  }
+               }
 
-            // Handler processing might have replaced the endpoint invocation
-            sepInv = inv.getInvocationContext().getAttachment(EndpointInvocation.class);
+               // Handler processing might have replaced the endpoint invocation
+               sepInv = inv.getInvocationContext().getAttachment(EndpointInvocation.class);
+            }
+            finally
+            {
+               msgContext.remove(CommonMessageContext.ALLOW_EXPAND_TO_DOM);
+            }
 
             // Reverse the message direction
             msgContext = processPivotInternal(msgContext, direction);
@@ -285,6 +301,7 @@ public class ServiceEndpointInvoker
          CommonBinding binding = bindingProvider.getCommonBinding();
          try
          {
+            MessageContextAssociation.peekMessageContext().put("Exception", ex);
             binding.bindFaultMessage(ex);
 
             // call the fault handler chain
@@ -298,7 +315,7 @@ public class ServiceEndpointInvoker
          }
          catch (RuntimeException subEx)
          {
-            log.warn(BundleUtils.getMessage(bundle, "EXCEPTION_PROCESSING_HANDLEFAULT"),  ex);
+            log.warn("Exception while processing handleFault: ", ex);
             binding.bindFaultMessage(subEx);
             ex = subEx;
          }
@@ -317,16 +334,16 @@ public class ServiceEndpointInvoker
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext instanceof SOAPMessageContextJAXWS)
       {
-         if (isJaxwsEndpoint(ep))
+         if (ep.getService().getDeployment().getType() == DeploymentType.JAXWS_JSE)
          {
             if (msgContext.get(MessageContext.SERVLET_REQUEST) != null)
             {
-               WebServiceContext wsContext = contextFactory.newWebServiceContext((SOAPMessageContextJAXWS)msgContext);
+               WebServiceContext wsContext = contextFactory.newWebServiceContext(InvocationType.JAXWS_JSE, (SOAPMessageContextJAXWS)msgContext);
                invContext.addAttachment(WebServiceContext.class, wsContext);
             }
             else
             {
-               log.warn(BundleUtils.getMessage(bundle, "CANNOT_PROVIDE_WEBSERVICECONTEXT"));
+               log.warn("Cannot provide WebServiceContext, since the current MessageContext does not provide a ServletRequest");
             }
          }
          invContext.addAttachment(javax.xml.ws.handler.MessageContext.class, msgContext);
@@ -346,34 +363,10 @@ public class ServiceEndpointInvoker
       Invocation wsInv = new DelegatingInvocation();
       wsInv.setInvocationContext(invContext);
       wsInv.setJavaMethod(getImplMethod(endpoint, epInv));
-      wsInv.getInvocationContext().setTargetBean(getEndpointInstance());
+      // JBWS-2486, see endpoint attachment initialization above
+      wsInv.getInvocationContext().setTargetBean(endpoint.getAttachment(Object.class));
 
       return wsInv;
-   }
-   
-   // JBWS-2486 - Only one webservice endpoint instance can be created!
-   private Object getEndpointInstance()
-   {
-      synchronized(endpoint) 
-      {
-         Object endpointImpl = endpoint.getAttachment(Object.class);
-         if (endpointImpl == null)
-         {
-            try
-            {
-               // create endpoint instance
-               final Class<?> endpointImplClass = endpoint.getTargetBeanClass();
-               endpointImpl = endpoint.getInstanceProvider().getInstance(endpointImplClass.getName()).getValue();
-               endpoint.addAttachment(Object.class, endpointImpl);
-            }
-            catch (Exception ex)
-            {
-               throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_CREATE_ENDPOINT_INSTANCE"),  ex);
-            }
-         }
-
-         return endpointImpl;
-      }
    }
 
    protected Method getImplMethod(Endpoint endpoint, EndpointInvocation sepInv) throws ClassNotFoundException, NoSuchMethodException
@@ -403,8 +396,8 @@ public class ServiceEndpointInvoker
          }
          catch (NoSuchMethodException ex)
          {
-            log.error(BundleUtils.getMessage(bundle, "CODESOURCE",  implClass.getProtectionDomain().getCodeSource()));
-            log.error(BundleUtils.getMessage(bundle, "CLASSLOADER",  implClass.getClassLoader()));
+            log.error("CodeSource: " + implClass.getProtectionDomain().getCodeSource());
+            log.error("ClassLoader: " + implClass.getClassLoader());
             throw ex;
          }
       }
@@ -473,7 +466,7 @@ public class ServiceEndpointInvoker
       if (HTTPBinding.HTTP_BINDING.equals(bindingID))
       {
          if (epMetaData.getOperations().size() != 1)
-            throw new IllegalStateException(BundleUtils.getMessage(bundle, "MULTIPLE_OPERATIONS_NOT_SUPPORTED"));
+            throw new IllegalStateException("Multiple operations not supported for HTTP binding");
 
          opMetaData = epMetaData.getOperations().get(0);
       }

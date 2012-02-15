@@ -99,7 +99,7 @@ public class OMFactoryJAXRPC implements ObjectModelFactory
       else if("property-value".equals(localName))
       {
          int lastEntry = commonConfig.getProperties().isEmpty() ? 0 : commonConfig.getProperties().size()-1;
-         EndpointProperty p = commonConfig.getAllProperties().get(lastEntry);
+         EndpointProperty p = commonConfig.getProperties().get(lastEntry);
          p.value = value;
       }
    }
@@ -113,13 +113,13 @@ public class OMFactoryJAXRPC implements ObjectModelFactory
 
       if ("pre-handler-chain".equals(localName))
       {
-         UnifiedHandlerChainMetaData preHandlerChain = new UnifiedHandlerChainMetaData();
+         UnifiedHandlerChainMetaData preHandlerChain = new UnifiedHandlerChainMetaData(null);
          commonConfig.setPreHandlerChain(preHandlerChain);
          return preHandlerChain;
       }
       if ("post-handler-chain".equals(localName))
       {
-         UnifiedHandlerChainMetaData postHandlerChain = new UnifiedHandlerChainMetaData();
+         UnifiedHandlerChainMetaData postHandlerChain = new UnifiedHandlerChainMetaData(null);
          commonConfig.setPostHandlerChain(postHandlerChain);
          return postHandlerChain;
       }

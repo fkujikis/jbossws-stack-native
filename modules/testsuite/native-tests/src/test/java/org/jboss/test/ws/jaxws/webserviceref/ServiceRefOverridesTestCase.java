@@ -43,7 +43,7 @@ public class ServiceRefOverridesTestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(ServiceRefOverridesTestCase.class, "jaxws-webserviceref.war, jaxws-override-webserviceref-client.jar");
+      return new JBossWSTestSetup(ServiceRefOverridesTestCase.class, "jaxws-webserviceref.war, jaxws-webserviceref-override-client.jar");
    }
 
    public void testService1() throws Throwable
@@ -99,7 +99,7 @@ public class ServiceRefOverridesTestCase extends JBossWSTest
          Method getMainClassMethod = ClientLauncher.class.getMethod("getTheMainClass", empty);
          //At least JBoss AS 5.0.0.CR2
          //Use reflection to prevent double loading of the client class
-         Class<?> clientClass = (Class<?>)getMainClassMethod.invoke(null, new Object[] {});
+         Class<?> clientClass = (Class<?>)getMainClassMethod.invoke(null, empty);
          Field field = clientClass.getField("testResult");
          return ((Map<String, String>)field.get(clientClass)).get(reqStr);
       }

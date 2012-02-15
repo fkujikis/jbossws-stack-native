@@ -24,7 +24,6 @@ package org.jboss.ws.extensions.security.jaxws;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -35,8 +34,6 @@ import javax.xml.ws.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.handler.GenericSOAPHandler;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.soap.SOAPMessageImpl;
 import org.jboss.ws.extensions.security.Constants;
@@ -45,6 +42,7 @@ import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.wsse.WSSecurityConfigFactory;
 import org.jboss.ws.metadata.wsse.WSSecurityConfiguration;
+import org.jboss.wsf.common.handler.GenericSOAPHandler;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 
 /**
@@ -55,7 +53,6 @@ import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
  */
 public abstract class WSSecurityHandler extends GenericSOAPHandler
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSSecurityHandler.class);
    // provide logging
    private static Logger log = Logger.getLogger(WSSecurityHandler.class);
    protected static String FAULT_THROWN = "org.jboss.ws.wsse.faultThrown";
@@ -105,7 +102,7 @@ public abstract class WSSecurityHandler extends GenericSOAPHandler
             throw (SOAPFaultException)exception;
 
          // Unexpected exception, log it
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_HANDLE_INBOUND_WSSE"),  exception);
+         log.error("Cannot handle inbound ws-security", exception);
          return false;
       }
       return true;
@@ -139,7 +136,7 @@ public abstract class WSSecurityHandler extends GenericSOAPHandler
             throw (SOAPFaultException) exception;
 
          // Unexpected exception, log it
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_HANDLE_OUTBOUND_WSSE"),  exception);
+         log.error("Cannot handle outbound ws-security", exception);
          return false;
       }
       return true;

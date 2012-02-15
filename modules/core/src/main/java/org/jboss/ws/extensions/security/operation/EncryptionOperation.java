@@ -27,7 +27,6 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -38,7 +37,6 @@ import org.apache.xml.security.encryption.EncryptedData;
 import org.apache.xml.security.encryption.XMLCipher;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.jboss.util.NotImplementedException;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.security.QNameTarget;
 import org.jboss.ws.extensions.security.SecurityStore;
 import org.jboss.ws.extensions.security.SignatureKeysAssociation;
@@ -55,7 +53,6 @@ import org.w3c.dom.Element;
 
 public class EncryptionOperation implements EncodingOperation
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(EncryptionOperation.class);
    private List<Target> targets;
    private String alias;
    private String algorithm;
@@ -110,7 +107,7 @@ public class EncryptionOperation implements EncodingOperation
 
       Element element = Util.findElement(message.getDocumentElement(), name);
       if (element == null)
-         throw new RuntimeException(BundleUtils.getMessage(bundle, "COULD_NOT_FIND_ELEMENT"));
+         throw new RuntimeException("Could not find element");
 
       // Ensure that the element has an id, so that encryption verification can be performed
       Util.assignWsuId(element);
@@ -126,7 +123,7 @@ public class EncryptionOperation implements EncodingOperation
       }
       catch (Exception e)
       {
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "ERROR_ENCRYPTING_TARGET",  name),  e);
+         throw new WSSecurityException("Error encrypting target: " + name, e);
       }
    }
 
@@ -160,7 +157,7 @@ public class EncryptionOperation implements EncodingOperation
       }
       catch (XMLSecurityException e)
       {
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "ERROR_INITIALIZING_XML_CIPHER",  e.getMessage()),  e);
+         throw new WSSecurityException("Error initializing xml cipher" + e.getMessage(), e);
       }
 
       ReferenceList list = new ReferenceList();
@@ -200,7 +197,7 @@ public class EncryptionOperation implements EncodingOperation
       {
          cert = store.getCertificate(alias, secDomainLabel);
          if (cert == null)
-            throw new WSSecurityException(BundleUtils.getMessage(bundle, "CANNOT_LOAD_CERTIFICATE_FROM_KEYSTORE",  alias));
+            throw new WSSecurityException("Cannot load certificate from keystore; alias = " + alias);
       }
       else
       {
@@ -241,7 +238,7 @@ public class EncryptionOperation implements EncodingOperation
       }
       catch (Exception e)
       {
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "ERROR_PROBING_CRYPTOGRAPHIC_PERMISSIONS"),  e);
+         throw new WSSecurityException("Error probing cryptographic permissions", e);
       }
    }
 }

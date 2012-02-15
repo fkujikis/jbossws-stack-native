@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,7 +23,6 @@ package org.jboss.ws.metadata.builder.jaxws;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ResourceBundle;
 
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding.ParameterStyle;
@@ -31,24 +30,23 @@ import javax.management.ObjectName;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.ws.Provider;
-import javax.xml.ws.Service.Mode;
 import javax.xml.ws.ServiceMode;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.WebServiceProvider;
+import javax.xml.ws.Service.Mode;
 
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.soap.SOAPContentElement;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.metadata.builder.MetaDataBuilder;
-import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
+import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
+import org.jboss.wsf.common.JavaUtils;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
@@ -57,29 +55,27 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  *
  * @author Thomas.Diesler@jboss.org
  * @author <a href="mailto:jason.greene@jboss.com">Jason T. Greene</a>
- * @author alessio.soldano@jboss.com
  * @since 23-Jul-2005
  */
 public class JAXWSProviderMetaDataBuilder extends JAXWSServerMetaDataBuilder
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JAXWSProviderMetaDataBuilder.class);
    public ServerEndpointMetaData buildProviderMetaData(ArchiveDeployment dep, UnifiedMetaData wsMetaData, Class<?> sepClass, String linkName) throws IOException
    {
       // 5.3 Conformance (Provider implementation): A Provider based service endpoint implementation MUST
       // implement a typed Provider interface.
       if (JavaUtils.isAssignableFrom(Provider.class, sepClass) == false)
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "NOT_IMPLEMENT_PROVIDER",  sepClass.getName()));
+         throw new WebServiceException("Endpoint implementation does not implement javax.xml.ws.Provider: " + sepClass.getName());
 
       // 5.4 Conformance (WebServiceProvider annotation): A Provider based service endpoint implementation
       // MUST carry a WebServiceProvider annotation
       WebServiceProvider anWebServiceProvider = (WebServiceProvider)sepClass.getAnnotation(WebServiceProvider.class);
       if (anWebServiceProvider == null)
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_PROVIDER",  sepClass.getName()));
+         throw new WebServiceException("Cannot obtain @WebServiceProvider annotation from: " + sepClass.getName());
 
       // 7.3 Conformance (WebServiceProvider and WebService): A class annotated with the WebServiceProvider
       // annotation MUST NOT carry a WebService annotation
       if (sepClass.isAnnotationPresent(WebService.class))
-         throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_CARRY_WEBSERVICE_ANNOTATION",  sepClass.getName()));
+         throw new WebServiceException("Provider cannot carry @WebService annotation: " + sepClass.getName());
 
       WSDLUtils wsdlUtils = WSDLUtils.getInstance();
 
@@ -126,7 +122,7 @@ public class JAXWSProviderMetaDataBuilder extends JAXWSServerMetaDataBuilder
       String wsdlLocation = anWebServiceProvider.wsdlLocation();
       if (wsdlLocation.length() > 0)
       {
-         URL wsdlURL = dep.getResourceResolver().resolve(wsdlLocation);
+         URL wsdlURL = dep.getMetaDataFileURL(wsdlLocation);
          serviceMetaData.setWsdlLocation(wsdlURL);
       }
 
@@ -135,9 +131,6 @@ public class JAXWSProviderMetaDataBuilder extends JAXWSServerMetaDataBuilder
 
       // process handler chain
       processHandlerChain(sepMetaData, sepClass);
-      
-      //process webservices.xml contributions
-      processWSDDContribution(dep, sepMetaData);
 
       // process config
       processEndpointConfig(dep, sepMetaData, sepClass, linkName);

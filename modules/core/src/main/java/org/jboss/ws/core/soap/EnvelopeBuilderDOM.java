@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.Name;
@@ -39,11 +38,10 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.dom.DOMSource;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMUtils;
 import org.jboss.ws.core.CommonSOAPFaultException;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -60,7 +58,6 @@ import org.xml.sax.InputSource;
  */
 public class EnvelopeBuilderDOM implements EnvelopeBuilder
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(EnvelopeBuilderDOM.class);
    // provide logging
    private static Logger log = Logger.getLogger(EnvelopeBuilderDOM.class);
 
@@ -93,7 +90,6 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          {
             return null;
          }
-         log.error(BundleUtils.getMessage(bundle, "EXCEPTION_WHILE_BUILDING_ENVELOPE"),  ex);
          QName faultCode = Constants.SOAP11_FAULT_CODE_CLIENT;
          throw new CommonSOAPFaultException(faultCode, ex.getMessage());
       }
@@ -151,7 +147,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
    {
       // Construct the envelope
       SOAPPartImpl soapPart = (SOAPPartImpl)soapMessage.getSOAPPart();
-      SOAPEnvelopeImpl soapEnv = new SOAPEnvelopeImpl(soapPart, (SOAPElementImpl)soapFactory.createElement(domEnv, false), false);
+      SOAPEnvelopeImpl soapEnv = new SOAPEnvelopeImpl(soapPart, soapFactory.createElement(domEnv, false), false);
 
       DOMUtils.copyAttributes(soapEnv, domEnv);
 
@@ -173,7 +169,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
             }
             else
             {
-               log.warn(BundleUtils.getMessage(bundle, "IGNORE_ENVELOPE_CHILD",  elName));
+               log.warn("Ignore envelope child: " + elName);
             }
          }
       }
@@ -189,7 +185,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
 
       DOMUtils.copyAttributes(soapHeader, domHeader);
       
-      if (!checkEquals(soapHeader.getPrefix(), domHeader.getPrefix()))
+      if (!soapHeader.getPrefix().equals(domHeader.getPrefix()))
       {
          soapHeader.setPrefix(domHeader.getPrefix());
       }
@@ -211,13 +207,9 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
             DOMUtils.copyAttributes(destElement, srcElement);
             destElement.setXMLFragment(xmlFragment);
          }
-         else if (childType == Node.TEXT_NODE) 
-         {
-            log.debug("Ignore child type: " + childType);
-         }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "IGNORE_CHILD_TYPE",  childType));
+            log.warn("Ignore child type: " + childType);
          }
       }
 
@@ -234,7 +226,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
 
       DOMUtils.copyAttributes(soapBody, domBody);
 
-      if (!checkEquals(soapBody.getPrefix(), domBody.getPrefix()))
+      if (!soapBody.getPrefix().equals(domBody.getPrefix()))
       {
          soapBody.setPrefix(domBody.getPrefix());
       }
@@ -270,7 +262,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "IGNORE_CHILD_TYPE",  childType));
+            log.warn("Ignore child type: " + childType);
          }
       }
 
@@ -325,7 +317,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "UNSUPPORTED_MESSAGE_STYLE",  style));
+            throw new WSException("Unsupported message style: " + style);
          }
       }
 
@@ -383,7 +375,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "IGNORE_CHILD_TYPE",  childType));
+            log.warn("Ignore child type: " + childType);
          }
       }
 
@@ -423,7 +415,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "IGNORE_CHILD_TYPE",  childType));
+            log.warn("Ignore child type: " + childType);
          }
       }
 
@@ -442,17 +434,5 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
    {
       String nodeValue = child.getNodeValue();
       soapElement.addTextNode(nodeValue);
-   }
-   
-   private boolean checkEquals(final String lhs, final String rhs)
-   {
-      if (lhs == null)
-      {
-         return (rhs == null);
-      }
-      else
-      {
-         return (lhs.equals(rhs));
-      }
    }
 }

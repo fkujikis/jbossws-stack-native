@@ -25,14 +25,14 @@ import java.io.File;
 import java.io.Writer;
 
 import org.jboss.test.ws.tools.WSToolsBase;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.tools.JavaToWSDL;
 import org.jboss.ws.tools.WSToolsConstants;
 import org.jboss.ws.tools.wsdl.WSDLWriter;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.IOUtils;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.IOUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -45,7 +45,7 @@ public class ToolsDocLitTestCase extends WSToolsBase
 {
    public void testTrivialCase() throws Exception
    {
-      Class<?> seiClass = TrivialService.class;
+      Class seiClass = TrivialService.class;
       String wsdlDir = createResourceFile("tools/").getAbsolutePath();
       String sname = "SampleService";
       String wsdlPath = wsdlDir+ "/" + sname + ".wsdl";
@@ -64,10 +64,10 @@ public class ToolsDocLitTestCase extends WSToolsBase
       String fixturefile = getResourceFile("tools/doc-lit/trivial/wsdl/SampleService.wsdl").getAbsolutePath();
       //Validate the generated WSDL
       File wsdlfix = new File(fixturefile);
-      Element exp = DOMUtils.parse(wsdlfix.toURI().toURL().openStream());
+      Element exp = DOMUtils.parse(wsdlfix.toURL().openStream());
       File wsdlFile = new File(wsdlPath);
       assertNotNull("Generated WSDL File exists?", wsdlFile);
-      Element was = DOMUtils.parse(wsdlFile.toURI().toURL().openStream());
+      Element was = DOMUtils.parse(wsdlFile.toURL().openStream());
       //assertEquals(exp, was);
       this.semanticallyValidateWSDL(fixturefile, wsdlFile.getPath());
    }

@@ -22,8 +22,6 @@
 package org.jboss.test.ws.jaxws.jbws2116;
 
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
@@ -54,16 +52,7 @@ public class CertAuthTestCase extends JBossWSTest
 
    public static Test suite() throws Exception
    {
-      JBossWSTestSetup testSetup;
-      testSetup = new JBossWSTestSetup(CertAuthTestCase.class, "jaxws-jbws2116.jar");
-      Map<String, String> authenticationOptions = new HashMap<String, String>();
-      authenticationOptions.put("rolesProperties",
-            getResourceFile("jaxws/jbws2116/META-INF/jbossws-roles.properties").getAbsolutePath());
-      authenticationOptions.put("KeyStoreURL", "jaxws/jbws2116/META-INF/keystore.jks");
-      authenticationOptions.put("KeyStorePass", "password");
-      authenticationOptions.put("unauthenticatedIdentity", "anonymous");
-      testSetup.addSecurityDomainRequirement("JBossWSCert", authenticationOptions);
-      return testSetup;
+      return new JBossWSTestSetup(CertAuthTestCase.class, "jaxws-jbws2116.sar jaxws-jbws2116.jar");
    }
    
    protected void setUp() throws Exception

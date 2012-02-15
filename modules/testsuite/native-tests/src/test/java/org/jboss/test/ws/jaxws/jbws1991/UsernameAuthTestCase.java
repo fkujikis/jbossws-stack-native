@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.jaxws.jbws1991;
 
+import java.io.File;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
@@ -45,7 +46,7 @@ public class UsernameAuthTestCase extends JBossWSTest
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(UsernameAuthTestCase.class, "jaxws-jbws1991.jar", true);
+      return new JBossWSTestSetup(UsernameAuthTestCase.class, "jaxws-jbws1991.jar");
    }
    
    public void testAuth() throws Exception

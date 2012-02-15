@@ -25,11 +25,9 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
-import java.util.ResourceBundle;
 
 import org.apache.xml.security.keys.KeyInfo;
 import org.jboss.util.NotImplementedException;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.security.element.BinarySecurityToken;
 import org.jboss.ws.extensions.security.element.DirectReference;
 import org.jboss.ws.extensions.security.element.KeyIdentifier;
@@ -49,7 +47,6 @@ import org.w3c.dom.Element;
  */
 public class KeyResolver
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(KeyResolver.class);
    private HashMap<String, BinarySecurityToken> tokenCache = new HashMap<String, BinarySecurityToken>();
 
    private SecurityStore store;
@@ -63,10 +60,10 @@ public class KeyResolver
    {
       Element child = Util.getFirstChildElement(info.getElement());
       if (child == null)
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "EMPTY_KEYINFO"));
+         throw new WSSecurityException("Empty KeyInfo");
 
       if (! child.getLocalName().equals("SecurityTokenReference"))
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "EXPECTED_SECURITYTOREF",  child.getLocalName()));
+         throw new WSSecurityException("KeyInfo did not contain expected SecurityTokenReference, instead got: " + child.getLocalName());
 
       return new SecurityTokenReference(child);
    }
@@ -95,7 +92,7 @@ public class KeyResolver
          return resolveX509IssuerSerial(issuerSerial);
       }
 
-      throw new NotImplementedException(BundleUtils.getMessage(bundle, "ONLY_DE_KI_X509_SUPPORTED"));
+      throw new NotImplementedException("Currently only DirectReference, KeyIdentifier and X509IssuerSerial are supported!");
    }
 
    private BinarySecurityToken resolveDirectReference(DirectReference direct) throws WSSecurityException
@@ -104,7 +101,7 @@ public class KeyResolver
 
       BinarySecurityToken token = tokenCache.get(id);
       if (token == null)
-         throw new SecurityTokenUnavailableException(BundleUtils.getMessage(bundle, "COULD_NOT_RESOLVE_TOKEN_ID",  id));
+         throw new SecurityTokenUnavailableException("Could not resolve token id: " + id);
 
       return token;
    }
@@ -114,7 +111,7 @@ public class KeyResolver
       // Support only SKI at the moment
       X509Certificate cert = store.getCertificateBySubjectKeyIdentifier(identifier.getIdentifier());
       if (cert == null)
-         throw new SecurityTokenUnavailableException(BundleUtils.getMessage(bundle, "CAN_NOT_LOCATE_BY_KI"));
+         throw new SecurityTokenUnavailableException("Could not locate certificate by key identifier");
       return new X509Token(cert, identifier.getDocument());
    }
 
@@ -122,7 +119,7 @@ public class KeyResolver
    {
       X509Certificate cert = store.getCertificateByIssuerSerial(issuerSerial.getIssuer(), issuerSerial.getSerial());
      if (cert == null)
-        throw new SecurityTokenUnavailableException(BundleUtils.getMessage(bundle, "CAN_NOT_LOCATE_BY_KI_BY_ISSUER_SN"));
+        throw new SecurityTokenUnavailableException("Could not locate certificate by issuer and serial number");
 
      return new X509Token(cert, issuerSerial.getDocument());
    }
@@ -132,7 +129,7 @@ public class KeyResolver
       BinarySecurityToken token = resolve(reference);
 
       if (! (token instanceof X509Token))
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "EXPECTED_X509TOKEN",  token.getClass().getName()));
+         throw new WSSecurityException("Expected X509Token, cache contained: " + token.getClass().getName());
 
       return ((X509Token)token).getCert();
    }

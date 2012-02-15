@@ -21,6 +21,8 @@
  */
 package org.jboss.test.ws.jaxrpc.xop;
 
+import java.io.File;
+
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSTypeDefinition;
@@ -43,7 +45,10 @@ public class XOPTypeDefTestCase extends JBossWSTest
    public void testCircularReferences() throws Exception
    {
       SchemaUtils utils = SchemaUtils.getInstance();
-      XSModel xsModel = utils.parseSchema(getResourceURL("jaxrpc/xop/circular.xsd"));
+      File f = getResourceFile("jaxrpc/xop/circular.xsd");
+      assertTrue("Unable to load schema file " + f.getAbsolutePath(), f.exists());
+
+      XSModel xsModel = utils.parseSchema(f.toURL());
       assertNotNull(xsModel);
       WSSchemaUtils wsUtil = WSSchemaUtils.getInstance(new NamespaceRegistry(), "http://complex.jsr181.jaxws.ws.test.jboss.org/jaws");
       JBossXSModel schemaModel = wsUtil.getJBossXSModel(xsModel);
@@ -65,7 +70,10 @@ public class XOPTypeDefTestCase extends JBossWSTest
    public void testXOPElementScan() throws Exception
    {
       SchemaUtils utils = SchemaUtils.getInstance();
-      XSModel xsModel = utils.parseSchema(getResourceURL("jaxrpc/xop/schema.xsd"));
+      File f = getResourceFile("jaxrpc/xop/schema.xsd");
+      assertTrue("Unable to load schema file " + f.getAbsolutePath(), f.exists());
+
+      XSModel xsModel = utils.parseSchema(f.toURL());
       assertNotNull(xsModel);
       WSSchemaUtils wsUtil = WSSchemaUtils.getInstance(new NamespaceRegistry(), "http://jboss.org/test/ws/xop/doclit");
       JBossXSModel schemaModel = wsUtil.getJBossXSModel(xsModel);
@@ -101,7 +109,10 @@ public class XOPTypeDefTestCase extends JBossWSTest
    {
 
       SchemaUtils utils = SchemaUtils.getInstance();
-      XSModel xsModel = utils.parseSchema(getResourceURL("jaxrpc/xop/schema.xsd"));
+      File f = getResourceFile("jaxrpc/xop/schema.xsd");
+      assertTrue("Unable to load schema file " + f.getAbsolutePath(), f.exists());
+
+      XSModel xsModel = utils.parseSchema(f.toURL());
       assertNotNull(xsModel);
       WSSchemaUtils wsUtil = WSSchemaUtils.getInstance(new NamespaceRegistry(), "http://jboss.org/test/ws/xop/doclit");
       JBossXSModel schemaModel = wsUtil.getJBossXSModel(xsModel);

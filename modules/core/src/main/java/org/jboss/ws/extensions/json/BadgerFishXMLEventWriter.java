@@ -22,7 +22,6 @@
 package org.jboss.ws.extensions.json;
 
 import java.util.Iterator;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
@@ -36,8 +35,6 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import org.jboss.ws.api.util.BundleUtils;
-
 /**
  * An BadgerFishXMLEventWriter that delegates to an XMLStreamWriter. 
  *
@@ -46,7 +43,6 @@ import org.jboss.ws.api.util.BundleUtils;
  */
 public class BadgerFishXMLEventWriter implements XMLEventWriter
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(BadgerFishXMLEventWriter.class);
    private XMLStreamWriter streamWriter;
 
    public BadgerFishXMLEventWriter(XMLStreamWriter streamWriter)
@@ -111,7 +107,7 @@ public class BadgerFishXMLEventWriter implements XMLEventWriter
       }
       else
       {
-         throw new XMLStreamException(BundleUtils.getMessage(bundle, "UNSUPPORTED_EVENT_TYPE",  event));
+         throw new XMLStreamException("Unsupported event type: " + event);
       }
    }
 

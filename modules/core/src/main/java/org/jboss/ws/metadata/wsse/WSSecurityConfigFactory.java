@@ -24,11 +24,9 @@ package org.jboss.ws.metadata.wsse;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ResourceBundle;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 
 /**
@@ -39,7 +37,6 @@ import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
  */
 public class WSSecurityConfigFactory
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSSecurityConfigFactory.class);
    // provide logging
    final Logger log = Logger.getLogger(WSSecurityConfigFactory.class);
 
@@ -69,8 +66,7 @@ public class WSSecurityConfigFactory
       WSSecurityConfiguration config = null;
       if (configLocation != null)
       {
-         if (log.isDebugEnabled())
-            log.debug("createConfiguration from: " + configLocation);
+         log.debug("createConfiguration from: " + configLocation);
          config = WSSecurityOMFactory.newInstance().parse(configLocation);
          
          initKeystorePath(vfsRoot, config);
@@ -78,8 +74,7 @@ public class WSSecurityConfigFactory
 		else
 		{
 			// an exception might be better here...
-		   if (log.isTraceEnabled())
-		      log.trace("Unable to load ws-security config ("+resourceName+"). Security processing will be disabled");
+			log.trace("Unable to load ws-security config ("+resourceName+"). Security processing will be disabled");
 		}		
 
 		return config;
@@ -92,8 +87,7 @@ public class WSSecurityConfigFactory
       if (config.getKeyStoreFile() != null)
       {
          keystoreLocation = getResource(vfsRoot, config.getKeyStoreFile(), true);
-         if (log.isDebugEnabled())
-            log.debug("Add keystore: " + keystoreLocation);
+         log.debug("Add keystore: " + keystoreLocation);
          config.setKeyStoreURL(keystoreLocation);
       }
 
@@ -101,8 +95,7 @@ public class WSSecurityConfigFactory
       if (config.getTrustStoreFile() != null)
       {
          truststoreLocation = getResource(vfsRoot, config.getTrustStoreFile(), true);
-         if (log.isDebugEnabled())
-            log.debug("Add truststore: " + truststoreLocation);
+         log.debug("Add truststore: " + truststoreLocation);
          config.setTrustStoreURL(truststoreLocation);
       }
    }
@@ -118,7 +111,7 @@ public class WSSecurityConfigFactory
       catch (IOException ex)
       {
          if (failOnNotFound)
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_FIND_REQUIRED_SECURITY_RESOURCE",  resource));
+            throw new WSException("Cannot find required security resource: " + resource);
       }
       return resourceURL;
    }

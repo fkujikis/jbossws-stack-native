@@ -23,12 +23,10 @@ package org.jboss.ws.core.jaxws.handler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
-import javax.xml.ws.ProtocolException;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.handler.Handler;
 import javax.xml.ws.handler.LogicalHandler;
@@ -37,12 +35,11 @@ import javax.xml.ws.handler.MessageContext.Scope;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.DOMWriter;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.jaxws.SOAPFaultHelperJAXWS;
 import org.jboss.ws.core.soap.SOAPEnvelopeImpl;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
+import org.jboss.wsf.common.DOMWriter;
 
 /**
  * Executes a list of JAXWS handlers.
@@ -52,7 +49,6 @@ import org.jboss.ws.metadata.umdm.EndpointMetaData;
  */
 public class HandlerChainExecutor
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(HandlerChainExecutor.class);
    private static Logger log = Logger.getLogger(HandlerChainExecutor.class);
 
    // The endpoint meta data
@@ -87,8 +83,7 @@ public class HandlerChainExecutor
             sortedChain.add(handler);
       }
 
-      if (log.isDebugEnabled())
-         log.debug("Create a handler executor: " + sortedChain);
+      log.debug("Create a handler executor: " + sortedChain);
       for (Handler handler : sortedChain)
       {
          handlers.add(handler);
@@ -121,15 +116,13 @@ public class HandlerChainExecutor
    {
       isOutbound = (Boolean)msgContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
       if (isOutbound == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_FIND_PROPERTY",  MessageContext.MESSAGE_OUTBOUND_PROPERTY));
+         throw new IllegalStateException("Cannot find property: " + MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
       boolean doNext = true;
 
       if (handlers.size() > 0)
       {
-         boolean debugEnabled = log.isDebugEnabled();
-         if (debugEnabled)
-            log.debug("Enter: handle" + (isOutbound ? "Out" : "In ") + "BoundMessage");
+         log.debug("Enter: handle" + (isOutbound ? "Out" : "In ") + "BoundMessage");
 
          int index = getFirstHandler();
          Handler currHandler = null;
@@ -158,24 +151,9 @@ public class HandlerChainExecutor
                   index = getNextIndex(index);
             }
          }
-         catch (ProtocolException pe)
-         {
-            // JAX-WS 2.2 specification
-            // 9.3.2.1 handleMessage chapter
-            // Throw ProtocolException or a subclass paragraph
-            doNext = false;
-            processHandlerFailure(pe);
-         }
          catch (RuntimeException ex)
          {
-            // JAX-WS 2.2 specification
-            // 9.3.2.1 handleMessage chapter
-            // Throw any other runtime exception paragraph
             doNext = false;
-            if (serverSide && !isOutbound)
-            {
-               index = index -1;
-            }
             processHandlerFailure(ex);
          }
          finally
@@ -183,9 +161,8 @@ public class HandlerChainExecutor
             // we start at this index in the response chain
             if (doNext == false)
                falseIndex = index;
-            
-            if (debugEnabled)
-               log.debug("Exit: handle" + (isOutbound ? "Out" : "In ") + "BoundMessage with status: " + doNext);
+
+            log.debug("Exit: handle" + (isOutbound ? "Out" : "In ") + "BoundMessage with status: " + doNext);
          }
       }
 
@@ -196,15 +173,13 @@ public class HandlerChainExecutor
    {
       isOutbound = (Boolean)msgContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
       if (isOutbound == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_FIND_PROPERTY",  MessageContext.MESSAGE_OUTBOUND_PROPERTY));
+         throw new IllegalStateException("Cannot find property: " + MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
       boolean doNext = true;
 
       if (handlers.size() > 0)
       {
-         boolean debugEnabled = log.isDebugEnabled();
-         if (debugEnabled)
-            log.debug("Enter: handle" + (isOutbound ? "Out" : "In ") + "BoundFault");
+         log.debug("Enter: handle" + (isOutbound ? "Out" : "In ") + "BoundFault");
 
          if (msgContext instanceof SOAPMessageContext)
          {
@@ -222,7 +197,7 @@ public class HandlerChainExecutor
             }
             catch (SOAPException se)
             {
-               throw new WebServiceException(BundleUtils.getMessage(bundle, "CANNOT_CONVERT_EXCEPTION_TO_FAULT_MESSAGE"),  ex);
+               throw new WebServiceException("Cannot convert exception to fault message", ex);
             }
          }
 
@@ -260,8 +235,7 @@ public class HandlerChainExecutor
          }
          finally
          {
-            if (debugEnabled)
-               log.debug("Exit: handle" + (isOutbound ? "Out" : "In ") + "BoundFault with status: " + doNext);
+            log.debug("Exit: handle" + (isOutbound ? "Out" : "In ") + "BoundFault with status: " + doNext);
          }
       }
 
@@ -296,7 +270,7 @@ public class HandlerChainExecutor
    // MUST throw a WebServiceException whose cause is set to the exception that was thrown during handler processing.
    private void processHandlerFailure(RuntimeException ex)
    {
-      log.error(BundleUtils.getMessage(bundle, "EXCEPTION_DURING_HANDLER_PROCESSING"),  ex);
+      log.error("Exception during handler processing", ex);
       
       // If this call is server side then the conformance requirement specific to
       // clients can be avoided.
@@ -326,12 +300,14 @@ public class HandlerChainExecutor
 
       try
       {
+         context.put(MessageContextJAXWS.ALLOW_EXPAND_TO_DOM, Boolean.TRUE);
          context.setCurrentScope(Scope.HANDLER);
          return currHandler.handleMessage(msgContext);
       }
       finally
       {
          context.setCurrentScope(Scope.APPLICATION);
+         context.remove(MessageContextJAXWS.ALLOW_EXPAND_TO_DOM);
       }
    }
 
@@ -349,12 +325,14 @@ public class HandlerChainExecutor
 
       try
       {
+         context.put(MessageContextJAXWS.ALLOW_EXPAND_TO_DOM, Boolean.TRUE);
          context.setCurrentScope(Scope.HANDLER);
          return currHandler.handleFault(msgContext);
       }
       finally
       {
          context.setCurrentScope(Scope.APPLICATION);
+         context.remove(MessageContextJAXWS.ALLOW_EXPAND_TO_DOM);
       }
    }
 
@@ -380,7 +358,7 @@ public class HandlerChainExecutor
       }
       catch (SOAPException e)
       {
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_GET_SOAPENVELOPE"),  e);
+         log.error("Cannot get SOAPEnvelope", e);
          return null;
       }
    }

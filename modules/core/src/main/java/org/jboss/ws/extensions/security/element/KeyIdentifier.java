@@ -22,12 +22,10 @@
 package org.jboss.ws.extensions.security.element;
 
 import java.security.cert.X509Certificate;
-import java.util.ResourceBundle;
 
 import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.apache.xml.security.utils.Base64;
 import org.apache.xml.security.utils.XMLUtils;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.extensions.security.Constants;
 import org.jboss.ws.extensions.security.exception.WSSecurityException;
 import org.w3c.dom.Document;
@@ -47,7 +45,6 @@ import org.w3c.dom.Element;
  */
 public class KeyIdentifier extends Reference
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(KeyIdentifier.class);
    public static final String SKI_TYPE = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509SubjectKeyIdentifier";
 
    private Document doc;
@@ -67,14 +64,14 @@ public class KeyIdentifier extends Reference
       this.doc = element.getOwnerDocument();
 
       if (! "KeyIdentifier".equals(element.getLocalName()))
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "INVALID_LOCAL_NAME_ON_A_KEYIDENTIFIER"));
+         throw new WSSecurityException("Invalid message, invalid local name on a KeyIdentifier");
 
       String valueType = element.getAttribute("ValueType");
       if (valueType == null || valueType.length() == 0)
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "KEYIDENTIFIER_ELEMENT_IS_MISSING_AN_VALUETYPE"));
+         throw new WSSecurityException("Inavliad message, KeyIdentifier element is missing an ValueType");
 
       if (! SKI_TYPE.equals(valueType))
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "ONLY_SUBJECTKEYIDENTIFIERS_SUPPORTED",  valueType));
+         throw new WSSecurityException("Currently only SubjectKeyIdentifiers are supported, was passed: " + valueType);
 
       // Lets be soft on encoding type since other clients don't properly use it
       this.value = XMLUtils.getFullTextChildrenFromElement(element);
@@ -83,7 +80,7 @@ public class KeyIdentifier extends Reference
    public void referenceToken(BinarySecurityToken token) throws WSSecurityException
    {
       if (! (token instanceof X509Token))
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "KEYIDENTIFIER_TRIED_TO_REFERENCE"));
+         throw new WSSecurityException("KeyIdentifier tried to reference something besides an X509 token");
 
       X509Token x509 = (X509Token) token;
       X509Certificate cert = x509.getCert();
@@ -91,7 +88,7 @@ public class KeyIdentifier extends Reference
       // Maybee we should make one ourselves if it isn't there?
       byte[] encoded = cert.getExtensionValue("2.5.29.14");
       if (encoded == null)
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "NOT_CONTAIN_A_SUBJECT_KEY_IDENTIFIER"));
+         throw new WSSecurityException("Certificate did not contain a subject key identifier!");
 
       // We need to skip 4 bytes [(OCTET STRING) (LENGTH)[(OCTET STRING) (LENGTH) (Actual data)]]
       int trunc = encoded.length - 4;
@@ -129,7 +126,7 @@ public class KeyIdentifier extends Reference
       }
       catch (Base64DecodingException e)
       {
-         throw new WSSecurityException(BundleUtils.getMessage(bundle, "ERROR_DECODING_KEY_IDENTIFIER"),  e);
+         throw new WSSecurityException("Error decoding key identifier", e);
       }
    }
 
