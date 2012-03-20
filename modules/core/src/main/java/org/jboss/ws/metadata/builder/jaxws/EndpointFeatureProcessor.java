@@ -21,7 +21,9 @@
  */
 package org.jboss.ws.metadata.builder.jaxws;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -36,9 +38,16 @@ import javax.xml.ws.soap.SOAPBinding;
 import javax.xml.ws.spi.WebServiceFeatureAnnotation;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.WSException;
+import org.jboss.ws.annotation.FastInfoset;
+import org.jboss.ws.annotation.JsonEncoding;
+import org.jboss.ws.annotation.SchemaValidation;
 import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.common.DOMWriter;
 import org.jboss.ws.extensions.addressing.jaxws.WSAddressingServerHandler;
+import org.jboss.ws.feature.FastInfosetFeature;
+import org.jboss.ws.feature.JsonEncodingFeature;
+import org.jboss.ws.feature.SchemaValidationFeature;
 import org.jboss.ws.metadata.umdm.HandlerMetaDataJAXWS;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
@@ -48,8 +57,10 @@ import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
 import org.jboss.ws.metadata.wsdl.WSDLExtensibilityElement;
 import org.jboss.ws.metadata.wsdl.WSDLService;
+import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+import org.xml.sax.ErrorHandler;
 
 /**
  * Process EndpointFeature annotations
@@ -79,6 +90,22 @@ public class EndpointFeatureProcessor
             {
                MTOM anFeature = sepClass.getAnnotation(MTOM.class);
                MTOMFeature feature = new MTOMFeature(anFeature.enabled(), anFeature.threshold());
+               sepMetaData.addFeature(feature);
+            }
+            else if (an.annotationType() == SchemaValidation.class)
+            {
+               processSchemaValidation(dep, sepMetaData, sepClass);
+            }
+            else if (an.annotationType() == FastInfoset.class)
+            {
+               FastInfoset anFeature = sepClass.getAnnotation(FastInfoset.class);
+               FastInfosetFeature feature = new FastInfosetFeature(anFeature.enabled());
+               sepMetaData.addFeature(feature);
+            }
+            else if (an.annotationType() == JsonEncoding.class)
+            {
+               JsonEncoding anFeature = sepClass.getAnnotation(JsonEncoding.class);
+               JsonEncodingFeature feature = new JsonEncodingFeature(anFeature.enabled());
                sepMetaData.addFeature(feature);
             }
             else if (an.annotationType() == RespectBinding.class)
@@ -184,4 +211,42 @@ public class EndpointFeatureProcessor
       }
    }
 
+   private void processSchemaValidation(Deployment dep, ServerEndpointMetaData sepMetaData, Class<?> sepClass)
+   {
+      SchemaValidation anFeature = sepClass.getAnnotation(SchemaValidation.class);
+      SchemaValidationFeature feature = new SchemaValidationFeature(anFeature.enabled());
+
+      String xsdLoc = anFeature.schemaLocation();
+      if (xsdLoc.length() > 0)
+      {
+         if (dep instanceof ArchiveDeployment)
+         {
+            try
+            {
+               URL xsdURL = ((ArchiveDeployment)dep).getResourceResolver().resolve(xsdLoc);
+               xsdLoc = xsdURL.toExternalForm();
+            }
+            catch (IOException ex)
+            {
+               throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_LOAD_SCHEMA",  xsdLoc),  ex);
+            }
+         }
+         feature.setSchemaLocation(xsdLoc);
+      }
+
+      Class handlerClass = anFeature.errorHandler();
+      if (handlerClass != null)
+      {
+         try
+         {
+            ErrorHandler errorHandler = (ErrorHandler)handlerClass.newInstance();
+            feature.setErrorHandler(errorHandler);
+         }
+         catch (Exception ex)
+         {
+            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_INSTANCIATE_ERROR_HANDLER",  handlerClass),  ex);
+         }
+      }
+      sepMetaData.addFeature(feature);
+   }
 }

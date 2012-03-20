@@ -48,6 +48,7 @@ import org.jboss.ws.common.IOUtils;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.soap.attachment.MimeConstants;
 import org.jboss.ws.core.soap.attachment.MultipartRelatedDecoder;
+import org.jboss.ws.feature.FastInfosetFeature;
 import org.jboss.ws.metadata.umdm.FeatureSet;
 
 /**
@@ -264,6 +265,13 @@ public class MessageFactoryImpl extends MessageFactory
                soapMessage.setXOPMessage(true);
             }
          }
+         else if (isFastInfosetContent(contentType))
+         {
+            if (!features.isFeatureEnabled(FastInfosetFeature.class))
+            {
+               throw new SOAPException(BundleUtils.getMessage(bundle, "FASTINFOSET_SUPPORT_IS_NOT_ENABLED"));
+            }
+         }
          else if (isSoapContent(contentType) == false)
          {
             throw new SOAPException(BundleUtils.getMessage(bundle, "UNSUPPORTED_CONTENT_TYPE",  contentType));
@@ -276,7 +284,16 @@ public class MessageFactoryImpl extends MessageFactory
             soapMessage.setAttachments(attachments);
 
          // Get the SOAPEnvelope builder
-         final EnvelopeBuilder envBuilder = (EnvelopeBuilder)ServiceLoader.loadService(EnvelopeBuilder.class.getName(), null, this.getClass().getClassLoader());
+         EnvelopeBuilder envBuilder;
+         if (features.isFeatureEnabled(FastInfosetFeature.class))
+         {
+            envBuilder = new FastInfosetEnvelopeBuilder();
+         }
+         else
+         {
+            //the classloader for jbossws-native-core has enough visibility to get the proper envelope builder
+            envBuilder = (EnvelopeBuilder)ServiceLoader.loadService(EnvelopeBuilder.class.getName(), null, this.getClass().getClassLoader());
+         }
          //if inputstream is empty, no need to build
          if (inputStream.markSupported()) {
         	 inputStream.mark(1);
@@ -323,6 +340,12 @@ public class MessageFactoryImpl extends MessageFactory
       return MimeConstants.TYPE_SOAP11.equalsIgnoreCase(baseType) || MimeConstants.TYPE_SOAP12.equalsIgnoreCase(baseType);
    }
    
+   private boolean isFastInfosetContent(ContentType type)
+   {
+      String baseType = type.getBaseType();
+      return MimeConstants.TYPE_FASTINFOSET.equalsIgnoreCase(baseType);
+   }
+
    private boolean isMultipartRelatedContent(ContentType type)
    {
       String baseType = type.getBaseType();

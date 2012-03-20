@@ -31,11 +31,20 @@ import javax.xml.soap.SOAPConnection;
 import javax.xml.soap.SOAPConnectionFactory;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
+import javax.xml.ws.handler.MessageContext;
+import javax.xml.ws.addressing.JAXWSAConstants;
 
 import junit.framework.Test;
 
+import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
+import org.jboss.ws.core.jaxws.spi.EndpointImpl;
 import org.jboss.ws.core.soap.NodeImpl;
+import org.jboss.ws.extensions.addressing.jaxws.WSAddressingClientHandler;
+import org.jboss.ws.extensions.addressing.soap.SOAPAddressingPropertiesImpl;
+import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
+
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 import org.w3c.dom.Node;
@@ -51,19 +60,25 @@ public class JBWS2927TestCase extends JBossWSTest
    
    public final String TARGET_ENDPOINT_ADDRESS = "http://" + getServerHost() + ":8080/jaxws-jbws2927";
 
+   private static WSAEndpoint port;
+
    public static Test suite() throws Exception
    {
       return new JBossWSTestSetup(JBWS2927TestCase.class, "jaxws-jbws2927.war");
    }
 
-   public void testCall() throws Exception
-   {     
+   public void setUp() throws Exception
+   {
+      super.setUp();
       URL wsdlURL = new URL(TARGET_ENDPOINT_ADDRESS + "?wsdl");
       QName serviceName = new QName("http://ws.jboss.org/jbws2927", "WSAEndpointService");
 
       Service service = Service.create(wsdlURL, serviceName);
-      WSAEndpoint port = service.getPort(WSAEndpoint.class);
-      
+      port = service.getPort(WSAEndpoint.class);
+   }
+
+   public void testCall() throws Exception
+   {     
       String response = port.echo("testJBWS2927");
       assertEquals("testJBWS2927", response);
    }

@@ -30,7 +30,6 @@ import javax.xml.rpc.Stub;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -51,12 +50,7 @@ public class UsernameTestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(UsernameTestCase.class, "jaxrpc-wsse-username.jar, jaxrpc-wsse-username-appclient.ear#jaxrpc-wsse-username-appclient.jar", true, new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(UsernameTestCase.class, "jaxrpc-wsse-username.jar, jaxrpc-wsse-username-appclient.ear#jaxrpc-wsse-username-appclient.jar", true);
    }
 
    protected void setUp() throws Exception

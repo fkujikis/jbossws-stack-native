@@ -32,7 +32,6 @@ import javax.xml.rpc.holders.ShortHolder;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -51,12 +50,7 @@ public class JBWS163TestCase extends JBossWSTest
    /** Deploy the test */
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS163TestCase.class, "jaxrpc-jbws163.war, jaxrpc-jbws163-appclient.ear#jaxrpc-jbws163-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            hello = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS163TestCase.class, "jaxrpc-jbws163.war, jaxrpc-jbws163-appclient.ear#jaxrpc-jbws163-appclient.jar");
    }
 
    protected void setUp() throws Exception

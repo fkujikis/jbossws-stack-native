@@ -23,7 +23,6 @@ package org.jboss.test.ws.jaxws.wsaddressing.action;
 
 import junit.framework.Test;
 import org.jboss.ws.extensions.addressing.jaxws.WSAddressingClientHandler;
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -49,12 +48,7 @@ public class AddressingActionTestCase extends JBossWSTest
 
 	public static Test suite()
 	{
-		return new JBossWSTestSetup(AddressingActionTestCase.class, "jaxws-wsaddressing-action-rpc.war", new CleanupOperation() {
-	         @Override
-	         public void cleanUp() {
-	            endpoint = null;
-	         }
-	      });
+		return new JBossWSTestSetup(AddressingActionTestCase.class, "jaxws-wsaddressing-action-rpc.war");
 	}
 
 	protected void setUp() throws Exception

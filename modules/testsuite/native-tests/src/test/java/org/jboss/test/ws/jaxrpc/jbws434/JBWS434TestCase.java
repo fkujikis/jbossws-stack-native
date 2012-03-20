@@ -30,7 +30,6 @@ import javax.xml.soap.SOAPFactory;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 import org.jboss.ws.common.DOMUtils;
@@ -50,12 +49,7 @@ public class JBWS434TestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(JBWS434TestCase.class, "jaxrpc-jbws434.war, jaxrpc-jbws434-appclient.ear#jaxrpc-jbws434-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS434TestCase.class, "jaxrpc-jbws434.war, jaxrpc-jbws434-appclient.ear#jaxrpc-jbws434-appclient.jar");
    }
 
    protected void setUp() throws Exception

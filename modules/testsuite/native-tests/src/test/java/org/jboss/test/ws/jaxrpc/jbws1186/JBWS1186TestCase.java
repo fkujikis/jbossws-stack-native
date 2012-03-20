@@ -35,7 +35,6 @@ import javax.xml.soap.SOAPMessage;
 import junit.framework.Test;
 
 import org.jboss.ws.core.jaxrpc.client.ServiceFactoryImpl;
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -54,12 +53,7 @@ public class JBWS1186TestCase extends JBossWSTest
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS1186TestCase.class, "jaxrpc-jbws1186.war", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS1186TestCase.class, "jaxrpc-jbws1186.war");
    }
 
    public void setUp() throws Exception

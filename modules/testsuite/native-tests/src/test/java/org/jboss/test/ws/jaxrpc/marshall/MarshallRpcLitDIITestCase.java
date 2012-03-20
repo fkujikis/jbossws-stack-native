@@ -62,11 +62,6 @@ public class MarshallRpcLitDIITestCase extends MarshallTest
             ServiceFactoryImpl factory = new ServiceFactoryImpl();
             service = factory.createService(new QName(TARGET_NAMESPACE, SERVICE_NAME));
          }
-         protected void tearDown() throws Exception
-         {
-            service = null;
-            super.tearDown();
-         }
       };
    }
 

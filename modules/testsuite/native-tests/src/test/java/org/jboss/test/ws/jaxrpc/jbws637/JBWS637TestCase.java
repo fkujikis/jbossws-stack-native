@@ -25,7 +25,6 @@ import javax.naming.InitialContext;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -47,12 +46,7 @@ public class JBWS637TestCase extends JBossWSTest
    /** Deploy the test */
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS637TestCase.class, "jaxrpc-jbws637-appclient.ear#jaxrpc-jbws637-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS637TestCase.class, "jaxrpc-jbws637-appclient.ear#jaxrpc-jbws637-appclient.jar");
    }
 
    protected void setUp() throws Exception

@@ -9,7 +9,7 @@
   <parent>
     <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native</artifactId>
-    <version>4.1.0-SNAPSHOT</version>
+    <version>4.0.2.GA</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -118,12 +118,20 @@
       <artifactId>jaxb-xjc</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.sun.xml.fastinfoset</groupId>
+      <artifactId>FastInfoset</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.sun.xml.ws</groupId>
       <artifactId>jaxws-rt</artifactId>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.ws</groupId>
       <artifactId>jaxws-tools</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
     </dependency>
     <dependency>
       <groupId>javax.xml.stream</groupId>
@@ -140,6 +148,10 @@
     <dependency>
       <groupId>org.jboss.netty</groupId>
       <artifactId>netty</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ws-commons</groupId>
+      <artifactId>policy</artifactId>
     </dependency>
     <dependency>
       <groupId>org.codehaus.woodstox</groupId>

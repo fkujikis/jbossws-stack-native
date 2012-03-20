@@ -82,6 +82,7 @@ public class JBWS723TestCase extends JBossWSTest
 
    public void testRoleSecuredServiceAccess() throws Exception
    {
+      iniCtx = getAppclientInitialContext();
       Service service = (Service)iniCtx.lookup("java:service/RoleSecured");
       QName portName = new QName("http://org.jboss.ws/jbws723", "RoleSecuredPort");
       OrganizationService port = (OrganizationService)service.getPort(portName, OrganizationService.class);
@@ -122,6 +123,7 @@ public class JBWS723TestCase extends JBossWSTest
 
    public void testBasicSecuredServiceAccess() throws Exception
    {
+      iniCtx = getAppclientInitialContext();
       Service service = (Service)iniCtx.lookup("java:service/BasicSecured");
       QName portName = new QName("http://org.jboss.ws/jbws723", "BasicSecuredPort");
       OrganizationService port = (OrganizationService)service.getPort(portName, OrganizationService.class);
@@ -154,6 +156,7 @@ public class JBWS723TestCase extends JBossWSTest
 
    public void testConfidentialServiceAccess() throws Exception
    {
+      iniCtx = getAppclientInitialContext();
       Service service = (Service)iniCtx.lookup("java:service/ConfidentialSecured");
       QName portName = new QName("http://org.jboss.ws/jbws723", "ConfidentialPort");
       OrganizationService port = (OrganizationService)service.getPort(portName, OrganizationService.class);

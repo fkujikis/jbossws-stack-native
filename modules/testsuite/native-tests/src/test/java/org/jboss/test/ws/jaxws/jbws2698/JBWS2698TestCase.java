@@ -47,24 +47,30 @@ public class JBWS2698TestCase extends JBossWSTest
 
    public final String TARGET_ENDPOINT_ADDRESS = "http://" + getServerHost() + ":8080/jaxws-jbws2698/";
 
+   private static Endpoint port;
+
    public static Test suite() throws Exception
    {
       return new JBossWSTestSetup(JBWS2698TestCase.class, "jaxws-jbws2698.war");
    }
 
-   public void testCall() throws Exception
+   public void setUp() throws Exception
    {
+      super.setUp();
       URL wsdlURL = new URL(TARGET_ENDPOINT_ADDRESS + "?wsdl");
       QName serviceName = new QName("http://ws.jboss.org/jbws2698", "EndpointImplService");
 
       Service service = Service.create(wsdlURL, serviceName);
-      Endpoint port = service.getPort(Endpoint.class);
+      port = service.getPort(Endpoint.class);
 
       BindingProvider bindingProvider = (BindingProvider)port;
       List<Handler> handlerChain = new ArrayList<Handler>();
       handlerChain.add(new SOAPHandler());
       bindingProvider.getBinding().setHandlerChain(handlerChain);
-      
+   }
+
+   public void testCall() throws Exception
+   {
       String message = "Howdy";
 
       String response = port.echo(message);

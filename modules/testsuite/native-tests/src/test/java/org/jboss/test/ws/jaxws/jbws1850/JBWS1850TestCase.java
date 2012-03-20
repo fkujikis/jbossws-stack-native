@@ -49,9 +49,21 @@ public class JBWS1850TestCase extends JBossWSTest
 {
    public final String TARGET_ENDPOINT_ADDRESS = "http://" + getServerHost() + ":8080/jaxws-jbws1850";
 
+   private static TestService port;
+
    public static Test suite()
    {
       return new JBossWSTestSetup(JBWS1850TestCase.class, "jaxws-jbws1850.jar");
+   }
+
+   protected void setUp() throws Exception
+   {
+      if (port == null)
+      {
+         URL wsdlURL = new URL(TARGET_ENDPOINT_ADDRESS + "?wsdl");
+         QName serviceName = new QName("http://org.jboss.ws/jbws1850", "TestEndpointService");
+         port = Service.create(wsdlURL, serviceName).getPort(TestService.class);
+      }
    }
 
    public void testWsdl() throws Exception
@@ -69,12 +81,8 @@ public class JBWS1850TestCase extends JBossWSTest
       assertEquals("This is the useless test operation of the test service", wsdlOperation.getDocumentationElement().getContent());
    }
    
-   public void testInvocation() throws Exception
+   public void testInvocation()
    {
-      URL wsdlURL = new URL(TARGET_ENDPOINT_ADDRESS + "?wsdl");
-      QName serviceName = new QName("http://org.jboss.ws/jbws1850", "TestEndpointService");
-      TestService port = Service.create(wsdlURL, serviceName).getPort(TestService.class);
-      
       String retObj = port.test("Hello", "World");
       assertEquals("World", retObj);
 

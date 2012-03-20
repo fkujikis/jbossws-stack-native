@@ -26,7 +26,6 @@ import javax.xml.rpc.Service;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -45,12 +44,7 @@ public class StaticHandlerTestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(StaticHandlerTestCase.class, "jaxrpc-samples-dynamichandler.war, jaxrpc-samples-dynamichandler-appclient.ear#jaxrpc-samples-dynamichandler-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            endpoint = null;
-         }
-      });
+      return new JBossWSTestSetup(StaticHandlerTestCase.class, "jaxrpc-samples-dynamichandler.war, jaxrpc-samples-dynamichandler-appclient.ear#jaxrpc-samples-dynamichandler-appclient.jar");
    }
 
    protected void setUp() throws Exception

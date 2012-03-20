@@ -26,7 +26,6 @@ import javax.xml.rpc.Service;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -50,12 +49,7 @@ public class JBWS1121TestCase extends JBossWSTest
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS1121TestCase.class, "jaxrpc-jbws1121.ear, jaxrpc-jbws1121-appclient.ear#jaxrpc-jbws1121-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS1121TestCase.class, "jaxrpc-jbws1121.ear, jaxrpc-jbws1121-appclient.ear#jaxrpc-jbws1121-appclient.jar");
    }
 
    public void setUp() throws Exception

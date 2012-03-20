@@ -38,10 +38,6 @@ public abstract class AddressingHandler extends GenericHandler
    public String getServerHost()
    {
       String hostName = System.getProperty("jboss.bind.address", "localhost");
-      if (hostName.startsWith(":"))
-      {
-         hostName = "[" + hostName + "]";
-      }
       return hostName;
    }
 }

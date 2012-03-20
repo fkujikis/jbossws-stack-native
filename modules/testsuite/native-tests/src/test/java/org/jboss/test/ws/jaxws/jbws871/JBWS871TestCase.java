@@ -22,6 +22,7 @@
 package org.jboss.test.ws.jaxws.jbws871;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.StringWriter;
 import java.net.URL;
 
@@ -36,10 +37,9 @@ import javax.xml.ws.Service;
 
 import junit.framework.Test;
 
-import org.jboss.ws.core.jaxws.JAXBContextFactory;
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
+import org.jboss.ws.core.jaxws.JAXBContextFactory;
 
 /**
  * Arrays with JSR181 endpoints
@@ -55,12 +55,7 @@ public class JBWS871TestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(JBWS871TestCase.class, "jaxws-jbws871-rpc.war", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            endpoint = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS871TestCase.class, "jaxws-jbws871-rpc.war");
    }
 
    protected void setUp() throws Exception

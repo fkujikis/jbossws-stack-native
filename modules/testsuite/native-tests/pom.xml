@@ -9,7 +9,7 @@
   <parent>
     <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native-testsuite</artifactId>
-    <version>4.1.0-SNAPSHOT</version>
+    <version>4.0.2.GA</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -128,8 +128,8 @@
                 <configuration>
                   <tasks>
                     <copy
-                      file="${project.parent.build.directory}/../src/test/resources/${jbossws.integration.target}/appclient-ws.xml"
-                      tofile="${jboss.home}/appclient/configuration/appclient-ws.xml"
+                      file="${project.parent.build.directory}/../src/test/resources/${jbossws.integration.target}/appclient.xml"
+                      tofile="${jboss.home}/appclient/configuration/appclient.xml"
                       failonerror="false"
                       verbose="true"
                       overwrite="true"

@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 import javax.activation.DataHandler;
+import javax.naming.InitialContext;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.Service;
 import javax.xml.rpc.ServiceFactory;
@@ -35,7 +36,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -56,12 +56,7 @@ public class MTOMTestCase extends JBossWSTest
    /** Deploy the test ear */
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(MTOMTestCase.class, "jaxrpc-samples-mtom.war, jaxrpc-samples-mtom-client.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(MTOMTestCase.class, "jaxrpc-samples-mtom.war, jaxrpc-samples-mtom-client.jar");
    }
 
    protected void setUp() throws Exception

@@ -46,7 +46,6 @@ public final class AppclientKiller
             break;
          }
       }
-      System.out.println("forcibly stopped in AppclientKiller");
       System.exit(1);
    }
 

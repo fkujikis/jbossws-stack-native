@@ -22,10 +22,14 @@
 package org.jboss.test.ws.jaxws.jbws2706;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Holder;
 import javax.xml.ws.Service;
+import javax.xml.ws.handler.Handler;
 
 import junit.framework.Test;
 
@@ -44,19 +48,25 @@ public class JBWS2706TestCase extends JBossWSTest
 
    public final String TARGET_ENDPOINT_ADDRESS = "http://" + getServerHost() + ":8080/jaxws-jbws2706/";
 
+   private static SwaTest port;
+
    public static Test suite() throws Exception
    {
       return new JBossWSTestSetup(JBWS2706TestCase.class, "jaxws-jbws2706.war");
    }
 
-   public void testCall() throws Exception
+   public void setUp() throws Exception
    {
+      super.setUp();
       URL wsdlURL = new URL(TARGET_ENDPOINT_ADDRESS + "?wsdl");
       QName serviceName = new QName("http://SwaTestService.org/wsdl", "WSIDLSwaTestService");
 
       Service service = Service.create(wsdlURL, serviceName);
-      SwaTest port = service.getPort(SwaTest.class);
-      
+      port = service.getPort(SwaTest.class);
+   }
+
+   public void testCall() throws Exception
+   {
       String message = "Howdy";
       InputRequest request = new InputRequest();
       request.setMessage(message);

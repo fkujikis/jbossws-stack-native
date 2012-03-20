@@ -34,7 +34,6 @@ import javax.xml.ws.WebServiceException;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -51,13 +50,7 @@ public class HandlerLifecycleTestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(HandlerLifecycleTestCase.class, "jaxws-handlerlifecycle.war, jaxws-handlerlifecycle-client.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-            trackerPort = null;
-         }
-      });
+      return new JBossWSTestSetup(HandlerLifecycleTestCase.class, "jaxws-handlerlifecycle.war, jaxws-handlerlifecycle-client.jar");
    }
 
    public void setUp() throws Exception

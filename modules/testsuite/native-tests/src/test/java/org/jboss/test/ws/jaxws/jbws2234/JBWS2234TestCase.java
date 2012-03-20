@@ -32,7 +32,6 @@ import javax.xml.ws.handler.Handler;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -50,12 +49,7 @@ public class JBWS2234TestCase extends JBossWSTest
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS2234TestCase.class, "jaxws-jbws2234.war", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS2234TestCase.class, "jaxws-jbws2234.war");
    }
 
    public void setUp() throws Exception

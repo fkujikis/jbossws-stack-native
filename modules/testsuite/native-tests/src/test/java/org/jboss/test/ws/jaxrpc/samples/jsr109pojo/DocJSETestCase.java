@@ -29,7 +29,6 @@ import javax.xml.rpc.ServiceFactory;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -47,12 +46,7 @@ public class DocJSETestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(DocJSETestCase.class, "jaxrpc-samples-jsr109pojo-doc.war, jaxrpc-samples-jsr109pojo-doc-client.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(DocJSETestCase.class, "jaxrpc-samples-jsr109pojo-doc.war, jaxrpc-samples-jsr109pojo-doc-client.jar");
    }
 
    protected void setUp() throws Exception

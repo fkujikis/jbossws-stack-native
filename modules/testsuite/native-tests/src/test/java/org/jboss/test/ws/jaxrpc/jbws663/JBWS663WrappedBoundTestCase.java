@@ -28,7 +28,6 @@ import junit.framework.Test;
 
 import org.jboss.test.ws.jaxrpc.jbws663.holders.ResponseInfoHolder;
 import org.jboss.test.ws.jaxrpc.jbws663.holders.SubscriptionInfoHolder;
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -48,12 +47,7 @@ public class JBWS663WrappedBoundTestCase extends JBossWSTest
    /** Deploy the test */
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS663WrappedBoundTestCase.class, "jaxrpc-jbws663wb.war, jaxrpc-jbws663wb-appclient.ear#jaxrpc-jbws663wb-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS663WrappedBoundTestCase.class, "jaxrpc-jbws663wb.war, jaxrpc-jbws663wb-appclient.ear#jaxrpc-jbws663wb-appclient.jar");
    }
 
    protected void setUp() throws Exception

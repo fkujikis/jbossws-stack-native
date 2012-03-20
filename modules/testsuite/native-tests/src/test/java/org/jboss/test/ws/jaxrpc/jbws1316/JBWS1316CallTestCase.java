@@ -29,7 +29,6 @@ import javax.xml.rpc.Stub;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -49,12 +48,7 @@ public class JBWS1316CallTestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(JBWS1316CallTestCase.class, "jaxrpc-jbws1316.war, jaxrpc-jbws1316-appclient.ear#jaxrpc-jbws1316-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS1316CallTestCase.class, "jaxrpc-jbws1316.war, jaxrpc-jbws1316-appclient.ear#jaxrpc-jbws1316-appclient.jar");
    }
 
    protected void setUp() throws Exception

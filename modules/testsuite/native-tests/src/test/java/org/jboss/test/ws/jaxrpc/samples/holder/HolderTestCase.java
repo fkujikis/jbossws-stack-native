@@ -53,7 +53,6 @@ import javax.xml.rpc.holders.StringHolder;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -72,12 +71,7 @@ public class HolderTestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(HolderDIITestCase.class, "jaxrpc-samples-holder.war, jaxrpc-samples-holder-client.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(HolderDIITestCase.class, "jaxrpc-samples-holder.war, jaxrpc-samples-holder-client.jar");
    }
 
    protected void setUp() throws Exception

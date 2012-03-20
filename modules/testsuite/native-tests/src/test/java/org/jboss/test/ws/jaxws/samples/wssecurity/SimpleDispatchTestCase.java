@@ -38,7 +38,6 @@ import junit.framework.Test;
 import org.jboss.ws.core.ConfigProvider;
 import org.jboss.ws.common.DOMUtils;
 import org.jboss.ws.common.DOMWriter;
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 import org.w3c.dom.Element;
@@ -59,13 +58,7 @@ public class SimpleDispatchTestCase extends JBossWSTest
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(SimpleDispatchTestCase.class, "jaxws-samples-wssecurity-username.war jaxws-samples-wssecurity-encrypt.war", true, new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            usernameDispatch = null;
-            encryptDispatch = null;
-         }
-      });
+      return new JBossWSTestSetup(SimpleDispatchTestCase.class, "jaxws-samples-wssecurity-username.war jaxws-samples-wssecurity-encrypt.war", true);
    }
 
    @Override

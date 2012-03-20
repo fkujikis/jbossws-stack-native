@@ -26,7 +26,6 @@ import javax.xml.rpc.Service;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -43,12 +42,7 @@ public class AnonymousTypesTestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(AnonymousTypesTestCase.class, "jaxrpc-anonymous.war, jaxrpc-anonymous-appclient.ear#jaxrpc-anonymous-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            endpoint = null;
-         }
-      });
+      return new JBossWSTestSetup(AnonymousTypesTestCase.class, "jaxrpc-anonymous.war, jaxrpc-anonymous-appclient.ear#jaxrpc-anonymous-appclient.jar");
    }
 
    protected void setUp() throws Exception

@@ -32,7 +32,6 @@ import javax.xml.rpc.Service;
 import junit.framework.Test;
 
 import org.jboss.test.ws.jaxrpc.marshall.types.JavaBean;
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
 /**
@@ -50,12 +49,7 @@ public class MarshallRpcLitTestCase extends MarshallTest
    /** Deploy the test ear */
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(MarshallRpcLitTestCase.class, "jaxrpc-marshall-rpclit.war, jaxrpc-marshall-rpclit-appclient.ear#jaxrpc-marshall-rpclit-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(MarshallRpcLitTestCase.class, "jaxrpc-marshall-rpclit.war, jaxrpc-marshall-rpclit-appclient.ear#jaxrpc-marshall-rpclit-appclient.jar");
    }
 
    protected void setUp() throws Exception

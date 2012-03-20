@@ -25,6 +25,8 @@ import java.util.ResourceBundle;
 
 import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.api.util.ServiceLoader;
+import org.jboss.ws.feature.FastInfosetFeature;
+import org.jboss.ws.feature.JsonEncodingFeature;
 
 /**
  * A factory for remote connections 
@@ -48,6 +50,15 @@ public class RemoteConnectionFactory
       
       if (key == null)
          throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_REMOTE_CONNETION",  targetAddress));
+      
+      if (epInfo.isFeatureEnabled(FastInfosetFeature.class))
+      {
+         key += ".fastinfoset";
+      }
+      else if (epInfo.isFeatureEnabled(JsonEncodingFeature.class))
+      {
+         key += ".json";
+      }
       
       RemoteConnection con = (RemoteConnection)ServiceLoader.loadService(key, null, this.getClass().getClassLoader());
       if (con == null)
