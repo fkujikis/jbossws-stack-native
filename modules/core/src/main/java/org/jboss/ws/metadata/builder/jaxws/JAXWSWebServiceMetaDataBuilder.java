@@ -38,6 +38,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.WebServiceProvider;
 
 import org.jboss.ws.WSException;
+import org.jboss.ws.annotation.Documentation;
 import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.common.Constants;
 import org.jboss.ws.common.IOUtils;
@@ -130,6 +131,14 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
          // process config
          processEndpointConfig(dep, sepMetaData, sepClass, linkName);
 
+         // process web service features
+         EndpointFeatureProcessor epFeatureProcessor = new EndpointFeatureProcessor();
+         epFeatureProcessor.processEndpointFeatures(dep, sepMetaData, sepClass);
+
+         // Process endpoint documentation
+         if (seiClass.isAnnotationPresent(Documentation.class))
+            sepMetaData.setDocumentation(seiClass.getAnnotation(Documentation.class).content());
+         
          if (!toolMode)
          {
             setupOperationsFromWSDL(serviceMetaData, sepMetaData);
@@ -176,6 +185,9 @@ public class JAXWSWebServiceMetaDataBuilder extends JAXWSServerMetaDataBuilder
          // process webservices.xml contributions
          processWSDDContribution(dep, sepMetaData);
          
+         //setup web service feature contributions
+         epFeatureProcessor.setupEndpointFeatures(sepMetaData);
+
          // Init the endpoint address
          initEndpointAddress(dep, sepMetaData);
 

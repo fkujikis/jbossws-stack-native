@@ -31,7 +31,7 @@
   <packaging>pom</packaging>
   <description>JBossWS Native stack</description>
 
-  <version>4.1.0-SNAPSHOT</version>
+  <version>4.0.3.GA</version>
 
   <!-- Parent -->
   <parent>
@@ -42,15 +42,16 @@
 
   <!-- Source Control Management -->
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossws/stack/native/trunk</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossws/stack/native/trunk</developerConnection>
-    <url>http://fisheye.jboss.com/viewrep/JBossWS/stack/native/trunk</url>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/jbossws/stack/native/tags/jbossws-native-4.0.3.GA</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossws/stack/native/tags/jbossws-native-4.0.3.GA</developerConnection>
+    <url>http://fisheye.jboss.com/viewrep/JBossWS/stack/native/tags/jbossws-native-4.0.3.GA</url>
   </scm>
 
   <!-- Modules -->
   <modules>
     <module>modules/endorsed</module>
     <module>modules/core</module>
+    <module>modules/client</module>
     <module>modules/resources</module>
     <module>modules/services</module>
   </modules>
@@ -58,12 +59,10 @@
   <!-- Properties -->
   <properties>
     <jbossws.api.version>1.0.0.GA</jbossws.api.version>
-    <jbossws.spi.version>2.1.0-SNAPSHOT</jbossws.spi.version>
-    <jbossws.common.version>2.1.0-SNAPSHOT</jbossws.common.version>
-    <jbossws.common.tools.version>1.1.0-SNAPSHOT</jbossws.common.tools.version>
-    <jbossws.shared.testsuite.version>4.1.0-SNAPSHOT</jbossws.shared.testsuite.version>
-    <jbossws.jboss711.version>4.1.0-SNAPSHOT</jbossws.jboss711.version>
-    <jboss711.version>7.1.1.Final</jboss711.version>
+    <jbossws.spi.version>2.0.3.GA</jbossws.spi.version>
+    <jbossws.common.version>2.0.3.GA</jbossws.common.version>
+    <jbossws.common.tools.version>1.0.1.GA</jbossws.common.tools.version>
+    <jbossws.shared.testsuite.version>4.0.3.GA</jbossws.shared.testsuite.version>
     <jboss712.version>7.1.2.Final-SNAPSHOT</jboss712.version>
     <ejb.api.version>1.0.1.Final</ejb.api.version>
     <ant.version>1.7.1</ant.version>
@@ -77,6 +76,9 @@
     <jaxb.impl.version>2.2.4</jaxb.impl.version>
     <jboss.common.core.version>2.2.16.GA</jboss.common.core.version>
     <jboss.logging.version>3.1.0.GA</jboss.logging.version>
+    <jboss.jaxr.version>2.0.3</jboss.jaxr.version>
+    <apache.scout.version>1.1.1</apache.scout.version>
+    <juddi.version>0.9RC4</juddi.version>
     <netty.version>3.2.6.Final</netty.version>
     <sun.jaxws.version>2.2</sun.jaxws.version>
     <sun.policy.version>2.0-b01</sun.policy.version>
@@ -111,17 +113,6 @@
         <groupId>org.jboss.ws</groupId>
         <artifactId>jbossws-spi</artifactId>
         <version>${jbossws.spi.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.ws</groupId>
-        <artifactId>jbossws-jboss711</artifactId>
-        <version>${jbossws.jboss711.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.ws</groupId>
-        <artifactId>jbossws-jboss711</artifactId>
-        <version>${jbossws.jboss711.version}</version>
-        <classifier>tests-integration</classifier>
       </dependency>
       <dependency>
         <groupId>org.jboss.as</groupId>
@@ -304,6 +295,22 @@
         <groupId>com.sun.xml.bind</groupId>
         <artifactId>jaxb-xjc</artifactId>
         <version>${jaxb.impl.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.jaxr</groupId>
+        <artifactId>juddi-service</artifactId>
+        <version>${jboss.jaxr.version}</version>
+        <type>sar</type>
+      </dependency>
+      <dependency>
+        <groupId>apache-scout</groupId>
+        <artifactId>scout</artifactId>
+        <version>${apache.scout.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>juddi</groupId>
+        <artifactId>juddi</artifactId>
+        <version>${juddi.version}</version>
       </dependency>
       <dependency>
         <groupId>javax.xml.stream</groupId>
@@ -497,18 +504,6 @@
     </profile>
 
     <!--
-    Name:  jboss711
-    Descr: JBoss-7.1.1 specific options
-    -->
-    <profile>
-      <id>jboss711</id>
-      <properties>
-        <jbossws.integration.target>jboss711</jbossws.integration.target>
-        <jboss.home>${jboss711.home}</jboss.home>
-      </properties>
-    </profile>
-
-    <!--
     Name:  jboss712
     Descr: JBoss-7.1.2 specific options
     -->
@@ -519,6 +514,7 @@
         <jboss.home>${jboss712.home}</jboss.home>
       </properties>
     </profile>
+
 
     <!--
     Name:  smoketest

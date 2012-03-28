@@ -228,6 +228,12 @@ public final class FeatureAwareClientEndpointMetaDataAdapter extends ClientEndpo
    }
 
    @Override
+   public String getDocumentation()
+   {
+      return this.delegee.getDocumentation();
+   }
+
+   @Override
    public Use getEncodingStyle()
    {
       return this.delegee.getEncodingStyle();
@@ -393,6 +399,12 @@ public final class FeatureAwareClientEndpointMetaDataAdapter extends ClientEndpo
    public void setConfigName(String configName, String configFile)
    {
       this.delegee.setConfigName(configName, configFile);
+   }
+
+   @Override
+   public void setDocumentation(String documentation)
+   {
+      this.delegee.setDocumentation(documentation);
    }
 
    @Override

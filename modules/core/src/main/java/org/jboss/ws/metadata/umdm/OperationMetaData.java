@@ -67,6 +67,7 @@ public class OperationMetaData extends ExtensibleMetaData implements Initalizabl
    private List<ParameterMetaData> parameters = new ArrayList<ParameterMetaData>();
    private List<FaultMetaData> faults = new ArrayList<FaultMetaData>();
    private ParameterMetaData returnParam;
+   private String documentation;
 
    public OperationMetaData(EndpointMetaData epMetaData, QName qname, String javaName)
    {
@@ -521,5 +522,15 @@ return false;
          buffer.append(fault);
       }
       return buffer.toString();
+   }
+
+   public String getDocumentation()
+   {
+      return documentation;
+   }
+
+   public void setDocumentation(String documentation)
+   {
+      this.documentation = documentation;
    }
 }

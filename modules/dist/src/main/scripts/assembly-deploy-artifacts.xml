@@ -24,7 +24,6 @@
         <include>**/module.xml</include>
       </includes>
     </fileSet>
-    
   </fileSets>
 
   <dependencySets>
@@ -41,6 +40,7 @@
         <include>com.sun.xml.bind:jaxb-xjc:jar</include>
         <include>com.sun.xml.ws:jaxws-tools:jar</include>
         <include>com.sun.xml.ws:jaxws-rt:jar</include>
+        <include>jboss.jaxbintros:jboss-jaxb-intros:jar</include>
         <include>org.jboss.ws:jbossws-api:jar</include>
         <include>org.jboss.ws:jbossws-common:jar</include>
         <include>org.jboss.ws:jbossws-spi:jar</include>
@@ -63,21 +63,11 @@
         <include>org.jboss.ws:jbossws-common-tools:jar</include>
         <include>org.jboss.ws:jbossws-jboss*:jar</include>
         <include>org.jboss:jbossxb:jar</include>
+        <include>org.jboss.as:jboss-as-webservices-tests-integration:jar</include>
       </includes>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
       <scope>provided</scope>
       <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-
-    <dependencySet>
-       <outputDirectory>deploy-artifacts/lib</outputDirectory>
-       <unpack>false</unpack>           
-       <includes>
-         <include>org.jboss.ws:jbossws-jboss*:jar</include>
-       </includes>
-       <outputFileNameMapping>${artifact.artifactId}${dashClassifier}.${artifact.extension}</outputFileNameMapping>
-       <scope>provided</scope>
-       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
 
     <dependencySet>
@@ -95,6 +85,17 @@
       <unpack>false</unpack>
       <includes>
         <include>org.jboss.ws:jbossws-shared-testsuite:jar</include>
+      </includes>
+      <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+      <scope>test</scope>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+
+    <dependencySet>
+      <outputDirectory>deploy-artifacts/lib</outputDirectory>
+      <unpack>false</unpack>           
+      <includes>
+        <include>org.jboss.naming:jnp-client:jar</include>
       </includes>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
       <scope>test</scope>
