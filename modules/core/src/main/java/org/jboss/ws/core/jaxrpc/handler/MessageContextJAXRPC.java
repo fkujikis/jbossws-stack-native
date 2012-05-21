@@ -85,6 +85,7 @@ public abstract class MessageContextJAXRPC extends CommonMessageContext implemen
    public static CommonMessageContext processPivot(CommonMessageContext requestContext)
    {
       log.debug("Begin response processing");
+      cleanupAttachments(requestContext);
       return requestContext;
    }
 

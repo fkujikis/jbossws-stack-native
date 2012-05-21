@@ -9,48 +9,91 @@
   <parent>
     <groupId>org.jboss.ws.native</groupId>
     <artifactId>jbossws-native</artifactId>
-    <version>4.1.0-SNAPSHOT</version>
+    <version>3.1.2.SP10</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <!-- Properties -->
   <properties>
+    <surefire.security.args>-Djava.security.manager -Djava.security.policy=src/test/etc/tst.policy</surefire.security.args>
     <surefire.jdwp.args>-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005</surefire.jdwp.args>
-    <surefire.gc.args>-Xmx256m -XX:MaxPermSize=128m</surefire.gc.args>
+    <surefire.gc.args>-Xmx256m -XX:MaxPermSize=256m</surefire.gc.args>
     <test.archive.directory>${project.build.directory}/test-libs</test.archive.directory>
     <test.classes.directory>${project.build.directory}/test-classes</test.classes.directory>
     <test.resources.directory>${project.build.directory}/test-resources</test.resources.directory>
     <wsdl.publish.location>${project.build.directory}/wsdl-publish</wsdl.publish.location>
-    <jboss.javaee.version>5.0.0.GA</jboss.javaee.version>
-    <log4j.output.dir>${project.build.directory}</log4j.output.dir>
-    <appclient.output.dir>${project.build.directory}/appclient-logs</appclient.output.dir>
+    <hibernate.version>3.2.4.sp1</hibernate.version>
+    <endpoint.servlet>org.jboss.wsf.stack.jbws.EndpointServlet</endpoint.servlet>
+    <jboss.javaee.version>5.0.1.GA</jboss.javaee.version>
+    <hornetq.version>2.1.2.Final</hornetq.version>
   </properties>
 
   <!-- Modules -->
   <modules>
     <module>native-tests</module>
+    <module>framework-tests</module>
   </modules>
 
   <!-- Dependencies -->
   <dependencies>
     <dependency>
-      <groupId>org.jboss.ws.native</groupId>
-      <artifactId>jbossws-native-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.ws</groupId>
-      <artifactId>jbossws-shared-testsuite</artifactId>
+      <artifactId>jbossws-framework</artifactId>
     </dependency>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.16</version>
+      <groupId>xerces</groupId>
+      <artifactId>xercesImpl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.ws.native</groupId>
+      <artifactId>jbossws-native-client</artifactId>
+      <version>${version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun</groupId>
+      <artifactId>tools</artifactId>
+      <version>1.5.0</version>
+      <scope>system</scope>
+      <systemPath>${java.home}/../lib/tools.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>javax.ejb</groupId>
+      <artifactId>ejb-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>3.8.2</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- required for WS-RM client backports server -->
+    <dependency>
+      <groupId>jboss.web</groupId>
+      <artifactId>jbossweb</artifactId>
+      <version>2.1.1.CR7</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- JAXR samples -->
+    <dependency>
+      <groupId>apache-scout</groupId>
+      <artifactId>scout</artifactId>
+      <version>${apache.scout.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>juddi</groupId>
+      <artifactId>juddi</artifactId>
+      <version>${juddi.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.jaxr</groupId>
+      <artifactId>juddi-saaj</artifactId>
+      <version>${jboss.jaxr.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -67,7 +110,6 @@
       <!-- copy etc files -->
       <testResource>
         <directory>src/test/etc</directory>
-        <filtering>true</filtering>
       </testResource>
       <!-- copy handler definitions -->
       <testResource>
@@ -101,7 +143,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.5</version>
         <executions>
           <execution>
             <id>add-source</id>
@@ -120,34 +161,23 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <skip>true</skip>
           <failIfNoTests>false</failIfNoTests>
-        </configuration>
-        <executions>
-          <execution>
-            <id>integration-tests</id>
-            <phase>integration-test</phase>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <configuration>
-              <parallel>classes</parallel>
-              <threadCount>1</threadCount>
-              <perCoreThreadCount>true</perCoreThreadCount>
-              <skip>false</skip>
-              <includes>
-                <include>**/*Test.java</include>
-                <include>**/*TestCase.java</include>
-                <include>**/*TestCaseForked.java</include>
-              </includes>
-              <systemProperties>
+          <systemProperties>
             <property>
-              <name>jboss.bind.address</name>
-              <value>${jboss.bind.address}</value>
+              <name>java.naming.provider.url</name>
+              <value>jnp://${jboss.bind.address}:1099</value>
+            </property>
+            <property>
+              <name>jboss.server.instance</name>
+              <value>${jboss.server.instance}</value>
             </property>
             <property>
               <name>java.protocol.handler.pkgs</name>
-              <value>org.jboss.net.protocol|org.jboss.vfs.protocol|org.jboss.virtual.protocol</value>
+              <value>org.jboss.virtual.protocol</value>
+            </property>
+            <property>
+              <name>java.util.logging.manager</name>
+              <value>org.jboss.wsf.common.logging.JDKLogManager</value>
             </property>
             <property>
               <name>jboss.home</name>
@@ -158,24 +188,32 @@
               <value>${jbossws.integration.target}</value>
             </property>
             <property>
-              <name>test.disable.deployment</name>
-              <value>false</value>
-            </property>
-            <property>
               <name>log4j.output.dir</name>
-              <value>${log4j.output.dir}</value>
+              <value>${project.build.directory}</value>
             </property>
             <property>
-              <name>appclient.output.dir</name>
-              <value>${appclient.output.dir}</value>
+              <name>org.jboss.ws.wsse.keyStore</name>
+              <value>${test.resources.directory}/jaxws/samples/wssecurity/wsse.keystore</value>
             </property>
             <property>
-              <name>org.jboss.ws.testsuite.securityDomain.users.propfile</name>
-              <value>${project.build.directory}/test-classes/jbossws-users.properties</value>
+              <name>org.jboss.ws.wsse.trustStore</name>
+              <value>${test.resources.directory}/jaxws/samples/wssecurity/wsse.truststore</value>
             </property>
             <property>
-              <name>org.jboss.ws.testsuite.securityDomain.roles.propfile</name>
-              <value>${project.build.directory}/test-classes/jbossws-roles.properties</value>
+              <name>org.jboss.ws.wsse.keyStorePassword</name>
+              <value>jbossws</value>
+            </property>
+            <property>
+              <name>org.jboss.ws.wsse.trustStorePassword</name>
+              <value>jbossws</value>
+            </property>
+            <property>
+              <name>org.jboss.ws.wsse.keyStoreType</name>
+              <value>jks</value>
+            </property>
+            <property>
+              <name>org.jboss.ws.wsse.trustStoreType</name>
+              <value>jks</value>
             </property>
             <property>
               <name>test.archive.directory</name>
@@ -193,10 +231,12 @@
               <name>wsdl.publish.location</name>
               <value>${wsdl.publish.location}</value>
             </property>
+            <property>
+              <name>use.hornetq</name>
+              <value>${use.hornetq}</value>
+            </property>
           </systemProperties>
         </configuration>
-        </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
@@ -216,7 +256,7 @@
         </property>
       </activation>
       <properties>
-        <surefire.jvm.args>${surefire.jdwp.args} ${surefire.gc.args}</surefire.jvm.args>
+        <surefire.jvm.args>${surefire.security.args} ${surefire.jdwp.args} ${surefire.gc.args}</surefire.jvm.args>
       </properties>
     </profile>
     <profile>
@@ -227,7 +267,7 @@
         </property>
       </activation>
       <properties>
-        <surefire.jvm.args>${surefire.gc.args}</surefire.jvm.args>
+        <surefire.jvm.args>${surefire.security.args} ${surefire.gc.args}</surefire.jvm.args>
       </properties>
     </profile>
 
@@ -250,168 +290,81 @@
     </profile>
 
     <!--
-    Name:  jboss712
-    Descr: JBoss-7.1.2 specific options
+    Name:  jboss510
+    Descr: JBoss-5.1.0 specific options
     -->
     <profile>
-      <id>jboss712</id>
+      <id>jboss510</id>
       <properties>
-        <jboss.version>${jboss712.version}</jboss.version>
-        <jbossws.integration.target>jboss712</jbossws.integration.target>
+        <jboss.version>5.1.0.GA</jboss.version>
+        <jbossws.integration.target>jboss510</jbossws.integration.target>
       </properties>
       <dependencies>
+        <!-- [JBWS-2505] -->
+        <!-- START -->
+        <!--
         <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-webservices-tests-integration</artifactId>
+          <groupId>org.jboss.ws</groupId>
+          <artifactId>jbossws-jboss510x</artifactId>
+          <exclusions>
+            <exclusion>
+              <groupId>jboss.jbossws</groupId>
+              <artifactId>jboss-jaxws</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        -->
+        <dependency>
+          <groupId>org.jboss.jbossas</groupId>
+          <artifactId>jboss-as-webservices</artifactId>
           <version>${jboss.version}</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.jboss.as</groupId>
-              <artifactId>jboss-as-transactions</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.jboss.remoting3</groupId>
-              <artifactId>jboss-remoting</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.jboss</groupId>
-              <artifactId>jboss-remote-naming</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.jboss.as</groupId>
-              <artifactId>jboss-as-security</artifactId>
-            </exclusion>
-          </exclusions>
+        </dependency>
+        <!-- END -->
+        <dependency>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate</artifactId>
+          <version>${hibernate.version}</version>
         </dependency>
         <dependency>
-          <groupId>org.jboss</groupId>
-          <artifactId>jboss-remote-naming</artifactId>
-          <version>1.0.3.Final</version>
+          <groupId>org.jboss.jbossas</groupId>
+          <artifactId>jboss-as-ejb3</artifactId>
+          <version>${jboss.version}</version>
         </dependency>
         <dependency>
-          <groupId>org.jboss</groupId>
-          <artifactId>jboss-ejb-client</artifactId>
-          <version>1.0.10.Final</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.jboss.remoting3</groupId>
-              <artifactId>jboss-remoting</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.jboss.xnio</groupId>
-              <artifactId>xnio-api</artifactId>
-            </exclusion>
-          </exclusions>
+          <groupId>org.jboss.jbossas</groupId>
+          <artifactId>jboss-as-security</artifactId>
+          <version>${jboss.version}</version>
         </dependency>
         <dependency>
-          <groupId>org.jboss.remotingjmx</groupId>
-          <artifactId>remoting-jmx</artifactId>
-          <version>1.0.3.Final</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.jboss.remoting3</groupId>
-          <artifactId>jboss-remoting</artifactId>
-          <version>3.2.7.GA</version>
-          <scope>test</scope>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-jms-client</artifactId>
+          <version>${hornetq.version}</version>
         </dependency>
       </dependencies>
       <build>
         <plugins>
           <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <!-- http://jira.codehaus.org/browse/MCOMPILER-72 -->
+              <testExcludeFile>../test-excludes-jboss510.txt</testExcludeFile>
+            </configuration>
+          </plugin>
+          <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <argLine>${surefire.jvm.args} ${surefire.default-mgmt-serurity.args}</argLine>
-              <excludes>
-                 <!-- no excludes ATM -->
-              </excludes>
+              <argLine>${surefire.jvm.args} -Djava.endorsed.dirs=${jboss510.home}/lib/endorsed</argLine>
+              <!-- TODO: replace with maven dependencies -->
+              <additionalClasspathElements>
+                <additionalClasspathElement>${jboss.home}/client/jbossall-client.jar</additionalClasspathElement>
+                <additionalClasspathElement>${jboss.home}/common/lib/jboss-ejb3-core.jar</additionalClasspathElement>
+              </additionalClasspathElements>
             </configuration>
           </plugin>
         </plugins>
       </build>
     </profile>
 
-    <!--
-    Name:  jboss720
-    Descr: JBoss-7.2.0 specific options
-    -->
-    <profile>
-      <id>jboss720</id>
-      <properties>
-        <jboss.version>${jboss720.version}</jboss.version>
-        <jbossws.integration.target>jboss720</jbossws.integration.target>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-webservices-tests-integration</artifactId>
-          <version>${jboss.version}</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.jboss.as</groupId>
-              <artifactId>jboss-as-transactions</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.jboss.remoting3</groupId>
-              <artifactId>jboss-remoting</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.jboss</groupId>
-              <artifactId>jboss-remote-naming</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.jboss.as</groupId>
-              <artifactId>jboss-as-security</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.jboss</groupId>
-          <artifactId>jboss-remote-naming</artifactId>
-          <version>1.0.3.Final</version>
-        </dependency>
-        <dependency>
-          <groupId>org.jboss</groupId>
-          <artifactId>jboss-ejb-client</artifactId>
-          <version>1.0.10.Final</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.jboss.remoting3</groupId>
-              <artifactId>jboss-remoting</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.jboss.xnio</groupId>
-              <artifactId>xnio-api</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.jboss.remotingjmx</groupId>
-          <artifactId>remoting-jmx</artifactId>
-          <version>1.0.3.Final</version>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.jboss.remoting3</groupId>
-          <artifactId>jboss-remoting</artifactId>
-          <version>3.2.7.GA</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <argLine>${surefire.jvm.args} ${surefire.default-mgmt-serurity.args}</argLine>
-              <excludes>
-                 <!-- no excludes ATM -->
-              </excludes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <!--
     Name:  no-jboss-bind-address
     Descr: Set the default jboss.bind.address
@@ -431,29 +384,43 @@
       </properties>
     </profile>
 
+  <!--
+    Name:  no-jboss-server-instance
+    Descr: Set the default jboss.server.instance
+
+    command line cannot overwrite pom properties
+    http://jira.codehaus.org/browse/MNG-3546
+    -->
     <profile>
-      <id>default-mgmt-security</id>
+      <id>no-jboss-server-instance</id>
       <activation>
         <property>
-          <name>!jbossws.deployer.authentication.username</name>
+          <name>!jboss.server.instance</name>
         </property>
       </activation>
       <properties>
-        <surefire.default-mgmt-serurity.args>-Djbossws.deployer.authentication.username=admin -Djbossws.deployer.authentication.password=admin</surefire.default-mgmt-serurity.args>
-      </properties>
-    </profile>
-    <profile>
-      <id>custom-mgmt-security</id>
-      <activation>
-        <property>
-          <name>jbossws.deployer.authentication.username</name>
-        </property>
-      </activation>
-      <properties>
-        <surefire.default-mgmt-serurity.args> </surefire.default-mgmt-serurity.args>
+        <jboss.server.instance>default</jboss.server.instance>
       </properties>
     </profile>
 
+  <!--
+    Name:  no-use-hornetq
+    Descr: Set the default use.hornetq
+
+    command line cannot overwrite pom properties
+    http://jira.codehaus.org/browse/MNG-3546
+    -->
+    <profile>
+      <id>no-use-hornetq</id>
+      <activation>
+        <property>
+          <name>!use.hornetq</name>
+        </property>
+      </activation>
+      <properties>
+        <use.hornetq>false</use.hornetq>
+      </properties>
+    </profile>
   </profiles>
 
 </project>
