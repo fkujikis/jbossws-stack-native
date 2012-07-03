@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.Name;
@@ -37,11 +36,11 @@ import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.Text;
 
+import org.jboss.logging.Logger;
+import org.jboss.util.NotImplementedException;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.core.soap.utils.SOAPUtils;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -60,9 +59,11 @@ import org.w3c.dom.TypeInfo;
  *
  * @author Thomas.Diesler@jboss.org
  */
-public class SOAPElementImpl extends NodeImpl implements SOAPElement
+public class SOAPElementImpl extends NodeImpl implements SOAPElement, SAAJVisitable
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPElementImpl.class);
+   // provide logging
+   private static Logger log = Logger.getLogger(SOAPElementImpl.class);
+
    // The org.w3c.dom.Element
    private Element element;
    // The element name
@@ -73,26 +74,21 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
    {
       super(DOMUtils.createElement(localPart, null, null));
       this.element = (Element)domNode;
+      log.trace("new SOAPElementImpl: " + getElementName());
    }
 
    /** Called by SOAPFactory */
    public SOAPElementImpl(String localPart, String prefix, String nsURI)
    {
       super(DOMUtils.createElement(localPart, prefix, nsURI));
-      this.element = (Element)domNode; 
+      this.element = (Element)domNode;
+      log.trace("new SOAPElementImpl: " + getElementName());
    }
 
    /** Called by SOAPFactory */
    public SOAPElementImpl(Name name)
    {
       this(name.getLocalName(), name.getPrefix(), name.getURI());
-   }
-   
-   /** Called by addChild */
-   private SOAPElementImpl(Element element) 
-   {
-	  super(element);
-	  this.element = element; 
    }
 
    /** Called by SOAPFactory */
@@ -107,6 +103,7 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
    {
       super(element);
       this.element = (Element)domNode;
+      log.trace("new SOAPElementImpl: " + getElementName());
    }
 
    /** Get the SOAPEnvelope for this SOAPElement */
@@ -139,7 +136,7 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
    public SOAPElement setElementQName(QName qname) throws SOAPException
    {
       if (Constants.NS_SOAP11_ENV.equals(getNamespaceURI()) || Constants.NS_SOAP12_ENV.equals(getNamespaceURI()))
-         throw new SOAPException(BundleUtils.getMessage(bundle, "CHANGING_NAME_IS_NOT_ALLOWED",  getLocalName()));
+         throw new SOAPException("Changing the name of this SOAP Element is not allowed: " + getLocalName());
 
       return setElementQNameInternal(qname);
    }
@@ -191,8 +188,9 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
     */
    public SOAPElement addChildElement(String name) throws SOAPException
    {
-      Name nameImp = new NameImpl(name);
-      return addChildElement(nameImp);
+      SOAPElement soapElement = new SOAPElementImpl(name);
+      soapElement = addChildElement(soapElement);
+      return soapElement;
    }
 
    /**
@@ -207,10 +205,11 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
    {
       String nsURI = getNamespaceURI(prefix);
       if (nsURI == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_NAMESPACE_URI",  prefix));
+         throw new IllegalArgumentException("Cannot obtain namespace URI for prefix: " + prefix);
 
-      Name nameImp = new NameImpl(localName, prefix, nsURI);
-      return addChildElement(nameImp);
+      SOAPElement soapElement = new SOAPElementImpl(localName, prefix, nsURI);
+      soapElement = addChildElement(soapElement);
+      return soapElement;
    }
 
    /**
@@ -224,8 +223,9 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
     */
    public SOAPElement addChildElement(String localName, String prefix, String uri) throws SOAPException
    {
-      Name nameImpl = new NameImpl(localName, prefix, uri);
-      return addChildElement(nameImpl);
+      SOAPElement soapElement = new SOAPElementImpl(localName, prefix, uri);
+      soapElement = addChildElement(soapElement);
+      return soapElement;
    }
 
    /**
@@ -237,19 +237,9 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
     */
    public SOAPElement addChildElement(Name name) throws SOAPException
    {
-      Document doc = this.element.getOwnerDocument();
-      Element childEle = null;
-      if (name.getPrefix() == null || name.getPrefix().length() == 0)
-      {
-         childEle = doc.createElementNS(name.getURI(), name.getLocalName());
-      }
-      else
-      {
-         childEle = doc.createElementNS(name.getURI(), name.getPrefix() + ":" + name.getLocalName());
-      }
-
-      SOAPElement child = new SOAPElementImpl(childEle);
-      return addChildElement(child);
+      SOAPElement soapElement = new SOAPElementImpl(name);
+      soapElement = addChildElement(soapElement);
+      return soapElement;
    }
 
    public SOAPElement addChildElement(QName qname) throws SOAPException
@@ -278,17 +268,9 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
     */
    public SOAPElement addChildElement(SOAPElement child) throws SOAPException
    {
-      SOAPElementImpl soapElement = (SOAPElementImpl) child;
-
-      if (soapElement.domNode.getOwnerDocument() != element.getOwnerDocument())
-      {
-         Document oldDoc = DOMUtils.peekOwnerDocument();
-         DOMUtils.setOwnerDocument(element.getOwnerDocument());
-         soapElement = (SOAPElementImpl) new SOAPFactoryImpl().createElement((Element) (soapElement.domNode));
-         DOMUtils.setOwnerDocument(oldDoc);
-
-      }
-      soapElement = (SOAPElementImpl) appendChild(soapElement);
+      log.trace("addChildElement: " + getElementName() + " -> " + child.getElementName());
+      SOAPElementImpl soapElement = (SOAPElementImpl)child;
+      soapElement = (SOAPElementImpl)appendChild(soapElement);
       return soapElement.completeNamespaceDeclaration();
    }
 
@@ -303,14 +285,15 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
    public SOAPElement addNamespaceDeclaration(String prefix, String nsURI)
    {
       if (nsURI == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_'NULL'_NAMESPACE_URI"));
+         throw new IllegalArgumentException("Invalid 'null' namespace URI");
       if (nsURI.length() == 0)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_EMPTY_NAMESPACE_URI"));
+         throw new IllegalArgumentException("Invalid empty namespace URI");
 
       String qualifiedName = "xmlns";
       if (prefix != null && prefix.length() > 0)
          qualifiedName += ":" + prefix;
 
+      log.trace("addNamespaceDeclaration: " + qualifiedName + "='" + nsURI + "'");
       element.setAttributeNS("http://www.w3.org/2000/xmlns/", qualifiedName, nsURI);
       return this;
    }
@@ -339,6 +322,7 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
     */
    public SOAPElement addTextNode(String value) throws SOAPException
    {
+      log.trace("addTextNode: " + value);
       org.w3c.dom.Node domNode;
       if (value.startsWith("<!--") && value.endsWith("-->"))
       {
@@ -362,12 +346,11 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
     *
     * @return an iterator over the names of the attributes
     */
-   public Iterator<Name> getAllAttributes()
+   public Iterator getAllAttributes()
    {
-      ArrayList<Name> list = new ArrayList<Name>();
+      ArrayList list = new ArrayList();
       NamedNodeMap nnm = getAttributes();
-      int len = nnm.getLength();
-      for (int i = 0; i < len; i++)
+      for (int i = 0; i < nnm.getLength(); i++)
       {
          org.w3c.dom.Node node = (org.w3c.dom.Node)nnm.item(i);
          String local = node.getLocalName();
@@ -390,12 +373,11 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
       return list.iterator();
    }
 
-   public Iterator<QName> getAllAttributesAsQNames()
+   public Iterator getAllAttributesAsQNames()
    {
-      ArrayList<QName> list = new ArrayList<QName>();
+      ArrayList list = new ArrayList();
       NamedNodeMap nnm = getAttributes();
-      int len = nnm.getLength();
-      for (int i = 0; i < len; i++)
+      for (int i = 0; i < nnm.getLength(); i++)
       {
          org.w3c.dom.Node node = (org.w3c.dom.Node)nnm.item(i);
          String local = node.getLocalName();
@@ -460,7 +442,7 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
    {
       String nsURI = getNamespaceURI(prefix);
       if (nsURI == null)
-         throw new SOAPException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_NAMESPACE_URI",  prefix));
+         throw new SOAPException("CAnnot obtain namespace URI for prefix: " + prefix);
 
       return new QName(nsURI, localName, prefix);
    }
@@ -477,12 +459,11 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
     *
     * @return an iterator with the content of this SOAPElement object
     */
-   public Iterator<org.w3c.dom.Node> getChildElements()
+   public Iterator getChildElements()
    {
-      List<org.w3c.dom.Node> list = new ArrayList<org.w3c.dom.Node>();
+      List list = new ArrayList();
       NodeList nodeList = getChildNodes();
-      int len = nodeList.getLength();
-      for (int i = 0; i < len; i++)
+      for (int i = 0; i < nodeList.getLength(); i++)
       {
          org.w3c.dom.Node node = nodeList.item(i);
          if (node instanceof SOAPElement)
@@ -496,27 +477,6 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
       }
       return list.iterator();
    }
-   
-   protected SOAPElement getFirstChildElementByLocalName(String localName)
-   {
-      if (localName == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "LOCALNAME_CANNOT_BE_NULL"));
-      NodeList nodeList = getChildNodes();
-      int len = nodeList.getLength();
-      for (int i = 0; i < len; i++)
-      {
-         org.w3c.dom.Node node = nodeList.item(i);
-         if (localName.equals(node.getLocalName()))
-         {
-            if (node instanceof SOAPElement)
-            {
-               return (SOAPElement)node;
-            }
-         }
-      }
-      return null;
-   }
-   
 
    /**
     * Returns an Iterator over all the immediate child Nodes of this element with the specified name.
@@ -531,16 +491,15 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
     * @param name a Name object with the name of the child elements to be returned
     * @return an Iterator object over all the elements in this SOAPElement object with the specified name
     */
-   public Iterator<SOAPElement> getChildElements(Name name)
+   public Iterator getChildElements(Name name)
    {
-	  QName qName = SOAPUtils.toQName(name);
-      return getChildElements(qName);
+      return getChildElements(((NameImpl)name).toQName());
    }
 
-   public Iterator<SOAPElement> getChildElements(QName qname)
+   public Iterator getChildElements(QName qname)
    {
       List<SOAPElement> list = new ArrayList<SOAPElement>();
-      Iterator<org.w3c.dom.Node> it = getChildElements();
+      Iterator it = getChildElements();
       while (it.hasNext())
       {
          Object elementOrTextNode = it.next();
@@ -586,18 +545,17 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
     *
     * @return an iterator over the namespace prefixes in this SOAPElement object
     */
-   public Iterator<String> getNamespacePrefixes()
+   public Iterator getNamespacePrefixes()
    {
-      ArrayList<String> list = getNamespacePrefixList();
+      ArrayList list = getNamespacePrefixList();
       return list.iterator();
    }
 
-   private ArrayList<String> getNamespacePrefixList()
+   private ArrayList getNamespacePrefixList()
    {
-      ArrayList<String> list = new ArrayList<String>();
+      ArrayList list = new ArrayList();
       NamedNodeMap attrMap = element.getAttributes();
-      int len = attrMap.getLength();
-      for (int i = 0; i < len; i++)
+      for (int i = 0; i < attrMap.getLength(); i++)
       {
          Attr attr = (Attr)attrMap.item(i);
          String attrName = attr.getNodeName();
@@ -629,9 +587,9 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
     *
     * @return an iterator over the namespace prefixes are within scope of this SOAPElement object
     */
-   public Iterator<String> getVisibleNamespacePrefixes()
+   public Iterator getVisibleNamespacePrefixes()
    {
-      ArrayList<String> list = getNamespacePrefixList();
+      ArrayList list = getNamespacePrefixList();
       SOAPElementImpl parent = (SOAPElementImpl)getParentElement();
       while (parent != null)
       {
@@ -672,7 +630,8 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
     */
    public void removeContents()
    {
-      Iterator<org.w3c.dom.Node> it = getChildElements();
+      log.trace("removeContents");
+      Iterator it = getChildElements();
       while (it.hasNext())
       {
          Node el = (Node)it.next();
@@ -778,7 +737,6 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
       return element.setAttributeNodeNS(newAttr);
    }
 
-   @SuppressWarnings("unchecked")
    public NodeList getElementsByTagName(String name)
    {
       List<Element> nodes = DOMUtils.getChildElementsAsList(this, (QName)null, true);
@@ -817,7 +775,6 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
       return (attr == null) ? null : new AttrImpl(this, attr);
    }
 
-   @SuppressWarnings("unchecked")
    public NodeList getElementsByTagNameNS(String namespaceURI, String localName)
    {
       List<Element> nodes = DOMUtils.getChildElementsAsList(this, (QName)null, true);
@@ -850,24 +807,29 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
 
    public TypeInfo getSchemaTypeInfo()
    {
-      return this.element.getSchemaTypeInfo();
+      throw new NotImplementedException("getSchemaTypeInfo");
    }
 
    public void setIdAttribute(String name, boolean isId) throws DOMException
    {
-      this.element.setIdAttribute(name, isId);
+      throw new NotImplementedException("setIdAttribute");
    }
 
    public void setIdAttributeNode(Attr idAttr, boolean isId) throws DOMException
    {
-      this.element.setIdAttributeNode(idAttr, isId);
+      throw new NotImplementedException("setIdAttributeNode");
    }
 
    public void setIdAttributeNS(String namespaceURI, String localName, boolean isId) throws DOMException
    {
-      this.element.setIdAttributeNS(namespaceURI, localName, isId);
+      throw new NotImplementedException("setIdAttributeNS");
    }
 
+   public void accept(SAAJVisitor visitor)
+   {
+      visitor.visitSOAPElement(this);
+   }
+      
    @Override
    public void setPrefix(String prefix) throws DOMException
    {
@@ -885,7 +847,7 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
       writer.write("<" + qualName);
 
       // namespaces
-      Iterator<String> nsPrefixes = getNamespacePrefixes();
+      Iterator nsPrefixes = getNamespacePrefixes();
       while (nsPrefixes.hasNext())
       {
          String prefix = (String)nsPrefixes.next();
@@ -893,7 +855,7 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
       }
 
       // attributes
-      Iterator<Name> attNames = getAllAttributes();
+      Iterator attNames = getAllAttributes();
       while (attNames.hasNext())
       {
          NameImpl name = (NameImpl)attNames.next();
@@ -910,7 +872,7 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
 
    protected void writeElementContent(Writer out) throws IOException
    {
-      Iterator<org.w3c.dom.Node> it = getChildElements();
+      Iterator it = getChildElements();
       if (it.hasNext())
       {
          while (it.hasNext())
@@ -926,7 +888,7 @@ public class SOAPElementImpl extends NodeImpl implements SOAPElement
             }
             else
             {
-               throw new WSException(BundleUtils.getMessage(bundle, "UNHANDLED_SOAP_NODE",  node.getClass().getName()));
+               throw new WSException("Unhandled soap node: " + node.getClass().getName());
             }
          }
       }

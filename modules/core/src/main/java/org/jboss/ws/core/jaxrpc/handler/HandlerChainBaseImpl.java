@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -42,12 +41,11 @@ import javax.xml.rpc.handler.MessageContext;
 import javax.xml.soap.SOAPPart;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
+import org.jboss.ws.core.CommonMessageContext;
+import org.jboss.ws.core.soap.SOAPElementImpl;
+import org.jboss.ws.core.soap.SOAPElementWriter;
 import org.jboss.ws.core.soap.SOAPEnvelopeImpl;
-import org.jboss.ws.core.soap.utils.SOAPElementWriter;
-import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.invocation.EndpointAssociation;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 
 /**
@@ -61,7 +59,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.Handler
  */
 public abstract class HandlerChainBaseImpl implements HandlerChain
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(HandlerChainBaseImpl.class);
    private static Logger log = Logger.getLogger(HandlerChainBaseImpl.class);
 
    public static final int STATE_DOES_NOT_EXIST = 0;
@@ -128,7 +125,7 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
          {
             for (HandlerInfo info : infos)
             {
-               HandlerWrapper handler = new HandlerWrapper(getInstance(info));
+               HandlerWrapper handler = new HandlerWrapper((Handler)info.getHandlerClass().newInstance());
                HandlerType type = (HandlerType)info.getHandlerConfig().get(HandlerType.class.getName());
                handlers.add(new HandlerEntry(handler, info, type));
             }
@@ -144,26 +141,11 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
       }
       catch (Exception ex)
       {
-         throw new JAXRPCException(BundleUtils.getMessage(bundle, "CANNOT_INITIALIZE_HANDLER_CHAIN"),  ex);
+         throw new JAXRPCException("Cannot initialize handler chain", ex);
       }
 
       // set state to created
       state = STATE_CREATED;
-   }
-
-   private Handler getInstance(final HandlerInfo info) throws Exception
-   {
-       final Endpoint ep = EndpointAssociation.getEndpoint();
-       final Handler handler;
-       if (ep != null)
-       {
-           handler = (Handler)ep.getInstanceProvider().getInstance(info.getHandlerClass().getName()).getValue();
-       }
-       else
-       {
-           handler = (Handler)info.getHandlerClass().newInstance();
-       }
-       return handler;
    }
 
    /**
@@ -272,6 +254,8 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
          log.debug("Enter: handleRequest");
 
          SOAPMessageContextJAXRPC jaxrpcContext = (SOAPMessageContextJAXRPC)msgContext;
+         jaxrpcContext.setProperty(CommonMessageContext.ALLOW_EXPAND_TO_DOM, Boolean.TRUE);
+
          // Replace handlers that did not survive the previous call
          replaceDirtyHandlers();
 
@@ -305,7 +289,7 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
          }
          catch (RuntimeException e)
          {
-            log.error(BundleUtils.getMessage(bundle, "RUNTIMEEXCEPTION_IN_REQUEST_HANDLER"),  e);
+            log.error("RuntimeException in request handler", e);
             doNext = false;
             throw e;
          }
@@ -314,6 +298,8 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
             // we start at this index in the response chain
             if (doNext == false)
                falseIndex = (handlerIndex - 1);
+
+            jaxrpcContext.removeProperty(CommonMessageContext.ALLOW_EXPAND_TO_DOM);
             log.debug("Exit: handleRequest with status: " + doNext);
          }
       }
@@ -350,6 +336,7 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
          log.debug("Enter: handleResponse");
 
          SOAPMessageContextJAXRPC jaxrpcContext = (SOAPMessageContextJAXRPC)msgContext;
+         jaxrpcContext.setProperty(CommonMessageContext.ALLOW_EXPAND_TO_DOM, Boolean.TRUE);
 
          int handlerIndex = handlers.size() - 1;
          if (falseIndex != -1)
@@ -384,7 +371,7 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
          }
          catch (RuntimeException rte)
          {
-            log.error(BundleUtils.getMessage(bundle, "RUNTIMEEXCEPTION_IN_RESPONSE_HANDLER"),  rte);
+            log.error("RuntimeException in response handler", rte);
             doNext = false;
             throw rte;
          }
@@ -394,6 +381,7 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
             if (doNext == false)
                falseIndex = (handlerIndex - 1);
 
+            jaxrpcContext.removeProperty(CommonMessageContext.ALLOW_EXPAND_TO_DOM);
             log.debug("Exit: handleResponse with status: " + doNext);
          }
       }
@@ -427,20 +415,34 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
 
       if (handlers.size() > 0)
       {
-         int handlerIndex = handlers.size() - 1;
-         if (falseIndex != -1)
-            handlerIndex = falseIndex;
+         log.debug("Enter: handleFault");
 
-         Handler currHandler = null;
-         for (; doNext && handlerIndex >= 0; handlerIndex--)
+         SOAPMessageContextJAXRPC jaxrpcContext = (SOAPMessageContextJAXRPC)msgContext;
+         jaxrpcContext.setProperty(CommonMessageContext.ALLOW_EXPAND_TO_DOM, Boolean.TRUE);
+
+         try
          {
-            HandlerEntry handlerEntry = (HandlerEntry)handlers.get(handlerIndex);
-            if (type == HandlerType.ALL || type == handlerEntry.getType())
+            int handlerIndex = handlers.size() - 1;
+            if (falseIndex != -1)
+               handlerIndex = falseIndex;
+
+            Handler currHandler = null;
+            for (; doNext && handlerIndex >= 0; handlerIndex--)
             {
-               currHandler = handlerEntry.getHandler();
-               log.debug("Handle fault: " + currHandler);
-               doNext = currHandler.handleFault(msgContext);
+               HandlerEntry handlerEntry = (HandlerEntry)handlers.get(handlerIndex);
+               if (type == HandlerType.ALL || type == handlerEntry.getType())
+               {
+                  currHandler = handlerEntry.getHandler();
+               
+                  log.debug("Handle fault: " + currHandler);
+                  doNext = currHandler.handleFault(msgContext);
+               }
             }
+         }
+         finally
+         {
+            jaxrpcContext.removeProperty(CommonMessageContext.ALLOW_EXPAND_TO_DOM);
+            log.debug("Exit: handleFault with status: " + doNext);
          }
       }
 
@@ -454,7 +456,7 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
       try
       {
          SOAPEnvelopeImpl soapEnv = (SOAPEnvelopeImpl)soapPart.getEnvelope();
-         String envStr = SOAPElementWriter.writeElement(soapEnv, true);
+         String envStr = SOAPElementWriter.writeElement((SOAPElementImpl)soapEnv, true);
          if (envStr.equals(lastMessageTrace))
          {
             log.trace(logMsg + ": unchanged");
@@ -468,7 +470,7 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
       }
       catch (Exception ex)
       {
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_TRACE_SOAP_MESSAGE"),  ex);
+         log.error("Cannot trace SOAP message", ex);
          return null;
       }
    }
@@ -496,7 +498,7 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
             }
             catch (Exception ex)
             {
-               log.error(BundleUtils.getMessage(bundle, "CANNOT_CREATE_HANDLER_INSTANCE",  entry.info),  ex);
+               log.error("Cannot create handler instance for: " + entry.info, ex);
             }
          }
       }
@@ -508,7 +510,7 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
    protected Handler getHandlerAt(int pos)
    {
       if (pos < 0 || handlers.size() <= pos)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "NO_HANDLER_AT_POSITION",  pos));
+         throw new IllegalArgumentException("No handler at position: " + pos);
 
       HandlerEntry entry = (HandlerEntry)handlers.get(pos);
       return entry.handler;
@@ -526,7 +528,7 @@ public abstract class HandlerChainBaseImpl implements HandlerChain
       public HandlerEntry(HandlerWrapper handler, HandlerInfo info, HandlerType type)
       {
          if (handler == null || info == null)
-            throw new IllegalStateException(BundleUtils.getMessage(bundle, "INVALID_HANDLER_ENTRY"));
+            throw new IllegalStateException("Invalid handler entry");
 
          if (type == null)
          {

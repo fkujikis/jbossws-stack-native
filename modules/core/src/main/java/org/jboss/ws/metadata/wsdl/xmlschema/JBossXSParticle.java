@@ -25,6 +25,7 @@ import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTerm;
+import org.jboss.util.NotImplementedException;
 
 /**
  *  @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
@@ -116,14 +117,10 @@ public class JBossXSParticle extends JBossXSObject implements XSParticle, Compar
          JBossXSParticle w = (JBossXSParticle)o;
          String oname = w.getTerm().getName();
          String termName = term.getName();
-         if (termName != null && oname != null)
+         if (termName != null)
             c = termName.compareTo(oname);
-         else if (termName == null)
-        	c = -1;
-         else 
-        	c = 1;
          //In the case of doclit, need to be careful about String_1,SimpleType_2
-         if (termName != null && oname != null)
+         if (termName != null)
          {
             char num1 = termName.charAt(termName.length() - 1);
             char num2 = oname.charAt(oname.length() - 1);
@@ -136,6 +133,6 @@ public class JBossXSParticle extends JBossXSObject implements XSParticle, Compar
 
    public XSObjectList getAnnotations()
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 }

@@ -21,8 +21,6 @@
  */
 package org.jboss.ws.core.jaxrpc.handler;
 
-import java.util.ResourceBundle;
-
 import javax.xml.namespace.QName;
 import javax.xml.rpc.JAXRPCException;
 import javax.xml.rpc.handler.Handler;
@@ -31,7 +29,6 @@ import javax.xml.rpc.handler.MessageContext;
 import javax.xml.rpc.soap.SOAPFaultException;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
 
 /**
  * A wrapper arround a {@link javax.xml.rpc.handler.Handler} that takes care of its lifecycle.
@@ -40,7 +37,6 @@ import org.jboss.ws.api.util.BundleUtils;
  */
 public class HandlerWrapper implements Handler
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(HandlerWrapper.class);
    private static Logger log = Logger.getLogger(HandlerWrapper.class);
 
    public final static int DOES_NOT_EXIST = 0;
@@ -114,7 +110,7 @@ public class HandlerWrapper implements Handler
    {
       if (state == DOES_NOT_EXIST)
       {
-         log.warn(BundleUtils.getMessage(bundle, "HANDLER_DOES_NOT_EXIST_SKIPHANDLEREQUEST",  delegate));
+         log.warn("Handler is in state DOES_NOT_EXIST, skipping Handler.handleRequest for: " + delegate);
          return true;
       }
 
@@ -135,7 +131,7 @@ public class HandlerWrapper implements Handler
    {
       if (state == DOES_NOT_EXIST)
       {
-         log.warn(BundleUtils.getMessage(bundle, "HANDLER_DOES_NOT_EXIST_SKIPHANDLERESPONSE",  delegate));
+         log.warn("Handler is in state DOES_NOT_EXIST, skipping Handler.handleResponse for: " + delegate);
          return true;
       }
 
@@ -156,7 +152,7 @@ public class HandlerWrapper implements Handler
    {
       if (state == DOES_NOT_EXIST)
       {
-         log.warn(BundleUtils.getMessage(bundle, "HANDLER_DOES_NOT_EXIST_SKIPHANDLEFAULT",  delegate));
+         log.warn("Handler is in state DOES_NOT_EXIST, skipping Handler.handleFault for: " + delegate);
          return true;
       }
 
@@ -178,7 +174,7 @@ public class HandlerWrapper implements Handler
    {
       if ((e instanceof SOAPFaultException) == false)
       {
-         log.warn(BundleUtils.getMessage(bundle, "TRANSITION_TO_DOES_NOT_EXIST"));
+         log.warn("RuntimeException in handler method, transition to DOES_NOT_EXIST");
          destroy();
       }
 

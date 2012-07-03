@@ -25,7 +25,6 @@ import javax.naming.InitialContext;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -42,17 +41,11 @@ import org.jboss.wsf.test.JBossWSTestSetup;
 public class JBWS637TestCase extends JBossWSTest
 {
    private static CheckSoap port;
-   private static InitialContext iniCtx;
-
+   
    /** Deploy the test */
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS637TestCase.class, "jaxrpc-jbws637-appclient.ear#jaxrpc-jbws637-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS637TestCase.class, "jaxrpc-jbws637-client.jar");
    }
 
    protected void setUp() throws Exception
@@ -60,18 +53,9 @@ public class JBWS637TestCase extends JBossWSTest
       super.setUp();
       if (port == null)
       {
-         iniCtx = getAppclientInitialContext();
-         Check service = (Check)iniCtx.lookup("java:service/Check");
+         InitialContext iniCtx = getInitialContext();
+         Check service = (Check)iniCtx.lookup("java:comp/env/service/Check");
          port = service.getCheckSoap();
-      }
-   }
-
-   protected void tearDown() throws Exception
-   {
-      if (iniCtx != null)
-      {
-         iniCtx.close();
-         iniCtx = null;
       }
    }
 

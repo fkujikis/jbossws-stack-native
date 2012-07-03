@@ -22,7 +22,6 @@
 package org.jboss.ws.core;
 
 import java.io.ByteArrayInputStream;
-import java.util.ResourceBundle;
 
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
@@ -30,10 +29,10 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.stream.StreamSource;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.DOMWriter;
-import org.jboss.ws.core.soap.utils.SOAPElementWriter;
-import org.jboss.ws.core.soap.utils.XMLFragment;
+import org.jboss.ws.core.soap.SOAPElementImpl;
+import org.jboss.ws.core.soap.SOAPElementWriter;
+import org.jboss.ws.core.soap.XMLFragment;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
 
 /**
@@ -44,7 +43,6 @@ import org.w3c.dom.Element;
  */
 public final class MessageTrace
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(MessageTrace.class);
    private static final Logger msgLog = Logger.getLogger(MessageTrace.class);
 
    private MessageTrace()
@@ -63,14 +61,21 @@ public final class MessageTrace
             SOAPEnvelope soapEnv = ((SOAPMessage)message).getSOAPPart().getEnvelope();
             if (soapEnv != null)
             {
-               String envStr = SOAPElementWriter.writeElement(soapEnv, true);
+               String envStr = SOAPElementWriter.writeElement((SOAPElementImpl)soapEnv, true);
                msgLog.trace(messagePrefix + "\n" + envStr);
             }
          }
          catch (SOAPException ex)
          {
-            msgLog.error(BundleUtils.getMessage(bundle, "CANNOT_TRACE_SOAPMESSAGE"),  ex);
+            msgLog.error("Cannot trace SOAPMessage", ex);
          }
+      }
+      else if (message instanceof HTTPMessageImpl)
+      {
+         HTTPMessageImpl httpMessage = (HTTPMessageImpl)message;
+         Element root = httpMessage.getXmlFragment().toElement();
+         String xmlString = DOMWriter.printNode(root, true);
+         msgLog.trace(messagePrefix + "\n" + xmlString);
       }
       else if (message instanceof byte[])
       {
@@ -86,7 +91,7 @@ public final class MessageTrace
       }
       else
       {
-          msgLog.warn(BundleUtils.getMessage(bundle, "UNSUPPORTED_MESSAGE_TYPE",  message));
+          msgLog.warn("Unsupported message type: " + message);
       }
    }
 }
