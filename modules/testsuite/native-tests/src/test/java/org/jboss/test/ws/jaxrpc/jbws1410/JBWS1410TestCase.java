@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.jaxrpc.jbws1410;
 
+import java.io.File;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
@@ -33,7 +34,6 @@ import junit.framework.Test;
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.core.WSTimeoutException;
 import org.jboss.ws.core.jaxrpc.client.ServiceFactoryImpl;
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -51,12 +51,7 @@ public class JBWS1410TestCase extends JBossWSTest
    
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS1410TestCase.class, "jaxrpc-jbws1410.war", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS1410TestCase.class, "jaxrpc-jbws1410.war");
    }
 
    public void setUp() throws Exception

@@ -22,7 +22,6 @@
 package org.jboss.ws.metadata.umdm;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -31,26 +30,26 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.rpc.encoding.TypeMappingRegistry;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.binding.TypeMappingImpl;
 import org.jboss.ws.core.jaxrpc.TypeMappingRegistryImpl;
 import org.jboss.ws.core.jaxrpc.binding.jbossxb.SchemaBindingBuilder;
-import org.jboss.ws.core.soap.utils.Use;
+import org.jboss.ws.core.soap.Use;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMappingFactory;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLTypes;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
+import org.jboss.ws.metadata.wsse.WSSecurityConfiguration;
 import org.jboss.ws.tools.wsdl.WSDLDefinitionsFactory;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 import org.jboss.xb.binding.sunday.unmarshalling.SchemaBinding;
 
 /**
@@ -59,9 +58,8 @@ import org.jboss.xb.binding.sunday.unmarshalling.SchemaBinding;
  * @author Thomas.Diesler@jboss.org
  * @since 12-May-2005
  */
-public class ServiceMetaData implements InitalizableMetaData, Serializable
+public class ServiceMetaData implements InitalizableMetaData
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ServiceMetaData.class);
    // provide logging
    private static final Logger log = Logger.getLogger(ServiceMetaData.class);
 
@@ -92,6 +90,9 @@ public class ServiceMetaData implements InitalizableMetaData, Serializable
    
    // derived cached encoding style
    private Use encStyle;
+   
+   // The security configuration
+   private WSSecurityConfiguration securityConfig;
    
    // The key to the wsdl cache
    private String wsdlCacheKey;
@@ -218,7 +219,7 @@ public class ServiceMetaData implements InitalizableMetaData, Serializable
             if (epMetaData != null)
             {
                // The CTS uses Service.getPort(Class) with multiple endpoints implementing the same SEI
-               log.warn(BundleUtils.getMessage(bundle, "MULTIPLE_POSSIBLE_ENDPOINTS_IMPLEMENTING_SEI",  seiName));
+               log.warn("Multiple possible endpoints implementing SEI: " + seiName);
             }
             epMetaData = epmd;
          }
@@ -233,7 +234,7 @@ public class ServiceMetaData implements InitalizableMetaData, Serializable
       // This happends when we have multiple port components in sharing the same wsdl port
       // The EndpointMetaData name is the wsdl port, so we cannot have multiple meta data for the same port.
       if (endpoints.get(portName) != null)
-         throw new WSException(BundleUtils.getMessage(bundle, "ENDPOINTMETADATA_NAME_MUST_BE_UNIQUE",  portName));
+         throw new WSException("EndpointMetaData name must be unique: " + portName);
 
       endpoints.put(portName, epMetaData);
    }
@@ -264,7 +265,7 @@ public class ServiceMetaData implements InitalizableMetaData, Serializable
             }
             catch (IOException e)
             {
-               throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_PARSE_MAPPING"),  e);
+               throw new WSException("Cannot parse jaxrpc-mapping.xml", e);
             }
          }
       }
@@ -321,7 +322,7 @@ public class ServiceMetaData implements InitalizableMetaData, Serializable
             }
             catch (IOException ex)
             {
-               throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_FIND_WSDL",  wsdlFile));
+               throw new IllegalStateException("Cannot find wsdl: " + wsdlFile);
             }
          }
       }
@@ -333,9 +334,19 @@ public class ServiceMetaData implements InitalizableMetaData, Serializable
       Use encStyle = getEncodingStyle();
       TypeMappingImpl typeMapping = (TypeMappingImpl)tmRegistry.getTypeMapping(encStyle.toURI());
       if (typeMapping == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "NO_TYPE_MAPPING",  encStyle));
+         throw new WSException("No type mapping for encoding style: " + encStyle);
 
       return typeMapping;
+   }
+
+   public WSSecurityConfiguration getSecurityConfiguration()
+   {
+      return securityConfig;
+   }
+
+   public void setSecurityConfiguration(WSSecurityConfiguration securityConfiguration)
+   {
+      this.securityConfig = securityConfiguration;
    }
 
    public Use getEncodingStyle()
@@ -352,7 +363,7 @@ public class ServiceMetaData implements InitalizableMetaData, Serializable
                }
                else if (encStyle.equals(epMetaData.getEncodingStyle()) == false)
                {
-                  throw new WSException(BundleUtils.getMessage(bundle, "CONFLICTING_ENCODING_STYLES"));
+                  throw new WSException("Conflicting encoding styles not supported");
                }
             }
          }
@@ -378,6 +389,19 @@ public class ServiceMetaData implements InitalizableMetaData, Serializable
 
    public void validate()
    {
+      // Validate that there is at least one handler configured
+      // if we have a security configuration
+      if (securityConfig != null)
+      {
+         int handlerCount = 0;
+         for (EndpointMetaData epMetaData : endpoints.values())
+         {
+            handlerCount += epMetaData.getHandlerMetaData(HandlerType.ALL).size();
+         }
+         if (handlerCount == 0)
+            log.warn("WS-Security requires a security handler to be configured");
+      }
+
       // Validate endpoints
       for (EndpointMetaData epMetaData : endpoints.values())
          epMetaData.validate();
@@ -416,7 +440,7 @@ public class ServiceMetaData implements InitalizableMetaData, Serializable
    public void assertTargetNamespace(String targetNS)
    {
       if (getServiceName().getNamespaceURI().equals(targetNS) == false)
-         throw new WSException(BundleUtils.getMessage(bundle, "NOT_WSDL_TNS",  targetNS));
+         throw new WSException("Requested namespace is not WSDL target namespace: " + targetNS);
    }
 
    public String toString()
@@ -429,6 +453,7 @@ public class ServiceMetaData implements InitalizableMetaData, Serializable
       buffer.append("\n wsdlLocation=" + wsdlLocation);
       buffer.append("\n jaxrpcMapping=" + mappingLocation);
       buffer.append("\n publishLocation=" + wsdlPublishLocation);
+      buffer.append("\n securityConfig=" + (securityConfig != null ? "found" : null));
       buffer.append("\n properties=" + properties);
       buffer.append("\n" + types);
       buffer.append("\n");

@@ -24,22 +24,22 @@ package org.jboss.ws.core.soap;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Iterator;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.Name;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPException;
+import javax.xml.transform.Source;
+import javax.xml.ws.handler.MessageContext.Scope;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.CommonMessageContext;
+import org.jboss.ws.core.jaxws.handler.MessageContextJAXWS;
 import org.jboss.ws.core.soap.SOAPContent.State;
-import org.jboss.ws.core.soap.utils.MessageContextAssociation;
-import org.jboss.ws.core.soap.utils.XMLFragment;
+import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
@@ -70,7 +70,6 @@ import org.w3c.dom.TypeInfo;
  */
 public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAccess
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPContentElement.class);
    // provide logging
    private static Logger log = Logger.getLogger(SOAPContentElement.class);
 
@@ -109,7 +108,7 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
    public ParameterMetaData getParamMetaData()
    {
       if (paramMetaData == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "PARAMETER_META_DATA_NOT_AVAILABLE"));
+         throw new IllegalStateException("Parameter meta data not available");
 
       return paramMetaData;
    }
@@ -134,11 +133,8 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
       State prevState = soapContent.getState();
       if (nextState != prevState)
       {
-         if (log.isDebugEnabled())
-         {
-            log.debug("-----------------------------------");
-            log.debug("Transitioning from " + prevState + " to " + nextState);
-         }
+         log.debug("-----------------------------------");
+         log.debug("Transitioning from " + prevState + " to " + nextState);
          lockDOMExpansion = true;
 
          soapContent = soapContent.transitionTo(nextState);
@@ -151,6 +147,14 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
 
    /** Get the payload as source.
     */
+   public Source getPayload()
+   {
+      if (soapContent.getState() == State.OBJECT_VALID)
+         transitionTo(State.DOM_VALID);
+
+      return soapContent.getPayload();
+   }
+
    public XMLFragment getXMLFragment()
    {
       transitionTo(State.XML_VALID);
@@ -179,63 +183,56 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
 
    public SOAPElement addChildElement(SOAPElement child) throws SOAPException
    {
-      if (log.isTraceEnabled())
-         log.trace("addChildElement: " + child);
+      log.trace("addChildElement: " + child);
       expandToDOM();
       return super.addChildElement(child);
    }
 
    public SOAPElement addChildElement(String localName, String prefix) throws SOAPException
    {
-      if (log.isTraceEnabled())
-         log.trace("addChildElement: [localName=" + localName + ",prefix=" + prefix + "]");
+      log.trace("addChildElement: [localName=" + localName + ",prefix=" + prefix + "]");
       expandToDOM();
       return super.addChildElement(localName, prefix);
    }
 
    public SOAPElement addChildElement(String localName, String prefix, String uri) throws SOAPException
    {
-      if (log.isTraceEnabled())
-         log.trace("addChildElement: [localName=" + localName + ",prefix=" + prefix + ",uri=" + uri + "]");
+      log.trace("addChildElement: [localName=" + localName + ",prefix=" + prefix + ",uri=" + uri + "]");
       expandToDOM();
       return super.addChildElement(localName, prefix, uri);
    }
 
    public SOAPElement addChildElement(Name name) throws SOAPException
    {
-      if (log.isTraceEnabled())
-         log.trace("addChildElement: [name=" + name + "]");
+      log.trace("addChildElement: [name=" + name + "]");
       expandToDOM();
       return super.addChildElement(name);
    }
 
    public SOAPElement addChildElement(String name) throws SOAPException
    {
-      if (log.isTraceEnabled())
-         log.trace("addChildElement: [name=" + name + "]");
+      log.trace("addChildElement: [name=" + name + "]");
       expandToDOM();
       return super.addChildElement(name);
    }
 
    public SOAPElement addTextNode(String value) throws SOAPException
    {
-      if (log.isTraceEnabled())
-         log.trace("addTextNode: [value=" + value + "]");
+      log.trace("addTextNode: [value=" + value + "]");
       expandToDOM();
       return super.addTextNode(value);
    }
 
-   public Iterator<org.w3c.dom.Node> getChildElements()
+   public Iterator getChildElements()
    {
       log.trace("getChildElements");
       expandToDOM();
       return super.getChildElements();
    }
 
-   public Iterator<SOAPElement> getChildElements(Name name)
+   public Iterator getChildElements(Name name)
    {
-      if (log.isTraceEnabled())
-         log.trace("getChildElements: [name=" + name + "]");
+      log.trace("getChildElements: [name=" + name + "]");
       expandToDOM();
       return super.getChildElements(name);
    }
@@ -247,7 +244,7 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
       super.removeContents();
    }
 
-   public Iterator<Name> getAllAttributes()
+   public Iterator getAllAttributes()
    {
       return super.getAllAttributes();
    }
@@ -279,16 +276,14 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
 
    public SOAPElement addAttribute(Name name, String value) throws SOAPException
    {
-      if (log.isTraceEnabled())
-         log.trace("addAttribute: [name=" + name + ",value=" + value + "]");
+      log.trace("addAttribute: [name=" + name + ",value=" + value + "]");
       expandToDOM();
       return super.addAttribute(name, value);
    }
 
    public SOAPElement addNamespaceDeclaration(String prefix, String nsURI)
    {
-      if (log.isTraceEnabled())
-         log.trace("addNamespaceDeclaration: [prefix=" + prefix + ",nsURI=" + nsURI + "]");
+      log.trace("addNamespaceDeclaration: [prefix=" + prefix + ",nsURI=" + nsURI + "]");
       expandToDOM();
       return super.addNamespaceDeclaration(prefix, nsURI);
    }
@@ -300,16 +295,14 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
 
    public NodeList getElementsByTagName(String name)
    {
-      if (log.isTraceEnabled())
-         log.trace("getElementsByTagName: [name=" + name + "]");
+      log.trace("getElementsByTagName: [name=" + name + "]");
       expandToDOM();
       return super.getElementsByTagName(name);
    }
 
    public NodeList getElementsByTagNameNS(String namespaceURI, String localName)
    {
-      if (log.isTraceEnabled())
-         log.trace("getElementsByTagName: [nsURI=" + namespaceURI + ",localName=" + localName + "]");
+      log.trace("getElementsByTagName: [nsURI=" + namespaceURI + ",localName=" + localName + "]");
       expandToDOM();
       return super.getElementsByTagNameNS(namespaceURI, localName);
    }
@@ -319,7 +312,7 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
       return super.getEncodingStyle();
    }
 
-   public Iterator<String> getNamespacePrefixes()
+   public Iterator getNamespacePrefixes()
    {
       return super.getNamespacePrefixes();
    }
@@ -339,7 +332,7 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
       return super.getTagName();
    }
 
-   public Iterator<String> getVisibleNamespacePrefixes()
+   public Iterator getVisibleNamespacePrefixes()
    {
       return super.getVisibleNamespacePrefixes();
    }
@@ -356,96 +349,84 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
 
    public boolean removeAttribute(Name name)
    {
-      if (log.isTraceEnabled())
-         log.trace("removeAttribute: " + name.getQualifiedName());
+      log.trace("removeAttribute: " + name.getQualifiedName());
       expandToDOM();
       return super.removeAttribute(name);
    }
 
    public void removeAttribute(String name) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("removeAttribute: " + name);
+      log.trace("removeAttribute: " + name);
       expandToDOM();
       super.removeAttribute(name);
    }
 
    public Attr removeAttributeNode(Attr oldAttr) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("removeAttribute: " + oldAttr.getNodeName());
+      log.trace("removeAttribute: " + oldAttr.getNodeName());
       expandToDOM();
       return super.removeAttributeNode(oldAttr);
    }
 
    public void removeAttributeNS(String namespaceURI, String localName) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("removeAttributeNS: {" + namespaceURI + "}" + localName);
+      log.trace("removeAttributeNS: {" + namespaceURI + "}" + localName);
       expandToDOM();
       super.removeAttributeNS(namespaceURI, localName);
    }
 
    public boolean removeNamespaceDeclaration(String prefix)
    {
-      if (log.isTraceEnabled())
-         log.trace("removeNamespaceDeclaration: " + prefix);
+      log.trace("removeNamespaceDeclaration: " + prefix);
       expandToDOM();
       return super.removeNamespaceDeclaration(prefix);
    }
 
    public void setAttribute(String name, String value) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("setAttribute: [name=" + name + ",value=" + value + "]");
+      log.trace("setAttribute: [name=" + name + ",value=" + value + "]");
       expandToDOM();
       super.setAttribute(name, value);
    }
 
    public Attr setAttributeNode(Attr newAttr) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("setAttributeNode: " + newAttr);
+      log.trace("setAttributeNode: " + newAttr);
       expandToDOM();
       return super.setAttributeNode(newAttr);
    }
 
    public Attr setAttributeNodeNS(Attr newAttr) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("setAttributeNodeNS: " + newAttr);
+      log.trace("setAttributeNodeNS: " + newAttr);
       expandToDOM();
       return super.setAttributeNodeNS(newAttr);
    }
 
    public void setAttributeNS(String namespaceURI, String qualifiedName, String value) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("setAttribute: [nsURI=" + namespaceURI + ",name=" + qualifiedName + ",value=" + value + "]");
+      log.trace("setAttribute: [nsURI=" + namespaceURI + ",name=" + qualifiedName + ",value=" + value + "]");
       expandToDOM();
       super.setAttributeNS(namespaceURI, qualifiedName, value);
    }
 
    public void setIdAttribute(String name, boolean isId) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("setIdAttribute: [name=" + name + ",value=" + isId + "]");
+      log.trace("setIdAttribute: [name=" + name + ",value=" + isId + "]");
       expandToDOM();
       super.setIdAttribute(name, isId);
    }
 
    public void setIdAttributeNode(Attr idAttr, boolean isId) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("setIdAttributeNode: [idAttr=" + idAttr + ",value=" + isId + "]");
+      log.trace("setIdAttributeNode: [idAttr=" + idAttr + ",value=" + isId + "]");
       expandToDOM();
       super.setIdAttributeNode(idAttr, isId);
    }
 
    public void setIdAttributeNS(String namespaceURI, String localName, boolean isId) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("setIdAttributeNS: [nsURI=" + namespaceURI + ",name=" + localName + ",value=" + isId + "]");
+      log.trace("setIdAttributeNS: [nsURI=" + namespaceURI + ",name=" + localName + ",value=" + isId + "]");
       expandToDOM();
       super.setIdAttributeNS(namespaceURI, localName, isId);
    }
@@ -454,16 +435,14 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
 
    public Node appendChild(Node newChild) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("appendChild: " + newChild);
+      log.trace("appendChild: " + newChild);
       expandToDOM();
       return super.appendChild(newChild);
    }
 
    public Node cloneNode(boolean deep)
    {
-      if (log.isTraceEnabled())
-         log.trace("cloneNode: deep=" + deep);
+      log.trace("cloneNode: deep=" + deep);
       expandToDOM();
       return super.cloneNode(deep);
    }
@@ -505,16 +484,14 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
 
    public Node removeChild(Node oldChild) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("removeChild: " + oldChild);
+      log.trace("removeChild: " + oldChild);
       expandToDOM();
       return super.removeChild(oldChild);
    }
 
    public Node replaceChild(Node newChild, Node oldChild) throws DOMException
    {
-      if (log.isTraceEnabled())
-         log.trace("replaceChild: [new=" + newChild + ",old=" + oldChild + "]");
+      log.trace("replaceChild: [new=" + newChild + ",old=" + oldChild + "]");
       expandToDOM();
       return super.replaceChild(newChild, oldChild);
    }
@@ -527,8 +504,7 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
 
    public void setValue(String value)
    {
-      if (log.isTraceEnabled())
-         log.trace("setValue: " + value);
+      log.trace("setValue: " + value);
       expandToDOM();
       super.setValue(value);
    }
@@ -567,7 +543,8 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
          CommonMessageContext ctx = MessageContextAssociation.peekMessageContext();
          if (ctx != null && Boolean.TRUE == ctx.get(Constants.DOM_CONTENT_CANONICAL_NORMALIZATION))
          {
-            log.trace("Forcing canonical normalization of DOMContent...");
+            if (log.isTraceEnabled())
+               log.trace("Forcing canonical normalization of DOMContent...");
             dw.setCanonical(true);
          }
          dw.print(this);
@@ -578,6 +555,62 @@ public class SOAPContentElement extends SOAPElementImpl implements SOAPContentAc
          soapContent.getXMLFragment().writeTo(writer);
 
       }
+   }
+
+   /**
+    * When a SOAPContentElement transitions between dom-valid and xml-valid
+    * the XOP elements need to transition from XOP optimized to base64 and reverse.<p>
+    *
+    * If MTOM is disabled through a message context property we always enforce the
+    * base64 representation by expanding to DOM, the same happens when a JAXRPC handler
+    * accesses the SOAPContentElement.<p>
+    *
+    * If the element is in dom-valid state (because a handlers accessed it), upon marshalling
+    * it's needs to be decided wether or not the <code>xop:Include</code> should be restored.
+    * This as well depends upon the message context property.
+    */
+   public void handleMTOMTransitions()
+   {
+      // JMS transport hot fix. Can be removed once we got a immutabe object model
+      if (MessageContextAssociation.peekMessageContext() == null)
+         return;
+      
+      // MTOM processing is only required on XOP parameters
+      if (!isXOPParameter())
+         return;
+
+      boolean domContentState = (soapContent instanceof DOMContent);
+
+      if (!XOPContext.isMTOMEnabled())
+      {
+         // If MTOM is disabled, we force dom expansion on XOP parameters.
+         // This will inline any XOP include element and remove the attachment part.
+         // See SOAPFactoryImpl for details.
+
+         log.debug("MTOM disabled: Force inline XOP data");
+
+         // TODO: This property must be reset, otherwise you negate its purpose
+         CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
+         msgContext.put(CommonMessageContext.ALLOW_EXPAND_TO_DOM, Boolean.TRUE);
+         if (msgContext instanceof MessageContextJAXWS)
+            ((MessageContextJAXWS)msgContext).setScope(CommonMessageContext.ALLOW_EXPAND_TO_DOM, Scope.APPLICATION);
+
+         expandToDOM();
+      }
+      else if (domContentState && XOPContext.isMTOMEnabled())
+      {
+         // When the DOM representation is valid,
+         // but MTOM is enabled we need to convert the inlined
+         // element back to an xop:Include element and create the attachment part
+
+         log.debug("MTOM enabled: Restore XOP data");
+         XOPContext.restoreXOPDataDOM(this);
+      }
+   }
+
+   boolean isXOPParameter()
+   {
+      return paramMetaData != null && paramMetaData.isXOP();
    }
 
    public void accept(SAAJVisitor visitor)

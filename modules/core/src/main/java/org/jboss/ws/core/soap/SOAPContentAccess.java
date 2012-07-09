@@ -21,7 +21,7 @@
  */
 package org.jboss.ws.core.soap;
 
-import org.jboss.ws.core.soap.utils.XMLFragment;
+import javax.xml.transform.Source;
 
 /**
  * @author Heiko.Braun@jboss.org
@@ -29,6 +29,8 @@ import org.jboss.ws.core.soap.utils.XMLFragment;
  */
 public interface SOAPContentAccess
 {
+   Source getPayload();
+
    XMLFragment getXMLFragment();
 
    void setXMLFragment(XMLFragment xmlFragment);

@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
@@ -42,11 +41,10 @@ import javax.mail.internet.ParseException;
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.IOUtils;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.wsf.common.IOUtils;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * Generic mime utility class.
@@ -55,7 +53,6 @@ import org.jboss.ws.common.JavaUtils;
  */
 public class MimeUtils
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(MimeUtils.class);
 
    private static Map<String, Class> mime2class = new HashMap<String, Class>();
    private static Map<Class, String> class2mime = new HashMap<Class, String>();
@@ -193,7 +190,7 @@ public class MimeUtils
          converter = new RealByteArrayConverter();
       
       if(null == converter)
-         throw new WSException(BundleUtils.getMessage(bundle, "NO_BYTEARRAYCONVERTER_CLASS",  targetClazz.getName()));
+         throw new WSException("No ByteArrayConverter for class: " + targetClazz.getName());
 
       return converter;
    }
@@ -215,7 +212,7 @@ public class MimeUtils
       }
 
       if(null == converter)
-          throw new WSException(BundleUtils.getMessage(bundle, "NO_BYTEARRAYCONVERTER_CONTENT_TYPE",  contentType));
+          throw new WSException("No ByteArrayConverter for content type: " + contentType);
 
       return converter;
    }
@@ -252,12 +249,12 @@ public class MimeUtils
             }
             catch (IOException e)
             {
-               throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_CONVERT",  obj.getClass()));
+               throw new WSException("Failed to convert " + obj.getClass());
             }
          }
          else
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "UNABLE_TO_CONVERT",  obj.getClass()));
+            throw new WSException("Unable to convert " + obj.getClass());
          }
 
       }
@@ -280,12 +277,12 @@ public class MimeUtils
             }
             catch (IOException e)
             {
-               throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_CONVERT",  obj.getClass()));
+               throw new WSException("Failed to convert " + obj.getClass());
             }
          }
          else
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "UNABLE_TO_CONVERT",  obj.getClass()));
+            throw new WSException("Unable to convert " + obj.getClass());
          }
       }
    }
@@ -305,7 +302,7 @@ public class MimeUtils
          }
          catch (IOException e)
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_CONVERT_STRING"));
+            throw new WSException("Failed to convert java.lang.String");
          }
 
          return converted;
@@ -321,12 +318,12 @@ public class MimeUtils
             }
             catch (IOException e)
             {
-               throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_CONVERT",  obj.getClass()));
+               throw new WSException("Failed to convert " + obj.getClass());
             }
          }
          else
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "UNABLE_TO_CONVERT",  obj.getClass()));
+            throw new WSException("Unable to convert " + obj.getClass());
          }
       }
    }
@@ -347,7 +344,7 @@ public class MimeUtils
          }
          catch (IOException e)
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_CONVERT_BYTE"));
+            throw new WSException("Failed to convert byte[]");
          }
 
          return converted;
@@ -364,12 +361,12 @@ public class MimeUtils
             }
             catch (IOException e)
             {
-               throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_CONVERT",  obj.getClass()));
+               throw new WSException("Failed to convert " + obj.getClass());
             }
          }
          else
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "UNABLE_TO_CONVERT",  obj.getClass()));
+            throw new WSException("Unable to convert " + obj.getClass());
          }
       }
    }   
@@ -389,7 +386,7 @@ public class MimeUtils
             }
             catch (IOException e)
             {
-               throw new WSException(BundleUtils.getMessage(bundle, "FAILED_TO_CONVERT",  obj.getClass()));
+               throw new WSException("Failed to convert " + obj.getClass());
             }
          }
       }
