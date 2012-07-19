@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -33,14 +32,18 @@ import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.jaxrpc.ParameterWrapping;
+import org.jboss.ws.core.jaxws.DynamicWrapperGenerator;
 import org.jboss.ws.core.utils.HolderUtils;
+import org.jboss.ws.extensions.xop.jaxws.AttachmentScanResult;
+import org.jboss.ws.extensions.xop.jaxws.ReflectiveAttachmentRefScanner;
 import org.jboss.ws.metadata.accessor.AccessorFactoryCreator;
 import org.jboss.ws.metadata.accessor.ReflectiveMethodAccessorFactoryCreator;
+import org.jboss.ws.metadata.config.EndpointFeature;
+import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * A request/response parameter that a given operation supports.
@@ -51,7 +54,6 @@ import org.jboss.ws.metadata.accessor.ReflectiveMethodAccessorFactoryCreator;
  */
 public class ParameterMetaData implements InitalizableMetaData
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ParameterMetaData.class);
    // provide logging
    private final Logger log = Logger.getLogger(ParameterMetaData.class);
 
@@ -67,6 +69,8 @@ public class ParameterMetaData implements InitalizableMetaData
    private Set<String> mimeTypes;
    private boolean inHeader;
    private boolean isSwA;
+   private boolean isXOP;
+   private boolean isSwaRef;
    private List<WrappedParameter> wrappedParameters;
    private int index;
 
@@ -91,7 +95,7 @@ public class ParameterMetaData implements InitalizableMetaData
    public ParameterMetaData(OperationMetaData opMetaData, QName xmlName, String javaTypeName)
    {
       if (xmlName == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_NULL_XMLNAME_ARGUMENT"));
+         throw new IllegalArgumentException("Invalid null xmlName argument");
 
       // Remove the prefixes
       if (xmlName.getNamespaceURI().length() > 0)
@@ -199,7 +203,7 @@ public class ParameterMetaData implements InitalizableMetaData
    public void setXmlType(QName xmlType)
    {
       if (xmlType == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_NULL_XMLTYPE"));
+         throw new IllegalArgumentException("Invalid null xmlType");
 
       // Remove potential prefix
       if (xmlType.getNamespaceURI().length() > 0)
@@ -226,7 +230,8 @@ public class ParameterMetaData implements InitalizableMetaData
       // Warn if this is called after eager initialization
       UnifiedMetaData wsMetaData = opMetaData.getEndpointMetaData().getServiceMetaData().getUnifiedMetaData();
       if (wsMetaData.isEagerInitialized() && UnifiedMetaData.isFinalRelease() == false)
-         log.warn(BundleUtils.getMessage(bundle, "SET_JAVA_TYPE_NAME_AFTER_EAGER_INIT"),  new IllegalStateException());
+         log.warn("Set java type name after eager initialization", new IllegalStateException());
+
       javaTypeName = typeName;
       javaType = null;
    }
@@ -268,7 +273,7 @@ public class ParameterMetaData implements InitalizableMetaData
          }
          catch (ClassNotFoundException ex)
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_LOAD_JAVA_TYPE",  javaTypeName),  ex);
+            throw new WSException("Cannot load java type: " + javaTypeName, ex);
          }
       }
       return tmpJavaType;
@@ -288,7 +293,7 @@ public class ParameterMetaData implements InitalizableMetaData
       else if ("OUT".equals(mode))
          setMode(ParameterMode.OUT);
       else
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_MODE",  mode));
+         throw new IllegalArgumentException("Invalid mode: " + mode);
    }
 
    public void setMode(ParameterMode mode)
@@ -329,6 +334,26 @@ public class ParameterMetaData implements InitalizableMetaData
       this.isSwA = isSwA;
    }
 
+   public boolean isSwaRef()
+   {
+      return isSwaRef;
+   }
+
+   public void setSwaRef(boolean swaRef)
+   {
+      isSwaRef = swaRef;
+   }
+
+   public boolean isXOP()
+   {
+      return isXOP;
+   }
+
+   public void setXOP(boolean isXOP)
+   {
+      this.isXOP = isXOP;
+   }
+
    public boolean isSOAPArrayParam()
    {
       return soapArrayParam;
@@ -346,7 +371,7 @@ public class ParameterMetaData implements InitalizableMetaData
 
    public void setSOAPArrayCompType(QName compXmlType)
    {
-      if (log.isDebugEnabled() && compXmlType != null && !compXmlType.equals(soapArrayCompType))
+      if (compXmlType != null && !compXmlType.equals(soapArrayCompType))
       {
          String logmsg = "SOAPArrayCompType: [xmlType=" + xmlType + ",compType=" + compXmlType + "]";
          log.debug((soapArrayCompType == null ? "set" : "reset") + logmsg);
@@ -375,7 +400,7 @@ public class ParameterMetaData implements InitalizableMetaData
       StringBuilder mimeName = new StringBuilder(xmlType.getLocalPart());
       int pos = mimeName.indexOf("_");
       if (pos == -1)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "INVALID_MIME_TYPE",  xmlType));
+         throw new IllegalArgumentException("Invalid mime type: " + xmlType);
 
       mimeName.setCharAt(pos, '/');
       return mimeName.toString();
@@ -409,7 +434,14 @@ public class ParameterMetaData implements InitalizableMetaData
 
    public String getPartName()
    {
-      return partName;
+      // [JBWS-771] Use part names that are friendly to .NET
+      String auxPartName = partName;
+      if (opMetaData.getEndpointMetaData().getConfig().hasFeature(EndpointFeature.BINDING_WSDL_DOTNET))
+      {
+         if (opMetaData.isDocumentWrapped() && inHeader == false)
+            auxPartName = "parameters";
+      }
+      return auxPartName;
    }
 
    public void setPartName(String partName)
@@ -431,24 +463,55 @@ public class ParameterMetaData implements InitalizableMetaData
       javaType = null;
 
       // TODO - Remove messageType hack
+      Type epType = getOperationMetaData().getEndpointMetaData().getType();
       if (getOperationMetaData().isDocumentWrapped() && !isInHeader() && !isSwA() && !isMessageType())
       {
          if (loadWrapperBean() == null)
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "WRAPPER_BEANS_AUTOGEN_NOT_SUPPORTED"));
+            if (epType == EndpointMetaData.Type.JAXRPC)
+               throw new WSException("Autogeneration of wrapper beans not supported with JAXRPC");
+
+            new DynamicWrapperGenerator(getClassLoader()).generate(this);
          }
       }
 
       javaType = getJavaType();
       if (javaType == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_LOAD_JAVA_TYPE",  javaTypeName));
+         throw new WSException("Cannot load java type: " + javaTypeName);
+
+      initializeAttachmentParameter(epType);
+   }
+
+   /**
+    * Identify MTOM and SWA:Ref parameter as these require special treatment.
+    * This only affects JAX-WS endpoints.
+    *
+    * Note: For SEI parameter annotations this happens within the metadata builder.
+    * @param epType
+    */
+   private void initializeAttachmentParameter(Type epType)
+   {
+      if (epType == Type.JAXWS)
+      {
+         ReflectiveAttachmentRefScanner scanner = new ReflectiveAttachmentRefScanner();
+         AttachmentScanResult scanResult = scanner.scanBean(javaType);
+         if (scanResult != null)
+         {
+            if (log.isDebugEnabled())
+               log.debug("Identified attachment reference: " + xmlName + ", type=" + scanResult.getType());
+            if (scanResult.getType() == AttachmentScanResult.Type.XOP)
+               setXOP(true);
+            else
+               setSwaRef(true);
+         }
+      }
    }
 
    private ClassLoader getClassLoader()
    {
       ClassLoader loader = opMetaData.getEndpointMetaData().getClassLoader();
       if (loader == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "CLASSLOADER_NOT_AVAILABLE"));
+         throw new WSException("ClassLoader not available");
       return loader;
    }
 
@@ -515,6 +578,12 @@ public class ParameterMetaData implements InitalizableMetaData
       if (isSwA())
       {
          buffer.append("\n isSwA=").append(isSwA());
+         buffer.append("\n mimeTypes=").append(getMimeTypes());
+      }
+
+      if (isXOP())
+      {
+         buffer.append("\n isXOP=").append(isXOP());
          buffer.append("\n mimeTypes=").append(getMimeTypes());
       }
 

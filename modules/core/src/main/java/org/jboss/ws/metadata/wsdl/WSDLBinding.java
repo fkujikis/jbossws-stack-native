@@ -23,13 +23,11 @@ package org.jboss.ws.metadata.wsdl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
 
 /**
  * A Binding component describes a concrete message format and transmission protocol which may be used
@@ -42,7 +40,6 @@ import org.jboss.ws.api.util.BundleUtils;
  */
 public class WSDLBinding extends Extendable implements Serializable
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSDLBinding.class);
    private static final long serialVersionUID = -7699953670233209811L;
 
    // provide logging
@@ -99,7 +96,7 @@ public class WSDLBinding extends Extendable implements Serializable
    {
       WSDLInterface wsdlInterface = wsdlDefinitions.getInterface(interfaceName);
       if (wsdlInterface == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_GET_INTERFACE",  interfaceName));
+         throw new WSException("Cannot get interface for name: " + interfaceName);
       return wsdlInterface;
    }
 
@@ -140,13 +137,13 @@ public class WSDLBinding extends Extendable implements Serializable
          if (aux.getRef().equals(qname))
          {
             if (wsdlBindingOperation != null)
-               log.warn(BundleUtils.getMessage(bundle, "MULTIPLE_BINDING_OP_REFERENCE",  qname));
+               log.warn("Multiple binding operations reference: " + qname);
             wsdlBindingOperation = aux;
          }
       }
       
       if (wsdlBindingOperation == null)
-         log.warn(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_BINDING_OPERATION",  qname));
+         log.warn("Cannot obtain binding operation for ref: " + qname);
          
       return wsdlBindingOperation;
    }

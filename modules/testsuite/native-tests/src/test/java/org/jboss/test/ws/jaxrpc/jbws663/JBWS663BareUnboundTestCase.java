@@ -26,7 +26,6 @@ import javax.xml.rpc.Service;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -43,17 +42,11 @@ import org.jboss.wsf.test.JBossWSTestSetup;
 public class JBWS663BareUnboundTestCase extends JBossWSTest
 {
    private static SMSTextMessagingSoapBare port;
-   private static InitialContext iniCtx;
    
    /** Deploy the test */
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS663BareUnboundTestCase.class, "jaxrpc-jbws663b.war, jaxrpc-jbws663b-appclient.ear#jaxrpc-jbws663b-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS663BareUnboundTestCase.class, "jaxrpc-jbws663b.war, jaxrpc-jbws663b-client.jar");
    }
 
    protected void setUp() throws Exception
@@ -61,20 +54,10 @@ public class JBWS663BareUnboundTestCase extends JBossWSTest
       super.setUp();
       if (port == null)
       {
-         iniCtx = getAppclientInitialContext();
-         Service service = (Service)iniCtx.lookup("java:service/SMSService");
+         InitialContext iniCtx = getInitialContext();
+         Service service = (Service)iniCtx.lookup("java:comp/env/service/SMSService");
          port = (SMSTextMessagingSoapBare)service.getPort(SMSTextMessagingSoapBare.class);
       }
-   }
-
-   protected void tearDown() throws Exception
-   {
-      if (iniCtx != null)
-      {
-         iniCtx.close();
-         iniCtx = null;
-      }
-      super.tearDown();
    }
 
    public void testCreateService() throws Exception

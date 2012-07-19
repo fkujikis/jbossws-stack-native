@@ -25,12 +25,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
 
 /**
  * XML mapping of the java-wsdl-mapping root element in jaxrpc-mapping.xml
@@ -40,7 +38,6 @@ import org.jboss.ws.api.util.BundleUtils;
  */
 public class JavaWsdlMapping implements Serializable
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JavaWsdlMapping.class);
    private static final long serialVersionUID = -142671631068024054L;
 
    // provide logging
@@ -145,7 +142,7 @@ public class JavaWsdlMapping implements Serializable
          }
 
          if (typeMapping == null)
-            log.warn(BundleUtils.getMessage(bundle, "CANNOT_FIND_MAPPING",  xmlType));
+            log.warn("Cannot find jaxrpc-mapping for type: " + xmlType);
       }
 
       return typeMapping;

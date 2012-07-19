@@ -21,35 +21,64 @@
  */
 package org.jboss.ws.metadata.umdm;
 
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Properties;
 import java.util.Set;
 
+import javax.jws.soap.SOAPBinding.ParameterStyle;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
+import javax.xml.ws.WebServiceFeature;
+import javax.xml.ws.Service.Mode;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.ws.core.CommonBindingProvider;
+import org.jboss.ws.core.CommonSOAPBinding;
 import org.jboss.ws.core.binding.TypeMappingImpl;
 import org.jboss.ws.core.jaxrpc.binding.JBossXBDeserializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.JBossXBSerializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.SOAPArrayDeserializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.SOAPArraySerializerFactory;
-import org.jboss.ws.core.soap.utils.Style;
-import org.jboss.ws.core.soap.utils.Use;
+import org.jboss.ws.core.jaxws.JAXBBindingCustomization;
+import org.jboss.ws.core.jaxws.JAXBContextCache;
+import org.jboss.ws.core.jaxws.JAXBContextFactory;
+import org.jboss.ws.core.jaxws.JAXBDeserializerFactory;
+import org.jboss.ws.core.jaxws.JAXBSerializerFactory;
+import org.jboss.ws.core.jaxws.client.DispatchBinding;
+import org.jboss.ws.core.soap.Style;
+import org.jboss.ws.core.soap.Use;
 import org.jboss.ws.metadata.accessor.AccessorFactory;
 import org.jboss.ws.metadata.accessor.AccessorFactoryCreator;
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+import org.jboss.ws.metadata.accessor.JAXBAccessorFactoryCreator;
+import org.jboss.ws.metadata.config.CommonConfig;
+import org.jboss.ws.metadata.config.Configurable;
+import org.jboss.ws.metadata.config.ConfigurationProvider;
+import org.jboss.ws.metadata.config.EndpointFeature;
+import org.jboss.ws.metadata.config.JBossWSConfigFactory;
+import org.jboss.wsf.common.JavaUtils;
+import org.jboss.wsf.spi.binding.BindingCustomization;
+import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+
+import com.sun.xml.bind.api.JAXBRIContext;
 
 /**
  * A Service component describes a set of endpoints.
@@ -57,17 +86,23 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaDat
  * @author Thomas.Diesler@jboss.org
  * @since 12-May-2005
  */
-public abstract class EndpointMetaData extends ExtensibleMetaData implements InitalizableMetaData
+public abstract class EndpointMetaData extends ExtensibleMetaData implements ConfigurationProvider, InitalizableMetaData
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(EndpointMetaData.class);
    // provide logging
    private static Logger log = Logger.getLogger(EndpointMetaData.class);
+
+   public enum Type
+   {
+      JAXRPC, JAXWS
+   }
 
    public static final Set<String> SUPPORTED_BINDINGS = new HashSet<String>();
    static
    {
       SUPPORTED_BINDINGS.add(Constants.SOAP11HTTP_BINDING);
       SUPPORTED_BINDINGS.add(Constants.SOAP12HTTP_BINDING);
+      SUPPORTED_BINDINGS.add(Constants.SOAP11HTTP_MTOM_BINDING);
+      SUPPORTED_BINDINGS.add(Constants.SOAP12HTTP_MTOM_BINDING);
       SUPPORTED_BINDINGS.add(Constants.HTTP_BINDING);
    }
 
@@ -88,24 +123,45 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
    private Class seiClass;
    // The optional authentication method
    private String authMethod;
+   // Arbitrary properties given by <call-property>
+   private Properties properties;
    // The SOAPBinding style
    private Style style;
    // The SOAPBinding use
    private Use use;
    // The SOAPBinding parameter style
-   private Boolean wrappedParameterStyle;
+   private ParameterStyle parameterStyle;
+   // The JAXWS ServiceMode
+   private Mode serviceMode;
+   // Whether the endpoint was deployed from annotations
+   private Type type;
    // The list of service meta data
    private List<OperationMetaData> operations = new ArrayList<OperationMetaData>();
    // Maps the java method to the operation meta data
    private Map<Method, OperationMetaData> opMetaDataCache = new HashMap<Method, OperationMetaData>();
+   // All of the registered types
+   private List<Class> registeredTypes = new ArrayList<Class>();
+   // The features defined for this endpoint
+   private FeatureSet features = new FeatureSet();
+   // The documentation edfined through the @Documentation annotation
+   private String documentation;
+
+   private ConfigObservable configObservable = new ConfigObservable();
 
    private List<UnifiedPortComponentRefMetaData> serviceRefContrib = new ArrayList<UnifiedPortComponentRefMetaData>();
 
-   public EndpointMetaData(ServiceMetaData service, QName portName, QName portTypeName)
+   private JAXBContextCache jaxbCache = new JAXBContextCache();
+
+   private List<BindingCustomization> bindingCustomization = new ArrayList<BindingCustomization>();
+
+   public EndpointMetaData(ServiceMetaData service, QName portName, QName portTypeName, Type type)
    {
       this.serviceMetaData = service;
       this.portName = portName;
       this.portTypeName = portTypeName;
+      this.type = type;
+
+      // The default binding
       this.bindingId = Constants.SOAP11HTTP_BINDING;
    }
 
@@ -141,7 +197,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
    public void setBindingId(String bindingId)
    {
       if (SUPPORTED_BINDINGS.contains(bindingId) == false)
-         throw new WSException(BundleUtils.getMessage(bundle, "UNSUPPORTED_BINDING",  bindingId));
+         throw new WSException("Unsupported binding: " + bindingId);
 
       this.bindingId = bindingId;
    }
@@ -160,7 +216,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
       if (wsMetaData.isEagerInitialized())
       {
          if (UnifiedMetaData.isFinalRelease() == false)
-            log.warn(BundleUtils.getMessage(bundle, "SET_SEI_NAME_AFTER_EAGER_INIT"));
+            log.warn("Set SEI name after eager initialization", new IllegalStateException());
 
          // reinitialize
          initializeInternal();
@@ -188,13 +244,13 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
             tmpClass = classLoader.loadClass(seiName);
             if (serviceMetaData.getUnifiedMetaData().isEagerInitialized())
             {
-               log.warn(BundleUtils.getMessage(bundle, "LOADING_SEI_AFTER_EAGER_INIT"));
+               log.warn("Loading SEI after eager initialization");
                seiClass = tmpClass;
             }
          }
          catch (ClassNotFoundException ex)
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_LOAD_SEI",  seiName),  ex);
+            throw new WSException("Cannot load service endpoint interface: " + seiName, ex);
          }
       }
       return tmpClass;
@@ -205,8 +261,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
       if (use == null)
       {
          use = Use.getDefaultUse();
-         if (log.isDebugEnabled())
-            log.debug("Using default encoding style: " + use);
+         log.debug("Using default encoding style: " + use);
       }
       return use;
    }
@@ -214,7 +269,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
    public void setEncodingStyle(Use value)
    {
       if (value != null && use != null && !use.equals(value))
-         throw new WSException(BundleUtils.getMessage(bundle, "MIXED_STYLES_NOT_SUPPORTED"));
+         throw new WSException("Mixed encoding styles not supported");
 
       log.trace("setEncodingStyle: " + value);
       this.use = value;
@@ -225,8 +280,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
       if (style == null)
       {
          style = Style.getDefaultStyle();
-         if (log.isDebugEnabled())
-            log.debug("Using default style: " + style);
+         log.debug("Using default style: " + style);
       }
       return style;
    }
@@ -234,28 +288,49 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
    public void setStyle(Style value)
    {
       if (value != null && style != null && !style.equals(value))
-         throw new WSException(BundleUtils.getMessage(bundle, "MIXED_STYLES_NOT_SUPPORTED"));
+         throw new WSException("Mixed styles not supported");
 
-      if (log.isTraceEnabled())
-         log.trace("setStyle: " + value);
+      log.trace("setStyle: " + value);
       this.style = value;
    }
 
-   public boolean isWrappedParameterStyle()
+   public ParameterStyle getParameterStyle()
    {
-      if (wrappedParameterStyle == null)
+      if (parameterStyle == null)
       {
-    	  wrappedParameterStyle = Boolean.TRUE;
+         parameterStyle = ParameterStyle.WRAPPED;
+         log.debug("Using default parameter style: " + parameterStyle);
       }
-      return wrappedParameterStyle;
+      return parameterStyle;
    }
 
-   public void setWrappedParameterStyle(final Boolean value)
+   public void setParameterStyle(ParameterStyle value)
    {
-      if (value != null && wrappedParameterStyle != null && !wrappedParameterStyle.equals(value))
-         throw new WSException(BundleUtils.getMessage(bundle, "MIXED_SOAP_PARAMETER_STYLES_NOT_SUPPORTED"));
+      if (value != null && parameterStyle != null && !parameterStyle.equals(value))
+         throw new WSException("Mixed SOAP parameter styles not supported");
 
-      this.wrappedParameterStyle = value;
+      log.debug("setParameterStyle: " + value);
+      this.parameterStyle = value;
+   }
+
+   public Mode getServiceMode()
+   {
+      return serviceMode;
+   }
+
+   public void setServiceMode(Mode serviceMode)
+   {
+      this.serviceMode = serviceMode;
+   }
+
+   public Type getType()
+   {
+      return type;
+   }
+
+   public Collection<BindingCustomization> getBindingCustomizations()
+   {
+      return bindingCustomization;
    }
 
    public String getAuthMethod()
@@ -266,6 +341,48 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
    public void setAuthMethod(String authMethod)
    {
       this.authMethod = authMethod;
+   }
+
+   public Properties getProperties()
+   {
+      if (null == this.properties)
+         this.properties = new Properties();
+      return this.properties;
+   }
+
+   public void setProperties(Properties properties)
+   {
+      this.properties = properties;
+   }
+
+   public <T extends WebServiceFeature> T getFeature(Class<T> key)
+   {
+      return features.getFeature(key);
+   }
+
+   public <T extends WebServiceFeature> boolean isFeatureEnabled(Class<T> key)
+   {
+      return features.isFeatureEnabled(key);
+   }
+
+   public FeatureSet getFeatures()
+   {
+      return features;
+   }
+
+   public void addFeature(WebServiceFeature feature)
+   {
+      this.features.addFeature(feature);
+   }
+
+   public String getDocumentation()
+   {
+      return documentation;
+   }
+
+   public void setDocumentation(String documentation)
+   {
+      this.documentation = documentation;
    }
 
    public List<OperationMetaData> getOperations()
@@ -288,7 +405,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
             }
             else
             {
-               throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_UNIQUELY_INDENTIFY_OP",  xmlName));
+               throw new WSException("Cannot uniquely indentify operation: " + xmlName);
             }
          }
       }
@@ -315,7 +432,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
                }
                else
                {
-                  throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_UNIQUELY_INDENTIFY_OP",  xmlName));
+                  throw new WSException("Cannot uniquely indentify operation: " + xmlName);
                }
             }
          }
@@ -329,7 +446,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
       if (opMetaDataCache.size() == 0)
       {
          // This can happen when the SEI mapping was not found
-         log.warn(BundleUtils.getMessage(bundle, "ACCESS_TO_EMPTY_OP_META_DATA_CACHE"));
+         log.warn("Access to empty operation meta data cache, reinitializing");
          initializeInternal();
       }
 
@@ -402,6 +519,8 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
 
    public void validate()
    {
+      getEndpointConfigMetaData().validate();
+
       for (OperationMetaData opMetaData : operations)
          opMetaData.validate();
    }
@@ -424,6 +543,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
       eagerInitializeOperations();
       eagerInitializeTypes();
       eagerInitializeAccessors();
+      eagerInitializeJAXBContextCache();
    }
 
    private void eagerInitializeOperations()
@@ -451,7 +571,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
    {
       TypeMappingImpl typeMapping = serviceMetaData.getTypeMapping();
       List<TypeMappingMetaData> typeMappings = serviceMetaData.getTypesMetaData().getTypeMappings();
-      List<Class> registeredTypes = new ArrayList<Class>(typeMappings.size());
+      registeredTypes = new ArrayList<Class>(typeMappings.size());
       for (TypeMappingMetaData tmMetaData : typeMappings)
       {
          String javaTypeName = tmMetaData.getJavaTypeName();
@@ -482,6 +602,7 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
                   if (JavaUtils.isPrimitive(javaTypeName))
                      javaType = JavaUtils.getWrapperType(javaType);
 
+                  // Needed for runtime JAXB context
                   registeredTypes.add(javaType);
 
                   if (getEncodingStyle() == Use.ENCODED && javaType.isArray())
@@ -490,12 +611,19 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
                   }
                   else
                   {
-                     typeMapping.register(javaType, xmlType, new JBossXBSerializerFactory(), new JBossXBDeserializerFactory());
+                     if (getType() == Type.JAXWS)
+                     {
+                        typeMapping.register(javaType, xmlType, new JAXBSerializerFactory(), new JAXBDeserializerFactory());
+                     }
+                     else
+                     {
+                        typeMapping.register(javaType, xmlType, new JBossXBSerializerFactory(), new JBossXBDeserializerFactory());
+                     }
                   }
                }
                catch (ClassNotFoundException e)
                {
-                  log.warn(BundleUtils.getMessage(bundle, "CANNOT_LOAD_CLASS", new Object[]{ xmlType,  javaTypeName}));
+                  log.warn("Cannot load class for type: " + xmlType + "," + javaTypeName);
                }
             }
          }
@@ -505,19 +633,36 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
    private void eagerInitializeAccessors()
    {
       // Collect the list of all used types
+      boolean useJAXBAccessorFactory = false;
       List<Class> types = new ArrayList<Class>();
       for (OperationMetaData opMetaData : operations)
       {
          for (ParameterMetaData paramMetaData : opMetaData.getParameters())
          {
+            AccessorFactoryCreator factoryCreator = paramMetaData.getAccessorFactoryCreator();
+            if (factoryCreator instanceof JAXBAccessorFactoryCreator)
+               useJAXBAccessorFactory = true;
+
             types.add(paramMetaData.getJavaType());
          }
 
          ParameterMetaData retParam = opMetaData.getReturnParameter();
          if (retParam != null)
          {
+            AccessorFactoryCreator factoryCreator = retParam.getAccessorFactoryCreator();
+            if (factoryCreator instanceof JAXBAccessorFactoryCreator)
+               useJAXBAccessorFactory = true;
+
             types.add(retParam.getJavaType());
          }
+      }
+
+      // Create a JAXBContext for those types
+      JAXBRIContext jaxbCtx = null;
+      if (useJAXBAccessorFactory)
+      {
+         Class[] typeArr = new Class[types.size()];
+         jaxbCtx = (JAXBRIContext)JAXBContextFactory.newInstance().createContext(types.toArray(typeArr));
       }
 
       // Create the accessors using a shared JAXBContext 
@@ -525,19 +670,68 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
       {
          for (ParameterMetaData paramMetaData : opMetaData.getParameters())
          {
-            createAccessor(paramMetaData);
+            createAccessor(paramMetaData, jaxbCtx);
          }
 
          ParameterMetaData retParam = opMetaData.getReturnParameter();
          if (retParam != null)
-            createAccessor(retParam);
+            createAccessor(retParam, jaxbCtx);
       }
 
    }
 
-   private void createAccessor(ParameterMetaData paramMetaData)
+   private void eagerInitializeJAXBContextCache()
+   {
+      //initialize jaxb context cache
+      if ("true".equalsIgnoreCase(System.getProperty(Constants.EAGER_INITIALIZE_JAXB_CONTEXT_CACHE)))
+      {
+         log.debug("Initializing JAXBContext cache...");
+         BindingCustomization bindingCustomization = null;
+         if (this instanceof ServerEndpointMetaData)
+         {
+            bindingCustomization = ((ServerEndpointMetaData)this).getEndpoint().getAttachment(BindingCustomization.class);
+         }
+         try
+         {
+            Class[] classes = getRegisteredTypes().toArray(new Class[0]);
+            String defaultNS = portTypeName.getNamespaceURI();
+            for (Class<?> clz : classes)
+            {
+               if (clz.getName().endsWith("ObjectFactory"))
+               {
+                  for (Method method : clz.getMethods())
+                  {
+                     XmlElementDecl elementDecl = method.getAnnotation(XmlElementDecl.class);
+                     if (elementDecl != null && XmlElementDecl.GLOBAL.class.equals(elementDecl.scope())
+                           && elementDecl.namespace() != null && elementDecl.namespace().length() > 0)
+                     {
+                        defaultNS = null;
+                     }
+                  }
+               }
+            }
+            if (defaultNS != null)
+            {
+               if (bindingCustomization == null)
+                  bindingCustomization = new JAXBBindingCustomization();
+               bindingCustomization.put(JAXBBindingCustomization.DEFAULT_NAMESPACE_REMAP, defaultNS);
+            }
+            JAXBContext context = JAXBContextFactory.newInstance().createContext(classes, bindingCustomization);
+            jaxbCache.add(classes, context);
+         }
+         catch (Exception e)
+         {
+            //ignore
+         }
+      }
+   }
+
+   private void createAccessor(ParameterMetaData paramMetaData, JAXBRIContext jaxbCtx)
    {
       AccessorFactoryCreator factoryCreator = paramMetaData.getAccessorFactoryCreator();
+      if (factoryCreator instanceof JAXBAccessorFactoryCreator)
+         ((JAXBAccessorFactoryCreator)factoryCreator).setJAXBContext(jaxbCtx);
+
       if (paramMetaData.getWrappedParameters() != null)
       {
          AccessorFactory factory = factoryCreator.create(paramMetaData);
@@ -546,12 +740,228 @@ public abstract class EndpointMetaData extends ExtensibleMetaData implements Ini
       }
    }
 
+   // ---------------------------------------------------------------
+   // Configuration provider impl
+
+   /**
+    * Callback for components that require configuration through jbossws-dd
+    */
+   public void configure(Configurable configurable)
+   {
+      CommonConfig config = getConfig();
+
+      // SOAPBinding configuration
+      if (configurable instanceof CommonBindingProvider)
+      {
+         log.debug("Configure SOAPBinding");
+
+         if (config.hasFeature(EndpointFeature.MTOM))
+         {
+            CommonBindingProvider provider = (CommonBindingProvider)configurable;
+            ((CommonSOAPBinding)provider.getCommonBinding()).setMTOMEnabled(true);
+            log.debug("Enable MTOM on endpoint " + getPortName());
+         }
+      }
+      else if (configurable instanceof DispatchBinding)
+      {
+         DispatchBinding dpb = (DispatchBinding)configurable;
+         dpb.setValidateDispatch(config.hasFeature(EndpointFeature.VALIDATE_DISPATCH));
+      }
+   }
+
+   public UnifiedVirtualFile getRootFile()
+   {
+      return getServiceMetaData().getUnifiedMetaData().getRootFile();
+   }
+
+   public void registerConfigObserver(Configurable observer)
+   {
+      configObservable.addObserver(observer);
+   }
+
+   public JAXBContextCache getJaxbCache()
+   {
+      return jaxbCache;
+   }
+
+   public String getConfigFile()
+   {
+      return getEndpointConfigMetaData().getConfigFile();
+   }
+
+   public String getConfigName()
+   {
+      return getEndpointConfigMetaData().getConfigName();
+   }
+
    public EndpointConfigMetaData getEndpointConfigMetaData()
    {
       if (configMetaData == null)
          configMetaData = new EndpointConfigMetaData(this);
 
       return this.configMetaData;
+   }
+
+   public CommonConfig getConfig()
+   {
+      EndpointConfigMetaData ecmd = getEndpointConfigMetaData();
+      CommonConfig config = ecmd.getConfig();
+
+      // Make sure we have a configuration
+      if (config == null)
+      {
+         // No base configuration. 
+         initEndpointConfigMetaData(ecmd, null);
+         config = ecmd.getConfig();
+      }
+
+      return config;
+   }
+
+   public void setConfigName(String configName)
+   {
+      setConfigNameInternal(configName, null);
+   }
+
+   public void setConfigName(String configName, String configFile)
+   {
+      setConfigNameInternal(configName, configFile);
+   }
+
+   private void setConfigNameInternal(String configName, String configFile)
+   {
+      if (configName == null)
+         throw new IllegalArgumentException("Config name cannot be null");
+
+      if (configFile == null)
+      {
+         configFile = getEndpointConfigMetaData().getConfigFile();
+      }
+
+      if (configName.equals(getEndpointConfigMetaData().getConfigName()) == false || configFile.equals(getEndpointConfigMetaData().getConfigFile()) == false)
+      {
+         log.debug("Reconfiguration forced, new config is '" + configName + "' file is '" + configFile + "'");
+
+         this.configMetaData = createEndpointConfigMetaData(configName, configFile);
+         configObservable.doNotify(configName);
+      }
+   }
+
+   /**
+    * The factory method to create and initialise a new EndpointConfigMetaData, the current 
+    * EndpointConfigMetaData will be used as the base to backup the RMMD.
+    * 
+    * This method does not set the EndpointConfigMetaData as it can be used by clients to create 
+    * a local configuration not stored in the EndpointMetaData.
+    */
+   protected EndpointConfigMetaData createEndpointConfigMetaData(String configName, String configFile)
+   {
+      EndpointConfigMetaData ecmd = new EndpointConfigMetaData(this);
+      ecmd.setConfigName(configName);
+      ecmd.setConfigFile(configFile);
+
+      initEndpointConfigMetaData(ecmd, configMetaData);
+
+      return ecmd;
+   }
+
+   public void initEndpointConfig()
+   {
+      EndpointConfigMetaData ecmd = getEndpointConfigMetaData();
+      // At the time this method is called initialisation may have already happened
+      // always take the current ECMD as a base in case there is anything to backup. 
+      initEndpointConfigMetaData(ecmd, ecmd);
+   }
+
+   /**
+    * Initialise the toInitialise EndpointConfigMeta but first backup the RM Meta Data from
+    * the base EndpointConfigMetaData.
+    * 
+    * @param toInitialise - The EndpointConfigMetaData to initialise.
+    * @param base - The base EndpointConfigMetaData to take the RMMD from.
+    */
+   private void initEndpointConfigMetaData(EndpointConfigMetaData toInitialise, EndpointConfigMetaData base)
+   {
+      String configName = toInitialise.getConfigName();
+      String configFile = toInitialise.getConfigFile();
+
+      log.debug("Create new config [name=" + configName + ",file=" + configFile + "]");
+
+      JBossWSConfigFactory factory = JBossWSConfigFactory.newInstance();
+      CommonConfig config = factory.getConfig(getRootFile(), configName, configFile);
+      toInitialise.setConfig(config);
+
+      toInitialise.configHandlerMetaData();
+   }
+
+   public List<Class> getRegisteredTypes()
+   {
+      return Collections.unmodifiableList(registeredTypes);
+   }
+
+   class ConfigObservable extends Observable
+   {
+
+      private ReferenceQueue<WeakReference<Observer>> queue = new ReferenceQueue<WeakReference<Observer>>();
+      private List<WeakReference<Observer>> observer = new ArrayList<WeakReference<Observer>>();
+
+      public void doNotify(Object object)
+      {
+         setChanged();
+         notifyObservers(object);
+      }
+
+      public synchronized void addObserver(Observer o)
+      {
+         clearCollected();
+         observer.add(new WeakReference(o, queue));
+      }
+
+      public synchronized void deleteObserver(Observer o)
+      {
+         clearCollected();
+         for (WeakReference<Observer> w : observer)
+         {
+            Observer tmp = w.get();
+            if (tmp != null && tmp.equals(o))
+            {
+               observer.remove(o);
+               break;
+            }
+
+         }
+      }
+
+      public void notifyObservers()
+      {
+         notifyObservers(null);
+      }
+
+      public void notifyObservers(Object arg)
+      {
+         clearCollected();
+         if (hasChanged())
+         {
+            for (WeakReference<Observer> w : observer)
+            {
+               Observer tmp = w.get();
+               if (tmp != null)
+               {
+                  tmp.update(this, arg);
+               }
+            }
+         }
+      }
+
+      private void clearCollected()
+      {
+         Reference ref;
+         while ((ref = queue.poll()) != null)
+         {
+            observer.remove(ref);
+         }
+
+      }
    }
 
    public List<UnifiedPortComponentRefMetaData> getServiceRefContrib()

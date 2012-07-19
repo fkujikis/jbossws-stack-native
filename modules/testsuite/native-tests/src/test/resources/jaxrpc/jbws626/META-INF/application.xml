@@ -13,4 +13,8 @@
     </ejb>
   </module>
 
+  <module>
+    <java>jaxrpc-jbws626-client.jar</java>
+  </module>
 </application>
+
