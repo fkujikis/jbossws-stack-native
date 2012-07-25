@@ -33,7 +33,6 @@ import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPMessage;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.core.soap.utils.SOAPUtils;
 
 public class HRefHandler extends GenericHandler
 {
@@ -78,7 +77,7 @@ public class HRefHandler extends GenericHandler
                 "</env:Body>" +
               "</env:Envelope>";
            
-           MessageFactory factory = SOAPUtils.newSOAP11MessageFactory();
+           MessageFactory factory = MessageFactory.newInstance();
            SOAPMessage reqMessage = factory.createMessage(null, new ByteArrayInputStream(envStr.getBytes()));
            ((SOAPMessageContext)msgContext).setMessage(reqMessage);
         }
@@ -110,7 +109,7 @@ public class HRefHandler extends GenericHandler
                 "</env:Body>" +
               "</env:Envelope>";
            
-           MessageFactory factory = SOAPUtils.newSOAP11MessageFactory();
+           MessageFactory factory = MessageFactory.newInstance();
            SOAPMessage resMessage = factory.createMessage(null, new ByteArrayInputStream(envStr.getBytes()));
            ((SOAPMessageContext)msgContext).setMessage(resMessage);
         }

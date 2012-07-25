@@ -28,7 +28,11 @@ import org.jboss.logging.Logger;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.DeserializerSupport;
 import org.jboss.ws.core.binding.SerializationContext;
+import org.jboss.ws.extensions.xop.XOPContext;
+import org.jboss.ws.extensions.xop.jaxrpc.XOPUnmarshallerImpl;
+import org.jboss.wsf.common.DOMUtils;
 import org.jboss.xb.binding.SimpleTypeBindings;
+import org.jboss.xb.binding.sunday.xop.XOPUnmarshaller;
 import org.w3c.dom.Element;
 
 /**
@@ -52,9 +56,19 @@ public class Base64Deserializer extends DeserializerSupport
 
       byte[] value = null;
 
-      String valueStr = unwrapValueStr(xmlFragment);
-      if (valueStr != null)
-         value = SimpleTypeBindings.unmarshalBase64(valueStr);
+      if(XOPContext.isXOPMessage())
+      {
+         Element xopInclude = DOMUtils.getFirstChildElement(xmlFragment);
+         String cid = xopInclude.getAttribute("href");
+         XOPUnmarshaller xopUnmarshaller = new XOPUnmarshallerImpl();
+         value = xopUnmarshaller.getAttachmentAsByteArray(cid);
+      }
+      else
+      {
+         String valueStr = unwrapValueStr(xmlFragment);
+         if (valueStr != null)
+            value = SimpleTypeBindings.unmarshalBase64(valueStr);
+      }
       return value;
    }
 }

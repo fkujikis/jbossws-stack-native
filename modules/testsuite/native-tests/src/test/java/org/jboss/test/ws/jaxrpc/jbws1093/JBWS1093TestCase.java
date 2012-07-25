@@ -35,11 +35,9 @@ import javax.xml.soap.SOAPMessage;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
-import org.jboss.ws.common.DOMWriter;
-import org.jboss.ws.core.soap.utils.SOAPUtils;
+import org.jboss.wsf.common.DOMWriter;
 
 /**
  * Deploying a war that also contains normal servlets the web.xml is modified as if they are all endpoints
@@ -53,16 +51,10 @@ public class JBWS1093TestCase extends JBossWSTest
 {
 
    private static TestEndpoint port;
-   private static InitialContext iniCtx;
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS1093TestCase.class, "jaxrpc-jbws1093.war, jaxrpc-jbws1093-appclient.ear#jaxrpc-jbws1093-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS1093TestCase.class, "jaxrpc-jbws1093.war, jaxrpc-jbws1093-client.jar");
    }
 
    public void setUp() throws Exception
@@ -70,18 +62,9 @@ public class JBWS1093TestCase extends JBossWSTest
       super.setUp();
       if (port == null)
       {
-         iniCtx = getAppclientInitialContext();
-         Service service = (Service)iniCtx.lookup("java:service/TestService");
+         InitialContext iniCtx = getInitialContext();
+         Service service = (Service)iniCtx.lookup("java:comp/env/service/TestService");
          port = (TestEndpoint)service.getPort(TestEndpoint.class);
-      }
-   }
-
-   protected void tearDown() throws Exception
-   {
-      if (iniCtx != null)
-      {
-         iniCtx.close();
-         iniCtx = null;
       }
    }
 
@@ -118,7 +101,7 @@ public class JBWS1093TestCase extends JBossWSTest
    {
       URL servletURL = new URL("http://" + getServerHost() + ":8080" + "/jaxrpc-jbws1093/ServletTest?type=soapMessage");
 
-      SOAPConnection con = SOAPUtils.newSOAPConnectionFactory().createConnection();
+      SOAPConnection con = SOAPConnectionFactory.newInstance().createConnection();
       SOAPMessage resMessage = con.get(servletURL);
       SOAPEnvelope env = resMessage.getSOAPPart().getEnvelope();
 

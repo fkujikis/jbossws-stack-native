@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.metadata.config.CommonConfig;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 
 /**
@@ -44,6 +45,14 @@ public class EndpointConfigMetaData
    private static Logger log = Logger.getLogger(EndpointConfigMetaData.class);
 
    private final EndpointMetaData epMetaData;
+   // The REQUIRED config-name
+   protected String configName;
+   // The REQUIRED config-file
+   protected String configFile;
+
+   // The REQUIRED endpoint config
+   private CommonConfig config;
+
    // The optional handlers
    private List<HandlerMetaData> handlers = new ArrayList<HandlerMetaData>();
    // True if the handlers are initialized
@@ -101,7 +110,16 @@ public class EndpointConfigMetaData
       List<HandlerMetaData> sepHandlers = getHandlerMetaData(HandlerType.ENDPOINT);
       clearHandlers();
 
+      List<HandlerMetaData> preHandlers = config.getHandlers(epMetaData, HandlerType.PRE);
+      List<HandlerMetaData> postHandlers = config.getHandlers(epMetaData, HandlerType.POST);
+
+      addHandlers(preHandlers);
       addHandlers(sepHandlers);
+      addHandlers(postHandlers);
+
+      log.debug("Added " + preHandlers.size() + " PRE handlers");
+      log.debug("Added " + sepHandlers.size() + " ENDPOINT handlers");
+      log.debug("Added " + postHandlers.size() + " POST handlers");
    }
 
    public EndpointMetaData getEndpointMetaData()
@@ -109,10 +127,46 @@ public class EndpointConfigMetaData
       return epMetaData;
    }
 
+   void validate()
+   {
+      for (HandlerMetaData handler : handlers)
+         handler.validate();
+   }
+
    void initializeInternal()
    {
       // Initialize handlers
       for (HandlerMetaData handler : handlers)
          handler.eagerInitialize();
+   }
+
+   public CommonConfig getConfig()
+   {
+      return config;
+   }
+
+   void setConfig(CommonConfig config)
+   {
+      this.config = config;
+   }
+
+   public String getConfigName()
+   {
+      return configName;
+   }
+
+   public void setConfigName(String configName)
+   {
+      this.configName = configName;
+   }
+
+   public String getConfigFile()
+   {
+      return configFile;
+   }
+
+   public void setConfigFile(String configFile)
+   {
+      this.configFile = configFile;
    }
 }
