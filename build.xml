@@ -68,26 +68,17 @@
     <condition property="jboss712.home" value="${profiles.profile.properties.jboss712.home}">
       <isset property="profiles.profile.properties.jboss712.home"/>
     </condition>
-    <condition property="jboss720.home" value="${profiles.profile.properties.jboss720.home}">
-      <isset property="profiles.profile.properties.jboss720.home"/>
-  </condition>
 
-  <fail message="jboss home not set, use jboss712.home=value or jboss720.home=value to set">
+    <fail message="jboss home not set, use jboss712.home=value to set">
      <condition>
-      <and>
-       <not>
-         <isset property="jboss712.home"/>
-       </not>
-       <not>
-         <isset property="jboss720.home"/>
-       </not>
-      </and>
+      <not>
+       <isset property="jboss712.home"/>
+      </not>
      </condition>
     </fail>
 
     <echo/>
     <echo message="jboss712.home=${jboss712.home}"/>
-    <echo message="jboss720.home=${jboss720.home}"/>
   </target>
 
   <target name="init" depends="mvn-settings,prepare,os-init">
@@ -95,7 +86,7 @@
     <xmlproperty file="${stack.dir}/pom.xml"/>
     <property name="version.id" value="${project.version}"/>
 
-    <echo message="java.version=${java.version}"/>
+    <echo message="java.version=${java.version}"/>          
     <echo message="version.id=${version.id}"/>
     <echo message="integration.target=${jbossws.integration.target}"/>
 
@@ -109,7 +100,7 @@
 
   <target name="prepare-deploy" depends="prepare,os-init">
 
-    <!-- Use a system property to overwrite the empty default value  -->
+    <!-- Use a system property to overwrite the empty default value -->
     <property name="maven.opts" value=""/>
 
     <echo/>
@@ -121,4 +112,5 @@
       <arg line="${maven.opts} -Pdist -Dno-testsuite install"/>
     </exec>
   </target>
+
 </project>

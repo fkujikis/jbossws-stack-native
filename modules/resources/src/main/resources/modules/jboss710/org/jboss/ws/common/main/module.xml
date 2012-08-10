@@ -22,27 +22,30 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project>
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.ws.common">
 
-  <!-- ================================================================== -->
-  <!-- Setup                                                              -->
-  <!-- ================================================================== -->
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
-  <target name="prepare">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
 
-    <!-- Load jbossws.integration.target properties -->
-    <property file="${target.properties.file}"/>
-    <property name="jboss.server.instance" value="default"/>
-
-    <property name="jboss710.modules" value="${jboss710.home}/modules"/>
-
-    <property name="jboss712.available.file" value="${jboss712.home}/jboss-modules.jar"/>
-
-    <available property="jboss712.available" file="${jboss712.available.file}"/>
-
-    <tstamp>
-      <format property="build.id" pattern="yyyyMMddHHmm"/>
-    </tstamp>
-  </target>
-
-</project>
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.annotation.api"/>
+        <module name="javax.xml.stream.api"/>
+        <module name="javax.ejb.api"/>
+        <module name="javax.jws.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="javax.wsdl4j.api" />
+        <module name="javax.xml.ws.api"/>
+        <module name="org.jboss.ws.api"/>
+        <module name="org.jboss.ws.spi"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.common-core"/>
+        <module name="org.apache.xerces" services="import"/>
+        <module name="org.jboss.jaxbintros"/>
+    </dependencies>
+</module>
