@@ -25,16 +25,17 @@ import javax.jws.WebService;
 
 import org.jboss.logging.Logger;
 
-@WebService(serviceName = "MyTestService", 
+@WebService(serviceName = "MyTestService", portName = "MyTestPort",
       targetNamespace = "http://www.my-company.it/ws/my-test", 
-      endpointInterface = "org.jboss.test.ws.jaxws.jbws1172.types.MyTest")
+      endpointInterface = "org.jboss.test.ws.jaxws.jbws1172.types.MyTest", 
+      wsdlLocation = "WEB-INF/wsdl/NoValTestService.wsdl")
       
 public class NonValidatingEndpoint
 {
    // provide logging
    private static Logger log = Logger.getLogger(NonValidatingEndpoint.class);
    
-   public void performTest(Long code) 
+   public void performTest(Integer code) 
    {
       log.info(code);
    }
