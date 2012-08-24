@@ -21,22 +21,18 @@
  */
 package org.jboss.wsf.stack.jbws;
 
-import static org.jboss.ws.common.integration.WSHelper.isJaxrpcEjbDeployment;
-import static org.jboss.ws.common.integration.WSHelper.isJaxrpcJseDeployment;
-import static org.jboss.ws.common.integration.WSHelper.isJaxwsDeployment;
-
-import java.util.ResourceBundle;
-
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.ws.metadata.builder.jaxrpc.JAXRPCServerMetaDataBuilder;
+import org.jboss.ws.metadata.builder.jaxws.JAXWSMetaDataBuilderEJB3;
+import org.jboss.ws.metadata.builder.jaxws.JAXWSMetaDataBuilderJSE;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 
 /**
  * A deployer that builds the UnifiedDeploymentInfo 
@@ -44,24 +40,37 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  * @author Thomas.Diesler@jboss.org
  * @since 25-Apr-2007
  */
-public class UnifiedMetaDataDeploymentAspect extends AbstractDeploymentAspect
+public class UnifiedMetaDataDeploymentAspect extends DeploymentAspect
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(UnifiedMetaDataDeploymentAspect.class);
    @Override
    public void start(Deployment dep)
    {
       UnifiedMetaData umd = dep.getAttachment(UnifiedMetaData.class);
       if (umd == null)
       {
-         if (isJaxrpcJseDeployment(dep) && !isJaxwsDeployment(dep))
+         if (dep.getType() == DeploymentType.JAXRPC_JSE)
          {
             JAXRPCServerMetaDataBuilder builder = new JAXRPCServerMetaDataBuilder();
             umd = builder.buildMetaData((ArchiveDeployment)dep);
          }
-         else if (isJaxrpcEjbDeployment(dep) && !isJaxwsDeployment(dep))
+         else if (dep.getType() == DeploymentType.JAXRPC_EJB21)
          {
             JAXRPCServerMetaDataBuilder builder = new JAXRPCServerMetaDataBuilder();
             umd = builder.buildMetaData((ArchiveDeployment)dep);
+         }
+         else if (dep.getType() == DeploymentType.JAXWS_JSE)
+         {
+            JAXWSMetaDataBuilderJSE builder = new JAXWSMetaDataBuilderJSE();
+            umd = builder.buildMetaData((ArchiveDeployment)dep);
+         }
+         else if (dep.getType() == DeploymentType.JAXWS_EJB3)
+         {
+            JAXWSMetaDataBuilderEJB3 builder = new JAXWSMetaDataBuilderEJB3();
+            umd = builder.buildMetaData((ArchiveDeployment)dep);
+         }
+         else
+         {
+            throw new IllegalStateException("Invalid deployment type:  " + dep.getType());
          }
 
          dep.addAttachment(UnifiedMetaData.class, umd);
@@ -103,7 +112,7 @@ public class UnifiedMetaDataDeploymentAspect extends AbstractDeploymentAspect
       }
 
       if (epMetaData == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_FIND_ENDPOINTMD",  epName));
+         throw new IllegalStateException("Cannot find endpoint meta data for: " + epName);
 
       return epMetaData;
    }

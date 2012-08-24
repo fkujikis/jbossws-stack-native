@@ -27,7 +27,6 @@ import javax.xml.rpc.Service;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -43,7 +42,6 @@ import org.jboss.wsf.test.JBossWSTestSetup;
 public class JBWS70TestCase extends JBossWSTest
 {
    private static Hello hello;
-   private static InitialContext iniCtx;
    
    public JBWS70TestCase(String name)
    {
@@ -59,12 +57,7 @@ public class JBWS70TestCase extends JBossWSTest
       suite.addTest(new JBWS70TestCase("testSetVersion"));
       suite.addTest(new JBWS70TestCase("testGetVersion"));
       
-      return new JBossWSTestSetup(suite, "jaxrpc-jbws70.war, jaxrpc-jbws70-appclient.ear#jaxrpc-jbws70-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            hello = null;
-         }
-      });  
+      return new JBossWSTestSetup(suite, "jaxrpc-jbws70.war, jaxrpc-jbws70-client.jar");  
    }
 
    public void setUp() throws Exception
@@ -72,22 +65,12 @@ public class JBWS70TestCase extends JBossWSTest
       super.setUp();
       if (hello == null)
       {
-         iniCtx = getAppclientInitialContext();
-         Service service = (Service)iniCtx.lookup("java:service/HelloService");
+         InitialContext iniCtx = getInitialContext();
+         Service service = (Service)iniCtx.lookup("java:comp/env/service/HelloService");
          hello = (Hello)service.getPort(Hello.class);
       }
    }
    
-   protected void tearDown() throws Exception
-   {
-      if (iniCtx != null)
-      {
-         iniCtx.close();
-         iniCtx = null;
-      }
-      super.tearDown();
-   }
-
    public void testSetVersion() throws Exception
    {
       hello.setVersion("Version-1.0");

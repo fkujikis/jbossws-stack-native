@@ -31,7 +31,6 @@ import javax.xml.rpc.ServiceFactory;
 import junit.framework.Test;
 
 import org.jboss.ws.core.jaxrpc.client.ServiceFactoryImpl;
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -49,12 +48,7 @@ public class JBWS956TestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(JBWS956TestCase.class, "jaxrpc-jbws956.war", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS956TestCase.class, "jaxrpc-jbws956.war");
    }
 
    protected void setUp() throws Exception

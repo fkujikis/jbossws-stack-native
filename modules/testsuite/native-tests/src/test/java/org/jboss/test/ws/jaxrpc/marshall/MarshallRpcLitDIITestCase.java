@@ -33,7 +33,7 @@ import javax.xml.rpc.Service;
 import junit.framework.Test;
 
 import org.jboss.test.ws.jaxrpc.marshall.types.JavaBean;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.jaxrpc.client.ServiceFactoryImpl;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -61,11 +61,6 @@ public class MarshallRpcLitDIITestCase extends MarshallTest
             super.setUp();
             ServiceFactoryImpl factory = new ServiceFactoryImpl();
             service = factory.createService(new QName(TARGET_NAMESPACE, SERVICE_NAME));
-         }
-         protected void tearDown() throws Exception
-         {
-            service = null;
-            super.tearDown();
          }
       };
    }

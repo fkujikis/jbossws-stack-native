@@ -21,8 +21,8 @@
  */
 package org.jboss.wsf.stack.jbws;
 
-import org.jboss.wsf.spi.invocation.RequestHandler;
 import org.jboss.wsf.spi.invocation.RequestHandlerFactory;
+import org.jboss.wsf.spi.invocation.RequestHandler;
 
 /**
  * @author Heiko.Braun@jboss.com

@@ -21,12 +21,8 @@
  */
 package org.jboss.wsf.stack.jbws;
 
-import java.util.ResourceBundle;
-
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.integration.AbstractDeploymentAspect;
-import org.jboss.ws.common.utils.DelegateClassLoader;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
+import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
 
 /**
@@ -35,21 +31,20 @@ import org.jboss.wsf.spi.deployment.Deployment;
  * @author Thomas.Diesler@jboss.org
  * @since 25-Apr-2007
  */
-public class EagerInitializeDeploymentAspect extends AbstractDeploymentAspect
+public class EagerInitializeDeploymentAspect extends DeploymentAspect
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(EagerInitializeDeploymentAspect.class);
    @Override
    public void start(Deployment dep)
    {
       UnifiedMetaData umd = dep.getAttachment(UnifiedMetaData.class);
       if (umd == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_UNIFIEDMD"));
+         throw new IllegalStateException("Cannot obtain unified meta data");
 
       ClassLoader runtimeClassLoader = dep.getRuntimeClassLoader();
       if(null == runtimeClassLoader)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "NULL_RUNTIME_CLASSLOADER"));
+         throw new IllegalArgumentException("Runtime classloader may not be null");
       
-      umd.setClassLoader(new DelegateClassLoader(runtimeClassLoader, SecurityActions.getContextClassLoader()));
+      umd.setClassLoader(runtimeClassLoader);
       umd.eagerInitialize();
    }
 }

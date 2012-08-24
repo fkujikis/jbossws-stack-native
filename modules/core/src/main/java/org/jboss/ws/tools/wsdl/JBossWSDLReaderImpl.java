@@ -21,38 +21,20 @@
  */
 package org.jboss.ws.tools.wsdl;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Vector;
+import com.ibm.wsdl.Constants;
+import com.ibm.wsdl.extensions.schema.SchemaConstants;
+import com.ibm.wsdl.util.StringUtils;
+import com.ibm.wsdl.util.xml.DOMUtils;
+import com.ibm.wsdl.util.xml.QNameUtils;
+import com.ibm.wsdl.util.xml.XPathUtils;
+import org.jboss.ws.core.utils.JBossWSEntityResolver;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.xml.sax.InputSource;
 
-import javax.wsdl.Binding;
-import javax.wsdl.BindingFault;
-import javax.wsdl.BindingInput;
-import javax.wsdl.BindingOperation;
-import javax.wsdl.BindingOutput;
-import javax.wsdl.Definition;
-import javax.wsdl.Fault;
-import javax.wsdl.Import;
-import javax.wsdl.Input;
-import javax.wsdl.Message;
-import javax.wsdl.Operation;
-import javax.wsdl.OperationType;
-import javax.wsdl.Output;
-import javax.wsdl.Part;
-import javax.wsdl.Port;
-import javax.wsdl.PortType;
-import javax.wsdl.Service;
-import javax.wsdl.Types;
-import javax.wsdl.WSDLException;
+import javax.wsdl.*;
 import javax.wsdl.extensions.AttributeExtensible;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.ExtensionDeserializer;
@@ -66,21 +48,9 @@ import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.utils.JBossWSEntityResolver;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.xml.sax.InputSource;
-
-import com.ibm.wsdl.Constants;
-import com.ibm.wsdl.extensions.schema.SchemaConstants;
-import com.ibm.wsdl.util.StringUtils;
-import com.ibm.wsdl.util.xml.DOMUtils;
-import com.ibm.wsdl.util.xml.QNameUtils;
-import com.ibm.wsdl.util.xml.XPathUtils;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
 
 /**
  * A WSDLReader fork of the original wsdl4j 1.6.2 package
@@ -91,7 +61,6 @@ import com.ibm.wsdl.util.xml.XPathUtils;
  */
 public class JBossWSDLReaderImpl implements WSDLReader
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JBossWSDLReaderImpl.class);
 	// Used for determining the style of operations.
 	private static final List STYLE_ONE_WAY =
 			Arrays.asList(new String[]{Constants.ELEM_INPUT});
@@ -154,7 +123,7 @@ public class JBossWSDLReaderImpl implements WSDLReader
 	{
 		if (name == null)
 		{
-			throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "FEATURE_NAME_MUST_NOT_BE_NULL"));
+			throw new IllegalArgumentException("Feature name must not be null.");
 		}
 
 		if (name.equals(Constants.FEATURE_VERBOSE))
@@ -167,7 +136,8 @@ public class JBossWSDLReaderImpl implements WSDLReader
 		}
 		else
 		{
-			throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "FEATURE_NAME_NOT_RECOGNIZED",  name ));
+			throw new IllegalArgumentException("Feature name '" + name +
+					"' not recognized.");
 		}
 	}
 
@@ -183,7 +153,7 @@ public class JBossWSDLReaderImpl implements WSDLReader
 	{
 		if (name == null)
 		{
-			throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "FEATURE_NAME_MUST_NOT_BE_NULL"));
+			throw new IllegalArgumentException("Feature name must not be null.");
 		}
 
 		if (name.equals(Constants.FEATURE_VERBOSE))
@@ -196,7 +166,8 @@ public class JBossWSDLReaderImpl implements WSDLReader
 		}
 		else
 		{
-			throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "FEATURE_NAME_NOT_RECOGNIZED",  name ));
+			throw new IllegalArgumentException("Feature name '" + name +
+					"' not recognized.");
 		}
 	}
 

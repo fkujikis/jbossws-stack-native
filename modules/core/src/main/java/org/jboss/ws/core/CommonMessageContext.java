@@ -21,24 +21,25 @@
  */
 package org.jboss.ws.core;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
+import org.jboss.logging.Logger;
+import org.jboss.ws.core.binding.SerializationContext;
+import org.jboss.ws.core.soap.attachment.SwapableMemoryDataSource;
+import org.jboss.ws.extensions.xop.XOPContext;
+import org.jboss.ws.metadata.config.CommonConfig;
+import org.jboss.ws.metadata.umdm.EndpointMetaData;
+import org.jboss.ws.metadata.umdm.OperationMetaData;
+import org.jboss.xb.binding.NamespaceRegistry;
 
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
-
-import org.jboss.logging.Logger;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.core.binding.SerializationContext;
-import org.jboss.ws.core.soap.attachment.SwapableMemoryDataSource;
-import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.metadata.umdm.OperationMetaData;
-import org.jboss.xb.binding.NamespaceRegistry;
+import javax.xml.ws.handler.MessageContext.Scope;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The common JAXRPC/JAXWS MessageContext
@@ -48,8 +49,11 @@ import org.jboss.xb.binding.NamespaceRegistry;
  */
 public abstract class CommonMessageContext implements Map<String, Object>
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(CommonMessageContext.class);
    private static Logger log = Logger.getLogger(CommonMessageContext.class);
+
+   // expandToDOM in the SOAPContentElement should not happen during normal operation 
+   // This property should be set the message context when it is ok to do so.
+   public static final String ALLOW_EXPAND_TO_DOM = "org.jboss.ws.allow.expand.dom";
 
    public static final String REMOTING_METADATA = "org.jboss.ws.remoting.metadata";
 
@@ -59,10 +63,14 @@ public abstract class CommonMessageContext implements Map<String, Object>
    private EndpointMetaData epMetaData;
    // The operation for this message ctx
    private OperationMetaData opMetaData;
+   // The configuration to override the default configuration wrapped by EndpointMetaData.
+   private CommonConfig config;
    // The Message in this message context
-   private SOAPMessage message;
+   private MessageAbstraction message;
    // The map of scoped properties
-   protected Map<String, Object> props = new HashMap<String, Object>();
+   protected Map<String, ScopedProperty> scopedProps = new HashMap<String, ScopedProperty>();
+   // The current property scope
+   protected Scope currentScope = Scope.APPLICATION;
 
    private boolean isModified;
 
@@ -77,9 +85,20 @@ public abstract class CommonMessageContext implements Map<String, Object>
       this.opMetaData = msgContext.opMetaData;
       this.message = msgContext.message;
       this.serContext = msgContext.serContext;
-      this.props = new HashMap<String, Object>(msgContext.props);
+      this.scopedProps = new HashMap<String, ScopedProperty>(msgContext.scopedProps);
+      this.currentScope = msgContext.currentScope;
    }
-   
+
+   public Scope getCurrentScope()
+   {
+      return currentScope;
+   }
+
+   public void setCurrentScope(Scope currentScope)
+   {
+      this.currentScope = currentScope;
+   }
+
    public EndpointMetaData getEndpointMetaData()
    {
       if (epMetaData == null && opMetaData != null)
@@ -103,17 +122,42 @@ public abstract class CommonMessageContext implements Map<String, Object>
       this.opMetaData = opMetaData;
    }
 
+   public CommonConfig getConfig()
+   {
+      if (config == null)
+      {
+         config = epMetaData.getConfig();
+      }
+
+      return config;
+   }
+
+   public void setConfig(CommonConfig config)
+   {
+      this.config = config;
+   }
+
    public SOAPMessage getSOAPMessage()
    {
       if(message!=null && ((message instanceof SOAPMessage) == false))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "NO_SOAPMESSAGE_AVILABLE",  message.getClass()));
+         throw new UnsupportedOperationException("No SOAPMessage avilable. Current message context carries " + message.getClass());
       return (SOAPMessage)message;
    }
 
    public void setSOAPMessage(SOAPMessage soapMessage)
    {
-      this.message = soapMessage;
+      this.message = (MessageAbstraction)soapMessage;
       this.setModified(true);
+   }
+
+   public MessageAbstraction getMessageAbstraction()
+   {
+      return message;
+   }
+
+   public void setMessageAbstraction(MessageAbstraction message)
+   {
+      this.message = message;
    }
 
    public SerializationContext getSerializationContext()
@@ -138,8 +182,104 @@ public abstract class CommonMessageContext implements Map<String, Object>
       return getSerializationContext().getNamespaceRegistry();
    }
 
+   // Map interface
+
+   public int size()
+   {
+      return scopedProps.size();
+   }
+
+   public boolean isEmpty()
+   {
+      return scopedProps.isEmpty();
+   }
+
+   public boolean containsKey(Object key)
+   {
+      ScopedProperty prop = scopedProps.get(key);
+      return isValidInScope(prop);
+   }
+
+   public boolean containsValue(Object value)
+   {
+      boolean valueFound = false;
+      for (ScopedProperty prop : scopedProps.values())
+      {
+         if (prop.getValue().equals(value) && isValidInScope(prop))
+         {
+            valueFound = true;
+            break;
+         }
+      }
+      return valueFound;
+   }
+
+   public Object get(Object key)
+   {
+      Object value = null;
+
+      ScopedProperty scopedProp = scopedProps.get(key);
+      if (log.isTraceEnabled())
+         log.trace("get(" + key + "): " + scopedProp);
+
+      if (isValidInScope(scopedProp))
+         value = scopedProp.getValue();
+
+      return value;
+   }
+
+   public Object put(String key, Object value)
+   {
+      ScopedProperty prevProp = scopedProps.get(key);
+      if (prevProp != null && !isValidInScope(prevProp))
+         throw new IllegalArgumentException("Cannot set value for HANDLER scoped property: " + key);
+
+      ScopedProperty newProp = new ScopedProperty(key, value, currentScope);
+      if (log.isTraceEnabled())
+         log.trace("put: " + newProp);
+
+      scopedProps.put(key, newProp);
+      return prevProp != null ? prevProp.getValue() : null;
+   }
+
+   public Object remove(Object key)
+   {
+      ScopedProperty prevProp = scopedProps.get(key);
+      if (prevProp != null && !isValidInScope(prevProp))
+         throw new IllegalArgumentException("Cannot set remove for HANDLER scoped property: " + key);
+
+      return scopedProps.remove(key);
+   }
+
+   public void putAll(Map<? extends String, ? extends Object> srcMap)
+   {
+      for (String key : srcMap.keySet())
+      {
+         try
+         {
+            Object value = srcMap.get(key);
+            put(key, value);
+         }
+         catch (IllegalArgumentException ex)
+         {
+            log.debug("Ignore: " + ex.getMessage());
+         }
+      }
+   }
+
+   public void clear()
+   {
+      scopedProps.clear();
+   }
+
    public boolean isModified()
    {
+      // skip changes from XOP handler interactions
+      if (XOPContext.isXOPEncodedRequest() && !XOPContext.isXOPMessage())
+      {
+         log.debug("Disregard changes from XOP/Handler interactions");
+         return false;
+      }
       return isModified;
    }
 
@@ -159,83 +299,55 @@ public abstract class CommonMessageContext implements Map<String, Object>
       isModified = modified;
    }
 
-   // Map interface
-
-   public int size()
-   {
-      return props.size();
-   }
-
-   public boolean isEmpty()
-   {
-      return props.isEmpty();
-   }
-
-   public boolean containsKey(Object key)
-   {
-      return props.containsKey(key);
-   }
-
-   public boolean containsValue(Object value)
-   {
-	  return props.containsValue(value);
-   }
-
-   public Object get(Object key)
-   {
-	  return props.get(key);
-   }
-
-   public Object put(String key, Object value)
-   {
-	  return props.put(key, value);
-   }
-
-   public Object remove(Object key)
-   {
-	  return props.remove(key);
-   }
-
-   public void putAll(Map<? extends String, ? extends Object> srcMap)
-   {
-      for (String key : srcMap.keySet())
-      {
-         try
-         {
-            Object value = srcMap.get(key);
-            put(key, value);
-         }
-         catch (IllegalArgumentException ex)
-         {
-            if (log.isDebugEnabled())
-               log.debug("Ignore: " + ex.getMessage());
-         }
-      }
-   }
-
-   public void clear()
-   {
-      props.clear();
-   }
    public Set<String> keySet()
    {
-	  return props.keySet();
+      Set<String> keys = new HashSet<String>(scopedProps.size());
+      for (ScopedProperty prop : scopedProps.values())
+      {
+         if (isValidInScope(prop))
+            keys.add(prop.getName());
+      }
+      return keys;
    }
 
    public Collection<Object> values()
    {
-	  return props.values();
+      Collection<Object> values = new HashSet<Object>(scopedProps.size());
+      for (ScopedProperty prop : scopedProps.values())
+      {
+         if (isValidInScope(prop))
+            values.add(prop.getValue());
+      }
+      return values;
    }
 
    public Set<Entry<String, Object>> entrySet()
    {
-	  return props.entrySet();
+      Set<Entry<String, Object>> entries = new HashSet<Entry<String, Object>>();
+      for (ScopedProperty prop : scopedProps.values())
+      {
+         if (isValidInScope(prop))
+         {
+            String name = prop.getName();
+            Object value = prop.getValue();
+            Entry<String, Object> entry = new ImmutableEntry<String, Object>(name, value);
+            entries.add(entry);
+         }
+      }
+      return entries;
+   }
+
+   private boolean isValidInScope(ScopedProperty prop)
+   {
+      // A property of scope APPLICATION is always visible
+      boolean valid = (prop != null && (prop.getScope() == Scope.APPLICATION || currentScope == Scope.HANDLER));
+      return valid;
    }
 
    public static void cleanupAttachments(CommonMessageContext messageContext)
    {
       // cleanup attachments
-      SOAPMessage msg = messageContext.getSOAPMessage();
+      MessageAbstraction msg = messageContext.getMessageAbstraction();
 
       if(msg!=null && (msg instanceof SOAPMessage)) // in case of http binding
       {
@@ -253,9 +365,70 @@ public abstract class CommonMessageContext implements Map<String, Object>
             }
             catch (SOAPException e)
             {
-               log.warn(BundleUtils.getMessage(bundle, "FAILED_TO_CLEANUP_ATTACHMENT_PART"),  e);
+               log.warn("Failed to cleanup attachment part", e);
             }
          }
+      }
+   }
+
+   private static class ImmutableEntry<K, V> implements Map.Entry<K, V>
+   {
+      final K k;
+      final V v;
+
+      ImmutableEntry(K key, V value)
+      {
+         k = key;
+         v = value;
+      }
+
+      public K getKey()
+      {
+         return k;
+      }
+
+      public V getValue()
+      {
+         return v;
+      }
+
+      public V setValue(V value)
+      {
+         throw new UnsupportedOperationException();
+      }
+   }
+
+   public static class ScopedProperty
+   {
+      private Scope scope;
+      private String name;
+      private Object value;
+
+      public ScopedProperty(String name, Object value, Scope scope)
+      {
+         this.scope = scope;
+         this.name = name;
+         this.value = value;
+      }
+
+      public String getName()
+      {
+         return name;
+      }
+
+      public Scope getScope()
+      {
+         return scope;
+      }
+
+      public Object getValue()
+      {
+         return value;
+      }
+
+      public String toString()
+      {
+         return scope + ":" + name + "=" + value;
       }
    }
 }

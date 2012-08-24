@@ -22,13 +22,11 @@
 package org.jboss.ws.core.jaxrpc.binding.jbossxb;
 
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.core.CommonMessageContext;
-import org.jboss.ws.core.soap.utils.MessageContextAssociation;
+import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMapping;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -47,7 +45,6 @@ import org.xml.sax.SAXException;
  * @since May 31, 2006
  */
 public class JBossXBSupport {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(JBossXBSupport.class);
 
    /**
     * Setup SchemaBinding associated with the ServiceMetaData.
@@ -122,7 +119,7 @@ public class JBossXBSupport {
             }
             catch (SAXException e1)
             {
-               throw new IllegalStateException(BundleUtils.getMessage(bundle, "FAILED_TO_MARSHAL_DOM_ELEMENT", new Object[]{new QName(e.getNamespaceURI(), e.getLocalName()) ,  e1.getMessage()}));
+               throw new IllegalStateException("Failed to marshal DOM element " + new QName(e.getNamespaceURI(), e.getLocalName()) + ": " + e1.getMessage());
             }
          }
       };

@@ -23,14 +23,12 @@ package org.jboss.ws.metadata.wsdl;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.api.util.BundleUtils;
-import org.jboss.ws.common.Constants;
 
 /**
  * A Message Reference component associates a defined type with a message
@@ -43,7 +41,6 @@ import org.jboss.ws.common.Constants;
  */
 public abstract class WSDLInterfaceMessageReference extends Extendable implements Comparable
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(WSDLInterfaceMessageReference.class);
    // provide logging
    protected Logger log = Logger.getLogger(getClass());
 
@@ -79,11 +76,6 @@ public abstract class WSDLInterfaceMessageReference extends Extendable implement
     * Used for WSDL 1.1
     */
    private QName messageName;
-   
-   /**
-    * wsam:Action
-    */
-   private String action;
 
    public WSDLInterfaceMessageReference(WSDLInterfaceOperation wsdlOperation)
    {
@@ -145,7 +137,7 @@ public abstract class WSDLInterfaceMessageReference extends Extendable implement
       }
 
       if (xmlType == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_XMLTYPE",  element));
+         throw new WSException("Cannot obtain xmlType for element: " + element);
 
       return xmlType;
    }
@@ -223,26 +215,6 @@ public abstract class WSDLInterfaceMessageReference extends Extendable implement
    public QName getMessageName()
    {
       return messageName;
-   }
-
-   /**
-    * Sets wsam:Action
-    *
-    * @param action action
-    */
-   public void setAction(String action)
-   {
-      this.action = action;
-   }
-
-   /**
-    * Gets wsam:Action
-    *
-    * return action
-    */
-   public String getAction()
-   {
-      return this.action;
    }
 
    /**
