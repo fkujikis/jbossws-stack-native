@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2012, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,15 +29,15 @@ import org.jboss.ws.annotation.SchemaValidation;
 @WebService(serviceName = "MyTestService", portName = "MyTestPort",
       targetNamespace = "http://www.my-company.it/ws/my-test", 
       endpointInterface = "org.jboss.test.ws.jaxws.jbws1172.types.MyTest", 
-      wsdlLocation = "WEB-INF/wsdl/TestService.wsdl")
+      wsdlLocation = "WEB-INF/wsdl/TestServiceWithImportedSchema.wsdl")
       
 @SchemaValidation
-public class ValidatingEndpoint
+public class ImportedSchemaValidatingEndpoint
 {
    // provide logging
-   private static Logger log = Logger.getLogger(ValidatingEndpoint.class);
+   private static Logger log = Logger.getLogger(ImportedSchemaValidatingEndpoint.class);
 
-   public void performTest(Long code)
+   public void performTest(Integer code)
    {
       log.info(code);
    }

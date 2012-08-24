@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2012, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="Code" type="{http://www.w3.org/2001/XMLSchema}long"/>
+ *         &lt;element name="Code" type="{http://www.my-company.it/ws/my-test2}CodeType"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -52,18 +52,18 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class PerformTest {
 
-    @XmlElement(name = "Code", required = true, type = Long.class, nillable = true)
-    protected Long code;
+    @XmlElement(name = "Code", required = true, type = Integer.class, nillable = true)
+    protected Integer code;
 
     /**
      * Gets the value of the code property.
      * 
      * @return
      *     possible object is
-     *     {@link Long }
+     *     {@link Integer }
      *     
      */
-    public Long getCode() {
+    public Integer getCode() {
         return code;
     }
 
@@ -72,10 +72,10 @@ public class PerformTest {
      * 
      * @param value
      *     allowed object is
-     *     {@link Long }
+     *     {@link Integer }
      *     
      */
-    public void setCode(Long value) {
+    public void setCode(Integer value) {
         this.code = value;
     }
 

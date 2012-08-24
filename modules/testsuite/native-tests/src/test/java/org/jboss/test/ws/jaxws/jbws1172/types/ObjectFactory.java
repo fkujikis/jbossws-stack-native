@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2012, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -45,8 +45,8 @@ import javax.xml.namespace.QName;
 public class ObjectFactory {
 
     private final static QName _PerformTest_QNAME = new QName("http://www.my-company.it/ws/my-test", "performTest");
-    private final static QName _MyWSException_QNAME = new QName("http://www.my-company.it/ws/my-test", "MyWSException");
     private final static QName _PerformTestResponse_QNAME = new QName("http://www.my-company.it/ws/my-test", "performTestResponse");
+    private final static QName _MyWSException_QNAME = new QName("http://www.my-company.it/ws/my-test", "MyWSException");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.jboss.test.ws.jaxws.jbws1172.types
@@ -56,11 +56,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link MyWSException }
+     * Create an instance of {@link PerformTestResponse }
      * 
      */
-    public MyWSException createMyWSException() {
-        return new MyWSException();
+    public PerformTestResponse createPerformTestResponse() {
+        return new PerformTestResponse();
     }
 
     /**
@@ -72,11 +72,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link PerformTestResponse }
+     * Create an instance of {@link MyWSException }
      * 
      */
-    public PerformTestResponse createPerformTestResponse() {
-        return new PerformTestResponse();
+    public MyWSException createMyWSException() {
+        return new MyWSException();
     }
 
     /**
@@ -89,21 +89,21 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link MyWSException }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.my-company.it/ws/my-test", name = "MyWSException")
-    public JAXBElement<MyWSException> createMyWSException(MyWSException value) {
-        return new JAXBElement<MyWSException>(_MyWSException_QNAME, MyWSException.class, null, value);
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link PerformTestResponse }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://www.my-company.it/ws/my-test", name = "performTestResponse")
     public JAXBElement<PerformTestResponse> createPerformTestResponse(PerformTestResponse value) {
         return new JAXBElement<PerformTestResponse>(_PerformTestResponse_QNAME, PerformTestResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link MyWSException }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.my-company.it/ws/my-test", name = "MyWSException")
+    public JAXBElement<MyWSException> createMyWSException(MyWSException value) {
+        return new JAXBElement<MyWSException>(_MyWSException_QNAME, MyWSException.class, null, value);
     }
 
 }

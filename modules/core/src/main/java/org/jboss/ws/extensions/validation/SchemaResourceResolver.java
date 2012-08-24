@@ -19,24 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.ws.jaxws.jbws1172.types;
+package org.jboss.ws.extensions.validation;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.ws.RequestWrapper;
-import javax.xml.ws.ResponseWrapper;
+import java.io.ByteArrayInputStream;
+import java.util.Map;
 
-@WebService(targetNamespace = "http://www.my-company.it/ws/my-test", name = "MyTest")
-@XmlSeeAlso({ObjectFactory.class})
-public interface MyTest {
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSResourceResolver;
+/**
+ * SchemaResourceResolver
+ * 
+ * @author ema@redhat.com
+ */
 
-    @RequestWrapper(localName = "performTest", targetNamespace = "http://www.my-company.it/ws/my-test", className = "org.jboss.test.ws.jaxws.jbws1172.types.PerformTest")
-    @WebMethod(action = "urn:performTest")
-    @ResponseWrapper(localName = "performTestResponse", targetNamespace = "http://www.my-company.it/ws/my-test", className = "org.jboss.test.ws.jaxws.jbws1172.types.PerformTestResponse")
-    public void performTest(
-        @WebParam(name = "Code", targetNamespace = "")
-        java.lang.Integer code
-    ) throws MyWSException_Exception;
+public class SchemaResourceResolver implements LSResourceResolver {
+	private Map<String, byte[]> streamMap;
+	
+	public SchemaResourceResolver(Map<String, byte[]> map) {
+		streamMap = map;
+	}
+	
+	public LSInput resolveResource(String type, String namespaceURI,
+			String publicId, String systemId, String baseURI) {
+		LSInput lsInput = null;
+		if (streamMap.get(namespaceURI) != null) {
+			byte[] value = streamMap.get(namespaceURI);
+			lsInput = new LSInputImpl();
+			lsInput.setByteStream(new ByteArrayInputStream(value));
+		}
+ 		return lsInput;
+	}
+
 }

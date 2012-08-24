@@ -1,10 +1,9 @@
+<?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <name>JBoss Web Services - Stack Native Testsuite</name>
   <artifactId>jbossws-native-testsuite</artifactId>
   <packaging>pom</packaging>
-
   <!-- Parent -->
   <parent>
     <groupId>org.jboss.ws.native</groupId>
@@ -12,7 +11,6 @@
     <version>3.1.2.SP11</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
-
   <!-- Properties -->
   <properties>
     <surefire.security.args>-Djava.security.manager -Djava.security.policy=src/test/etc/tst.policy</surefire.security.args>
@@ -27,13 +25,11 @@
     <jboss.javaee.version>5.0.1.GA</jboss.javaee.version>
     <hornetq.version>2.2.2.Final</hornetq.version>
   </properties>
-
   <!-- Modules -->
   <modules>
     <module>native-tests</module>
     <module>framework-tests</module>
   </modules>
-
   <!-- Dependencies -->
   <dependencies>
     <dependency>
@@ -49,6 +45,7 @@
       <artifactId>jbossws-native-client</artifactId>
       <version>${version}</version>
     </dependency>
+    <!--
     <dependency>
       <groupId>com.sun</groupId>
       <artifactId>tools</artifactId>
@@ -56,6 +53,7 @@
       <scope>system</scope>
       <systemPath>${java.home}/../lib/tools.jar</systemPath>
     </dependency>
+    -->
     <dependency>
       <groupId>javax.ejb</groupId>
       <artifactId>ejb-api</artifactId>
@@ -103,7 +101,6 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
   <!-- Build -->
   <build>
     <testResources>
@@ -240,10 +237,8 @@
       </plugin>
     </plugins>
   </build>
-
   <!-- Profiles -->
   <profiles>
-
     <!--
     Name:  debug
     Descr: Enable remote debuging for tests
@@ -270,7 +265,6 @@
         <surefire.jvm.args>${surefire.security.args} ${surefire.gc.args}</surefire.jvm.args>
       </properties>
     </profile>
-
     <!--
     Name:  hudson
     Descr: Ignore test failures on hudson
@@ -288,7 +282,6 @@
         </plugins>
       </build>
     </profile>
-
     <!--
     Name:  jboss510
     Descr: JBoss-5.1.0 specific options
@@ -364,7 +357,6 @@
         </plugins>
       </build>
     </profile>
-
     <!--
     Name:  no-jboss-bind-address
     Descr: Set the default jboss.bind.address
@@ -383,8 +375,7 @@
         <jboss.bind.address>localhost</jboss.bind.address>
       </properties>
     </profile>
-
-  <!--
+    <!--
     Name:  no-jboss-server-instance
     Descr: Set the default jboss.server.instance
 
@@ -402,8 +393,7 @@
         <jboss.server.instance>default</jboss.server.instance>
       </properties>
     </profile>
-
-  <!--
+    <!--
     Name:  no-use-hornetq
     Descr: Set the default use.hornetq
 
@@ -422,5 +412,4 @@
       </properties>
     </profile>
   </profiles>
-
 </project>
