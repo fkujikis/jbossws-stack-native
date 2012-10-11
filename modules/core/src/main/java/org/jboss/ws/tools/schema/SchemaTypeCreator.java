@@ -21,8 +21,6 @@
  */
 package org.jboss.ws.tools.schema;
 
-import static org.jboss.ws.NativeMessages.MESSAGES;
-
 import java.beans.BeanInfo;
 import java.beans.IndexedPropertyDescriptor;
 import java.beans.IntrospectionException;
@@ -39,6 +37,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.TreeMap;
 
 import javax.ejb.SessionBean;
@@ -53,7 +52,8 @@ import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
+import org.jboss.ws.WSException;
+import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.common.Constants;
 import org.jboss.ws.core.jaxrpc.LiteralTypeMapping;
 import org.jboss.ws.core.jaxrpc.ParameterWrapping;
@@ -82,6 +82,7 @@ import org.jboss.xb.binding.SimpleTypeBindings;
  */
 public class SchemaTypeCreator implements SchemaCreatorIntf
 {
+   private static final ResourceBundle bundle = BundleUtils.getBundle(SchemaTypeCreator.class);
    protected Logger log = Logger.getLogger(SchemaTypeCreator.class);
    protected WSDLUtils utils = WSDLUtils.getInstance();
 
@@ -96,6 +97,8 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
    private JavaWsdlMapping javaWsdlMapping = new JavaWsdlMapping();
 
    protected String xsNS = Constants.NS_SCHEMA_XSD;
+
+   private int maxPrefix = 1;
 
    protected JBossXSModel xsModel = null;
 
@@ -116,24 +119,24 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
    public void addPackageNamespaceMapping(String pkgname, String ns)
    {
       if (pkgname == null)
-         throw MESSAGES.illegalNullArgumentInSchemaMapping("pkgname");
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_NULL_ARGUMENT", "pkgname"));
       if (ns == null)
-         throw MESSAGES.illegalNullArgumentInSchemaMapping("ns");
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_NULL_ARGUMENT", "ns"));
       packageNamespaceMap.put(pkgname, ns);
 
    }
 
-   public JBossXSTypeDefinition generateType(QName xmlType, @SuppressWarnings("rawtypes") Class javaType)
+   public JBossXSTypeDefinition generateType(QName xmlType, Class javaType)
    {
       return generateType(xmlType, javaType, null);
    }
 
-   public JBossXSTypeDefinition generateType(QName xmlType, @SuppressWarnings("rawtypes") Class javaType, Map<String, QName> elementNames)
+   public JBossXSTypeDefinition generateType(QName xmlType, Class javaType, Map<String, QName> elementNames)
    {
       return getType(xmlType, javaType, elementNames);
    }
 
-   public QName getXMLSchemaType(@SuppressWarnings("rawtypes") Class javaType)
+   public QName getXMLSchemaType(Class javaType)
    {
       QName xmlt = schemautils.getToolsOverrideInTypeMapping(javaType);
       //Check if it is already registered
@@ -158,12 +161,12 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
    /* (non-Javadoc)
     * @see org.jboss.ws.tools.schema.SchemaCreatorIntf#getCustomNamespaceMap()
     */
-   public HashMap<String,String> getCustomNamespaceMap()
+   public HashMap getCustomNamespaceMap()
    {
       HashMap<String, String> map = null;
       if (namespaces != null)
       {
-         Iterator<?> iter = namespaces.getRegisteredPrefixes();
+         Iterator iter = namespaces.getRegisteredPrefixes();
          while (iter != null && iter.hasNext())
          {
             String prefix = (String)iter.next();
@@ -197,11 +200,11 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
    /* (non-Javadoc)
     * @see org.jboss.ws.tools.schema.SchemaCreatorIntf#getJavaType(javax.xml.namespace.QName)
     */
-   public Class<?> getJavaType(QName xmlType)
+   public Class getJavaType(QName xmlType)
    {
-      Class<?> retType = typeMapping.getJavaType(xmlType);
+      Class retType = typeMapping.getJavaType(xmlType);
       if (retType == null)
-         throw MESSAGES.unsupportedTypeInSchemaMapping(xmlType);
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "UNSUPPORTED_TYPE",  xmlType));
       return retType;
    }
 
@@ -242,7 +245,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       return ct;
    }
 
-   private JBossXSTypeDefinition getType(QName xmlType, Class<?> javaType, Map<String, QName> elementNames)
+   private JBossXSTypeDefinition getType(QName xmlType, Class javaType, Map<String, QName> elementNames)
    {
       JBossXSTypeDefinition ct = null;
       boolean registered = false;
@@ -281,10 +284,10 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       return (JBossXSTypeDefinition)xsModel.getTypeDefinition(qname.getLocalPart(), qname.getNamespaceURI());
    }
 
-   private JBossXSTypeDefinition generateNewType(QName xmlType, Class<?> javaType, Map<String, QName> elementNames)
+   private JBossXSTypeDefinition generateNewType(QName xmlType, Class javaType, Map<String, QName> elementNames)
    {
       //Step 1: Take care of superclass (if any)::Generate Type for the base class, if any
-      Class<?> superclass = javaType.getSuperclass();
+      Class superclass = javaType.getSuperclass();
       JBossXSTypeDefinition baseType = null;
       List<XSParticle> particles = new ArrayList<XSParticle>();
       if (superclass != null && !utils.checkIgnoreClass(superclass))
@@ -313,7 +316,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       }
 
       // Check if it is a JAX-RPC enumeration
-      Class<?> valueType = getEnumerationValueType(javaType);
+      Class valueType = getEnumerationValueType(javaType);
       if (valueType != null)
          return handleJAXRPCEnumeration(name, namespace, javaType, valueType);
 
@@ -334,7 +337,8 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       }
       catch (IntrospectionException e)
       {
-         throw MESSAGES.introspectionProblemInSchemaMapping(e);
+         log.error(BundleUtils.getMessage(bundle, "PROBLEM_IN_INTROSPECTION"),  e);
+         throw new WSException(e);
       }
 
       if (elementNames instanceof LinkedHashMap)
@@ -373,7 +377,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       }
       catch (Exception e)
       {
-         throw MESSAGES.notConformToExpectationInSchemaMapping(e);
+         throw new WSException(BundleUtils.getMessage(bundle, "NOT_CONFORM_TO_EXPECTATIONS"));
       }
 
       xsModel.addXSTypeDefinition(simpleType);
@@ -382,7 +386,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       return simpleType;
    }
 
-   private Class<?> getEnumerationValueType(Class<?> javaType)
+   private Class<?> getEnumerationValueType(Class javaType)
    {
       try
       {
@@ -434,7 +438,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       return newList;
    }
 
-   private void registerJavaTypeMapping(QName registerQName, Class<?> javaType, String scope, List<XSParticle> particles, Map<String, QName> elementNames)
+   private void registerJavaTypeMapping(QName registerQName, Class javaType, String scope, List<XSParticle> particles, Map<String, QName> elementNames)
    {
       QName qname = new QName(registerQName.getNamespaceURI(), registerQName.getLocalPart(), "typeNS");
 
@@ -467,7 +471,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       javaWsdlMapping.addJavaXmlTypeMappings(javaXmlTypeMapping);
    }
 
-   private void addVariableMappings(Class<?> javaType, JavaXmlTypeMapping javaXmlTypeMapping, List<XSParticle> particles, Map<String, String> reversedNames)
+   private void addVariableMappings(Class javaType, JavaXmlTypeMapping javaXmlTypeMapping, List<XSParticle> particles, Map<String, String> reversedNames)
    {
       for (XSParticle particle : particles)
       {
@@ -532,7 +536,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       return false;
    }
 
-   private List<XSParticle> getXSParticlesForPublicFields(String typeNamespace, Class<?> javaType, Map<String, QName> elementNames)
+   private List<XSParticle> getXSParticlesForPublicFields(String typeNamespace, Class javaType, Map<String, QName> elementNames)
    {
       List<XSParticle> particles = new ArrayList<XSParticle>();
 
@@ -541,7 +545,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
          // Skip collections
          if (Collection.class.isAssignableFrom(field.getType()))
          {
-            NativeLoggers.ROOT_LOGGER.jaxrpcNotAllowCollectionSkippingFieldInSchemaMapping(javaType.getName(), field.getName());
+            log.warn(BundleUtils.getMessage(bundle, "JAX_RPC_NOT_ALLOW_SKIPPING_FIELD", new Object[]{ javaType.getName(),  field.getName()}));
             continue;
          }
 
@@ -552,9 +556,9 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       return particles;
    }
 
-   private JBossXSTypeDefinition handleArray(QName xmlType, Class<?> javaType)
+   private JBossXSTypeDefinition handleArray(QName xmlType, Class javaType)
    {
-      Class<?> componentType = javaType.getComponentType();
+      Class componentType = javaType.getComponentType();
       boolean isComponentArray = componentType.isArray();
 
       // Do not allow overrides i.e. byte[][] should not be base64Binary[]
@@ -572,7 +576,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       {
          if (isComponentArray == false)
          {
-            name = WSDLUtils.getJustClassName(componentType.getName()) + ".Array";
+            name = utils.getJustClassName(componentType.getName()) + ".Array";
             namespace = getNamespace(componentType, null);
          }
          else
@@ -595,11 +599,11 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       return complex;
    }
 
-   private List<XSParticle> introspectJavaProperties(String typeNamespace, Class<?> javaType, Map<String, QName> elementNames) throws IntrospectionException
+   private List<XSParticle> introspectJavaProperties(String typeNamespace, Class javaType, Map<String, QName> elementNames) throws IntrospectionException
    {
       List<XSParticle> xsparts = new ArrayList<XSParticle>();
 
-      Class<?> superClass = javaType.getSuperclass();
+      Class superClass = javaType.getSuperclass();
       BeanInfo beanInfo = Introspector.getBeanInfo(javaType, superClass);
       PropertyDescriptor[] props = beanInfo.getPropertyDescriptors();
       int len = props != null ? props.length : 0;
@@ -608,11 +612,11 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       {
          PropertyDescriptor prop = props[i];
          String fieldname = prop.getName();
-         Class<?> fieldType = prop.getPropertyType();
+         Class fieldType = prop.getPropertyType();
 
          if (prop instanceof IndexedPropertyDescriptor && fieldType == null)
          {
-            NativeLoggers.ROOT_LOGGER.indexedPropNotSupportedSkippingInSchemaMapping(javaType.getName(), fieldname);
+            log.warn(BundleUtils.getMessage(bundle, "NOT_SUPPORTED_SKIPPING", new Object[]{ javaType.getName(), fieldname}));
             continue;
          }
 
@@ -623,13 +627,13 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
          // Skip collections
          if (Collection.class.isAssignableFrom(fieldType))
          {
-            NativeLoggers.ROOT_LOGGER.jaxrpcNotAllowCollectionSkippingFieldInSchemaMapping(javaType.getName(), fieldname);
+            log.warn(BundleUtils.getMessage(bundle, "JAX-RPC_NOT_ALLOW_TYPES_SKIPPING", new Object[]{ javaType.getName(),  fieldname}));
             continue;
          }
 
          //Check if the property conflicts with a public member variable
          if (utils.doesPublicFieldExist(javaType, fieldname))
-            throw MESSAGES.classHasPublicFieldPropertyInSchemaMapping(javaType.getName(), fieldname);
+            throw new WSException(BundleUtils.getMessage(bundle, "CLASS_HAS_PUBLIC_FIELD_PROPERTY", new Object[]{javaType.getName(),  fieldname}));
 
          JBossXSParticle particle = createFieldParticle(typeNamespace, fieldname, fieldType, elementNames);
          xsparts.add(particle);
@@ -638,7 +642,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       return xsparts;
    }
 
-   private JBossXSParticle createFieldParticle(String typeNamespace, String fieldName, Class<?> fieldType, Map<String, QName> elementNames)
+   private JBossXSParticle createFieldParticle(String typeNamespace, String fieldName, Class fieldType, Map<String, QName> elementNames)
    {
       // There should be some override mechanism, but we want byte[] to resolve to base64binary (the default)
       boolean isArray = fieldType.isArray() && fieldType != byte[].class;
@@ -679,10 +683,10 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       return particle;
    }
 
-   private void addBaseTypeParts(XSTypeDefinition baseType, List<XSParticle> xsparts)
+   private void addBaseTypeParts(XSTypeDefinition baseType, List xsparts)
    {
       if (baseType == null)
-         throw MESSAGES.illegalNullArgumentInSchemaMapping("baseType");
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_NULL_ARGUMENT", "baseType"));
       if (XSTypeDefinition.COMPLEX_TYPE == baseType.getTypeCategory())
       {
          XSTypeDefinition btype = baseType.getBaseType();
@@ -700,7 +704,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       }
    }
 
-   private String getNamespace(Class<?> javaType, String defaultNS)
+   private String getNamespace(Class javaType, String defaultNS)
    {
       String retNS = defaultNS;
       if (javaType.isPrimitive() && retNS == null)
@@ -725,25 +729,25 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
             }
             else if (retNS == null)
             {
-               retNS = WSDLUtils.getTypeNamespace(packageName);
+               retNS = utils.getTypeNamespace(packageName);
             }
 
             allocatePrefix(retNS);
          }
          else if (retNS == null)
          {
-            throw MESSAGES.cannotDeterminNamespaceInSchemaMapping(javaType);
+            throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_DETERMINE_NAMESPACE"));
          }
       }
       return retNS;
    }
 
-   private JBossXSComplexTypeDefinition getComplexTypeForJavaException(QName xmlType, Class<?> javaType)
+   private JBossXSComplexTypeDefinition getComplexTypeForJavaException(QName xmlType, Class javaType)
    {
       if (!Exception.class.isAssignableFrom(javaType))
-         throw MESSAGES.typeIsNotAnExceptionInSchemaMapping(javaType);
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "TYPE_IS_NOT_AN_EXCPETION"));
       if (RuntimeException.class.isAssignableFrom(javaType))
-         throw MESSAGES.jaxrpcExceptionExtendingRuntimeExcViolationInSchemaMapping(javaType);
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "JAX_RPC_VIOLATION",  javaType.getName()));
 
       String name;
       String namespace;
@@ -759,7 +763,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       }
 
       List<XSParticle> particles = new ArrayList<XSParticle>(0);
-      List<Class<?>> types = new ArrayList<Class<?>>(0);
+      List<Class> types = new ArrayList<Class>(0);
       JBossXSComplexTypeDefinition complexType = new JBossXSComplexTypeDefinition();
       complexType.setName(name);
       complexType.setNamespace(namespace);
@@ -771,7 +775,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
 
       registerJavaTypeMapping(new QName(namespace, name), javaType, "complexType", particles, null);
 
-      Class<?> superClass = javaType.getSuperclass();
+      Class superClass = javaType.getSuperclass();
       if (!Exception.class.equals(superClass) || Throwable.class.equals(superClass))
       {
          JBossXSTypeDefinition baseType = generateType(null, superClass);
@@ -786,7 +790,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       {
          // Look for a message constructor if a matching constructor could not be found.
          // We also prefer message constructors over a noarg constructor
-         ArrayList<Class<?>> newTypes = new ArrayList<Class<?>>(types);
+         ArrayList<Class> newTypes = new ArrayList<Class>(types);
          newTypes.add(0, String.class);
          found = hasConstructor(javaType, newTypes);
          if (found)
@@ -797,7 +801,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
          {
             // If we have a default (0 argument) constructor, fall back to it
             if (!noarg)
-               throw MESSAGES.couldNotLocateConstructorInSchemaMapping(javaType, types);
+               throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "COULD_NOT_LOCATE_CONSTRUCTOR",  javaType));
          }
       }
 
@@ -806,7 +810,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       return complexType;
    }
 
-   private void insertBaseParticle(List<XSParticle> particles, String name, Class<?> type, String targetNS)
+   private void insertBaseParticle(List<XSParticle> particles, String name, Class type, String targetNS)
    {
       if (particles.size() == 0)
       {
@@ -835,7 +839,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       }
    }
 
-   private boolean hasConstructor(Class<?> javaType, List<Class<?>> types)
+   private boolean hasConstructor(Class javaType, List<Class> types)
    {
       boolean found = true;
 
@@ -851,7 +855,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       return found;
    }
 
-   private void generateExceptionParticles(String typeNamespace, Class<?> javaType, List<Class<?>> types, List<XSParticle> particles)
+   private void generateExceptionParticles(String typeNamespace, Class javaType, List<Class> types, List<XSParticle> particles)
    {
       /*
        * JAX-RPC 1.1 states that properties of an exception are determined by
@@ -870,7 +874,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       if (Exception.class.equals(javaType))
          return;
 
-      Class<?> superClass = javaType.getSuperclass();
+      Class superClass = javaType.getSuperclass();
       if (!Exception.class.equals(superClass))
       {
          List<XSParticle> superParticles = new ArrayList<XSParticle>(0);
@@ -878,7 +882,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
          particles.add(createGroupParticle(typeNamespace, superParticles));
       }
 
-      TreeMap<String, Class<?>> sortedGetters = new TreeMap<String, Class<?>>();
+      TreeMap<String, Class> sortedGetters = new TreeMap<String, Class>();
       for (Method method : javaType.getDeclaredMethods())
       {
          int modifiers = method.getModifiers();
@@ -886,7 +890,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
             continue;
 
          String name = method.getName();
-         Class<?> returnType = method.getReturnType();
+         Class returnType = method.getReturnType();
          if (name.startsWith("get") && returnType != void.class)
          {
             name = Introspector.decapitalize(name.substring(3));
@@ -896,7 +900,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
 
       for (String name : sortedGetters.keySet())
       {
-         Class<?> type = sortedGetters.get(name);
+         Class type = sortedGetters.get(name);
          types.add(type);
          JBossXSParticle particle = createFieldParticle(typeNamespace, name, type, null);
          particles.add(particle);
@@ -913,7 +917,7 @@ public class SchemaTypeCreator implements SchemaCreatorIntf
       return groupParticle;
    }
 
-   private JBossXSParticle getXSParticle(String name, Class<?> fieldType, String targetNS)
+   private JBossXSParticle getXSParticle(String name, Class fieldType, String targetNS)
    {
       XSTypeDefinition xstype = null;
       boolean isArray = fieldType.isArray();

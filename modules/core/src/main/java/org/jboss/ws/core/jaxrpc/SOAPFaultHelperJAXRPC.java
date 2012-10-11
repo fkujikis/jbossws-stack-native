@@ -47,7 +47,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
 import org.jboss.ws.WSException;
 import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.common.Constants;
@@ -213,7 +212,7 @@ public class SOAPFaultHelperJAXRPC
       }
 
       Throwable faultCause = faultEx.getCause();
-      NativeLoggers.ROOT_LOGGER.soapRequestException(faultCause != null ? faultCause : faultEx);
+      log.error(BundleUtils.getMessage(bundle, "SOAP_REQUEST_EXCEPTION"),  faultCause != null ? faultCause : faultEx);
 
       try
       {

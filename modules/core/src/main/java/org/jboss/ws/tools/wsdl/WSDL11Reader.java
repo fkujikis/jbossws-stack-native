@@ -21,8 +21,6 @@
  */
 package org.jboss.ws.tools.wsdl;
 
-import static org.jboss.ws.NativeMessages.MESSAGES;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -36,6 +34,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.wsdl.Binding;
@@ -76,8 +75,7 @@ import javax.wsdl.extensions.soap12.SOAP12Operation;
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
-import org.jboss.ws.NativeMessages;
+import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.common.Constants;
 import org.jboss.ws.common.DOMUtils;
 import org.jboss.ws.common.DOMWriter;
@@ -130,6 +128,7 @@ import org.xml.sax.SAXException;
  */
 public class WSDL11Reader
 {
+   private static final ResourceBundle bundle = BundleUtils.getBundle(WSDL11Reader.class);
    // provide logging
    private static final Logger log = Logger.getLogger(WSDL11Reader.class);
 
@@ -192,7 +191,6 @@ public class WSDL11Reader
       return destWsdl;
    }
 
-   @SuppressWarnings("unchecked")
    private void processTopLevelElements(Definition srcWsdl)
    {
       String targetNS = srcWsdl.getTargetNamespace();
@@ -281,7 +279,7 @@ public class WSDL11Reader
    {
       log.trace("processUnreachableBindings");
 
-      Iterator<?> it = getAllDefinedBindings(srcWsdl).values().iterator();
+      Iterator it = getAllDefinedBindings(srcWsdl).values().iterator();
       while (it.hasNext())
       {
          Binding srcBinding = (Binding)it.next();
@@ -381,7 +379,7 @@ public class WSDL11Reader
                }
                else
                {
-                  throw NativeMessages.MESSAGES.unsupportedSchemaElement(wsdlLoc, localname);
+                  throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "UNSUPORTED_SCHEMA_ELEMENT",  localname));
                }
             }
             catch (IOException e)
@@ -478,13 +476,13 @@ public class WSDL11Reader
    private void processSchemaImport(WSDLTypes types, URL wsdlLoc, Element importEl, Map<URL, URL> publishedLocations) throws IOException, WSDLException
    {
       if (wsdlLoc == null)
-         throw MESSAGES.cannotProcessImportParentLocationSetToNull();
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_PROCESS_IMPORT"));
 
       log.trace("processSchemaImport: " + wsdlLoc);
 
       String location = getOptionalAttribute(importEl, "schemaLocation");
       if (location == null)
-         throw MESSAGES.xsdImportNullSchemaLocation();
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "SCHEMALOCATION_IS_NULL_FOR_IMPORT"));
 
       URL locationURL = getLocationURL(wsdlLoc, location);
       if (!publishedLocations.containsKey(locationURL))
@@ -500,7 +498,7 @@ public class WSDL11Reader
    private void processSchemaInclude(WSDLTypes types, URL wsdlLoc, Element schemaEl, Map<URL, URL> publishedLocations) throws IOException, WSDLException
    {
       if (wsdlLoc == null)
-         throw MESSAGES.cannotProcessIncludeParentLocationSetToNull();
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_PROCESS_INCLUDE"));
 
       log.trace("processSchemaInclude: " + wsdlLoc);
 
@@ -545,7 +543,7 @@ public class WSDL11Reader
          Element includeEl = (Element)it.next();
          String location = getOptionalAttribute(includeEl, "schemaLocation");
          if (location == null)
-            throw MESSAGES.xsdIncludeNullSchemaLocation();
+            throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "SCHEMALOCATION_IS_NULL_FOR_INCLUDE"));
 
          URL locationURL = getLocationURL(wsdlLoc, location);
          Element rootElement = DOMUtils.parse(new ResourceURL(locationURL).openStream());
@@ -584,7 +582,7 @@ public class WSDL11Reader
    private void handleSchemaImports(Element schemaEl, URL parentURL) throws WSDLException, IOException
    {
       if (parentURL == null)
-         throw MESSAGES.cannotProcessImportParentLocationSetToNull();
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_PROCESS_IMPORT"));
 
       Iterator it = DOMUtils.getChildElements(schemaEl, new QName(Constants.NS_SCHEMA_XSD, "import"));
       while (it.hasNext())
@@ -613,7 +611,7 @@ public class WSDL11Reader
                   }
                   catch (SAXException se)
                   {
-                     log.error("", se);
+                     log.error(BundleUtils.getMessage(bundle, ""),  se);
                   }
                }
                if (importedSchema == null)
@@ -920,7 +918,7 @@ public class WSDL11Reader
       else
       {
          umdmFault.setElement(messageName);
-         NativeLoggers.ROOT_LOGGER.unsupportedFaultMessagePartInMessage(messageName);
+         log.warn(BundleUtils.getMessage(bundle, "UNSUPPORTED_FAULT_MESSAGE_PART_IN_MESSAGE",  messageName));
       }
 
       // Add the fault to the interface
@@ -977,7 +975,7 @@ public class WSDL11Reader
       }
 
       if (xmlName == null)
-         throw MESSAGES.cannotFindNameForWSDLPart(srcPart);
+         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_NAME_FOR_WSDL_PART",  srcPart));
 
       xmlName = destWsdl.registerQName(xmlName);
       String key = srcMessage.getQName() + "->" + srcPart.getName();
@@ -1072,7 +1070,7 @@ public class WSDL11Reader
             }
             else if ("binding".equals(elementType.getLocalPart()))
             {
-               NativeLoggers.ROOT_LOGGER.unsupportedBinding(elementType);
+               log.warn(BundleUtils.getMessage(bundle, "UNSUPPORTED_BINDING",  elementType));
                bindingType = elementType.getNamespaceURI();
             }
          }
@@ -1528,7 +1526,7 @@ public class WSDL11Reader
          if (encStyleList != null)
          {
             if (encStyleList.size() > 1)
-               NativeLoggers.ROOT_LOGGER.multipleEncodingStyleNotSupported(encStyleList);
+               log.warn(BundleUtils.getMessage(bundle, "MULTIPLE_ENCODING_STYLES_NOT_SUPPORTED",  encStyleList));
 
             if (encStyleList.size() > 0)
             {
@@ -1546,7 +1544,7 @@ public class WSDL11Reader
       {
          String setStyle = destBindingOperation.getEncodingStyle();
          if (encStyle.equals(setStyle) == false)
-            NativeLoggers.ROOT_LOGGER.encodingStyleNotSupported(encStyle, destBindingOperation.getRef());
+            log.warn(BundleUtils.getMessage(bundle, "ENCODING_STYLE_NOT_SUPPORTED", new Object[]{ encStyle ,  destBindingOperation.getRef()}));
 
          destBindingOperation.setEncodingStyle(encStyle);
       }
@@ -1645,7 +1643,7 @@ public class WSDL11Reader
          }
          else if ("address".equals(elementType.getLocalPart()))
          {
-            NativeLoggers.ROOT_LOGGER.unprocessedWSDLExtensionElement(elementType);
+            log.warn(BundleUtils.getMessage(bundle, "UNPROCESSED_EXTENSION_ELEMENT",  elementType));
          }
       }
 

@@ -21,7 +21,9 @@
  */
 package org.jboss.wsf.stack.jbws;
 
-import org.jboss.ws.NativeMessages;
+import java.util.ResourceBundle;
+
+import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.ws.common.utils.DelegateClassLoader;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
@@ -35,16 +37,17 @@ import org.jboss.wsf.spi.deployment.Deployment;
  */
 public class EagerInitializeDeploymentAspect extends AbstractDeploymentAspect
 {
+   private static final ResourceBundle bundle = BundleUtils.getBundle(EagerInitializeDeploymentAspect.class);
    @Override
    public void start(Deployment dep)
    {
       UnifiedMetaData umd = dep.getAttachment(UnifiedMetaData.class);
       if (umd == null)
-         throw NativeMessages.MESSAGES.cannotObtainUnifiedMetaData(dep);
+         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_UNIFIEDMD"));
 
       ClassLoader runtimeClassLoader = dep.getRuntimeClassLoader();
       if(null == runtimeClassLoader)
-         throw NativeMessages.MESSAGES.missingRuntimeClassLoader(dep);
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "NULL_RUNTIME_CLASSLOADER"));
       
       umd.setClassLoader(new DelegateClassLoader(runtimeClassLoader, SecurityActions.getContextClassLoader()));
       umd.eagerInitialize();

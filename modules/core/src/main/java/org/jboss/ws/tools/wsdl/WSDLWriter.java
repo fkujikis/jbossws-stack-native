@@ -24,11 +24,13 @@ package org.jboss.ws.tools.wsdl;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeMessages;
+import org.jboss.ws.WSException;
+import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.common.Constants;
 import org.jboss.ws.common.DOMUtils;
 import org.jboss.ws.common.DOMWriter;
@@ -50,6 +52,7 @@ import org.w3c.dom.Element;
  */
 public class WSDLWriter
 {
+   private static final ResourceBundle bundle = BundleUtils.getBundle(WSDLWriter.class);
    // provide logging
    protected static final Logger log = Logger.getLogger(WSDLWriter.class);
 
@@ -67,7 +70,7 @@ public class WSDLWriter
    public WSDLWriter(WSDLDefinitions wsdl)
    {
       if (wsdl == null)
-         throw NativeMessages.MESSAGES.wsdlDefinitionIsNull();
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "WSDL_DEFINITIONS_IS_NULL"));
 
       this.wsdl = wsdl;
    }
@@ -88,7 +91,7 @@ public class WSDLWriter
       }
       else
       {
-         throw NativeMessages.MESSAGES.unsupportedWSDLVersion(wsdlNamespace);
+         throw new WSException(BundleUtils.getMessage(bundle, "UNSUPPORTED_WSDL_VERSION",  wsdlNamespace));
       }
    }
 

@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.wsdl.Definition;
 import javax.wsdl.factory.WSDLFactory;
@@ -37,7 +38,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeMessages;
+import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.common.Constants;
 import org.jboss.ws.common.utils.JBossWSEntityResolver;
 import org.jboss.ws.common.utils.ResourceURL;
@@ -60,6 +61,7 @@ import org.xml.sax.EntityResolver;
  */
 public class WSDLDefinitionsFactory
 {
+   private static final ResourceBundle bundle = BundleUtils.getBundle(WSDLDefinitionsFactory.class);
    // provide logging
    private static final Logger log = Logger.getLogger(WSDLDefinitionsFactory.class);
 
@@ -98,7 +100,7 @@ public class WSDLDefinitionsFactory
    public WSDLDefinitions parse(URL wsdlLocation) throws WSDLException
    {
       if (wsdlLocation == null)
-         throw NativeMessages.MESSAGES.cannotParsedWsdlWithNullURL();
+         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "URL_CANNOT_BE_NULL"));
 
       if (log.isDebugEnabled())
          log.debug("parse: " + wsdlLocation.toExternalForm());
@@ -116,11 +118,11 @@ public class WSDLDefinitionsFactory
             wsdlReader.setFeature("javax.wsdl.verbose", false);
 
             // Setup reader features
-            Iterator<?> it = features.entrySet().iterator();
+            Iterator it = features.entrySet().iterator();
 
             while (it.hasNext())
             {
-               Map.Entry<?,?> entry = (Map.Entry<?, ?>)it.next();
+               Map.Entry entry = (Map.Entry)it.next();
                String key = (String)entry.getKey();
                Boolean flag = (Boolean)entry.getValue();
                wsdlReader.setFeature(key, flag.booleanValue());
@@ -132,7 +134,7 @@ public class WSDLDefinitionsFactory
          }
          else
          {
-            throw NativeMessages.MESSAGES.invalidDefaultWSDLNamespace(defaultNamespace);
+            throw new WSDLException(BundleUtils.getMessage(bundle, "INVALID_DEFAULT_NAMESPACE",  defaultNamespace));
          }
 
          if (log.isTraceEnabled())
@@ -185,11 +187,11 @@ public class WSDLDefinitionsFactory
       }
       catch (ConnectException ex)
       {
-         throw NativeMessages.MESSAGES.cannotParseWsdlFrom(wsdlLocation, ex);
+         throw new WSDLException(BundleUtils.getMessage(bundle, "CANNOT_CONNECT_TO",  wsdlLocation));
       }
       catch (Exception ex)
       {
-         throw NativeMessages.MESSAGES.cannotParseWsdlFrom(wsdlLocation, ex);
+         throw new WSDLException(BundleUtils.getMessage(bundle, "CANNOT_PARSE_WSDLLOCATION",  wsdlLocation),  ex);
       }
    }
 

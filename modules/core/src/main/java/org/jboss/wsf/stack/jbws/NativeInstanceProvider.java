@@ -24,8 +24,10 @@ package org.jboss.wsf.stack.jbws;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
-import org.jboss.ws.NativeMessages;
+import org.jboss.ws.WSException;
+import org.jboss.ws.api.util.BundleUtils;
 import org.jboss.ws.common.deployment.ReferenceFactory;
 import org.jboss.wsf.spi.deployment.InstanceProvider;
 import org.jboss.wsf.spi.deployment.Reference;
@@ -37,6 +39,7 @@ import org.jboss.wsf.spi.deployment.Reference;
  */
 final class NativeInstanceProvider implements InstanceProvider {
 
+    private static final ResourceBundle bundle = BundleUtils.getBundle(NativeInstanceProvider.class);
     private final ClassLoader loader;
     private final Map<String, Reference> cache = new HashMap<String, Reference>();
 
@@ -52,7 +55,7 @@ final class NativeInstanceProvider implements InstanceProvider {
                 instance = ReferenceFactory.newUninitializedReference(loader.loadClass(className).newInstance());
                 cache.put(className, instance);
             } catch (Exception e) {
-                throw NativeMessages.MESSAGES.cannotLoadClass(className, e);
+                throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_LOAD_CLASS",  className),  e);
             }
         }
         return instance;
