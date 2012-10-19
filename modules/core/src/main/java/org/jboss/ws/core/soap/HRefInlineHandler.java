@@ -22,7 +22,6 @@
 package org.jboss.ws.core.soap;
 
 import java.util.Iterator;
-import java.util.ResourceBundle;
 
 import javax.xml.soap.Node;
 import javax.xml.soap.SOAPBodyElement;
@@ -31,9 +30,8 @@ import javax.xml.soap.SOAPException;
 import javax.xml.soap.Text;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.core.soap.BundleUtils;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -46,7 +44,6 @@ import org.w3c.dom.NamedNodeMap;
  */
 public class HRefInlineHandler
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(HRefInlineHandler.class);
    // provide logging
    private static Logger log = Logger.getLogger(HRefInlineHandler.class);
 
@@ -61,9 +58,7 @@ public class HRefInlineHandler
    public void processHRefs() throws SOAPException
    {
       String bodyStr = DOMWriter.printNode(soapBody, true);
-      boolean debugEnabled = log.isDebugEnabled();
-      if (debugEnabled)
-         log.debug("Begin processHRefs:\n" + bodyStr);
+      log.debug("Begin processHRefs:\n" + bodyStr);
 
       SOAPBodyElement soapBodyElement = soapBody.getBodyElement();
       processElement(soapBodyElement);
@@ -83,8 +78,7 @@ public class HRefInlineHandler
       }
 
       bodyStr = DOMWriter.printNode(soapBody, true);
-      if (debugEnabled)
-         log.debug("End processHRefs:\n" + bodyStr);
+      log.debug("End processHRefs:\n" + bodyStr);
    }
 
    private void processElement(SOAPElement soapElement) throws SOAPException
@@ -126,7 +120,7 @@ public class HRefInlineHandler
       }
 
       if (idElement == null)
-         throw new IllegalStateException(BundleUtils.getMessage(bundle, "CANNOT_GET_HREF_ELEMENT",  href));
+         throw new IllegalStateException("Cannot get href element: " + href);
 
       // process nested hrefs
       processElement(idElement);

@@ -22,26 +22,25 @@
 package org.jboss.ws.core.soap;
 
 import java.lang.reflect.Method;
-import java.util.ResourceBundle;
+import java.util.List;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.core.soap.BundleUtils;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.CommonMessageContext;
-import org.jboss.ws.core.binding.AbstractSerializerFactory;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.SerializationContext;
+import org.jboss.ws.core.binding.AbstractSerializerFactory;
 import org.jboss.ws.core.binding.SerializerSupport;
 import org.jboss.ws.core.binding.TypeMappingImpl;
 import org.jboss.ws.core.jaxrpc.binding.NullValueSerializer;
-import org.jboss.ws.core.soap.utils.MessageContextAssociation;
-import org.jboss.ws.core.soap.utils.XMLFragment;
+import org.jboss.ws.core.jaxws.SerializationContextJAXWS;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * Represents the OBJECT_VALID state of an {@link SOAPContentElement}.<br>
@@ -51,7 +50,6 @@ import org.jboss.ws.metadata.umdm.ParameterMetaData;
  */
 public class ObjectContent extends SOAPContent
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ObjectContent.class);
 
    private static Logger log = Logger.getLogger(ObjectContent.class);
 
@@ -95,21 +93,31 @@ public class ObjectContent extends SOAPContent
       }
       else
       {
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_STATE_REQUESTED",  nextState));
+         throw new IllegalArgumentException("Illegal state requested: " + nextState);
       }
 
       return next;
    }
 
+   public Source getPayload()
+   {
+      throw new IllegalStateException("Payload not available");
+   }
+
+   public void setPayload(Source source)
+   {
+      throw new IllegalStateException("Payload cannot be set on object content");
+   }
+
    public XMLFragment getXMLFragment()
    {
 
-      throw new IllegalStateException(BundleUtils.getMessage(bundle, "XMLFRAGMENT_NOT_AVAILABLE"));
+      throw new IllegalStateException("XMLFragment not available");
    }
 
    public void setXMLFragment(XMLFragment xmlFragment)
    {
-      throw new IllegalStateException(BundleUtils.getMessage(bundle, "XMLFRAGMENT_NOT_AVAILABLE"));
+      throw new IllegalStateException("XMLFragment not available");
    }
 
    public Object getObjectValue()
@@ -127,18 +135,18 @@ public class ObjectContent extends SOAPContent
       QName xmlType = container.getXmlType();
       Class javaType = container.getJavaType();
 
-      boolean debugEnabled = log.isDebugEnabled();
-      if (debugEnabled)
-         log.debug("getXMLFragment from Object [xmlType=" + xmlType + ",javaType=" + javaType + "]");
+      log.debug("getXMLFragment from Object [xmlType=" + xmlType + ",javaType=" + javaType + "]");
 
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "MESSAGECONTEXT_NOT_AVAILABLE"));
+         throw new WSException("MessageContext not available");
 
       SerializationContext serContext = msgContext.getSerializationContext();
       serContext.setJavaType(javaType);
       ParameterMetaData pmd = container.getParamMetaData();
       OperationMetaData opMetaData = pmd.getOperationMetaData();
+      List<Class> registeredTypes = opMetaData.getEndpointMetaData().getRegisteredTypes();
+      serContext.setProperty(SerializationContextJAXWS.JAXB_CONTEXT_TYPES, registeredTypes.toArray(new Class[0]));
 
       TypeMappingImpl typeMapping = serContext.getTypeMapping();
       XMLFragment xmlFragment = null;
@@ -158,8 +166,7 @@ public class ObjectContent extends SOAPContent
          Result result = ser.serialize(container, serContext);
 
          xmlFragment = new XMLFragment(result);
-         if (debugEnabled)
-            log.debug("xmlFragment: " + xmlFragment);
+         log.debug("xmlFragment: " + xmlFragment);
       }
       catch (BindingException e)
       {
@@ -199,7 +206,7 @@ public class ObjectContent extends SOAPContent
       }
 
       if (serializerFactory == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_SERIALIZER_FACTORY", new Object[]{ xmlType,  javaType }));
+         throw new WSException("Cannot obtain serializer factory for: [xmlType=" + xmlType + ",javaType=" + javaType + "]");
 
       return serializerFactory;
    }

@@ -30,7 +30,7 @@ import org.apache.xerces.xs.XSException;
 import org.apache.xerces.xs.XSNamedMap;
 import org.apache.xerces.xs.XSObjectList;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.jboss.ws.NativeMessages;
+import org.jboss.util.NotImplementedException;
 
 /**
  * Represents an XS Element Declaration
@@ -74,7 +74,7 @@ public class JBossXSElementDeclaration extends JBossXSObject implements XSElemen
    public JBossXSElementDeclaration(XSElementDeclaration xe)
    {
       if (xe == null)
-         throw NativeMessages.MESSAGES.illegalNullArgument("xe");
+         throw new IllegalArgumentException("Illegal Null Argument:xe");
 
       xsed = xe;
       name = xe.getName();
@@ -239,6 +239,6 @@ public class JBossXSElementDeclaration extends JBossXSObject implements XSElemen
 
    public XSObjectList getAnnotations()
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 }

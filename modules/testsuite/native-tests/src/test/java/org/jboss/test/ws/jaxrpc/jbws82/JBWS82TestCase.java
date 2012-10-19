@@ -42,7 +42,7 @@ public class JBWS82TestCase extends JBossWSTest
    /** Deploy the test */
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS82TestCase.class, "jaxrpc-jbws82.war, jaxrpc-jbws82-appclient.ear#jaxrpc-jbws82-appclient.jar");
+      return new JBossWSTestSetup(JBWS82TestCase.class, "jaxrpc-jbws82.war, jaxrpc-jbws82-client.jar");
    }
 
    /**
@@ -50,23 +50,12 @@ public class JBWS82TestCase extends JBossWSTest
     */
    public void testEndpoint() throws Exception
    {
-      InitialContext iniCtx = null;
-      try
-      {
-         iniCtx = getAppclientInitialContext();
-         Service service = (Service)iniCtx.lookup("java:service/HelloService");
-         Hello hello = (Hello)service.getPort(Hello.class);
+      InitialContext iniCtx = getInitialContext();
+      Service service = (Service)iniCtx.lookup("java:comp/env/service/HelloService");
+      Hello hello = (Hello)service.getPort(Hello.class);
 
-         UserType in0 = new UserType("Kermit");
-         UserType retObj = hello.echoUserType(in0);
-         assertEquals(in0, retObj);
-      }
-      finally
-      {
-         if (iniCtx != null)
-         {
-            iniCtx.close();
-         }
-      }
+      UserType in0 = new UserType("Kermit");
+      UserType retObj = hello.echoUserType(in0);
+      assertEquals(in0, retObj);
    }
 }

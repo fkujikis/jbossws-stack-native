@@ -29,7 +29,8 @@ import javax.xml.rpc.Service;
 import javax.xml.rpc.ServiceException;
 import javax.xml.rpc.ServiceFactory;
 
-import org.jboss.ws.NativeLoggers;
+import org.jboss.logging.Logger;
+import org.jboss.util.NotImplementedException;
 
 /**
  * Service class acts as a factory for:
@@ -44,6 +45,9 @@ import org.jboss.ws.NativeLoggers;
  */
 public class ServiceFactoryImpl extends ServiceFactory
 {
+   // provide logging
+   private final Logger log = Logger.getLogger(ServiceFactoryImpl.class);
+   
    /**
     * Create an instance of the generated service implementation class for a given service interface, if available.
     *
@@ -54,7 +58,7 @@ public class ServiceFactoryImpl extends ServiceFactory
     */
    public Service loadService(Class serviceInterface) throws ServiceException
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 
    /**
@@ -71,7 +75,7 @@ public class ServiceFactoryImpl extends ServiceFactory
     */
    public Service loadService(URL wsdlDocumentLocation, Class serviceInterface, Properties props) throws ServiceException
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 
    /**
@@ -88,7 +92,7 @@ public class ServiceFactoryImpl extends ServiceFactory
     */
    public Service loadService(URL wsdlDocumentLocation, QName serviceName, Properties props) throws ServiceException
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 
    /**
@@ -113,11 +117,11 @@ public class ServiceFactoryImpl extends ServiceFactory
     */
    public Service createService(URL wsdlURL, QName serviceName) throws ServiceException
    {
-      ClassLoader cl = SecurityActions.getContextClassLoader();
+      ClassLoader cl = Thread.currentThread().getContextClassLoader();
       
-      URL mappingURL = SecurityActions.getResource(cl, "META-INF/jaxrpc-mapping.xml");
+      URL mappingURL = cl.getResource("META-INF/jaxrpc-mapping.xml");
       if (mappingURL != null)
-         NativeLoggers.JAXRPC_LOGGER.useJaxRpcMappingFrom(mappingURL);
+         log.info("Use jaxrpc-mapping from: " + mappingURL);
       
       return createService(wsdlURL, serviceName, mappingURL, null);
    }

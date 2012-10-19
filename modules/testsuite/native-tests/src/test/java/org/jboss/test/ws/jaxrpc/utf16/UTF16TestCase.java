@@ -67,7 +67,7 @@ public class UTF16TestCase extends JBossWSTest
    /** Deploy the test */
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(UTF16TestCase.class, "jaxrpc-utf16.war, jaxrpc-utf16-appclient.ear#jaxrpc-utf16-appclient.jar");
+      return new JBossWSTestSetup(UTF16TestCase.class, "jaxrpc-utf16.war, jaxrpc-utf16-client.jar");
    }
 
    public void setUp() throws Exception 
@@ -79,23 +79,12 @@ public class UTF16TestCase extends JBossWSTest
    
    public void testClientAccess() throws Exception
    {
-      InitialContext iniCtx = null;
-      try
-      {
-         iniCtx = getAppclientInitialContext();
-         Service service = (Service)iniCtx.lookup("java:service/TestService");
-         Hello endpoint = (Hello)service.getPort(Hello.class);
-         
-         String retObj = endpoint.hello("Kermit");
-         assertEquals("Kermit", retObj);
-      }
-      finally
-      {
-         if (iniCtx != null)
-         {
-            iniCtx.close();
-         }
-      }
+      InitialContext iniCtx = getInitialContext();
+      Service service = (Service)iniCtx.lookup("java:comp/env/service/TestService");
+      Hello endpoint = (Hello)service.getPort(Hello.class);
+      
+      String retObj = endpoint.hello("Kermit");
+      assertEquals("Kermit", retObj);
    }
    
    /** Test SAAJ access without MIME headers, using the default encoding
