@@ -24,13 +24,10 @@ package org.jboss.ws.core.soap.attachment;
 import java.awt.datatransfer.DataFlavor;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.ResourceBundle;
 
 import javax.activation.CommandMap;
 import javax.activation.DataContentHandler;
 import javax.activation.MailcapCommandMap;
-
-import org.jboss.ws.core.soap.BundleUtils;
 
 import com.sun.mail.handlers.multipart_mixed;
 import com.sun.mail.handlers.text_html;
@@ -44,7 +41,6 @@ import com.sun.mail.handlers.text_plain;
  */
 public class ContentHandlerRegistry
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(ContentHandlerRegistry.class);
    private static final String JAF_CONTENT_HANDLER = "x-java-content-handler";
    
    private static HashSet handlerRegistry = new HashSet();
@@ -76,7 +72,7 @@ public class ContentHandlerRegistry
       }
       catch (Exception e)
       {
-         throw new RuntimeException(BundleUtils.getMessage(bundle, "CAN_NOT_REGISTER_CONTENT_HANDLER",  e.getMessage()));
+         throw new RuntimeException("Can not register content handler:" + e.getMessage());
       }
       
       DataFlavor[] flavors = handler.getTransferDataFlavors();

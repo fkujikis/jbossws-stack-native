@@ -21,6 +21,10 @@
  */
 package org.jboss.ws.core;
 
+import java.util.Iterator;
+
+import javax.xml.namespace.QName;
+import javax.xml.rpc.ParameterMode;
 import javax.xml.soap.AttachmentPart;
 
 /**
@@ -29,7 +33,7 @@ import javax.xml.soap.AttachmentPart;
  * @author Thomas.Diesler@jboss.org
  * @since 17-Jan-2007
  */
-public interface StubExt extends EndpointMetadataProvider
+public interface StubExt extends ConfigProvider, EndpointMetadataProvider
 {
    /** ClientTimeout property: org.jboss.ws.timeout */
    static final String PROPERTY_CLIENT_TIMEOUT = "org.jboss.ws.timeout";
@@ -61,15 +65,57 @@ public interface StubExt extends EndpointMetadataProvider
    static final String PROPERTY_AUTH_TYPE = "org.jboss.ws.authType";
    /** Authentication type, BASIC */
    static final String PROPERTY_AUTH_TYPE_BASIC = "org.jboss.ws.authType.basic";
+   /** Authentication type, WSEE */
+   static final String PROPERTY_AUTH_TYPE_WSSE = "org.jboss.ws.authType.wsse";
+   /** Enable MTOM on the stub */
+   static final String PROPERTY_MTOM_ENABLED= "org.jboss.ws.mtom.enabled";
    /** HTTP chunk size */
    static final String PROPERTY_CHUNKED_ENCODING_SIZE = "http://org.jboss.ws/http#chunksize";
+
    
-   //New added property to provide stack agnostic timeout configuration(JBWS-3114)
-   /** Client ConnectionTimeout property: javax.xml.ws.client.connectionTimeout */
-   static final String PROPERTY_CONNECTION_TIMEOUT = "javax.xml.ws.client.connectionTimeout";
-   
-   /** Client ReceiveTimeout property: javax.xml.ws.client.receiveTimeout */
-   static final String PROPERTY_RECEIVE_TIMEOUT = "javax.xml.ws.client.receiveTimeout";
+   /**
+    * Add a header that is not bound to an input parameter.
+    * A propriatory extension, that is not part of JAXRPC.
+    *
+    * @param xmlName The XML name of the header element
+    * @param xmlType The XML type of the header element
+    */
+   void addUnboundHeader(QName xmlName, QName xmlType, Class javaType, ParameterMode mode);
+
+   /**
+    * Get the header value for the given XML name.
+    * A propriatory extension, that is not part of JAXRPC.
+    *
+    * @param xmlName The XML name of the header element
+    * @return The header value, or null
+    */
+   Object getUnboundHeaderValue(QName xmlName);
+
+   /**
+    * Set the header value for the given XML name.
+    * A propriatory extension, that is not part of JAXRPC.
+    *
+    * @param xmlName The XML name of the header element
+    */
+   void setUnboundHeaderValue(QName xmlName, Object value);
+
+   /**
+    * Clear all registered headers.
+    * A propriatory extension, that is not part of JAXRPC.
+    */
+   void clearUnboundHeaders();
+
+   /**
+    * Remove the header for the given XML name.
+    * A propriatory extension, that is not part of JAXRPC.
+    */
+   void removeUnboundHeader(QName xmlName);
+
+   /**
+    * Get an Iterator over the registered header XML names.
+    * A propriatory extension, that is not part of JAXRPC.
+    */
+   Iterator getUnboundHeaders();
    
    /**
     * Adds the given AttachmentPart object to the outgoing SOAPMessage.
