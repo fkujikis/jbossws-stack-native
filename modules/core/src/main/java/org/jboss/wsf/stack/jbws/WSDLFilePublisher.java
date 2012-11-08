@@ -168,20 +168,21 @@ public class WSDLFilePublisher
             String locationURI = wsdlImport.getLocationURI();
             Definition subdef = wsdlImport.getDefinition();
 
+            URL targetURL = new URL(baseURI.substring(0, baseURI.lastIndexOf("/") + 1) + locationURI);
+
             // its an external import, don't publish locally
             if (locationURI.startsWith("http://") == false)
             {
                // infinity loops prevention
-               if (published.contains(locationURI))
+               if (published.contains(targetURL.getPath()))
                {
                   continue;
                }
                else
                {
-                  published.add(locationURI);
+                  published.add(targetURL.getPath());
                }
                
-               URL targetURL = new URL(baseURI.substring(0, baseURI.lastIndexOf("/") + 1) + locationURI);
                File targetFile = new File(targetURL.getPath());
                targetFile.getParentFile().mkdirs();
 
@@ -221,17 +222,18 @@ public class WSDLFilePublisher
             {
                if (schemaLocation.startsWith("http://") == false)
                {
+                  URL xsdURL = new URL(baseURI.substring(0, baseURI.lastIndexOf("/") + 1) + schemaLocation);
+
                   // infinity loops prevention
-                  if (published.contains(schemaLocation))
+                  if (published.contains(xsdURL.getPath()))
                   {
                      continue;
                   }
                   else
                   {
-                     published.add(schemaLocation);
+                     published.add(xsdURL.getPath());
                   }
                   
-                  URL xsdURL = new URL(baseURI.substring(0, baseURI.lastIndexOf("/") + 1) + schemaLocation);
                   File targetFile = new File(xsdURL.getPath());
                   targetFile.getParentFile().mkdirs();
 
