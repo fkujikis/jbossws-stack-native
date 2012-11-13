@@ -19,23 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.ws.core.jaxrpc.client.serviceref;
+package org.jboss.ws.core.client;
 
-import javax.naming.Referenceable;
-
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
-import org.jboss.wsf.spi.serviceref.ServiceRefBinder;
+import org.jboss.wsf.spi.serviceref.ServiceRefFactory;
+import org.jboss.wsf.spi.serviceref.ServiceRefFactoryFactory;
 
 /**
- * Binds a JAXRPC Service object to the client's ENC.
- *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class NativeServiceRefBinderJAXRPC implements ServiceRefBinder
+public final class NativeServiceRefFactoryFactoryImpl implements ServiceRefFactoryFactory
 {
-   @Override
-   public Referenceable createReferenceable(final UnifiedServiceRefMetaData serviceRefMD)
+   public ServiceRefFactory newServiceRefFactory()
    {
-      return new NativeServiceReferenceableJAXRPC(serviceRefMD);
+      return new NativeServiceRefFactoryImpl();
    }
 }
