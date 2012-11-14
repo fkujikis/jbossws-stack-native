@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,44 +24,62 @@ package org.jboss.ws.core.server;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
+import javax.xml.rpc.ParameterMode;
 import javax.xml.rpc.server.ServiceLifecycle;
 import javax.xml.rpc.server.ServletEndpointContext;
 import javax.xml.soap.Name;
 import javax.xml.soap.SOAPBodyElement;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPHeader;
-import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.WebServiceException;
+import javax.xml.ws.handler.MessageContext;
+import javax.xml.ws.http.HTTPBinding;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.CommonBinding;
 import org.jboss.ws.core.CommonBindingProvider;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.CommonSOAPBinding;
 import org.jboss.ws.core.CommonSOAPFaultException;
 import org.jboss.ws.core.DirectionHolder;
-import org.jboss.ws.core.DirectionHolder.Direction;
 import org.jboss.ws.core.EndpointInvocation;
+import org.jboss.ws.core.MessageAbstraction;
+import org.jboss.ws.core.DirectionHolder.Direction;
 import org.jboss.ws.core.jaxrpc.ServletEndpointContextImpl;
 import org.jboss.ws.core.jaxrpc.handler.HandlerDelegateJAXRPC;
 import org.jboss.ws.core.jaxrpc.handler.MessageContextJAXRPC;
 import org.jboss.ws.core.jaxrpc.handler.SOAPMessageContextJAXRPC;
+import org.jboss.ws.core.jaxws.binding.BindingProviderImpl;
+import org.jboss.ws.core.jaxws.handler.HandlerDelegateJAXWS;
+import org.jboss.ws.core.jaxws.handler.MessageContextJAXWS;
+import org.jboss.ws.core.jaxws.handler.SOAPMessageContextJAXWS;
+import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.core.soap.SOAPBodyImpl;
-import org.jboss.ws.core.soap.SOAPMessageDispatcher;
-import org.jboss.ws.core.soap.utils.MessageContextAssociation;
+import org.jboss.ws.core.soap.SOAPMessageImpl;
+import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
+import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
+import org.jboss.wsf.common.JavaUtils;
+import org.jboss.wsf.spi.SPIProvider;
+import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 import org.jboss.wsf.spi.invocation.Invocation;
 import org.jboss.wsf.spi.invocation.InvocationContext;
 import org.jboss.wsf.spi.invocation.InvocationHandler;
+import org.jboss.wsf.spi.invocation.InvocationType;
+import org.jboss.wsf.spi.invocation.WebServiceContextFactory;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+import org.jboss.wsf.spi.serviceref.ServiceRefHandler.Type;
 
 /** An implementation handles invocations on the endpoint
  *
@@ -77,6 +95,14 @@ public class ServiceEndpointInvoker
    protected CommonBindingProvider bindingProvider;
    protected ServerHandlerDelegate delegate;
 
+   private WebServiceContextFactory contextFactory;
+
+   public ServiceEndpointInvoker()
+   {
+      SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+      contextFactory = spiProvider.getSPI(WebServiceContextFactory.class);
+   }
+
    /** Initialize the service endpoint */
    public void init(Endpoint endpoint)
    {
@@ -84,10 +110,18 @@ public class ServiceEndpointInvoker
 
       ServerEndpointMetaData sepMetaData = endpoint.getAttachment(ServerEndpointMetaData.class);
       if (sepMetaData == null)
-         throw NativeMessages.MESSAGES.cannotObtainEndpointMetaData(endpoint);
+         throw new IllegalStateException("Cannot obtain endpoint meta data");
 
-      bindingProvider = new CommonBindingProvider(sepMetaData);
-      delegate = new HandlerDelegateJAXRPC(sepMetaData);
+      if (sepMetaData.getType() == EndpointMetaData.Type.JAXRPC)
+      {
+         bindingProvider = new CommonBindingProvider(sepMetaData);
+         delegate = new HandlerDelegateJAXRPC(sepMetaData);
+      }
+      else
+      {
+         bindingProvider = new BindingProviderImpl(sepMetaData);
+         delegate = new HandlerDelegateJAXWS(sepMetaData);
+      }
    }
 
    public boolean callRequestHandlerChain(ServerEndpointMetaData sepMetaData, HandlerType type)
@@ -115,7 +149,7 @@ public class ServiceEndpointInvoker
    {
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       ServerEndpointMetaData sepMetaData = (ServerEndpointMetaData)msgContext.getEndpointMetaData();
-      SOAPMessage reqMessage = msgContext.getSOAPMessage();
+      MessageAbstraction reqMessage = msgContext.getMessageAbstraction();
 
       // The direction of the message
       DirectionHolder direction = new DirectionHolder(Direction.InBound);
@@ -123,6 +157,9 @@ public class ServiceEndpointInvoker
       // Get the order of pre/post handlerchains 
       HandlerType[] handlerType = delegate.getHandlerTypeOrder();
       HandlerType[] faultType = delegate.getHandlerTypeOrder();
+
+      // Set the required inbound context properties
+      setInboundContextProperties();
 
       try
       {
@@ -132,6 +169,9 @@ public class ServiceEndpointInvoker
          CommonBinding binding = bindingProvider.getCommonBinding();
          binding.setHeaderSource(delegate);
 
+         if (binding instanceof CommonSOAPBinding)
+            XOPContext.setMTOMEnabled(((CommonSOAPBinding)binding).isMTOMEnabled());
+         
          // call the request handler chain
          boolean handlersPass = callRequestHandlerChain(sepMetaData, handlerType[0]);
 
@@ -166,45 +206,72 @@ public class ServiceEndpointInvoker
 
          if (handlersPass)
          {
-            // Check if protocol handlers modified the payload
-            if (msgContext.isModified())
-            {
-               log.debug("Handler modified payload, unbind message again");
-               reqMessage = msgContext.getSOAPMessage();
-               sepInv = binding.unbindRequestMessage(opMetaData, reqMessage);
-            }
-
-            // Invoke an instance of the SEI implementation bean 
-            Invocation inv = setupInvocation(endpoint, sepInv, invContext);
-            InvocationHandler invHandler = endpoint.getInvocationHandler();
-
+            msgContext.put(CommonMessageContext.ALLOW_EXPAND_TO_DOM, Boolean.TRUE);
             try
             {
-               invHandler.invoke(endpoint, inv);
-            }
-            catch (InvocationTargetException th)
-            {
-               //Unwrap the throwable raised by the service endpoint implementation
-               Throwable targetEx = th.getTargetException();
-               throw (targetEx instanceof Exception ? (Exception)targetEx : new UndeclaredThrowableException(targetEx));
-            }
+               // Check if protocol handlers modified the payload
+               if (msgContext.isModified())
+               {
+                  log.debug("Handler modified payload, unbind message again");
+                  reqMessage = msgContext.getMessageAbstraction();
+                  sepInv = binding.unbindRequestMessage(opMetaData, reqMessage);
+               }
+               //JBWS-2969:check if the RPC/Lit input paramter is null
+               if (opMetaData.getEndpointMetaData().getType() != EndpointMetaData.Type.JAXRPC
+                     && opMetaData.isRPCLiteral() && sepInv.getRequestParamNames() != null)
+               {  
+                  
+                  for (QName qname : sepInv.getRequestParamNames())
+                  {
+                     ParameterMetaData paramMetaData = opMetaData.getParameter(qname);
+                     if ((paramMetaData.getMode().equals(ParameterMode.IN) || paramMetaData.getMode().equals(ParameterMode.INOUT)) && sepInv.getRequestParamValue(qname) == null)
+                     {
+                        throw new WebServiceException("The RPC/Literal Operation [" + opMetaData.getQName()
+                              + "] parameters can not be null");
+                     }
+                  }
+               }
+               
+               // Invoke an instance of the SEI implementation bean 
+               Invocation inv = setupInvocation(endpoint, sepInv, invContext);
+               InvocationHandler invHandler = endpoint.getInvocationHandler();
+               
+               try
+               {
+                  invHandler.invoke(endpoint, inv);
+                  
+               }
+               catch (InvocationTargetException th)
+               {
+                  //Unwrap the throwable raised by the service endpoint implementation
+                  Throwable targetEx = th.getTargetException();
+                  throw (targetEx instanceof Exception ? (Exception)targetEx : new UndeclaredThrowableException(targetEx));
+               }
 
-            // Handler processing might have replaced the endpoint invocation
-            sepInv = inv.getInvocationContext().getAttachment(EndpointInvocation.class);
+               // Handler processing might have replaced the endpoint invocation
+               sepInv = inv.getInvocationContext().getAttachment(EndpointInvocation.class);
+            }
+            finally
+            {
+               msgContext.remove(CommonMessageContext.ALLOW_EXPAND_TO_DOM);
+            }
 
             // Reverse the message direction
             msgContext = processPivotInternal(msgContext, direction);
 
+            // Set the required outbound context properties
+            setOutboundContextProperties();
+               
             // Bind the response message
-            SOAPMessage resMessage = binding.bindResponseMessage(opMetaData, sepInv);
-            msgContext.setSOAPMessage(resMessage);
+            MessageAbstraction resMessage = binding.bindResponseMessage(opMetaData, sepInv);
+            msgContext.setMessageAbstraction(resMessage);
          }
          else
          {
             // Reverse the message direction without calling the endpoint
-            SOAPMessage resMessage = msgContext.getSOAPMessage();
+            MessageAbstraction resMessage = msgContext.getMessageAbstraction();
             msgContext = processPivotInternal(msgContext, direction);
-            msgContext.setSOAPMessage(resMessage);
+            msgContext.setMessageAbstraction(resMessage);
          }
 
          if (oneway == false)
@@ -226,6 +293,7 @@ public class ServiceEndpointInvoker
          CommonBinding binding = bindingProvider.getCommonBinding();
          try
          {
+            MessageContextAssociation.peekMessageContext().put("Exception", ex);
             binding.bindFaultMessage(ex);
 
             // call the fault handler chain
@@ -239,7 +307,7 @@ public class ServiceEndpointInvoker
          }
          catch (RuntimeException subEx)
          {
-            NativeLoggers.ROOT_LOGGER.exceptionProcessingHandleFault(ex);
+            log.warn("Exception while processing handleFault: ", ex);
             binding.bindFaultMessage(subEx);
             ex = subEx;
          }
@@ -256,6 +324,22 @@ public class ServiceEndpointInvoker
    protected Invocation setupInvocation(Endpoint ep, EndpointInvocation epInv, InvocationContext invContext) throws Exception
    {
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
+      if (msgContext instanceof SOAPMessageContextJAXWS)
+      {
+         if (ep.getService().getDeployment().getType() == DeploymentType.JAXWS_JSE)
+         {
+            if (msgContext.get(MessageContext.SERVLET_REQUEST) != null)
+            {
+               WebServiceContext wsContext = contextFactory.newWebServiceContext(InvocationType.JAXWS_JSE, (SOAPMessageContextJAXWS)msgContext);
+               invContext.addAttachment(WebServiceContext.class, wsContext);
+            }
+            else
+            {
+               log.warn("Cannot provide WebServiceContext, since the current MessageContext does not provide a ServletRequest");
+            }
+         }
+         invContext.addAttachment(javax.xml.ws.handler.MessageContext.class, msgContext);
+      }
       if (msgContext instanceof SOAPMessageContextJAXRPC)
       {
          invContext.addAttachment(javax.xml.rpc.handler.MessageContext.class, msgContext);
@@ -275,21 +359,28 @@ public class ServiceEndpointInvoker
 
       return wsInv;
    }
-   
+
    // JBWS-2486 - Only one webservice endpoint instance can be created!
    private Object getEndpointInstance()
    {
-      synchronized(endpoint) 
+      synchronized(endpoint)
       {
-          try
-          {
-              final String endpointClassName = endpoint.getTargetBeanName();
-              return endpoint.getInstanceProvider().getInstance(endpointClassName).getValue();
-          }
-          catch (Exception ex)
-          {
-              throw new IllegalStateException(ex);
-          }
+         Object endpointImpl = endpoint.getAttachment(Object.class);
+         if (endpointImpl == null)
+         {
+            try
+            {
+               // create endpoint instance
+               final Class<?> endpointImplClass = endpoint.getTargetBeanClass();
+               endpointImpl = endpointImplClass.newInstance();
+               endpoint.addAttachment(Object.class, endpointImpl);
+            }
+            catch (Exception ex)
+            {
+               throw new IllegalStateException("Cannot create endpoint instance: ", ex);
+            }
+         }
+         return endpointImpl;
       }
    }
 
@@ -299,7 +390,7 @@ public class ServiceEndpointInvoker
       Method seiMethod = sepInv.getJavaMethod();
       Method implMethod = null;
 
-      if (seiMethod != null)
+      if (seiMethod != null) // RM hack
       {
          String methodName = seiMethod.getName();
          Class[] paramTypes = seiMethod.getParameterTypes();
@@ -320,6 +411,8 @@ public class ServiceEndpointInvoker
          }
          catch (NoSuchMethodException ex)
          {
+            log.error("CodeSource: " + implClass.getProtectionDomain().getCodeSource());
+            log.error("ClassLoader: " + implClass.getClassLoader());
             throw ex;
          }
       }
@@ -331,64 +424,105 @@ public class ServiceEndpointInvoker
       return implMethod;
    }
 
+   protected void setInboundContextProperties()
+   {
+      CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
+      if (msgContext instanceof MessageContextJAXWS)
+      {
+         // Map of attachments to a message for the outbound message, key is the MIME Content-ID, value is a DataHandler
+         msgContext.put(MessageContextJAXWS.INBOUND_MESSAGE_ATTACHMENTS, new HashMap<String, DataHandler>());
+      }
+   }
+
+   protected void setOutboundContextProperties()
+   {
+      CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
+      if (msgContext instanceof MessageContextJAXWS)
+      {
+         Map<String, DataHandler> outboundAttachments = (Map<String, DataHandler>)msgContext.get(MessageContextJAXWS.OUTBOUND_MESSAGE_ATTACHMENTS);
+         Map<String, DataHandler> newAttachments = new HashMap<String, DataHandler>(); // to protect against attacks from endpoint
+         
+         // Map of attachments to a message for the outbound message, key is the MIME Content-ID, value is a DataHandler
+         msgContext.put(MessageContextJAXWS.OUTBOUND_MESSAGE_ATTACHMENTS, newAttachments);
+         
+         if (outboundAttachments != null)
+         {
+            for (final String key : outboundAttachments.keySet())
+            {
+               newAttachments.put(key, outboundAttachments.get(key));
+            }
+         }
+      }
+   }
+
    private CommonMessageContext processPivotInternal(CommonMessageContext msgContext, DirectionHolder direction)
    {
       if (direction.getDirection() == Direction.InBound)
       {
-         msgContext = MessageContextJAXRPC.processPivot(msgContext);
+         EndpointMetaData epMetaData = msgContext.getEndpointMetaData();
+         if (epMetaData.getType() == EndpointMetaData.Type.JAXRPC)
+         {
+            msgContext = MessageContextJAXRPC.processPivot(msgContext);
+         }
+         else
+         {
+            msgContext = MessageContextJAXWS.processPivot(msgContext);
+         }
          direction.setDirection(Direction.OutBound);
       }
       return msgContext;
    }
 
-   private OperationMetaData getDispatchDestination(EndpointMetaData epMetaData, SOAPMessage reqMessage) throws SOAPException
+   private OperationMetaData getDispatchDestination(EndpointMetaData epMetaData, MessageAbstraction reqMessage) throws SOAPException
    {
       OperationMetaData opMetaData;
 
-      SOAPMessage soapMessage = reqMessage;
-      opMetaData = getOperationMetaData(epMetaData, soapMessage);
-      SOAPHeader soapHeader = soapMessage.getSOAPHeader();
-
-      // Report a MustUnderstand fault
-      if (opMetaData == null)
+      String bindingID = epMetaData.getBindingId();
+      if (HTTPBinding.HTTP_BINDING.equals(bindingID))
       {
-    	  String faultString;
+         if (epMetaData.getOperations().size() != 1)
+            throw new IllegalStateException("Multiple operations not supported for HTTP binding");
 
-    	  SOAPBodyImpl soapBody = (SOAPBodyImpl)soapMessage.getSOAPBody();
-    	  SOAPBodyElement soapBodyElement = soapBody.getBodyElement();
-    	  if (soapBodyElement != null)
-    	  {
-    		  Name soapName = soapBodyElement.getElementName();
-    		  faultString = "Endpoint " + epMetaData.getPortName() + " does not contain operation meta data for: " + soapName;
-    	  }
-    	  else
-    	  {
-    		  faultString = "Endpoint " + epMetaData.getPortName() + " does not contain operation meta data for empty soap body";
-    	  }
+         opMetaData = epMetaData.getOperations().get(0);
+      }
+      else
+      {
+         SOAPMessageImpl soapMessage = (SOAPMessageImpl)reqMessage;
 
-    	  // R2724 If an INSTANCE receives a message that is inconsistent with its WSDL description, it SHOULD generate a soap:Fault
-    	  // with a faultcode of "Client", unless a "MustUnderstand" or "VersionMismatch" fault is generated.
-    	  if (soapHeader != null && soapHeader.examineMustUnderstandHeaderElements(Constants.URI_SOAP11_NEXT_ACTOR).hasNext())
-    	  {
-    		  QName faultCode = Constants.SOAP11_FAULT_CODE_MUST_UNDERSTAND;
-    		  throw new CommonSOAPFaultException(faultCode, faultString);
-    	  }
-    	  else
-    	  {
-    		  QName faultCode = Constants.SOAP11_FAULT_CODE_CLIENT;
-    		  throw new CommonSOAPFaultException(faultCode, faultString);
-    	  }
+         opMetaData = soapMessage.getOperationMetaData(epMetaData);
+         SOAPHeader soapHeader = soapMessage.getSOAPHeader();
+
+         // Report a MustUnderstand fault
+         if (opMetaData == null)
+         {
+            String faultString;
+
+            SOAPBodyImpl soapBody = (SOAPBodyImpl)soapMessage.getSOAPBody();
+            SOAPBodyElement soapBodyElement = soapBody.getBodyElement();
+            if (soapBodyElement != null)
+            {
+               Name soapName = soapBodyElement.getElementName();
+               faultString = "Endpoint " + epMetaData.getPortName() + " does not contain operation meta data for: " + soapName;
+            }
+            else
+            {
+               faultString = "Endpoint " + epMetaData.getPortName() + " does not contain operation meta data for empty soap body";
+            }
+
+            // R2724 If an INSTANCE receives a message that is inconsistent with its WSDL description, it SHOULD generate a soap:Fault
+            // with a faultcode of "Client", unless a "MustUnderstand" or "VersionMismatch" fault is generated.
+            if (soapHeader != null && soapHeader.examineMustUnderstandHeaderElements(Constants.URI_SOAP11_NEXT_ACTOR).hasNext())
+            {
+               QName faultCode = Constants.SOAP11_FAULT_CODE_MUST_UNDERSTAND;
+               throw new CommonSOAPFaultException(faultCode, faultString);
+            }
+            else
+            {
+               QName faultCode = Constants.SOAP11_FAULT_CODE_CLIENT;
+               throw new CommonSOAPFaultException(faultCode, faultString);
+            }
+         }
       }
       return opMetaData;
    }
-
-   /** Get the operation meta data for this SOAP message
-    */
-   public OperationMetaData getOperationMetaData(EndpointMetaData epMetaData, SOAPMessage soapMsg) throws SOAPException
-   {
-      SOAPMessageDispatcher dispatcher = new SOAPMessageDispatcher();
-      return dispatcher.getDispatchDestination(epMetaData, soapMsg);
-   }
-
-
 }

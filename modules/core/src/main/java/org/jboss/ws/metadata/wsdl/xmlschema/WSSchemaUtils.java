@@ -21,8 +21,6 @@
  */
 package org.jboss.ws.metadata.wsdl.xmlschema;
 
-import static org.jboss.ws.NativeMessages.MESSAGES;
-
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
@@ -47,9 +45,10 @@ import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.ws.Constants;
+import org.jboss.ws.WSException;
 import org.jboss.ws.metadata.wsdl.xsd.SchemaUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.jboss.xb.binding.NamespaceRegistry;
 
 /**
@@ -91,9 +90,9 @@ public class WSSchemaUtils
       List<String> knownNamespaces = Arrays.asList(nsarr);
       boolean isCustom = false;
       if (xsNS.equals(targetNS))
-         throw MESSAGES.illegalNullArgument("xsNS");
+         throw new IllegalArgumentException("targetNamespace cannot be " + xsNS);
       if (checkNS == null)
-         throw MESSAGES.illegalNullArgument("checkNS");
+         throw new IllegalArgumentException("checkNS is null");
       if (knownNamespaces.contains(checkNS) == false && targetNS.equals(checkNS) == false)
          isCustom = true;
       return isCustom;
@@ -244,7 +243,7 @@ public class WSSchemaUtils
       if (xsmodel == null)
          return true;
       if (namespace == null)
-         throw MESSAGES.illegalNullArgument("Target Namespace of xsmodel");
+         throw new WSException("Target Namespace of xsmodel is null");
       XSNamedMap tmap = xsmodel.getComponentsByNamespace(XSConstants.TYPE_DEFINITION, namespace);
       XSNamedMap emap = xsmodel.getComponentsByNamespace(XSConstants.ELEMENT_DECLARATION, namespace);
 
@@ -312,7 +311,7 @@ public class WSSchemaUtils
    {
       XSTypeDefinition xst = xsel.getTypeDefinition();
       if (xst == null)
-         throw MESSAGES.illegalNullArgument("Type xst");
+         throw new IllegalStateException("Type xst is null");
 
       boolean isGlobalRef = (xsel.getScope() == XSConstants.SCOPE_GLOBAL);
       boolean isAnonType = xst.getAnonymous();
@@ -368,7 +367,7 @@ public class WSSchemaUtils
    {
       XSTypeDefinition xst = decl.getTypeDefinition();
       if (xst == null)
-         throw MESSAGES.illegalNullArgument("Type xst");
+         throw new IllegalStateException("Type xst is null");
 
       boolean isGlobalRef = (decl.getScope() == XSConstants.SCOPE_GLOBAL);
       boolean isAnonType = xst.getAnonymous();
@@ -416,7 +415,7 @@ public class WSSchemaUtils
    {
       boolean isAnonType = false;
       if (XSConstants.SCOPE_GLOBAL != xsel.getScope())
-         throw MESSAGES.notAGlobalElement(xsel);
+         throw new IllegalArgumentException("Element is not a global element");
 
       StringBuilder buf = new StringBuilder();
       String elname = xsel.getName();
@@ -693,9 +692,9 @@ public class WSSchemaUtils
    public void copyXSModel(XSModel xsmodel, JBossXSModel jb)
    {
       if (xsmodel == null)
-         throw MESSAGES.illegalNullArgument("xsmodel");
+         throw new IllegalArgumentException("Illegal Null Argument:xsmodel");
       if (jb == null)
-         throw MESSAGES.illegalNullArgument("jb");
+         throw new IllegalArgumentException("Illegal Null Argument:jb");
       //Copy all the Namespace Items
       jb.setXSNamespaceItemList(xsmodel.getNamespaceItems());
       //Copy all the elements
@@ -742,10 +741,10 @@ public class WSSchemaUtils
    private String getPrefix(String namespace)
    {
       if (namespaceRegistry == null)
-         throw MESSAGES.illegalNullArgument(namespaceRegistry);
+         throw new IllegalArgumentException("nameespaceRegistry can not be null!");
 
       if (namespace == null)
-         throw MESSAGES.illegalNullArgument("namespace");
+         throw new IllegalArgumentException("namespace can not be null");
 
       // XML Namespace can only legally be assigned the XML prefix
       if (namespace.equals(Constants.NS_XML))

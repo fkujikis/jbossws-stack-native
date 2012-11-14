@@ -26,7 +26,6 @@ import javax.xml.rpc.Service;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -40,18 +39,12 @@ import org.jboss.wsf.test.JBossWSTestSetup;
  */
 public class JBWS626TestCase extends JBossWSTest
 {
-   private static InitialContext iniCtx;
    private static DemoEndpoint port;
 
    /** Deploy the test */
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS626TestCase.class, "jaxrpc-jbws626.ear, jaxrpc-jbws626-appclient.ear#jaxrpc-jbws626-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS626TestCase.class, "jaxrpc-jbws626.ear");
    }
 
    protected void setUp() throws Exception
@@ -59,19 +52,10 @@ public class JBWS626TestCase extends JBossWSTest
       super.setUp();
       if (port == null)
       {
-         iniCtx = getAppclientInitialContext();
-         Service service = (Service) iniCtx.lookup("java:service/TestService");
+         InitialContext iniCtx = getInitialContext();
+         Service service = (Service) iniCtx.lookup("java:comp/env/service/TestService");
          port = (DemoEndpoint) service.getPort(DemoEndpoint.class);
       }
-   }
-
-   protected void tearDown() throws Exception
-   {
-      if (iniCtx != null)
-      {
-         iniCtx.close();
-      }
-      super.tearDown();
    }
 
    public void testGetArray() throws Exception
