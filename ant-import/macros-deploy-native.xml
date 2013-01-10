@@ -143,6 +143,7 @@
                <include name="policy.jar"/>
                <include name="stax-ex.jar"/>
                <include name="streambuffer.jar"/>
+               <include name="xmlsec.jar"/>
                <include name="wsdl4j.jar"/>
             </fileset>
          </copy>
@@ -182,6 +183,7 @@
                <include name="policy.jar"/>
                <include name="stax-ex.jar"/>
                <include name="streambuffer.jar"/>
+               <include name="xmlsec.jar"/>
                <include name="wsdl4j.jar"/>
                <!-- Remove only, do not deploy -->
                <include name="jbossws-wsconsume-impl.jar"/>
