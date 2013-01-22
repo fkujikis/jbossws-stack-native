@@ -22,6 +22,7 @@
 package org.jboss.ws.extensions.security;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -91,7 +92,14 @@ public class STRTransform extends TransformSpi
 
 
    @Override
-   protected XMLSignatureInput enginePerformTransform(XMLSignatureInput input) throws IOException, CanonicalizationException,
+    protected XMLSignatureInput enginePerformTransform(XMLSignatureInput input, Transform transformObject) throws IOException, CanonicalizationException,
+          InvalidCanonicalizerException, TransformationException, ParserConfigurationException, SAXException
+    {
+       return enginePerformTransform(input, null, transformObject);
+    }
+   
+   @Override
+   protected XMLSignatureInput enginePerformTransform(XMLSignatureInput input, OutputStream os, Transform transformObject) throws IOException, CanonicalizationException,
          InvalidCanonicalizerException, TransformationException, ParserConfigurationException, SAXException
    {
 
@@ -115,7 +123,7 @@ public class STRTransform extends TransformSpi
          element = token.getSTRTransformElement();
 
          // Obtain the canonicalizer specified in the transformation parameters
-         Element parameters = XMLUtils.selectNode(this._transformObject.getElement().getFirstChild(), Constants.WSSE_NS,
+         Element parameters = XMLUtils.selectNode(transformObject.getElement().getFirstChild(), Constants.WSSE_NS,
                "TransformationParameters", 0);
          if (parameters == null)
             throw new TransformationException("wsse:TransformationParameters expected!");
