@@ -25,9 +25,8 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.ws.NativeMessages;
 import org.jboss.ws.core.CommonMessageContext;
-import org.jboss.ws.core.soap.utils.MessageContextAssociation;
+import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMapping;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -120,7 +119,7 @@ public class JBossXBSupport {
             }
             catch (SAXException e1)
             {
-               throw NativeMessages.MESSAGES.failedToMarshalDOMElement(new QName(e.getNamespaceURI(), e.getLocalName()), e1);
+               throw new IllegalStateException("Failed to marshal DOM element " + new QName(e.getNamespaceURI(), e.getLocalName()) + ": " + e1.getMessage());
             }
          }
       };

@@ -29,8 +29,8 @@ import javax.xml.namespace.QName;
 import javax.xml.rpc.encoding.Serializer;
 import javax.xml.transform.Result;
 
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.Normalizer;
+import org.jboss.util.NotImplementedException;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.soap.SOAPContentElement;
 import org.jboss.xb.binding.NamespaceRegistry;
 import org.w3c.dom.NamedNodeMap;
@@ -137,9 +137,7 @@ public abstract class SerializerSupport implements Serializer
       else
       {
          if (normalize)
-         {
-            valueStr = Normalizer.normalize(valueStr);
-         }
+            valueStr = normalize(valueStr);
          
          xmlFragment = "<" + elName + nsAttr + ">" + valueStr + "</" + elName + ">";
       }
@@ -149,7 +147,57 @@ public abstract class SerializerSupport implements Serializer
 
    public String getMechanismType()
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 
+   private String normalize(String valueStr)
+   {
+      // We assume most strings will not contain characters that need "escaping",
+      // and optimize for this case.
+      boolean found = false;
+      int i = 0;
+
+      outer: for (; i < valueStr.length(); i++)
+      {
+         switch (valueStr.charAt(i))
+         {
+            case '<':
+            case '>':
+            case '&':
+            case '"':
+               found = true;
+               break outer;
+         }
+      }
+
+      if (!found)
+         return valueStr;
+
+      // Resume where we left off
+      StringBuilder builder = new StringBuilder();
+      builder.append(valueStr.substring(0, i));
+      for (; i < valueStr.length(); i++)
+      {
+         char c = valueStr.charAt(i);
+         switch (c)
+         {
+            case '<':
+               builder.append("&lt;");
+               break;
+            case '>':
+               builder.append("&gt;");
+               break;
+            case '&':
+               builder.append("&amp;");
+               break;
+            case '"':
+               builder.append("&quot;");
+               break;
+            default:
+               builder.append(c);
+         }
+      }
+
+      return builder.toString();
+   }
 }

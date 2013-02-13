@@ -26,41 +26,36 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.mail.MessagingException;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MimeHeader;
 import javax.xml.soap.MimeHeaders;
-import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPHeader;
+import javax.xml.soap.SOAPFault;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.common.Constants;
 import org.jboss.ws.core.CommonMessageContext;
-import org.jboss.ws.core.soap.SOAPContent.State;
+import org.jboss.ws.core.SOAPMessageAbstraction;
 import org.jboss.ws.core.soap.attachment.AttachmentPartImpl;
+import org.jboss.ws.core.soap.attachment.CIDGenerator;
 import org.jboss.ws.core.soap.attachment.MimeConstants;
 import org.jboss.ws.core.soap.attachment.MultipartRelatedEncoder;
 import org.jboss.ws.core.soap.attachment.MultipartRelatedSwAEncoder;
-import org.jboss.ws.core.soap.utils.MessageContextAssociation;
-import org.jboss.ws.core.soap.utils.SOAPElementWriter;
+import org.jboss.ws.core.soap.attachment.MultipartRelatedXOPEncoder;
+import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * The root class for all SOAP messages. As transmitted on the "wire", a SOAP message is an XML document or a
@@ -69,14 +64,16 @@ import org.w3c.dom.NodeList;
  * @author Thomas.Diesler@jboss.org
  * @author <a href="mailto:jason@stacksmash.com">Jason T. Greene</a>
  */
-public class SOAPMessageImpl extends SOAPMessage
+public class SOAPMessageImpl extends SOAPMessage implements SOAPMessageAbstraction
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPMessageImpl.class);
    private static Logger log = Logger.getLogger(SOAPMessageImpl.class);
-   private Map<String, Object> properties = new HashMap<String, Object>();
+   
    private boolean saveRequired = true;
    private MimeHeaders mimeHeaders = new MimeHeaders();
    private List<AttachmentPart> attachments = new LinkedList<AttachmentPart>();
+   private CIDGenerator cidGenerator = new CIDGenerator();
+   private boolean isXOPMessage;
+   private boolean isSWARefMessage;
    private SOAPPartImpl soapPart;   
    private MultipartRelatedEncoder multipartRelatedEncoder;
    private static final boolean writeXMLDeclaration = Boolean.getBoolean(WRITE_XML_DECLARATION);
@@ -91,44 +88,29 @@ public class SOAPMessageImpl extends SOAPMessage
       setProperty(WRITE_XML_DECLARATION, writeXMLDeclaration);
    }
 
-   public Object getProperty(String property) throws SOAPException
+   public CIDGenerator getCidGenerator()
    {
-      return properties.get(property);
+      return cidGenerator;
    }
 
-   public void setProperty(String property, Object value) throws SOAPException
+   public boolean isXOPMessage()
    {
-      properties.put(property, value);
+      return isXOPMessage;
    }
 
-   public SOAPBody getSOAPBody() throws SOAPException
+   public void setXOPMessage(boolean isXOPMessage)
    {
-      SOAPPart soapPart = getSOAPPart();
-      if (soapPart != null)
-      {
-         SOAPEnvelope soapEnvelope = soapPart.getEnvelope();
-         if (soapEnvelope != null)
-         {
-            SOAPBody soapBody = soapEnvelope.getBody();
-            return soapBody;
-         }
-      }
-      throw new SOAPException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_SOAPBODY"));
+      this.isXOPMessage = isXOPMessage;
    }
 
-   public SOAPHeader getSOAPHeader() throws SOAPException
+   public boolean isSWARefMessage()
    {
-      SOAPPart soapPart = getSOAPPart();
-      if (soapPart != null)
-      {
-         SOAPEnvelope soapEnvelope = soapPart.getEnvelope();
-         if (soapEnvelope != null)
-         {
-            SOAPHeader soapHeader = soapEnvelope.getHeader();
-            return soapHeader;
-         }
-      }
-      throw new SOAPException(BundleUtils.getMessage(bundle, "CANNOT_OBTAIN_SOAPHEADER"));
+      return isSWARefMessage;
+   }
+
+   public void setSWARefMessage(boolean isSWAMessage)
+   {
+      this.isSWARefMessage = isSWAMessage;
    }
 
    public void setAttachments(Collection<AttachmentPart> parts) throws SOAPException
@@ -173,7 +155,7 @@ public class SOAPMessageImpl extends SOAPMessage
       }
       catch (UnsupportedEncodingException ex)
       {
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_DECODE_NAME",  ex));
+         log.error("Cannot decode name for cid: " + ex);
       }
       
       return cidDecoded;
@@ -193,7 +175,7 @@ public class SOAPMessageImpl extends SOAPMessage
       catch (SOAPException ex)
       {
          // this used to not throw SOAPException
-         log.error(BundleUtils.getMessage(bundle, "IGNORE_SOAPEXCEPTION",  ex));
+         log.error("Ignore SOAPException: " + ex);
       }
 
       return null;
@@ -235,7 +217,7 @@ public class SOAPMessageImpl extends SOAPMessage
    public void setMimeHeaders(MimeHeaders headers)
    {
       if (headers == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "MIMEHEADERS_CANNOT_BE_NULL"));
+         throw new IllegalArgumentException("MimeHeaders cannot be null");
       this.mimeHeaders = headers;
    }
 
@@ -265,14 +247,15 @@ public class SOAPMessageImpl extends SOAPMessage
    public Iterator getAttachments(MimeHeaders headers)
    {
       if (headers == null)
-         throw new WSException(BundleUtils.getMessage(bundle, "MIMEHEADERS_CANNOT_BE_NULL"));
+         throw new WSException("MimeHeaders can not be null");
 
       return new MimeMatchingAttachmentsIterator(headers, attachments);
    }
    
-   private String getSOAPContentType(CommonMessageContext msgContext) throws SOAPException
+   private String getSOAPContentType() throws SOAPException
    {
       //Check binding type in the endpoint metadata
+      CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
       if (msgContext != null && Constants.SOAP12HTTP_BINDING.equalsIgnoreCase(msgContext.getEndpointMetaData().getBindingId()))
       {
          return SOAPConstants.SOAP_1_2_CONTENT_TYPE;
@@ -295,26 +278,29 @@ public class SOAPMessageImpl extends SOAPMessage
          {
             boolean hasAttachments = attachments.size() > 0;
 
+            if (isXOPMessage() && !XOPContext.isMTOMEnabled() && hasAttachments)
+               throw new IllegalStateException("XOP parameter not properly inlined");
+
             // default content-type
-            CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
-            String contentType = getSOAPContentType(msgContext) + "; charset=" + getCharSetEncoding();
+            String contentType = getSOAPContentType() + "; charset=" + getCharSetEncoding();
 
             if (hasAttachments)
             {
-               multipartRelatedEncoder = new MultipartRelatedSwAEncoder(this);
-               multipartRelatedEncoder.encodeMultipartRelatedMessage();
-               contentType = multipartRelatedEncoder.getContentType();
+               if (isXOPMessage() && XOPContext.isMTOMEnabled())
+               {
+                  multipartRelatedEncoder = new MultipartRelatedXOPEncoder(this);
+                  multipartRelatedEncoder.encodeMultipartRelatedMessage();
+                  contentType = multipartRelatedEncoder.getContentType();
+               }
+               else
+               {
+                  multipartRelatedEncoder = new MultipartRelatedSwAEncoder(this);
+                  multipartRelatedEncoder.encodeMultipartRelatedMessage();
+                  contentType = multipartRelatedEncoder.getContentType();
+               }
             }
-            //JBWS-2964:Create a new mimeHeaders to avoid changing another referenced mimeHeaders
-            MimeHeaders newMimeHeaders = new MimeHeaders();            
-            Iterator iterator = mimeHeaders.getAllHeaders();
-            while (iterator.hasNext())
-            {
-               MimeHeader mimeHeader = (MimeHeader) iterator.next();
-               newMimeHeaders.addHeader(mimeHeader.getName(), mimeHeader.getValue());
-            }
-            newMimeHeaders.setHeader(MimeConstants.CONTENT_TYPE, contentType);
-            setMimeHeaders(newMimeHeaders);
+
+            mimeHeaders.setHeader(MimeConstants.CONTENT_TYPE, contentType);
          }
          catch (MessagingException ex)
          {
@@ -392,6 +378,19 @@ public class SOAPMessageImpl extends SOAPMessage
          opMetaData = dispatcher.getDispatchDestination(epMetaData, this);
       }
       return opMetaData;
+   }
+
+   public boolean isFaultMessage()
+   {
+      SOAPFault soapFault = null;
+      try
+      {
+         soapFault = getSOAPBody().getFault();
+      }
+      catch (Exception ignore)
+      {
+      }
+      return soapFault != null;
    }
 
    private boolean isWriteXMLDeclaration() throws SOAPException
@@ -524,7 +523,7 @@ public class SOAPMessageImpl extends SOAPMessage
 
       if (attachment == null)
       {
-         // auto-generated CID based on part name
+         // autogenerated CID based on part name
          attachment = getAttachmentByPartName(ref);
       }
 
@@ -558,41 +557,4 @@ public class SOAPMessageImpl extends SOAPMessage
       while (attachmentItr.next() != null)
          attachmentItr.remove();
    }
-   
-   public void prepareForDOMAccess() throws SOAPException
-   {
-      prepareForSpecificAccess(State.DOM_VALID);
-   }
-   
-   private void prepareForSpecificAccess(State state) throws SOAPException
-   {
-      List<SOAPContentElement> contentElements = new LinkedList<SOAPContentElement>();
-      SOAPBody soapBody = this.getSOAPBody();
-      NodeList nodes = soapBody.getChildNodes();
-      for (int i = 0; i < nodes.getLength(); i++)
-      {
-         Node current = nodes.item(i);
-         if (current instanceof SOAPContentElement)
-         {
-            contentElements.add((SOAPContentElement)current);
-            break;
-         }
-      }
-      SOAPHeader soapHeader = this.getSOAPHeader();
-      nodes = soapHeader.getChildNodes();
-      for (int i = 0; i < nodes.getLength(); i++)
-      {
-         Node current = nodes.item(i);
-         if (current instanceof SOAPContentElement)
-         {
-            contentElements.add((SOAPContentElement)current);
-            break;
-         }
-      }
-      for (SOAPContentElement sce : contentElements)
-      {
-         sce.transitionTo(state);
-      }
-   }
-   
 }

@@ -21,19 +21,16 @@
  */
 package org.jboss.ws.tools.wsdl;
 
-import static org.jboss.ws.NativeMessages.MESSAGES;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 
 import javax.wsdl.xml.WSDLLocator;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
-import org.jboss.ws.common.utils.ResourceURL;
+import org.jboss.ws.WSException;
+import org.jboss.ws.core.utils.ResourceURL;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 
@@ -51,7 +48,7 @@ class WSDLLocatorImpl implements WSDLLocator
    public WSDLLocatorImpl(EntityResolver entityResolver, URL wsdlLocation)
    {
       if (wsdlLocation == null)
-         throw MESSAGES.wsdlFileArgumentCannotBeNull();
+         throw new IllegalArgumentException("WSDL file argument cannot be null");
 
       this.entityResolver = entityResolver;
       this.wsdlLocation = wsdlLocation;
@@ -64,13 +61,13 @@ class WSDLLocatorImpl implements WSDLLocator
       {
          InputStream inputStream = new ResourceURL(wsdlLocation).openStream();
          if (inputStream == null)
-            throw MESSAGES.cannotObtainWsdlFrom(wsdlLocation);
+            throw new IllegalArgumentException("Cannot obtain wsdl from [" + wsdlLocation + "]");
 
          return new InputSource(inputStream);
       }
       catch (IOException e)
       {
-         throw MESSAGES.cannotAccessWsdlFrom(wsdlLocation, e);
+         throw new RuntimeException("Cannot access wsdl from [" + wsdlLocation + "], " + e.getMessage());
       }
    }
 
@@ -90,7 +87,7 @@ class WSDLLocatorImpl implements WSDLLocator
       }
       catch (MalformedURLException e)
       {
-         NativeLoggers.ROOT_LOGGER.notAValidUrl(parent);
+         log.error("Not a valid URL: " + parent);
          return null;
       }
 
@@ -100,26 +97,7 @@ class WSDLLocatorImpl implements WSDLLocator
       // An external URL
       if (resource.startsWith("http://") || resource.startsWith("https://"))
       {
-         // [JBWS-3139] there's a bug in wsdl4j 1.6.2 where imported schemas are containing invalid IPv6 host name values :(
-         // The URL value of root WSDL is not malformed, so we're reusing it for schemas URL construction.
-         if (resource.indexOf(parentURL.getFile()) != -1) 
-         {
-            URI uri = null;
-            try {
-               uri = new URI(resource);
-            }
-            catch (Exception e)
-            {
-               throw MESSAGES.cannotResolveImportedResource(resource);
-            }
-            final String path = uri.getPath();
-            final String query = uri.getQuery() != null ? "?" + uri.getQuery() : "";
-            wsdlImport = parentURL.getProtocol() + "://" + parentURL.getHost() + ":" + parentURL.getPort() + path + query; 
-         }
-         else
-         {
-            wsdlImport = resource;
-         }
+         wsdlImport = resource;
       }
 
       // Absolute path
@@ -158,7 +136,7 @@ class WSDLLocatorImpl implements WSDLLocator
          }
          else
          {
-            throw MESSAGES.cannotResolveImportedResource(wsdlImport);
+            throw new IllegalArgumentException("Cannot resolve imported resource: " + wsdlImport);
          }
 
          return inputSource;
@@ -169,7 +147,7 @@ class WSDLLocatorImpl implements WSDLLocator
       }
       catch (Exception e)
       {
-         throw MESSAGES.cannotAccessImportedWsdl(wsdlImport, e);
+         throw new WSException("Cannot access imported wsdl [" + wsdlImport + "], " + e.getMessage());
       }
    }
 

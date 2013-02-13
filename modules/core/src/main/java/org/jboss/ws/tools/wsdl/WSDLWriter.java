@@ -28,10 +28,8 @@ import java.util.Iterator;
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.ws.Constants;
+import org.jboss.ws.WSException;
 import org.jboss.ws.metadata.wsdl.DOMTypes;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLService;
@@ -39,6 +37,8 @@ import org.jboss.ws.metadata.wsdl.WSDLTypes;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.metadata.wsdl.XSModelTypes;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
 
 /**
@@ -67,7 +67,7 @@ public class WSDLWriter
    public WSDLWriter(WSDLDefinitions wsdl)
    {
       if (wsdl == null)
-         throw NativeMessages.MESSAGES.wsdlDefinitionIsNull();
+         throw new IllegalArgumentException("WSDL definitions is NULL");
 
       this.wsdl = wsdl;
    }
@@ -88,7 +88,7 @@ public class WSDLWriter
       }
       else
       {
-         throw NativeMessages.MESSAGES.unsupportedWSDLVersion(wsdlNamespace);
+         throw new WSException("Unsupported wsdl version: " + wsdlNamespace);
       }
    }
 

@@ -27,13 +27,11 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.DeserializerSupport;
 import org.jboss.ws.core.binding.SerializationContext;
 import org.jboss.xb.binding.SimpleTypeBindings;
-import org.w3c.dom.Element;
 
 /**
  * @author Thomas.Diesler@jboss.org
@@ -47,10 +45,10 @@ public class CalendarDeserializer extends DeserializerSupport
 
    public Object deserialize(QName xmlName, QName xmlType, Source xmlFragment, SerializationContext serContext) throws BindingException
    {
-      return deserialize(xmlName, xmlType, sourceToElement(xmlFragment), serContext);
+      return deserialize(xmlName, xmlType, sourceToString(xmlFragment), serContext);
    }
 
-   private Object deserialize(QName xmlName, QName xmlType, Element xmlFragment, SerializationContext serContext) throws BindingException
+   private Object deserialize(QName xmlName, QName xmlType, String xmlFragment, SerializationContext serContext) throws BindingException
    {
       if (log.isDebugEnabled())
          log.debug("deserialize: [xmlName=" + xmlName + ",xmlType=" + xmlType + "]");
@@ -66,7 +64,7 @@ public class CalendarDeserializer extends DeserializerSupport
             value = SimpleTypeBindings.unmarshalTime(valueStr);
          else if (Constants.TYPE_LITERAL_DATETIME.equals(xmlType))
             value = SimpleTypeBindings.unmarshalDateTime(valueStr);
-         else throw NativeMessages.MESSAGES.invalidXmlType(xmlType);
+         else throw new IllegalArgumentException("Invalid xmlType: " + xmlType);
       }
 
       return value;

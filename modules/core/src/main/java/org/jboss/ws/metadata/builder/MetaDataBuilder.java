@@ -21,9 +21,6 @@
  */
 package org.jboss.ws.metadata.builder;
 
-import static org.jboss.ws.NativeMessages.MESSAGES;
-import static org.jboss.ws.common.integration.WSHelper.isJseEndpoint;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -41,39 +38,38 @@ import javax.wsdl.extensions.http.HTTPAddress;
 import javax.wsdl.extensions.soap.SOAPAddress;
 import javax.wsdl.extensions.soap12.SOAP12Address;
 import javax.xml.namespace.QName;
+import javax.xml.ws.addressing.AddressingProperties;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.ObjectNameFactory;
-import org.jboss.ws.core.jaxrpc.UnqualifiedFaultException;
-import org.jboss.ws.core.soap.utils.Use;
+import org.jboss.ws.core.soap.Use;
+import org.jboss.ws.extensions.addressing.AddressingPropertiesImpl;
+import org.jboss.ws.extensions.addressing.metadata.AddressingOpMetaExt;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
-import org.jboss.ws.metadata.umdm.FaultMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
-import org.jboss.ws.metadata.umdm.TypeMappingMetaData;
-import org.jboss.ws.metadata.umdm.TypesMetaData;
 import org.jboss.ws.metadata.wsdl.WSDLBinding;
 import org.jboss.ws.metadata.wsdl.WSDLBindingOperation;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.WSDLEndpoint;
 import org.jboss.ws.metadata.wsdl.WSDLInterface;
-import org.jboss.ws.metadata.wsdl.WSDLInterfaceFault;
 import org.jboss.ws.metadata.wsdl.WSDLInterfaceOperation;
-import org.jboss.ws.metadata.wsdl.WSDLInterfaceOperationOutfault;
+import org.jboss.ws.metadata.wsdl.WSDLProperty;
 import org.jboss.ws.metadata.wsdl.WSDLService;
+import org.jboss.wsf.common.ObjectNameFactory;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.deployment.HttpEndpoint;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.management.ServerConfigFactory;
+import org.jboss.wsf.spi.metadata.j2ee.EJBArchiveMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSEArchiveMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSESecurityMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.MDBMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.JSESecurityMetaData.JSEResourceCollection;
 
 /** An abstract meta data builder.
@@ -118,7 +114,7 @@ public abstract class MetaDataBuilder
                QName bindQName = wsdlEndpoint.getBinding();
                WSDLBinding wsdlBinding = wsdlDefinitions.getBinding(bindQName);
                if (wsdlBinding == null)
-                  throw MESSAGES.cannotObtainBinding(bindQName);
+                  throw new WSException("Cannot obtain binding: " + bindQName);
 
                for (WSDLBindingOperation wsdlBindingOperation : wsdlBinding.getOperations())
                {
@@ -141,14 +137,7 @@ public abstract class MetaDataBuilder
       {
          Endpoint endpoint = dep.getService().getEndpointByName(linkName);
          if (endpoint != null)
-            urlPattern = ((HttpEndpoint)endpoint).getURLPattern();
-      }
-
-      // Endpoint API hack
-      Integer port = (Integer)dep.getService().getProperty("port");
-      if (port == null)
-      {
-         port = -1;
+            urlPattern = endpoint.getURLPattern();
       }
 
       // If not, derive the context root from the deployment
@@ -180,7 +169,7 @@ public abstract class MetaDataBuilder
       sepMetaData.setURLPattern(urlPattern);
 
       String servicePath = contextRoot + urlPattern;
-      sepMetaData.setEndpointAddress(getServiceEndpointAddress(null, servicePath, port, dep.getAttachment(ServerConfig.class)));
+      sepMetaData.setEndpointAddress(getServiceEndpointAddress(null, servicePath));
    }
 
    public static ObjectName createServiceEndpointID(Deployment dep, ServerEndpointMetaData sepMetaData)
@@ -194,15 +183,35 @@ public abstract class MetaDataBuilder
       idstr.append(ServerEndpointMetaData.SEPID_PROPERTY_CONTEXT + "=" + context);
       idstr.append("," + ServerEndpointMetaData.SEPID_PROPERTY_ENDPOINT + "=" + linkName);
 
+      // Add JMS destination JNDI name for MDB endpoints
+      EJBArchiveMetaData apMetaData = dep.getAttachment(EJBArchiveMetaData.class);
+      if (apMetaData != null)
+      {
+         String ejbName = sepMetaData.getLinkName();
+         if (ejbName == null)
+            throw new WSException("Cannot obtain ejb-link from port component");
+
+         EJBMetaData beanMetaData = (EJBMetaData)apMetaData.getBeanByEjbName(ejbName);
+         if (beanMetaData == null)
+            throw new WSException("Cannot obtain ejb meta data for: " + ejbName);
+
+         if (beanMetaData instanceof MDBMetaData)
+         {
+            MDBMetaData mdMetaData = (MDBMetaData)beanMetaData;
+            String jndiName = mdMetaData.getDestinationJndiName();
+            idstr.append(",jms=" + jndiName);
+         }
+      }
+
       return ObjectNameFactory.create(idstr.toString());
    }
 
    /** Get the web service address for a given path
     */
-   public static String getServiceEndpointAddress(String uriScheme, String servicePath, int servicePort, ServerConfig config)
+   public static String getServiceEndpointAddress(String uriScheme, String servicePath)
    {
       if (servicePath == null || servicePath.length() == 0)
-         throw MESSAGES.servicePathCannotBeNull();
+         throw new WSException("Service path cannot be null");
 
       if (servicePath.endsWith("/*"))
          servicePath = servicePath.substring(0, servicePath.length() - 2);
@@ -210,49 +219,37 @@ public abstract class MetaDataBuilder
       if (uriScheme == null)
          uriScheme = "http";
 
-      if (config == null)
-      {
-         SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-         config = spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();
-      }
+      SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+      ServerConfig config = spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();
 
       String host = config.getWebServiceHost();
-
-      int port = servicePort;
-      if (servicePort == -1)
+      String port = "";
+      if ("https".equals(uriScheme))
       {
-         if ("https".equals(uriScheme))
+         int portNo = config.getWebServiceSecurePort();
+         if (portNo != 443)
          {
-            port = config.getWebServiceSecurePort();
+            port = ":" + portNo;
          }
-         else
+
+      }
+      else
+      {
+         int portNo = config.getWebServicePort();
+         if (portNo != 80)
          {
-            port = config.getWebServicePort();
+            port = ":" + portNo;
          }
       }
 
-      // Reset port if using the default for the scheme.
-      if (("http".equals(uriScheme) && port == 80) || ("https".equals(uriScheme) && port == 443))
-      {
-         port = -1;
-      }
-
-      URL url = null;
+      String urlStr = uriScheme + "://" + host + port + servicePath;
       try
       {
-         if (port > -1)
-         {
-            url = new URL(uriScheme, host, port, servicePath);
-         }
-         else
-         {
-            url = new URL(uriScheme, host, servicePath);
-         }
-         return url.toExternalForm();
+         return new URL(urlStr).toExternalForm();
       }
       catch (MalformedURLException e)
       {
-         throw new WSException(e);
+         throw new WSException("Malformed URL: " + urlStr);
       }
    }
 
@@ -263,13 +260,13 @@ public abstract class MetaDataBuilder
    {
       String transportGuarantee = null;
       JSEArchiveMetaData webMetaData = dep.getAttachment(JSEArchiveMetaData.class);
-      if (webMetaData != null && isJseEndpoint(sepMetaData.getEndpoint()))
+      if (webMetaData != null)
       {
          Map<String, String> servletMappings = webMetaData.getServletMappings();
          String urlPattern = servletMappings.get(servletLink);
 
          if (urlPattern == null)
-            throw MESSAGES.cannotFindURLPatternForServletName(servletLink);
+            throw new WSException("Cannot find <url-pattern> for servlet-name: " + servletLink);
 
          List<JSESecurityMetaData> securityList = webMetaData.getSecurityMetaData();
          for (JSESecurityMetaData currentSecurity : securityList)
@@ -316,14 +313,16 @@ public abstract class MetaDataBuilder
                if ("CONFIDENTIAL".equals(transportGuarantee))
                   uriScheme = "https";
 
-               ServerConfig config = sepMetaData.getEndpoint().getService().getDeployment().getAttachment(ServerConfig.class);
-               if (requiresRewrite(orgAddress, uriScheme, config))
-               {
-                  String servicePath = sepMetaData.getContextRoot() + sepMetaData.getURLPattern();
-                  String serviceEndpointURL = getServiceEndpointAddress(uriScheme, servicePath, -1, config);
+               String servicePath = sepMetaData.getContextRoot() + sepMetaData.getURLPattern();
+               String serviceEndpointURL = getServiceEndpointAddress(uriScheme, servicePath);
 
-                  if (log.isDebugEnabled())
-                     log.debug("Replace service endpoint address '" + orgAddress + "' with '" + serviceEndpointURL + "'");
+               SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
+               ServerConfig config = spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();
+               boolean alwaysModify = config.isModifySOAPAddress();
+
+               if (alwaysModify || uriScheme == null || orgAddress.indexOf("REPLACE_WITH_ACTUAL_URL") >= 0)
+               {
+                  log.debug("Replace service endpoint address '" + orgAddress + "' with '" + serviceEndpointURL + "'");
                   wsdlEndpoint.setAddress(serviceEndpointURL);
                   sepMetaData.setEndpointAddress(serviceEndpointURL);
 
@@ -333,16 +332,14 @@ public abstract class MetaDataBuilder
                }
                else
                {
-                  if (log.isDebugEnabled())
-                     log.debug("Don't replace service endpoint address '" + orgAddress + "'");
+                  log.debug("Don't replace service endpoint address '" + orgAddress + "'");
                   try
                   {
                      sepMetaData.setEndpointAddress(new URL(orgAddress).toExternalForm());
                   }
                   catch (MalformedURLException e)
                   {
-                     NativeLoggers.ROOT_LOGGER.malformedURL(orgAddress);
-                     sepMetaData.setEndpointAddress(orgAddress);
+                     throw new WSException("Malformed URL: " + orgAddress);
                   }
                }
             }
@@ -350,27 +347,7 @@ public abstract class MetaDataBuilder
       }
 
       if (endpointFound == false)
-         throw MESSAGES.cannotFindPortInWsdl(portName);
-   }
-   
-   private static boolean requiresRewrite(String orgAddress, String uriScheme, ServerConfig config)
-   {
-      if (uriScheme != null)
-      {
-         if (!uriScheme.toLowerCase().startsWith("http"))
-         {
-            //perform rewrite on http/https addresses only
-            return false;
-         }
-      }
-      if (config == null)
-      {
-         SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-         config = spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();
-      }
-      boolean alwaysModify = config.isModifySOAPAddress();
-      
-      return (alwaysModify || uriScheme == null || orgAddress.indexOf("REPLACE_WITH_ACTUAL_URL") >= 0);
+         throw new WSException("Cannot find port in wsdl: " + portName);
    }
 
    private static void replaceWSDL11PortAddress(WSDLDefinitions wsdlDefinitions, QName portQName, String serviceEndpointURL)
@@ -379,45 +356,33 @@ public abstract class MetaDataBuilder
       String tnsURI = wsdlOneOneDefinition.getTargetNamespace();
 
       // search for matching portElement and replace the address URI
-      if (modifyPortAddress(tnsURI, portQName, serviceEndpointURL, wsdlOneOneDefinition.getServices()))
-      {
-         return;
-      }
+      Port wsdlOneOnePort = modifyPortAddress(tnsURI, portQName, serviceEndpointURL, wsdlOneOneDefinition.getServices());
 
-      // recursively process imports if none can be found
-      if (!wsdlOneOneDefinition.getImports().isEmpty())
+      // recursivly process imports if none can be found
+      if (wsdlOneOnePort == null && !wsdlOneOneDefinition.getImports().isEmpty())
       {
 
-         Iterator<?> imports = wsdlOneOneDefinition.getImports().values().iterator();
+         Iterator imports = wsdlOneOneDefinition.getImports().values().iterator();
          while (imports.hasNext())
          {
-            List<?> l = (List<?>)imports.next();
-            Iterator<?> importsByNS = l.iterator();
+            List l = (List)imports.next();
+            Iterator importsByNS = l.iterator();
             while (importsByNS.hasNext())
             {
                Import anImport = (Import)importsByNS.next();
-               if (modifyPortAddress(anImport.getNamespaceURI(), portQName, serviceEndpointURL, anImport.getDefinition().getServices()))
-               {
-                  return;
-               }
+               wsdlOneOnePort = modifyPortAddress(anImport.getNamespaceURI(), portQName, serviceEndpointURL, anImport.getDefinition().getServices());
             }
          }
       }
-      
-      throw MESSAGES.cannotFindPortInWsdl2(portQName);
+
+      // if it still doesn't exist something is wrong
+      if (wsdlOneOnePort == null)
+         throw new IllegalArgumentException("Cannot find port with name '" + portQName + "' in wsdl document");
    }
 
-   /**
-    * Try matching the port and modify it. Return true if the port is actually matched.
-    * 
-    * @param tnsURI
-    * @param portQName
-    * @param serviceEndpointURL
-    * @param services
-    * @return
-    */
-   private static boolean modifyPortAddress(String tnsURI, QName portQName, String serviceEndpointURL, Map services)
+   private static Port modifyPortAddress(String tnsURI, QName portQName, String serviceEndpointURL, Map services)
    {
+      Port wsdlOneOnePort = null;
       Iterator itServices = services.values().iterator();
       while (itServices.hasNext())
       {
@@ -429,7 +394,7 @@ public abstract class MetaDataBuilder
             String portLocalName = (String)itPorts.next();
             if (portQName.equals(new QName(tnsURI, portLocalName)))
             {
-               Port wsdlOneOnePort = (Port)wsdlOneOnePorts.get(portLocalName);
+               wsdlOneOnePort = (Port)wsdlOneOnePorts.get(portLocalName);
                List extElements = wsdlOneOnePort.getExtensibilityElements();
                for (Object extElement : extElements)
                {
@@ -449,11 +414,11 @@ public abstract class MetaDataBuilder
                      address.setLocationURI(serviceEndpointURL);
                   }
                }
-               return true;
             }
          }
       }
-      return false;
+
+      return wsdlOneOnePort;
    }
 
    private static String getUriScheme(String addrStr)
@@ -470,38 +435,59 @@ public abstract class MetaDataBuilder
       }
    }
 
-   protected void buildFaultMetaData(OperationMetaData opMetaData, WSDLInterfaceOperation wsdlOperation)
+   protected void processEndpointMetaDataExtensions(EndpointMetaData epMetaData, WSDLDefinitions wsdlDefinitions)
    {
-      TypesMetaData typesMetaData = opMetaData.getEndpointMetaData().getServiceMetaData().getTypesMetaData();
+	   //nothing to do; WS-Eventing processing removed as it's not supported (JBPAPP-1888)
+   }
 
-      WSDLInterface wsdlInterface = wsdlOperation.getWsdlInterface();
-      for (WSDLInterfaceOperationOutfault outFault : wsdlOperation.getOutfaults())
+   /** Process operation meta data extensions. */
+   protected void processOpMetaExtensions(OperationMetaData opMetaData, WSDLInterfaceOperation wsdlOperation)
+   {
+
+      String tns = wsdlOperation.getName().getNamespaceURI();
+      String portTypeName = wsdlOperation.getName().getLocalPart();
+
+      AddressingProperties ADDR = new AddressingPropertiesImpl();
+      AddressingOpMetaExt addrExt = new AddressingOpMetaExt(ADDR.getNamespaceURI());
+
+      // inbound action
+      WSDLProperty wsaInAction = wsdlOperation.getProperty(Constants.WSDL_PROPERTY_ACTION_IN);
+      if (wsaInAction != null)
       {
-         QName ref = outFault.getRef();
-
-         WSDLInterfaceFault wsdlFault = wsdlInterface.getFault(ref);
-         QName xmlName = wsdlFault.getElement();
-         QName xmlType = wsdlFault.getXmlType();
-         String javaTypeName = null;
-
-         if (xmlType == null)
-         {
-            NativeLoggers.ROOT_LOGGER.cannotObtainFaultTypeForElement(xmlName);
-            xmlType = xmlName;
-         }
-
-         TypeMappingMetaData tmMetaData = typesMetaData.getTypeMappingByXMLType(xmlType);
-         if (tmMetaData != null)
-            javaTypeName = tmMetaData.getJavaTypeName();
-
-         if (javaTypeName == null)
-         {
-            NativeLoggers.ROOT_LOGGER.cannotObtainJavaTypeMappingFor(xmlType);
-            javaTypeName = new UnqualifiedFaultException(xmlType).getClass().getName();
-         }
-
-         FaultMetaData faultMetaData = new FaultMetaData(opMetaData, xmlName, xmlType, javaTypeName);
-         opMetaData.addFault(faultMetaData);
+         addrExt.setInboundAction(wsaInAction.getValue());
       }
+      else
+      {
+         WSDLProperty messageName = wsdlOperation.getProperty(Constants.WSDL_PROPERTY_MESSAGE_NAME_IN);
+         if (messageName != null)
+         {
+            addrExt.setInboundAction(tns + "/" + portTypeName + "/" + messageName.getValue());
+         }
+         else
+         {
+            addrExt.setInboundAction(tns + "/" + portTypeName + "/IN");
+         }
+      }
+
+      // outbound action
+      WSDLProperty wsaOutAction = wsdlOperation.getProperty(Constants.WSDL_PROPERTY_ACTION_OUT);
+      if (wsaOutAction != null)
+      {
+         addrExt.setOutboundAction(wsaOutAction.getValue());
+      }
+      else
+      {
+         WSDLProperty messageName = wsdlOperation.getProperty(Constants.WSDL_PROPERTY_MESSAGE_NAME_OUT);
+         if (messageName != null)
+         {
+            addrExt.setOutboundAction(tns + "/" + portTypeName + "/" + messageName.getValue());
+         }
+         else
+         {
+            addrExt.setOutboundAction(tns + "/" + portTypeName + "/OUT");
+         }
+      }
+
+      opMetaData.addExtension(addrExt);
    }
 }

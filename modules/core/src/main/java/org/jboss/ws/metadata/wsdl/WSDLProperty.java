@@ -25,8 +25,6 @@ import java.io.Serializable;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.ws.NativeMessages;
-
 /**
  * A "property" in the Features and Properties architecture represents a named runtime value which affects
  * the behaviour of some aspect of a Web service interaction, much like an environment variable. For
@@ -54,19 +52,30 @@ public class WSDLProperty implements Serializable
     * #value if the {value} property is not empty.*/
    private QName constraint;
    
+   private QName qnameValue;
+
    public WSDLProperty(String uri, String value)
    {
       if (uri == null)
-         throw NativeMessages.MESSAGES.illegalPropertyURI(uri);
+         throw new IllegalArgumentException("Illegal property URI: " + uri);
 
       this.uri = uri;
       this.value = value;
    }
 
+   public WSDLProperty(String uri, QName value)
+   {
+      if (uri == null)
+         throw new IllegalArgumentException("Illegal property URI: " + uri);
+
+      this.uri = uri;
+      this.qnameValue = value;
+   }
+
    public WSDLProperty(String uri, boolean required, String value, QName constraint)
    {
       if (uri == null)
-         throw NativeMessages.MESSAGES.illegalPropertyURI(uri);
+         throw new IllegalArgumentException("Illegal property URI: " + uri);
 
       this.uri = uri;
       this.required = required;

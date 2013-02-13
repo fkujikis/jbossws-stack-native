@@ -29,13 +29,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 
 import javax.xml.transform.stream.StreamSource;
 
-import org.jboss.ws.NativeLoggers;
 import org.jboss.ws.WSException;
-import org.jboss.ws.common.IOUtils;
+import org.jboss.wsf.common.IOUtils;
 
 /**
  * A StreamSource that can be read repeatedly. 
@@ -72,22 +70,6 @@ public final class BufferedStreamSource extends StreamSource
                countOfReadChars = sourceReader.read(buffer);
             }
             chars = charArrayWriter.toCharArray();
-         }
-         //JBWS-3164:try to create InputStream from systemId
-         String systemId = source.getSystemId();
-         if (sourceInputStream == null && sourceReader == null && systemId != null) 
-         {
-            try
-            {
-               URL url = new URL(systemId);
-               ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-               IOUtils.copyStream(baos, url.openStream());
-               bytes = baos.toByteArray();
-            }
-            catch (Exception e)
-            {
-               NativeLoggers.ROOT_LOGGER.failedToCreateInputStreamFromSystemID(systemId);
-            }
          }
       }
       catch (IOException ex)

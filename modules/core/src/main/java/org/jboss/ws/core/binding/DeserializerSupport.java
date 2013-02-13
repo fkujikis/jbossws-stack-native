@@ -21,17 +21,23 @@
  */
 package org.jboss.ws.core.binding;
 
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
+
 import javax.xml.namespace.QName;
 import javax.xml.rpc.encoding.Deserializer;
 import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.logging.Logger;
+import org.jboss.util.NotImplementedException;
+import org.jboss.ws.WSException;
 import org.jboss.ws.core.soap.SOAPContentElement;
-import org.jboss.ws.util.xml.BufferedStreamSource;
-import org.w3c.dom.Element;
+import org.jboss.ws.core.utils.XMLPredefinedEntityReferenceResolver;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Node;
 
 /** The base class for all Deserializers.
@@ -41,7 +47,7 @@ import org.w3c.dom.Node;
  */
 public abstract class DeserializerSupport implements Deserializer
 {
-   private static final QName XSI_NIL = new QName("http://www.w3.org/2001/XMLSchema-instance", "nil");
+   private static final Logger log = Logger.getLogger(DeserializerSupport.class);
 
    public Object deserialize(SOAPContentElement soapElement, SerializationContext serContext) throws BindingException
    {
@@ -61,65 +67,97 @@ public abstract class DeserializerSupport implements Deserializer
     */
    public abstract Object deserialize(QName xmlName, QName xmlType, Source xmlFragment, SerializationContext serContext) throws BindingException;
 
-   protected String sourceToString(final Source source)
+   // TODO: remove when JBossXB supports unmarshall(Source)
+   // http://jira.jboss.org/jira/browse/JBXB-100
+   protected static String sourceToString(Source source)
    {
       String xmlFragment = null;
-      if (source instanceof DOMSource)
+      try
       {
-         Node node = ((DOMSource)source).getNode();
-         xmlFragment = DOMWriter.printNode(node, false);
+         if (source instanceof DOMSource)
+         {
+            Node node = ((DOMSource)source).getNode();
+            xmlFragment = DOMWriter.printNode(node, false);
+         }
+         else
+         {
+            // Note, this code will not handler namespaces correctly that 
+            // are defined on a parent of the DOMSource
+            //
+            // <env:Envelope xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
+            //   <env:Body>
+            //     <myMethod>
+            //       <param xsi:type='xsd:string'>Hello World!</param>
+            //     </myMethod>
+            //   </env:Body>
+            // </env:Envelope>
+            //
+            TransformerFactory tf = TransformerFactory.newInstance();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+            StreamResult streamResult = new StreamResult(baos);
+            tf.newTransformer().transform(source, streamResult);
+            xmlFragment = new String(baos.toByteArray(),"UTF-8");
+            if (xmlFragment.startsWith("<?xml"))
+            {
+               int index = xmlFragment.indexOf(">");
+               xmlFragment = xmlFragment.substring(index + 1);
+            }
+         }
       }
-      else if (source instanceof BufferedStreamSource)
+      catch (TransformerException e)
       {
-         xmlFragment = ((BufferedStreamSource)source).toString();
+         WSException.rethrow(e);
       }
-      else
+      catch (UnsupportedEncodingException e)
       {
-         throw new UnsupportedOperationException();
+         WSException.rethrow(e);
       }
 
       return xmlFragment;
    }
-   
-   protected Element sourceToElement(final Source source)
+
+   /** Unwrap the value string from the XML fragment
+    *
+    * @return The value string or null if the startTag contains a xsi:nil='true' attribute
+    */
+   protected String unwrapValueStr(String xmlFragment)
    {
-      if (source instanceof DOMSource)
+      // We only scan for :nil if the xmlFragment is an empty element
+      if (isEmptyElement(xmlFragment))
       {
-         Node node = ((DOMSource)source).getNode();
-         int nodeType = node.getNodeType();
-         if (nodeType == Node.ELEMENT_NODE)
-         {
-            return (Element)node;
-         } else throw NativeMessages.MESSAGES.onlyElementNotesSupported();
+         return (isNil(xmlFragment) ? null : "");
       }
-      else throw NativeMessages.MESSAGES.onlyDOMSourceSupported();
+
+      int endOfStartTag = xmlFragment.indexOf(">");
+      int startOfEndTag = xmlFragment.lastIndexOf("</");
+      if (endOfStartTag < 0 || startOfEndTag < 0)
+         throw new IllegalArgumentException("Invalid XML fragment: " + xmlFragment);
+
+      String valueStr = xmlFragment.substring(endOfStartTag + 1, startOfEndTag);
+
+      return XMLPredefinedEntityReferenceResolver.resolve(valueStr);
    }
-   
 
-  /** Unwrap the value string from the XML fragment
-   *
-   * @return The value string or null if the startTag contains a xsi:nil='true' attribute
-   */
-  protected String unwrapValueStr(Element xmlFragment)
-  {
-     String content = DOMUtils.getTextContent(xmlFragment);
-     if (content == null)
-     {
-        // We only scan for :nil if the xmlFragment is an empty element
-        return (isNil(xmlFragment) ? null : "");
-     }
-
-     return content;
-  }
- 
-   private boolean isNil(final Element element)
+   protected boolean isEmptyElement(String xmlFragment)
    {
-      final String nilValue = DOMUtils.getAttributeValue(element, XSI_NIL);
-      return "1".equals(nilValue) || "true".equals(nilValue);
+      return xmlFragment.startsWith("<") && xmlFragment.endsWith("/>");
+   }
+
+   protected boolean isNil(String xmlFragment)
+   {
+      boolean isNil = false;
+      if (isEmptyElement(xmlFragment))
+      {
+         int endOfStartTag = xmlFragment.indexOf(">");
+         String startTag = xmlFragment.substring(0, endOfStartTag);
+         isNil = startTag.indexOf(":nil='1'") > 0 || startTag.indexOf(":nil=\"1\"") > 0;
+         isNil = isNil || startTag.indexOf(":nil='true'") > 0 || startTag.indexOf(":nil=\"true\"") > 0;
+      }
+      return isNil;
    }
 
    public String getMechanismType()
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 }

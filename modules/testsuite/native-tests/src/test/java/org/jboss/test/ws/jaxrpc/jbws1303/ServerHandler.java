@@ -30,7 +30,7 @@ import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 
 public class ServerHandler extends GenericHandler
 {
@@ -59,9 +59,10 @@ public class ServerHandler extends GenericHandler
          SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
          soapEnvelope.addNamespaceDeclaration(Constants.PREFIX_XSD, Constants.NS_SCHEMA_XSD);
          soapEnvelope.addNamespaceDeclaration(Constants.PREFIX_XSI, Constants.NS_SCHEMA_XSI);
-         SOAPElement bodyElement = soapMessage.getSOAPBody().addChildElement("lastmodResponse", "foo", "http://netid.msu.edu:8080/lastmod.pl");
-         SOAPElement soapElement = bodyElement.addChildElement("TimeChanged", "foo");
-         soapElement.setAttributeNS(Constants.NS_SCHEMA_XSI, "type", "xsd:string");
+         SOAPElement bodyElement = soapMessage.getSOAPBody().addChildElement("lastmodResponse");
+         bodyElement.setAttribute("xmlns", "http://netid.msu.edu:8080/lastmod.pl");
+         SOAPElement soapElement = bodyElement.addChildElement("TimeChanged");
+         soapElement.setAttributeNS("xsi", "type", "xsd:string");
          soapElement.setValue("yesterday");
          ((SOAPMessageContext)msgContext).setMessage(soapMessage);
       }
