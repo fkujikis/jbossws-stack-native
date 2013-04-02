@@ -24,7 +24,6 @@ package org.jboss.ws.core.soap;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.Detail;
@@ -36,8 +35,9 @@ import javax.xml.soap.SOAPFactory;
 import javax.xml.soap.SOAPFault;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.core.soap.BundleUtils;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.ws.Constants;
+import org.jboss.ws.extensions.xop.XOPContext;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -50,7 +50,6 @@ import org.w3c.dom.NodeList;
  */
 public class SOAPFactoryImpl extends SOAPFactory
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPFactoryImpl.class);
    // provide logging
    private static Logger log = Logger.getLogger(SOAPFactoryImpl.class);
 
@@ -74,7 +73,7 @@ public class SOAPFactoryImpl extends SOAPFactory
       // JBCTS-441 #newInstanceTest4 passes "BOGUS" as the protocol and
       // expects us to throw SOAPException
       else
-         throw new SOAPException(BundleUtils.getMessage(bundle, "UNKNOWN_PROTOCOL",  protocol));
+         throw new SOAPException("Unknown protocol: " + protocol);
    }
 
    @Override
@@ -114,7 +113,7 @@ public class SOAPFactoryImpl extends SOAPFactory
    public SOAPElement createElement(Element domElement, boolean deep) throws SOAPException
    {
       if (domElement == null)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "SOURCE_NODE_CANNOT_BE_NULL"));
+         throw new IllegalArgumentException("Source node cannot be null");
 
       // Can only use this optimization if we are doing a deep copy.
       if (domElement instanceof SOAPElement && deep==true)
@@ -140,6 +139,8 @@ public class SOAPFactoryImpl extends SOAPFactory
             {
                SOAPElement soapChild = createElement((Element)child);
                soapElement.addChildElement(soapChild);
+               if (Constants.NAME_XOP_INCLUDE.equals(soapChild.getElementQName()))
+                  XOPContext.inlineXOPData(soapChild);
             }
             else if (nodeType == Node.TEXT_NODE)
             {
@@ -153,7 +154,7 @@ public class SOAPFactoryImpl extends SOAPFactory
             }
             else
             {
-               if (log.isTraceEnabled()) log.trace("Ignore child type: " + nodeType);
+               log.trace("Ignore child type: " + nodeType);
             }
          }
       }
@@ -235,6 +236,6 @@ public class SOAPFactoryImpl extends SOAPFactory
    private void assertEnvNamespace()
    {
       if (envNamespace == null)
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "ENVELOPE_NAMESPACE_NOT_SPECIFIED"));
+         throw new UnsupportedOperationException("Envelope namespace not specified, use one of the SOAP protocols");
    }
 }

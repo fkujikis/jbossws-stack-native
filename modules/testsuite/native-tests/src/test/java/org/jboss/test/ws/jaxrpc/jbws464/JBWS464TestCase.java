@@ -28,7 +28,6 @@ import javax.xml.rpc.Service;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -45,16 +44,10 @@ import org.jboss.wsf.test.JBossWSTestSetup;
 public class JBWS464TestCase extends JBossWSTest
 {
    private static Hello hello;
-   private static InitialContext iniCtx;
 
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS464TestCase.class, "jaxrpc-jbws464.war, jaxrpc-jbws464-appclient.ear#jaxrpc-jbws464-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            hello = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS464TestCase.class, "jaxrpc-jbws464.war, jaxrpc-jbws464-client.jar");
    }
    
    public void setUp() throws Exception
@@ -62,22 +55,12 @@ public class JBWS464TestCase extends JBossWSTest
       super.setUp();
       if (hello == null)
       {
-         iniCtx = getAppclientInitialContext();
-         Service service = (Service)iniCtx.lookup("java:service/HelloService");
+         InitialContext iniCtx = getInitialContext();
+         Service service = (Service)iniCtx.lookup("java:comp/env/service/HelloService");
          hello = (Hello)service.getPort(Hello.class);
       }
    }
    
-   protected void tearDown() throws Exception
-   {
-      if (iniCtx != null)
-      {
-         iniCtx.close();
-         iniCtx = null;
-      }
-      super.tearDown();
-   }
-
    public void testValidAccess() throws Exception
    {  
       String retObj = hello.hello("Hello Server");

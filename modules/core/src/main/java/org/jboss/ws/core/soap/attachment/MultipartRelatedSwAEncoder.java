@@ -29,9 +29,10 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.ParameterList;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.core.soap.utils.SOAPElementWriter;
+import org.jboss.ws.core.soap.SOAPElementImpl;
+import org.jboss.ws.core.soap.SOAPElementWriter;
+import org.jboss.ws.core.soap.SOAPMessageImpl;
 
 /**
  * MultipartRelatedEncoder encodes a SOAPMessage
@@ -48,7 +49,7 @@ public class MultipartRelatedSwAEncoder extends MultipartRelatedEncoder
     *
     * @param soapMessage the SOAP message to be sent as a root part
     */
-   public MultipartRelatedSwAEncoder(SOAPMessage soapMessage) throws SOAPException
+   public MultipartRelatedSwAEncoder(SOAPMessageImpl soapMessage) throws SOAPException
    {
       super(soapMessage);
    }
@@ -69,7 +70,7 @@ public class MultipartRelatedSwAEncoder extends MultipartRelatedEncoder
        * stream.
        */
       SOAPEnvelope soapEnv = soapMessage.getSOAPPart().getEnvelope();
-      String envStr = SOAPElementWriter.writeElement(soapEnv, false);
+      String envStr = SOAPElementWriter.writeElement((SOAPElementImpl)soapEnv, false);
       rootPart.setText(envStr, "UTF-8");
 
       rootPart.setContentID(MimeConstants.ROOTPART_CID);

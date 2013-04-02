@@ -24,7 +24,7 @@ package org.jboss.ws.metadata.wsdl;
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeMessages;
+import org.jboss.ws.WSException;
 
 /**
  * An Endpoint component defines the particulars of a specific endpoint at which a given service is available.
@@ -81,7 +81,7 @@ public class WSDLEndpoint extends Extendable
       {
          WSDLBinding wsdlBinding = wsdlDefinitions.getBinding(binding);
          if (wsdlBinding == null)
-            throw NativeMessages.MESSAGES.cannotObtainBinding(binding);
+            throw new WSException("Cannot obtain the binding: " + binding);
 
          if (wsdlBinding.getInterfaceName() != null)
          {
@@ -91,7 +91,7 @@ public class WSDLEndpoint extends Extendable
       }
 
       if (wsdlInterface == null)
-         throw NativeMessages.MESSAGES.cannotObtainInterface(name);
+         throw new WSException("Cannot obtain the interface associated with this endpoint: " + name);
 
       return wsdlInterface;
    }

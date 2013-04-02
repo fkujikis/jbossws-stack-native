@@ -26,12 +26,11 @@ import javax.xml.soap.SOAPElement;
 import javax.xml.transform.Result;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.DOMWriter;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.SerializationContext;
 import org.jboss.ws.core.binding.SerializerSupport;
 import org.jboss.ws.util.xml.BufferedStreamResult;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.NamedNodeMap;
 
 /**
@@ -55,9 +54,9 @@ public class SOAPElementSerializer extends SerializerSupport
    {
       log.debug("serialize: [xmlName=" + xmlName + ",xmlType=" + xmlType + "]");
       if (value == null)
-         throw NativeMessages.MESSAGES.illegalNullArgument("value");
+         throw new IllegalArgumentException("SOAPElement value cannot be null");
       if ((value instanceof SOAPElement) == false)
-         throw NativeMessages.MESSAGES.valueIsNotA(SOAPElement.class, value.getClass());
+         throw new IllegalArgumentException("Value is not a SOAPElement: " + value.getClass().getName());
 
       String xmlFragment = DOMWriter.printNode((SOAPElement)value, false);
       return new BufferedStreamResult(xmlFragment);

@@ -75,7 +75,6 @@ import org.jboss.test.ws.jaxrpc.encoded.parametermode.holders.EnumIntegerHolder;
 import org.jboss.test.ws.jaxrpc.encoded.parametermode.holders.EnumLongHolder;
 import org.jboss.test.ws.jaxrpc.encoded.parametermode.holders.EnumShortHolder;
 import org.jboss.test.ws.jaxrpc.encoded.parametermode.holders.EnumStringHolder;
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
 
@@ -122,7 +121,6 @@ public class ParameterModeTestCase extends JBossWSTest
    private static EnumFloat _varEnumFloat = EnumFloat.value1;
    private static EnumDouble _varEnumDouble = EnumDouble.value1;
    private static EnumByte _varEnumByte = EnumByte.value1;
-   private static InitialContext iniCtx;
 
    static
    {
@@ -131,17 +129,7 @@ public class ParameterModeTestCase extends JBossWSTest
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(
-            ParameterModeTestCase.class,
-            "jaxrpc-encoded-parametermode.war, jaxrpc-encoded-parametermode-appclient.ear#jaxrpc-encoded-parametermode-appclient.jar",
-            new CleanupOperation()
-            {
-               @Override
-               public void cleanUp()
-               {
-                  port = null;
-               }
-            });
+      return new JBossWSTestSetup(ParameterModeTestCase.class, "jaxrpc-encoded-parametermode.war, jaxrpc-encoded-parametermode-client.jar");
    }
 
    protected void setUp() throws Exception
@@ -149,24 +137,19 @@ public class ParameterModeTestCase extends JBossWSTest
       super.setUp();
       if (port == null)
       {
-         iniCtx = getAppclientInitialContext();
-         Service service = (Service)iniCtx.lookup("java:service/TestService");
+         InitialContext iniCtx = getInitialContext();
+         Service service = (Service)iniCtx.lookup("java:comp/env/service/TestService");
          port = (ParameterModeTest)service.getPort(ParameterModeTest.class);
       }
    }
 
-   protected void tearDown() throws Exception
-   {
-      if (iniCtx != null)
-      {
-         iniCtx.close();
-         iniCtx = null;
-      }
-   }
-
-   public void testEchoIndependentHolders() throws Exception
+   public void testEchoIn() throws Exception
    {
       port.echoIn("Kermit");
+   }
+
+   public void testEchoOut() throws Exception
+   {
       StringHolder varString = new StringHolder();
       port.echoOut(varString);
       assertEquals("Kermit", varString.value);
