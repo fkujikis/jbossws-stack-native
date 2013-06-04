@@ -75,6 +75,7 @@ public class EncryptedKey implements SecurityProcess
       try
       {
          cipher = XMLCipher.getInstance();
+         cipher.init(XMLCipher.DECRYPT_MODE, null);
          key = cipher.loadEncryptedKey(element);
       }
       catch (XMLSecurityException e)
