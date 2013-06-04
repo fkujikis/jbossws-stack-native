@@ -33,8 +33,11 @@ import org.w3c.dom.Element;
 
 public class RequireTargetableOperation implements RequireOperation
 {
-   public RequireTargetableOperation(SecurityHeader header, SecurityStore store) throws WSSecurityException
+   private List<Target> targets;
+   
+   public RequireTargetableOperation(List<Target> targets)
    {
+      this.targets = targets;
    }
 
    private Collection<String> resolveTarget(Document message, Target target) throws WSSecurityException

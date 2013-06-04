@@ -22,6 +22,9 @@
 package org.jboss.ws.extensions.security.element;
 
 import java.security.PrivateKey;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.crypto.SecretKey;
 
@@ -33,8 +36,10 @@ import org.jboss.ws.extensions.security.InvalidSecurityHeaderException;
 import org.jboss.ws.extensions.security.KeyResolver;
 import org.jboss.ws.extensions.security.Util;
 import org.jboss.ws.extensions.security.WSSecurityException;
+import org.jboss.ws.extensions.security.operation.EncryptionAlgorithms;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
 
 /**
  * <code>EncryptedKey</code> represents the am XMLSecurity encrypted key.
@@ -54,6 +59,15 @@ public class EncryptedKey implements SecurityProcess
 
    private Element cachedElement;
 
+   private static HashMap<String, String> keyWrapAlgorithms;
+   private static final String DEFAULT_ALGORITHM = "rsa_15";
+   static
+   {
+      keyWrapAlgorithms = new HashMap<String, String>(4);
+      keyWrapAlgorithms.put("rsa_15", XMLCipher.RSA_v1dot5);
+      keyWrapAlgorithms.put("rsa_oaep", XMLCipher.RSA_OAEP);
+   }
+
    public EncryptedKey(Document document, SecretKey secretKey, X509Token token)
    {
       this(document, secretKey, token, new ReferenceList());
@@ -67,7 +81,7 @@ public class EncryptedKey implements SecurityProcess
       this.list = list;
    }
 
-   public EncryptedKey(Element element, KeyResolver resolver) throws WSSecurityException
+   public EncryptedKey(Element element, KeyResolver resolver, List<String> allowedKeyWrapAlgorithms, List<String> allowedEncAlgorithms) throws WSSecurityException
    {
       org.apache.xml.security.encryption.EncryptedKey key;
       XMLCipher cipher;
@@ -84,6 +98,27 @@ public class EncryptedKey implements SecurityProcess
       }
 
       KeyInfo info = key.getKeyInfo();
+      boolean supportedKeyWrapAlg = false; 
+      final String kwa = key.getEncryptionMethod().getAlgorithm();
+      for (Iterator<String> it = keyWrapAlgorithms.values().iterator(); it.hasNext() && !supportedKeyWrapAlg; ) {
+         String s = it.next();
+         if (s.equals(kwa)) {
+            supportedKeyWrapAlg = true;
+         }
+      }
+      if (!supportedKeyWrapAlg) {
+         throw new WSSecurityException("Unsupported key wrap algorithm in received message: " + kwa);
+      }
+      if (allowedKeyWrapAlgorithms != null && !allowedKeyWrapAlgorithms.isEmpty()) {
+         boolean found = false;
+         for (Iterator<String> it = allowedKeyWrapAlgorithms.iterator(); it.hasNext() && !found; ) {
+            found = kwa.equals(keyWrapAlgorithms.get(it.next()));
+         }
+         if (!found) {
+            throw new WSSecurityException("Unexpected key wrap algorithm in received message: " + kwa);
+         }
+      }
+      
 
       if (info == null)
          throw new WSSecurityException("EncryptedKey element did not contain KeyInfo");
@@ -103,6 +138,15 @@ public class EncryptedKey implements SecurityProcess
       String alg = getKeyAlgorithm(element);
       if (alg == null)
          throw new WSSecurityException("Could not determine encrypted key algorithm!");
+      if (allowedEncAlgorithms != null && !allowedEncAlgorithms.isEmpty()) {
+         boolean found = false;
+         for (Iterator<String> it = allowedEncAlgorithms.iterator(); it.hasNext() && !found; ) {
+            found = alg.equals(EncryptionAlgorithms.getAlgorithm(it.next()));
+         }
+         if (!found) {
+            throw new WSSecurityException("Unexpected encryption algorithm in received message: " + alg);
+         }
+      }
 
       try
       {

@@ -164,6 +164,16 @@
     <xs:sequence>
       <xs:element name="targets" type="targetsType" minOccurs="0"/>
     </xs:sequence>
+  <xs:attribute name="algorithm" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>A blank space or comma separated list of algorithm ids that are allowed for the encrypted incoming message</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="keyWrapAlgorithm" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>A blank space or comma separated list of algorithm ids that are allowed for the key wrapping in incoming message</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   </xs:complexType>
   <xs:complexType name="requiresType">
     <xs:all>
@@ -240,6 +250,9 @@
           <xs:enumeration value="aes-128"/>
           <xs:enumeration value="aes-192"/>
           <xs:enumeration value="aes-256"/>
+          <xs:enumeration value="aes-128-gcm"/>
+          <xs:enumeration value="aes-192-gcm"/>
+          <xs:enumeration value="aes-256-gcm"/>
           <xs:enumeration value="tripledes"/>
         </xs:restriction>
       </xs:simpleType>

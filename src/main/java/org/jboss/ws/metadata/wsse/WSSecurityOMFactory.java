@@ -452,13 +452,19 @@ public class WSSecurityOMFactory implements ObjectModelFactory
    public Object newChild(Requires requires, UnmarshallingContext navigator, String namespaceURI, String localName, Attributes attrs)
    {
       log.trace("newChild: " + localName);
+            
       if ("signature".equals(localName))
       {
          return new RequireSignature();
       }
       else if ("encryption".equals(localName))
       {
-         return new RequireEncryption();
+         boolean includeFaults = false;
+         String value = attrs.getValue("", "includeFaults");
+         if (value != null)
+            includeFaults = (Boolean) SimpleTypeBindings.unmarshal(SimpleTypeBindings.XS_BOOLEAN_NAME, value, null);
+
+         return new RequireEncryption(includeFaults, attrs.getValue("", "keyWrapAlgorithms"), attrs.getValue("", "algorithms"));
       }
       else if ("timestamp".equals(localName))
       {

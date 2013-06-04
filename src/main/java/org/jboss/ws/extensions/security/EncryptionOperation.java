@@ -23,7 +23,6 @@ package org.jboss.ws.extensions.security;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.crypto.KeyGenerator;
@@ -38,6 +37,7 @@ import org.jboss.ws.extensions.security.element.EncryptedKey;
 import org.jboss.ws.extensions.security.element.ReferenceList;
 import org.jboss.ws.extensions.security.element.SecurityHeader;
 import org.jboss.ws.extensions.security.element.X509Token;
+import org.jboss.ws.extensions.security.operation.EncryptionAlgorithms;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -46,36 +46,6 @@ public class EncryptionOperation implements EncodingOperation
    private SecurityHeader header;
 
    private SecurityStore store;
-
-   private static class Algorithm
-   {
-      Algorithm(String jceName, String xmlName, int size)
-      {
-         this.jceName = jceName;
-         this.xmlName = xmlName;
-         this.size = size;
-      }
-
-      public String jceName;
-      public String xmlName;
-      public int size;
-   }
-
-   private static HashMap<String, Algorithm> algorithms;
-
-   private static final String DEFAULT_ALGORITHM = "aes-128";
-
-   static
-   {
-      algorithms = new HashMap<String, Algorithm>(4);
-      algorithms.put("aes-128", new Algorithm("AES", XMLCipher.AES_128, 128));
-      algorithms.put("aes-192", new Algorithm("AES", XMLCipher.AES_192, 192));
-      algorithms.put("aes-256", new Algorithm("AES", XMLCipher.AES_256, 256));
-      algorithms.put("aes-128-gcm", new Algorithm("AES", XMLCipher.AES_128_GCM, 128));
-      algorithms.put("aes-192-gcm", new Algorithm("AES", XMLCipher.AES_192_GCM, 192));
-      algorithms.put("aes-256-gcm", new Algorithm("AES", XMLCipher.AES_256_GCM, 256));
-      algorithms.put("tripledes", new Algorithm("TripleDes", XMLCipher.TRIPLEDES, 168));
-   }
 
    public EncryptionOperation(SecurityHeader header, SecurityStore store) throws WSSecurityException
    {
@@ -112,14 +82,17 @@ public class EncryptionOperation implements EncodingOperation
       }
    }
 
-   public SecretKey getSecretKey(String algorithm) throws WSSecurityException
+   public static SecretKey generateSecretKey(String alg) throws WSSecurityException
    {
-      Algorithm alg = algorithms.get(algorithm);
+     return getSecretKey(EncryptionAlgorithms.getAlgorithmID(alg));
+   }
 
+   public static SecretKey getSecretKey(String algorithm) throws WSSecurityException
+   {
       try
       {
-         KeyGenerator kgen = KeyGenerator.getInstance(alg.jceName);
-         kgen.init(alg.size);
+         KeyGenerator kgen = KeyGenerator.getInstance(EncryptionAlgorithms.getAlgorithmJceName(algorithm));
+         kgen.init(EncryptionAlgorithms.getAlgorithmSize(algorithm));
          return kgen.generateKey();
       }
       catch (NoSuchAlgorithmException e)
@@ -130,14 +103,15 @@ public class EncryptionOperation implements EncodingOperation
 
    public void process(Document message, List<Target> targets, String alias, String credential, String algorithm, boolean digest, boolean useNonce, boolean useTimestamp) throws WSSecurityException
    {
-      if (! algorithms.containsKey(algorithm))
-         algorithm = DEFAULT_ALGORITHM;
+      if (! EncryptionAlgorithms.hasAlgorithm(algorithm)) {
+         algorithm = EncryptionAlgorithms.DEFAULT_ALGORITHM;
+      }
 
       SecretKey secretKey = getSecretKey(algorithm);
       XMLCipher cipher;
       try
       {
-         cipher = XMLCipher.getInstance(algorithms.get(algorithm).xmlName);
+         cipher = XMLCipher.getInstance(EncryptionAlgorithms.getAlgorithm(algorithm));
          cipher.init(XMLCipher.ENCRYPT_MODE, secretKey);
       }
       catch (XMLSecurityException e)
