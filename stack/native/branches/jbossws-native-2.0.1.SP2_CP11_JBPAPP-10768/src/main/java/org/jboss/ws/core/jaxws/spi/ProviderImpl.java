@@ -116,19 +116,19 @@ public class ProviderImpl extends Provider
       return bindingId;
    }
    
-   @Override
+   
    public <T extends EndpointReference> T createEndpointReference(Class<T> clazz, QName serviceName, QName portName, Source wsdlDocumentLocation, Element... referenceParameters)
    {
       throw new NotImplementedException();
    }
 
-   @Override
+   
    public W3CEndpointReference createW3CEndpointReference(String address, QName serviceName, QName portName, List<Element> metadata, String wsdlDocumentLocation, List<Element> referenceParameters)
    {
       throw new NotImplementedException();
    }
 
-   @Override
+   
    public <T> T getPort(EndpointReference endpointReference, Class<T> serviceEndpointInterface, WebServiceFeature... features)
    {
       throw new NotImplementedException();

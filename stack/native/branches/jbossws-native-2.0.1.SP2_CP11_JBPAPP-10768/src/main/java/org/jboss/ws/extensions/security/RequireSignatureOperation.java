@@ -22,12 +22,14 @@
 package org.jboss.ws.extensions.security;
 
 import org.jboss.ws.extensions.security.element.SecurityHeader;
+import org.jboss.ws.extensions.security.SecurityStore;
+import java.util.List;
 
 
 public class RequireSignatureOperation extends RequireTargetableOperation
 {
-   public RequireSignatureOperation(SecurityHeader header, SecurityStore store) throws WSSecurityException
+   public RequireSignatureOperation(List<Target> targets) throws WSSecurityException
    {
-      super(header, store);
+      super(targets);
    }
 }
