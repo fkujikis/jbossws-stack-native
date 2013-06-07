@@ -21,19 +21,27 @@
  */
 package org.jboss.ws.metadata.umdm;
 
-import static org.jboss.ws.NativeMessages.MESSAGES;
-
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
+import javax.xml.ws.WebServiceException;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
 import org.jboss.ws.WSException;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.ws.core.jaxws.DynamicWrapperGenerator;
+import org.jboss.ws.metadata.accessor.AccessorFactory;
+import org.jboss.ws.metadata.accessor.ReflectiveFieldAccessorFactoryCreator;
+import org.jboss.ws.metadata.accessor.ReflectiveMethodAccessorFactoryCreator;
+import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * A Fault component describes a fault that a given operation supports.
@@ -54,16 +62,16 @@ public class FaultMetaData implements InitalizableMetaData
    private QName xmlType;
    private String javaTypeName;
    private String faultBeanName;
-   private Class<?> javaType;
-   private Class<?> faultBean;
+   private Class javaType;
+   private Class faultBean;
 
    private Method faultInfoMethod;
-   private Constructor<?> serviceExceptionConstructor;
+   private Constructor serviceExceptionConstructor;
    private Method[] serviceExceptionGetters;
 
    private WrappedParameter[] faultBeanProperties;
 
-   private Class<?>[] propertyTypes;
+   private Class[] propertyTypes;
 
    public FaultMetaData(OperationMetaData operation, QName xmlName, QName xmlType, String javaTypeName)
    {
@@ -74,9 +82,9 @@ public class FaultMetaData implements InitalizableMetaData
    public FaultMetaData(OperationMetaData operation, QName xmlName, String javaTypeName)
    {
       if (xmlName == null)
-         throw MESSAGES.illegalNullArgument("xmlName");
+         throw new IllegalArgumentException("Invalid null xmlName argument");
       if (javaTypeName == null)
-         throw MESSAGES.illegalNullArgument("javaTypeName");
+         throw new IllegalArgumentException("Invalid null javaTypeName argument, for: " + xmlName);
 
       this.opMetaData = operation;
       this.xmlName = xmlName;
@@ -101,14 +109,9 @@ public class FaultMetaData implements InitalizableMetaData
    public void setXmlType(QName xmlType)
    {
       if (xmlType == null)
-         throw MESSAGES.illegalNullArgument("xmlType");
+         throw new IllegalArgumentException("Invalid null xmlType argument, for: " + xmlName);
 
       this.xmlType = xmlType;
-   }
-   
-   public void setJavaTypeName(String javaTypeName)
-   {
-      this.javaTypeName = javaTypeName;
    }
 
    public String getJavaTypeName()
@@ -119,7 +122,7 @@ public class FaultMetaData implements InitalizableMetaData
    /** Load the java type.
     *  It should only be cached during eager initialization.
     */
-   public Class<?> getJavaType()
+   public Class getJavaType()
    {
       if (javaType != null)
          return javaType;
@@ -130,20 +133,20 @@ public class FaultMetaData implements InitalizableMetaData
       try
       {
          ClassLoader loader = opMetaData.getEndpointMetaData().getClassLoader();
-         Class<?> exceptionType = JavaUtils.loadJavaType(javaTypeName, loader);
+         Class exceptionType = JavaUtils.loadJavaType(javaTypeName, loader);
          if (Exception.class.isAssignableFrom(exceptionType) == false)
-            throw MESSAGES.notAssignableToException(exceptionType);
+            throw new IllegalStateException("Is not assignable to exception: " + exceptionType);
 
          if (opMetaData.getEndpointMetaData().getServiceMetaData().getUnifiedMetaData().isEagerInitialized())
          {
-            NativeLoggers.ROOT_LOGGER.loadingJavaTypeAfterEagerInit();
+            log.warn("Loading java type after eager initialization");
             javaType = exceptionType;
          }
          return exceptionType;
       }
       catch (ClassNotFoundException ex)
       {
-         throw new WSException(ex);
+         throw new WSException("Cannot load java type: " + javaTypeName, ex);
       }
    }
 
@@ -184,7 +187,7 @@ public class FaultMetaData implements InitalizableMetaData
          }
          catch (ClassNotFoundException ex)
          {
-            throw new WSException(ex);
+            throw new WSException("Cannot load fault bean: " + faultBeanName, ex);
          }
       }
       return tmpFaultBean;
@@ -197,13 +200,125 @@ public class FaultMetaData implements InitalizableMetaData
 
    public void eagerInitialize()
    {
+      Type epType = getOperationMetaData().getEndpointMetaData().getType();
+      if (epType == EndpointMetaData.Type.JAXWS && faultBeanName != null)
+      {
+         if (loadFaultBean() == null)
+         {
+            ClassLoader loader = opMetaData.getEndpointMetaData().getClassLoader();
+            new DynamicWrapperGenerator(loader).generate(this);
+         }
+      }
+
       // Initialize the cache
       javaType = getJavaType();
       if (javaType == null)
-         throw MESSAGES.cannotLoad(javaTypeName);
+         throw new WSException("Cannot load java type: " + javaTypeName);
 
       if (JavaUtils.isAssignableFrom(Exception.class, javaType) == false)
-         throw MESSAGES.notAnException(javaTypeName);
+         throw new WSException("Fault java type is not a java.lang.Exception: " + javaTypeName);
+
+      if (epType == EndpointMetaData.Type.JAXWS)
+      {
+         faultBean = getFaultBean();
+         if (faultBean != null)
+            initializeFaultBean();
+      }
+   }
+
+   private void initializeFaultBean()
+   {
+      /* JAX-WS 3.7: For exceptions that match the pattern described in section
+       * 2.5 (i.e. exceptions that have a getFaultInfo method), the FaultBean
+       * is used as input to JAXB */
+      try
+      {
+         /* JAX-WS 2.5: A wsdl:fault element refers to a wsdl:message that contains
+          * a single part. The global element declaration referred to by that part
+          * is mapped to a Java bean. A wrapper exception class contains the
+          * following methods:
+          * . WrapperException(String message, FaultBean faultInfo)
+          * . WrapperException(String message, FaultBean faultInfo, Throwable cause)
+          * . FaultBean getFaultInfo() */
+         serviceExceptionConstructor = javaType.getConstructor(String.class, faultBean);
+         faultInfoMethod = javaType.getMethod("getFaultInfo");
+      }
+      /* JAX-WS 3.7: For exceptions that do not match the pattern described in
+       * section 2.5, JAX-WS maps those exceptions to Java beans and then uses
+       * those Java beans as input to the JAXB mapping. */
+      catch (NoSuchMethodException nsme)
+      {
+         /* For each getter in the exception and its superclasses, a property of
+          * the same type and name is added to the bean. */
+         XmlType xmlType = (XmlType)faultBean.getAnnotation(XmlType.class);
+         if (xmlType == null)
+            throw new WebServiceException("@XmlType missing from fault bean: " + faultBeanName);
+
+         AccessorFactory accessorFactory = getAccessorFactory(faultBean);
+
+         String[] propertyNames = xmlType.propOrder();
+         int propertyCount = propertyNames.length;
+         propertyTypes = new Class[propertyCount];
+         faultBeanProperties = new WrappedParameter[propertyCount];
+         serviceExceptionGetters = new Method[propertyCount];
+
+         for (int i = 0; i < propertyCount; i++)
+         {
+            String propertyName = propertyNames[i];
+            // extract property metadata from the fault bean
+            try
+            {
+               PropertyDescriptor propertyDescriptor = new PropertyDescriptor(propertyName, faultBean);
+               Class propertyType = propertyDescriptor.getPropertyType();
+
+               WrappedParameter faultBeanProperty = new WrappedParameter(null, propertyType.getName(), propertyName, i);
+               faultBeanProperty.setAccessor(accessorFactory.create(faultBeanProperty));
+               faultBeanProperties[i] = faultBeanProperty;
+
+               propertyTypes[i] = propertyType;
+            }
+            catch (IntrospectionException ie)
+            {
+               throw new WSException("Property '" + propertyName + "' not found in fault bean '" + faultBeanName + "'", ie);
+            }
+
+            // extract property metadata from the service exception
+            try
+            {
+               /* use PropertyDescriptor(String, Class, String, String) instead
+                * of PropertyDescriptor(String, Class) because the latter requires
+                * the setter method to be present */
+               PropertyDescriptor propertyDescriptor = new PropertyDescriptor(propertyName, javaType, "is" + JavaUtils.capitalize(propertyName), null);
+               serviceExceptionGetters[i] = propertyDescriptor.getReadMethod();
+            }
+            catch (IntrospectionException ie)
+            {
+               throw new WSException("Property '" + propertyName + "' not found in service exception '" + javaTypeName, ie);
+            }
+         }
+
+         try
+         {
+            // Attempt to locate a usable constructor
+            serviceExceptionConstructor = javaType.asSubclass(Exception.class).getConstructor(propertyTypes);
+         }
+         catch (NoSuchMethodException e)
+         {
+            // Only needed for client side. The spec does not clarify this, and the TCK makes use of non matching constructors,
+            // so we allow them for server side usage and only fail when used by the client.
+         }
+      }
+   }
+
+   private AccessorFactory getAccessorFactory(Class faultBean)
+   {
+      // This should catch all cases due to the constraints that JAX-WS puts on the fault bean
+      // However, if issues arrise then switch this to a full jaxb reflection library
+      XmlAccessorType type = (XmlAccessorType)faultBean.getAnnotation(XmlAccessorType.class);
+      if (type != null && type.value() == XmlAccessType.FIELD)
+         return new ReflectiveFieldAccessorFactoryCreator().create(this);
+
+      return new ReflectiveMethodAccessorFactoryCreator().create(this);
    }
 
    public Object toFaultBean(Exception serviceException)
@@ -227,7 +342,7 @@ public class FaultMetaData implements InitalizableMetaData
             }
             catch (InstantiationException e)
             {
-               throw new WSException(e);
+               throw new WebServiceException("Fault bean class is not instantiable", e);
             }
 
             // copy the properties from the service exception to the fault bean
@@ -246,11 +361,11 @@ public class FaultMetaData implements InitalizableMetaData
       }
       catch (IllegalAccessException e)
       {
-         throw new WSException(e);
+         throw new WebServiceException(e);
       }
       catch (InvocationTargetException e)
       {
-         throw new WSException(e.getTargetException());
+         throw new WebServiceException(e.getTargetException());
       }
       return faultBeanInstance;
    }
@@ -270,7 +385,7 @@ public class FaultMetaData implements InitalizableMetaData
          else
          {
             if (serviceExceptionConstructor == null)
-               throw MESSAGES.couldNotInstanciateServiceException(javaType.getSimpleName(), Arrays.toString(propertyTypes));
+               throw new WSException("Could not instantiate service exception (" + javaType.getSimpleName()  +"), since neither a faultInfo nor sorted constructor is present: " + Arrays.toString(propertyTypes));
 
             // extract the properties from the fault bean
             int propertyCount = faultBeanProperties.length;
@@ -279,22 +394,21 @@ public class FaultMetaData implements InitalizableMetaData
             for (int i = 0; i < propertyCount; i++)
                propertyValues[i] = faultBeanProperties[i].accessor().get(faultBean);
 
-            if (log.isDebugEnabled())
-               log.debug("constructing " + javaType.getSimpleName() + ": " + Arrays.toString(propertyValues));
+            log.debug("constructing " + javaType.getSimpleName() + ": " + Arrays.toString(propertyValues));
             serviceException = (Exception)serviceExceptionConstructor.newInstance(propertyValues);
          }
       }
       catch (InstantiationException e)
       {
-         throw new WSException(e);
+         throw new WebServiceException("Service exception is not instantiable", e);
       }
       catch (IllegalAccessException e)
       {
-         throw new WSException(e);
+         throw new WebServiceException(e);
       }
       catch (InvocationTargetException e)
       {
-         throw new WSException(e.getTargetException());
+         throw new WebServiceException(e.getTargetException());
       }
       return serviceException;
    }

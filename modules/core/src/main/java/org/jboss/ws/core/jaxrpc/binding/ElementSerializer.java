@@ -25,12 +25,11 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Result;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.DOMWriter;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.SerializationContext;
 import org.jboss.ws.core.binding.SerializerSupport;
 import org.jboss.ws.util.xml.BufferedStreamResult;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 
@@ -56,9 +55,9 @@ public class ElementSerializer extends SerializerSupport
    {
       log.debug("serialize: [xmlName=" + xmlName + ",xmlType=" + xmlType + "]");
       if (value == null)
-         throw NativeMessages.MESSAGES.illegalNullArgument("value");
+         throw new IllegalArgumentException("Element value cannot be null");
       if ((value instanceof Element) == false)
-         throw NativeMessages.MESSAGES.valueIsNotA(Element.class, value.getClass());
+         throw new IllegalArgumentException("Value is not a Element: " + value.getClass().getName());
 
       String xmlFragment = DOMWriter.printNode((Element)value, false);
       return new BufferedStreamResult(xmlFragment);

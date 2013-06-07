@@ -21,8 +21,6 @@
  */
 package org.jboss.ws.core.jaxrpc;
 
-import static org.jboss.ws.NativeMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -33,23 +31,20 @@ import javax.xml.rpc.encoding.TypeMapping;
 import javax.xml.rpc.soap.SOAPFaultException;
 import javax.xml.soap.Detail;
 import javax.xml.soap.DetailEntry;
-import javax.xml.soap.MessageFactory;
 import javax.xml.soap.Name;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPElement;
-import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPFactory;
 import javax.xml.soap.SOAPFault;
-import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.ws.soap.SOAPBinding;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
+import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.CommonSOAPFaultException;
 import org.jboss.ws.core.binding.AbstractDeserializerFactory;
@@ -58,9 +53,13 @@ import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.DeserializerSupport;
 import org.jboss.ws.core.binding.SerializationContext;
 import org.jboss.ws.core.binding.SerializerSupport;
-import org.jboss.ws.core.soap.utils.MessageContextAssociation;
-import org.jboss.ws.core.soap.utils.SOAPUtils;
-import org.jboss.ws.core.soap.utils.XMLFragment;
+import org.jboss.ws.core.soap.MessageContextAssociation;
+import org.jboss.ws.core.soap.MessageFactoryImpl;
+import org.jboss.ws.core.soap.NameImpl;
+import org.jboss.ws.core.soap.SOAPEnvelopeImpl;
+import org.jboss.ws.core.soap.SOAPFactoryImpl;
+import org.jboss.ws.core.soap.SOAPMessageImpl;
+import org.jboss.ws.core.soap.XMLFragment;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.FaultMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -77,10 +76,6 @@ public class SOAPFaultHelperJAXRPC
 {
    // provide logging
    private static Logger log = Logger.getLogger(SOAPFaultHelperJAXRPC.class);
-   /**
-    * A constant representing the identity of the SOAP 1.2 over HTTP binding.
-    */
-   private static final String SOAP12HTTP_BINDING = "http://www.w3.org/2003/05/soap/bindings/HTTP/";
 
    private static List<QName> allowedFaultCodes = new ArrayList<QName>();
    static
@@ -99,8 +94,7 @@ public class SOAPFaultHelperJAXRPC
    /** Factory method for FaultException for a given SOAPFault */
    public static SOAPFaultException getSOAPFaultException(SOAPFault soapFault)
    {
-	  Name faultCodeName = soapFault.getFaultCodeAsName();
-      QName faultCode = new QName(faultCodeName.getURI(), faultCodeName.getLocalName(), faultCodeName.getPrefix());
+      QName faultCode = ((NameImpl)soapFault.getFaultCodeAsName()).toQName();
       String faultString = soapFault.getFaultString();
       String faultActor = soapFault.getFaultActor();
       Detail detail = soapFault.getDetail();
@@ -132,8 +126,9 @@ public class SOAPFaultHelperJAXRPC
                // Get the deserializer from the type mapping
                AbstractDeserializerFactory desFactory = (AbstractDeserializerFactory)typeMapping.getDeserializer(javaType, xmlType);
                if (desFactory == null)
-                  throw MESSAGES.cannotObtainDeserializerFactory(xmlType);
+                  throw new JAXRPCException("Cannot obtain deserializer factory for: " + xmlType);
 
+               // Try jaxb deserialization
                try
                {
                   // http://jira.jboss.org/jira/browse/JBWS-955
@@ -151,7 +146,7 @@ public class SOAPFaultHelperJAXRPC
                   DeserializerSupport des = (DeserializerSupport)desFactory.getDeserializer();
                   Object userEx = des.deserialize(xmlName, xmlType, xmlFragment, serContext);
                   if (userEx == null || (userEx instanceof Exception) == false)
-                     throw MESSAGES.invalidDeserializationResult(userEx);
+                     throw new WSException("Invalid deserialization result: " + userEx);
 
                   faultEx.initCause((Exception)userEx);
                }
@@ -161,7 +156,7 @@ public class SOAPFaultHelperJAXRPC
                }
                catch (Exception ex)
                {
-                  NativeLoggers.JAXRPC_LOGGER.cannotDeserializeFaultDetail(ex);
+                  log.error("Cannot deserialize fault detail", ex);
                }
             }
             else
@@ -177,7 +172,7 @@ public class SOAPFaultHelperJAXRPC
 
    /** Translate the request exception into a SOAPFault message.
     */
-   public static SOAPMessage exceptionToFaultMessage(Exception reqEx)
+   public static SOAPMessageImpl exceptionToFaultMessage(Exception reqEx)
    {
       // Get or create the SOAPFaultException
       SOAPFaultException faultEx;
@@ -211,11 +206,11 @@ public class SOAPFaultHelperJAXRPC
       }
 
       Throwable faultCause = faultEx.getCause();
-      NativeLoggers.JAXRPC_LOGGER.soapRequestException(faultCause != null ? faultCause : faultEx);
+      log.error("SOAP request exception", faultCause != null ? faultCause : faultEx);
 
       try
       {
-         SOAPMessage faultMessage = toSOAPMessage(faultEx);
+         SOAPMessageImpl faultMessage = toSOAPMessage(faultEx);
          return faultMessage;
       }
       catch (RuntimeException rte)
@@ -224,12 +219,12 @@ public class SOAPFaultHelperJAXRPC
       }
       catch (Exception ex)
       {
-         NativeLoggers.JAXRPC_LOGGER.errorCreatingSoapFaultMessage(ex);
-         throw MESSAGES.cannotCreateSoapFaultMessage(faultEx);
+         log.error("Error creating SOAPFault message", ex);
+         throw new JAXRPCException("Cannot create SOAPFault message for: " + faultEx);
       }
    }
 
-   private static SOAPMessage toSOAPMessage(SOAPFaultException faultEx) throws SOAPException
+   private static SOAPMessageImpl toSOAPMessage(SOAPFaultException faultEx) throws SOAPException
    {
       assertFaultCode(faultEx.getFaultCode());
 
@@ -237,9 +232,9 @@ public class SOAPFaultHelperJAXRPC
       SerializationContext serContext = (msgContext != null ? msgContext.getSerializationContext() : new SerializationContextJAXRPC());
       NamespaceRegistry nsRegistry = serContext.getNamespaceRegistry();
 
-      SOAPMessage soapMessage = createSOAPMessage();
+      SOAPMessageImpl soapMessage = createSOAPMessage();
 
-      SOAPEnvelope soapEnvelope = soapMessage.getSOAPPart().getEnvelope();
+      SOAPEnvelopeImpl soapEnvelope = (SOAPEnvelopeImpl)soapMessage.getSOAPPart().getEnvelope();
       SOAPBody soapBody = soapEnvelope.getBody();
 
       QName faultCode = faultEx.getFaultCode();
@@ -247,8 +242,7 @@ public class SOAPFaultHelperJAXRPC
          faultCode = nsRegistry.registerQName(faultCode);
 
       String faultString = getValidFaultString(faultEx);
-      Name faultCodeName = SOAPUtils.newName(faultCode, soapEnvelope);
-      SOAPFault soapFault = soapBody.addFault(faultCodeName, faultString);
+      SOAPFault soapFault = soapBody.addFault(new NameImpl(faultCode), faultString);
 
       String faultActor = faultEx.getFaultActor();
       if (faultActor != null)
@@ -281,7 +275,7 @@ public class SOAPFaultHelperJAXRPC
             // Get the serializer from the type mapping
             AbstractSerializerFactory serFactory = (AbstractSerializerFactory)typeMapping.getSerializer(javaType, xmlType);
             if (serFactory == null)
-               throw MESSAGES.cannotObtainSerializerFactory(xmlType);
+               throw new JAXRPCException("Cannot obtain serializer factory for: " + xmlType);
 
             try
             {
@@ -290,7 +284,7 @@ public class SOAPFaultHelperJAXRPC
                XMLFragment xmlFragment = new XMLFragment(result);
 
                Element domElement = xmlFragment.toElement();
-               SOAPFactory soapFactory = SOAPUtils.newSOAP11Factory();
+               SOAPFactoryImpl soapFactory = new SOAPFactoryImpl();
                SOAPElement soapElement = soapFactory.createElement(domElement);
 
                detail = soapFault.addDetail();
@@ -311,10 +305,16 @@ public class SOAPFaultHelperJAXRPC
       return soapMessage;
    }
 
-   private static SOAPMessage createSOAPMessage() throws SOAPException
+   private static SOAPMessageImpl createSOAPMessage() throws SOAPException
    {
-	  final MessageFactory factory = isSOAP12() ? SOAPUtils.newSOAP12MessageFactory() : SOAPUtils.newSOAP11MessageFactory();
-	  return factory.createMessage();
+      MessageFactoryImpl factory = new MessageFactoryImpl();
+
+      if (isSOAP12() == true)
+      {
+         factory.setEnvNamespace(Constants.NS_SOAP12_ENV);
+      }
+
+      return (SOAPMessageImpl)factory.createMessage();
    }
 
    private static boolean isSOAP12()
@@ -324,7 +324,7 @@ public class SOAPFaultHelperJAXRPC
       {
          EndpointMetaData emd = msgContext.getEndpointMetaData();
          String bindingId = emd.getBindingId();
-         if (SOAP12HTTP_BINDING.equals(bindingId))
+         if (SOAPBinding.SOAP12HTTP_BINDING.equals(bindingId) || SOAPBinding.SOAP12HTTP_MTOM_BINDING.equals(bindingId))
          {
             return true;
          }
@@ -345,19 +345,19 @@ public class SOAPFaultHelperJAXRPC
    private static void assertFaultCode(QName faultCode)
    {
       if (faultCode == null)
-         throw MESSAGES.illegalNullArgument("faultCode");
+         throw new IllegalArgumentException("faultcode cannot be null");
 
       // For lazy folkes like the CTS that don't bother to give
       // a namesapce URI, assume they use a standard code
       String nsURI = faultCode.getNamespaceURI();
       if ("".equals(nsURI))
       {
-         NativeLoggers.JAXRPC_LOGGER.emptyNamespaceURI(faultCode , Constants.NS_SOAP11_ENV);
+         log.warn("Empty namespace URI with fault code '" + faultCode + "', assuming: " + Constants.NS_SOAP11_ENV);
          faultCode = new QName(Constants.NS_SOAP11_ENV, faultCode.getLocalPart());
       }
 
       // WS-I allows non custom faultcodes if you use a non soap namespace
       if (Constants.NS_SOAP11_ENV.equals(nsURI) && allowedFaultCodes.contains(faultCode) == false)
-         throw MESSAGES.illegalFaultCode(faultCode, allowedFaultCodes);
+         throw new IllegalArgumentException("Illegal faultcode '" + faultCode + "', allowed values are: " + allowedFaultCodes);
    }
 }

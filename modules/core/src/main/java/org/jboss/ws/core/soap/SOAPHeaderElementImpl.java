@@ -27,7 +27,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.Name;
@@ -37,9 +36,8 @@ import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPHeader;
 import javax.xml.soap.SOAPHeaderElement;
 
-import org.jboss.ws.core.soap.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.ws.Constants;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Attr;
 
 /**
@@ -52,7 +50,6 @@ import org.w3c.dom.Attr;
  */
 public class SOAPHeaderElementImpl extends SOAPContentElement implements SOAPHeaderElement
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPHeaderElementImpl.class);
    
    public SOAPHeaderElementImpl(Name name)
    {
@@ -74,7 +71,7 @@ public class SOAPHeaderElementImpl extends SOAPContentElement implements SOAPHea
       final String headerURI = getParentElement().getNamespaceURI();
 
       if (Constants.NS_SOAP11_ENV.equals(headerURI))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "SOAP11_NOT_SUPPORT_ROLE"));
+         throw new UnsupportedOperationException("SOAP 1.1 does not support the concept of Role");
 
       Attr roleAttr = getAttributeNodeNS(headerURI, Constants.SOAP12_ATTR_ROLE);
       return roleAttr != null ? roleAttr.getValue() : null;
@@ -86,7 +83,7 @@ public class SOAPHeaderElementImpl extends SOAPContentElement implements SOAPHea
       final String headerURI = header.getNamespaceURI();
 
       if (Constants.NS_SOAP11_ENV.equals(headerURI))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "SOAP11_NOT_SUPPORT_ROLE"));
+         throw new UnsupportedOperationException("SOAP 1.1 does not support the concept of Role");
 
       setAttributeNS(headerURI, header.getPrefix() + ":" + Constants.SOAP12_ATTR_ROLE, roleURI);
    }
@@ -96,7 +93,7 @@ public class SOAPHeaderElementImpl extends SOAPContentElement implements SOAPHea
       final String headerURI = getParentElement().getNamespaceURI();
 
       if (Constants.NS_SOAP11_ENV.equals(headerURI))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "SOAP11_NOT_SUPPORT_ROLE"));
+         throw new UnsupportedOperationException("SOAP 1.1 does not support the concept of Role");
 
       return DOMUtils.getAttributeValueAsBoolean(this, new QName(headerURI, Constants.SOAP12_ATTR_RELAY));
    }
@@ -107,7 +104,7 @@ public class SOAPHeaderElementImpl extends SOAPContentElement implements SOAPHea
       final String headerURI = header.getNamespaceURI();
 
       if (Constants.NS_SOAP11_ENV.equals(headerURI))
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "SOAP11_NOT_SUPPORT_ROLE"));
+         throw new UnsupportedOperationException("SOAP 1.1 does not support the concept of Role");
 
       setAttributeNS(headerURI, header.getPrefix() + ":" + Constants.SOAP12_ATTR_RELAY, Boolean.toString(relay));
    }
@@ -152,10 +149,10 @@ public class SOAPHeaderElementImpl extends SOAPContentElement implements SOAPHea
    public void setParentElement(SOAPElement parent) throws SOAPException
    {
       if (parent == null)
-         throw new SOAPException(BundleUtils.getMessage(bundle, "INVALID_NULL_PARENT_ELEMENT"));
+         throw new SOAPException("Invalid null parent element");
       
       if ((parent instanceof SOAPHeader) == false)
-         throw new SOAPException(BundleUtils.getMessage(bundle, "INVALID_PARENT_ELEMENT",  parent.getElementName()));
+         throw new SOAPException("Invalid parent element: " + parent.getElementName());
       
       super.setParentElement(parent);
    }

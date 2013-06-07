@@ -21,6 +21,7 @@
  */
 package org.jboss.test.ws.jaxrpc.jbws1427;
 
+import java.io.File;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
@@ -39,7 +40,7 @@ import org.jboss.wsf.test.JBossWSTestSetup;
 
 /**
  * [JBWS-1427] - Handling of invalid binding port type ref and doc/lit message parts
- *
+ * 
  * http://jira.jboss.org/jira/browse/JBWS-1427
  *
  * @author Thomas.Diesler@jboss.com
@@ -47,28 +48,39 @@ import org.jboss.wsf.test.JBossWSTestSetup;
  */
 public class JBWS1427TestCase extends JBossWSTest
 {
+   private static RequestService port;
+   
    public static Test suite()
    {
       return new JBossWSTestSetup(JBWS1427TestCase.class, "jaxrpc-jbws1427.jar");
    }
 
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      if (port == null)
+      {
+         ServiceFactoryImpl factory = (ServiceFactoryImpl)ServiceFactory.newInstance();
+         URL wsdlURL = getResourceURL("jaxrpc/jbws1427/META-INF/wsdl/ProcessClaim.wsdl");
+         URL mappingURL = getResourceURL("jaxrpc/jbws1427/META-INF/jaxrpc-mapping.xml");
+         QName serviceName = new QName("http://za.co.testws.interfaces", "ProcessClaim");
+         Service service = factory.createService(wsdlURL, serviceName , mappingURL);
+         port = (RequestService)service.getPort(RequestService.class);
+         ((Stub)port)._setProperty(Stub.ENDPOINT_ADDRESS_PROPERTY, "http://" + getServerHost() + ":8080/jaxrpc-jbws1427/SubmitRequestEJB");
+      }
+   }
+
    public final void testWsdlParser() throws Exception
    {
       WSDLDefinitionsFactory factory = WSDLDefinitionsFactory.newInstance();
-      URL wsdlFile = getResourceURL("jaxrpc/jbws1427/META-INF/wsdl/ProcessClaim.wsdl");
-      factory.parse(wsdlFile);
+      File wsdlFile = getResourceFile("jaxrpc/jbws1427/META-INF/wsdl/ProcessClaim.wsdl");
+      assertTrue("File exists: " + wsdlFile, wsdlFile.exists());
+      
+      factory.parse(wsdlFile.toURL());
    }
 
    public final void testEndpointAccess() throws Exception
    {
-      ServiceFactoryImpl factory = (ServiceFactoryImpl)ServiceFactory.newInstance();
-      URL wsdlURL = getResourceURL("jaxrpc/jbws1427/META-INF/wsdl/ProcessClaim.wsdl");
-      URL mappingURL = getResourceURL("jaxrpc/jbws1427/META-INF/jaxrpc-mapping.xml");
-      QName serviceName = new QName("http://za.co.testws.interfaces", "ProcessClaim");
-      Service service = factory.createService(wsdlURL, serviceName , mappingURL);
-      RequestService port = (RequestService)service.getPort(RequestService.class);
-      ((Stub)port)._setProperty(Stub.ENDPOINT_ADDRESS_PROPERTY, "http://" + getServerHost() + ":8080/jaxrpc-jbws1427/RequestServiceEJB");
-      
       Message inObj = new Message("Kermit", new Integer(100));
       Message retObj = port.processClaim(inObj);
       assertEquals(inObj, retObj);

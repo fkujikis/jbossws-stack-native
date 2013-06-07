@@ -28,7 +28,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.xml.rpc.Service;
 
-import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.management.ServerConfigFactory;
 import org.jboss.wsf.spi.SPIProvider;
@@ -49,9 +48,8 @@ public class TestEndpointImpl implements TestEndpoint
 
       try
       {
-         ClassLoader integrationCL = ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
          SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-         ServerConfig serverConfig = spiProvider.getSPI(ServerConfigFactory.class, integrationCL).getServerConfig();File tmpDir = serverConfig.getServerTempDir();
+         ServerConfig serverConfig = spiProvider.getSPI(ServerConfigFactory.class).getServerConfig();File tmpDir = serverConfig.getServerTempDir();
          tmpDir = new File(tmpDir.getCanonicalPath() + "/jbossws");
 
          baseFiles = getXsdTempFiles(tmpDir);

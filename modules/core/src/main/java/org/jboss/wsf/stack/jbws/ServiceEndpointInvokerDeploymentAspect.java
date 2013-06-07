@@ -21,13 +21,12 @@
  */
 package org.jboss.wsf.stack.jbws;
 
-import static org.jboss.ws.common.integration.WSHelper.isJaxrpcEjbEndpoint;
-
-import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.ws.core.server.ServiceEndpointInvoker;
 import org.jboss.ws.core.server.ServiceEndpointInvokerEJB21;
+import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.Deployment.DeploymentType;
 
 /**
  * A deployer that associates the ServiceEndpointInvoker with the endpoint 
@@ -35,7 +34,7 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  * @author Thomas.Diesler@jboss.org
  * @since 25-Apr-2007
  */
-public class ServiceEndpointInvokerDeploymentAspect extends AbstractDeploymentAspect
+public class ServiceEndpointInvokerDeploymentAspect extends DeploymentAspect
 {
    @Override
    public void start(Deployment dep)
@@ -45,7 +44,8 @@ public class ServiceEndpointInvokerDeploymentAspect extends AbstractDeploymentAs
          ServiceEndpointInvoker epInvoker = ep.getAttachment(ServiceEndpointInvoker.class);
          if (epInvoker == null)
          {
-            if (isJaxrpcEjbEndpoint(ep))
+            DeploymentType depType = ep.getService().getDeployment().getType();
+            if (depType == DeploymentType.JAXRPC_EJB21)
             {
                epInvoker = new ServiceEndpointInvokerEJB21();
             }
