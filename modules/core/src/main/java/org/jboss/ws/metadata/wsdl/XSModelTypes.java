@@ -25,7 +25,8 @@ import javax.xml.namespace.QName;
 
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.jboss.ws.NativeMessages;
+import org.jboss.logging.Logger;
+import org.jboss.ws.WSException;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
 
 /**
@@ -35,6 +36,8 @@ import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
  */
 public class XSModelTypes extends WSDLTypes
 {
+   private static final Logger log = Logger.getLogger(XSModelTypes.class);
+
    private JBossXSModel schemaModel;
 
    public XSModelTypes()
@@ -55,6 +58,7 @@ public class XSModelTypes extends WSDLTypes
    {
       if(nsURI == null)
       {
+         log.trace("nsURI passed to addSchemaModel is null. Replacing Schema Model");
          schemaModel = schema;
       }
       else
@@ -82,7 +86,7 @@ public class XSModelTypes extends WSDLTypes
       {
          XSTypeDefinition xstype = xsel.getTypeDefinition();
          if (xstype == null)
-            throw NativeMessages.MESSAGES.cannotObtainXSTypeDef(xmlName);
+            throw new WSException("Cannot obtain XSTypeDefinition for: " + xmlName);
 
          if (xstype.getAnonymous() == false)
          {

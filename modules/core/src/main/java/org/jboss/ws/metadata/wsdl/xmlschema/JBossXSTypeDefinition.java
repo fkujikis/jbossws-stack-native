@@ -22,7 +22,7 @@
 package org.jboss.ws.metadata.wsdl.xmlschema;
 
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.jboss.ws.NativeMessages;
+import org.jboss.ws.WSException;
 
 /**
  *  @author <mailto:Anil.Saldhana@jboss.org>Anil Saldhana
@@ -70,7 +70,7 @@ public class JBossXSTypeDefinition extends JBossXSObject implements XSTypeDefini
     */
    public short getTypeCategory()
    {
-      throw NativeMessages.MESSAGES.typeUnidentified();
+      throw new WSException("Type unidentified");
    }
 
    /**

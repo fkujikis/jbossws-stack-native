@@ -54,11 +54,11 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.util.NotImplementedException;
+import org.jboss.ws.Constants;
+import org.jboss.ws.WSException;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.jboss.xb.binding.NamespaceRegistry;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -73,6 +73,7 @@ public class JBossXSModel implements XSModel, Cloneable
 {
    // provide logging
    private static final Logger log = Logger.getLogger(JBossXSModel.class);
+
    private AnonymousMapper anonymousMapper = new AnonymousMapper();
 
    private boolean qualifiedElements = false;
@@ -312,7 +313,7 @@ public class JBossXSModel implements XSModel, Cloneable
       }
       else
       {
-         Logger.getLogger(JBossXSModel.class).trace("Cannot assign XSAnnotation to null namespace");
+         log.trace("Cannot assign XSAnnotation to null namespace");
       }
    }
 
@@ -328,6 +329,8 @@ public class JBossXSModel implements XSModel, Cloneable
    {
       //Add type to the namespace item
       String ns = xst.getNamespace();
+      if (ns == null)
+         throw new WSException("Illegal namespace:null");
       JBossXSNamespaceItem jbnm = createNamespaceItemIfNotExistent(ns);
       jbnm.addXSTypeDefinition(xst);
 
@@ -448,7 +451,7 @@ public class JBossXSModel implements XSModel, Cloneable
          }
          catch (IOException e)
          {
-            NativeLoggers.ROOT_LOGGER.cannotParseXSModelString(xsModelString, e);
+            log.error("Cannot parse xsModelString: " + xsModelString, e);
          }
 
       }
@@ -505,7 +508,7 @@ public class JBossXSModel implements XSModel, Cloneable
    private JBossXSNamespaceItem createNamespaceItemIfNotExistent(String ns)
    {
       if (ns == null)
-         throw NativeMessages.MESSAGES.illegalNullArgument("ns");
+         throw new IllegalArgumentException("Illegal null argument:ns");
 
       JBossXSNamespaceItem jbnm = nsimap.get(ns);
       if (jbnm == null)
@@ -748,6 +751,6 @@ public class JBossXSModel implements XSModel, Cloneable
 
    public XSObjectList getSubstitutionGroup(XSElementDeclaration arg0)
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 }

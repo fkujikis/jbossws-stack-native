@@ -29,8 +29,7 @@ import javax.xml.namespace.QName;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
-import org.jboss.ws.NativeMessages;
+import org.jboss.ws.WSException;
 import org.jboss.ws.core.jaxrpc.LiteralTypeMapping;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
 
@@ -109,7 +108,7 @@ public class TypesMetaData
             if (tmMetaData != null)
             {
                log.error(tmMetaData + "\n" + aux);
-               throw NativeMessages.MESSAGES.ambiguousTypeMapping(xmlType);
+               throw new WSException("Ambiguous type mappping for: " + xmlType);
             }
             tmMetaData = aux;
          }
@@ -160,7 +159,7 @@ public class TypesMetaData
             }
             else
             {
-               NativeLoggers.ROOT_LOGGER.cannotObtainJavaTypeName(xmlType);
+               log.warn("Cannot obtain javaTypeName for xmlType: " + xmlType);
             }
          }
       }
