@@ -69,6 +69,8 @@ public class WSSecurityDispatcher
 {
    // provide logging
    private static Logger log = Logger.getLogger(WSSecurityDispatcher.class);
+   
+   private static boolean VERBOSE_EXCEPTION_REPORTING = Boolean.getBoolean("org.jboss.ws.native.security.verbose_exception_reporting");
 
    private static List<Target> convertTargets(List<org.jboss.ws.metadata.wsse.Target> targets)
    {
@@ -112,7 +114,17 @@ public class WSSecurityDispatcher
 
    private static CommonSOAPFaultException convertToFault(WSSecurityException e)
    {
-      return new CommonSOAPFaultException(e.getFaultCode(), e.getFaultString());
+      return convertToFault(e, VERBOSE_EXCEPTION_REPORTING);
+   }
+   
+   private static CommonSOAPFaultException convertToFault(WSSecurityException e, boolean verbose)
+   {
+      if (verbose) {
+         return new CommonSOAPFaultException(e.getFaultCode(), e.getFaultString());
+      } else {
+         QName faultCode = new QName(Constants.JBOSS_WSSE_NS, "GenericError", Constants.JBOSS_WSSE_PREFIX);
+         return new CommonSOAPFaultException(faultCode, "A WS-Security error occurred.");
+      }
    }
 
    public static void handleInbound(CommonMessageContext ctx) throws SOAPException, SOAPFaultException
@@ -152,7 +164,7 @@ public class WSSecurityDispatcher
           
 
          if (hasRequirements(config, operation, port))
-            throw convertToFault(new InvalidSecurityHeaderException("This service requires <wsse:Security>, which is missing."));
+            throw convertToFault(new InvalidSecurityHeaderException("This service requires <wsse:Security>, which is missing."), true);
       }
 
       try
