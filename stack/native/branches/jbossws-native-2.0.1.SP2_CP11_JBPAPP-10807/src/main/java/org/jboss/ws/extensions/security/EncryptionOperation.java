@@ -23,6 +23,7 @@ package org.jboss.ws.extensions.security;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.crypto.KeyGenerator;
@@ -46,6 +47,43 @@ public class EncryptionOperation implements EncodingOperation
    private SecurityHeader header;
 
    private SecurityStore store;
+   
+   private static class Algorithm
+   {
+     Algorithm(String jceName, String xmlName, int size)
+     {
+        this.jceName = jceName;
+        this.xmlName = xmlName;
+        this.size = size;
+     }
+ 
+     public String jceName;
+     public String xmlName;
+     public int size;
+   }
+   
+   private static HashMap<String, Algorithm> algorithms;
+   private static HashMap<String, String> algorithmsID;
+ 
+   private static final String DEFAULT_ALGORITHM = "aes-128";
+ 
+   static
+   {
+     algorithms = new HashMap<String, Algorithm>(4);
+     algorithms.put("aes-128", new Algorithm("AES", XMLCipher.AES_128, 128));
+     algorithms.put("aes-192", new Algorithm("AES", XMLCipher.AES_192, 192));
+     algorithms.put("aes-256", new Algorithm("AES", XMLCipher.AES_256, 256));
+     algorithms.put("aes-128-gcm", new Algorithm("AES", XMLCipher.AES_128_GCM, 128));
+     algorithms.put("aes-192-gcm", new Algorithm("AES", XMLCipher.AES_192_GCM, 192));
+     algorithms.put("aes-256-gcm", new Algorithm("AES", XMLCipher.AES_256_GCM, 256));
+     algorithms.put("tripledes", new Algorithm("TripleDes", XMLCipher.TRIPLEDES, 168));
+     
+     algorithmsID = new HashMap<String, String>(4);
+     algorithmsID.put(XMLCipher.AES_128, "aes-128");
+     algorithmsID.put(XMLCipher.AES_192, "aes-192");
+     algorithmsID.put(XMLCipher.AES_256, "aes-256");
+     algorithmsID.put(XMLCipher.TRIPLEDES, "tripledes");
+   }
 
    public EncryptionOperation(SecurityHeader header, SecurityStore store) throws WSSecurityException
    {
@@ -89,6 +127,7 @@ public class EncryptionOperation implements EncodingOperation
 
    public static SecretKey getSecretKey(String algorithm) throws WSSecurityException
    {
+      Algorithm alg = algorithms.get(algorithm);
       try
       {
          KeyGenerator kgen = KeyGenerator.getInstance(EncryptionAlgorithms.getAlgorithmJceName(algorithm));
@@ -103,8 +142,8 @@ public class EncryptionOperation implements EncodingOperation
 
    public void process(Document message, List<Target> targets, String alias, String credential, String algorithm, boolean digest, boolean useNonce, boolean useTimestamp) throws WSSecurityException
    {
-      if (! EncryptionAlgorithms.hasAlgorithm(algorithm)) {
-         algorithm = EncryptionAlgorithms.DEFAULT_ALGORITHM;
+      if (! algorithms.containsKey(algorithm)) {
+        algorithm = DEFAULT_ALGORITHM; 
       }
 
       SecretKey secretKey = getSecretKey(algorithm);
