@@ -36,9 +36,9 @@ import org.apache.xerces.impl.xs.XSModelImpl;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xs.XSModel;
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.utils.JBossWSEntityResolver;
-import org.jboss.ws.common.utils.ResourceURL;
+import org.jboss.ws.WSException;
+import org.jboss.ws.core.utils.JBossWSEntityResolver;
+import org.jboss.ws.core.utils.ResourceURL;
 import org.jboss.ws.metadata.wsdl.WSDLUtils;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSEntityResolver;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSErrorHandler;
@@ -48,6 +48,10 @@ import org.jboss.ws.metadata.wsdl.xsd.SchemaUtils;
 import org.jboss.ws.tools.helpers.JavaToXSDHelper;
 import org.jboss.ws.tools.interfaces.JavaToXSDIntf;
 import org.jboss.ws.tools.interfaces.SchemaCreatorIntf;
+import org.jboss.xb.binding.sunday.unmarshalling.LSInputAdaptor;
+import org.jboss.xb.binding.sunday.unmarshalling.SchemaBinding;
+import org.jboss.xb.binding.sunday.unmarshalling.SchemaBindingResolver;
+import org.w3c.dom.ls.LSInput;
 import org.xml.sax.InputSource;
 
 /**
@@ -95,14 +99,14 @@ public class JavaToXSD implements JavaToXSDIntf
    /*
     * @see org.jboss.ws.tools.interfaces.JavaToXSDIntf#generateForSingleType()
     */
-   public JBossXSModel generateForSingleType(QName xmlType, @SuppressWarnings("rawtypes") Class javaType) throws IOException
+   public JBossXSModel generateForSingleType(QName xmlType, Class javaType) throws IOException
    {
       SchemaCreatorIntf creator = helper.getSchemaCreator();
       creator.generateType(xmlType, javaType);
       return creator.getXSModel();
    }
 
-   public JBossXSModel generateForSingleType(QName xmlType, @SuppressWarnings("rawtypes") Class javaType, Map<String, QName> elementNames) throws IOException
+   public JBossXSModel generateForSingleType(QName xmlType, Class javaType, Map<String, QName> elementNames) throws IOException
    {
       SchemaCreatorIntf creator = helper.getSchemaCreator();
       creator.generateType(xmlType, javaType, elementNames);
@@ -131,7 +135,7 @@ public class JavaToXSD implements JavaToXSDIntf
 
       XSModel xsmodel = loader.loadURI(xsdURL.toExternalForm());
       if (xsmodel == null)
-         throw NativeMessages.MESSAGES.cannotLoadSchema(xsdURL);
+         throw new WSException("Cannot load schema: " + xsdURL);
 
       WSSchemaUtils sutils = WSSchemaUtils.getInstance(null, null);
       JBossXSModel jbxs = new JBossXSModel();
@@ -147,7 +151,7 @@ public class JavaToXSD implements JavaToXSDIntf
    public JBossXSModel parseSchema(Map<String, URL> locs)
    {
       if (locs == null || locs.size() == 0)
-         throw NativeMessages.MESSAGES.javaToXSDMissingSchemaLocationMap();
+         throw new IllegalArgumentException("Illegal schema location map");
 
       JBossXSErrorHandler xserr = new JBossXSErrorHandler();
       JBossWSEntityResolver resolver = new JBossWSEntityResolver();
@@ -157,7 +161,6 @@ public class JavaToXSD implements JavaToXSDIntf
       int index = 0;
       SchemaGrammar[] gs = new SchemaGrammar[locs.size()];
       Iterator<String> it = locs.keySet().iterator();
-      boolean debugEnabled = log.isDebugEnabled();
       while (it.hasNext())
       {
          InputStream in = null;
@@ -165,11 +168,10 @@ public class JavaToXSD implements JavaToXSDIntf
          {
             String nsURI = it.next();
             URL orgURL = locs.get(nsURI); 
-            URL resURL = resolveNamespaceURI(nsURI);
+            URL resURL = resolveNamespaceURI(resolver, nsURI);
             URL url = resURL != null ? resURL : orgURL;
             
-            if (debugEnabled)
-               log.debug("Load schema: " + nsURI + "=" + url);
+            log.debug("Load schema: " + nsURI + "=" + url);
             XMLInputSource inputSource = new XMLInputSource(null, url.toExternalForm(), null);
 
             InputSource tmpSrc = resolver.resolveEntity(null, url.toExternalForm());
@@ -178,7 +180,7 @@ public class JavaToXSD implements JavaToXSDIntf
             
             SchemaGrammar grammar = (SchemaGrammar)loader.loadGrammar(inputSource);
             if (grammar == null)
-               throw NativeMessages.MESSAGES.cannotLoadGrammar(url);
+               throw new IllegalStateException("Cannot load grammar: " + url);
             
             gs[index++] = grammar;
          }
@@ -188,7 +190,7 @@ public class JavaToXSD implements JavaToXSDIntf
          }
          catch (Exception ex)
          {
-            throw new IllegalStateException(ex);
+            throw new IllegalStateException("Cannot parse schema", ex);
          }
          finally
          {
@@ -215,22 +217,22 @@ public class JavaToXSD implements JavaToXSDIntf
       return jbxs;
    }
 
-   private URL resolveNamespaceURI(String nsURI)
+   private URL resolveNamespaceURI(JBossWSEntityResolver resolver, String nsURI)
    {
       URL url = null;
 
-      String resource = (String)JBossWSEntityResolver.getEntityMap().get(nsURI);
+      String resource = (String)resolver.getEntityMap().get(nsURI);
       if (resource != null)
       {
-         ClassLoader loader = SecurityActions.getContextClassLoader();
-         url = SecurityActions.getResource(loader, resource);
+         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+         url = loader.getResource(resource);
          if (url == null)
          {
             if (resource.endsWith(".dtd"))
                resource = "dtd/" + resource;
             else if (resource.endsWith(".xsd"))
                resource = "schema/" + resource;
-            url = SecurityActions.getResource(loader, resource);
+            url = loader.getResource(resource);
          }
       }
 

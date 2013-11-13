@@ -28,8 +28,8 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
+import org.jboss.ws.WSException;
 import org.jboss.ws.metadata.wsdl.WSDLRPCSignatureItem.Direction;
 
 /**
@@ -142,7 +142,7 @@ public class WSDLInterfaceOperation extends Extendable implements Comparable
    {
       QName xmlName = input.getElement();
       if (inputs.get(xmlName) != null)
-         throw NativeMessages.MESSAGES.attempToMapMultipleInputs(xmlName);
+         throw new WSException("Attempt to map multiple operation inputs to: " + xmlName);
       inputs.put(xmlName, input);
    }
 
@@ -180,7 +180,7 @@ public class WSDLInterfaceOperation extends Extendable implements Comparable
    {
       QName xmlName = output.getElement();
       if (outputs.get(xmlName) != null)
-         throw NativeMessages.MESSAGES.attempToMapMultipleOutputs(xmlName);
+         throw new WSException("Attempt to map multiple operation outputs to: " + xmlName);
       outputs.put(xmlName, output);
    }
 

@@ -28,8 +28,7 @@ import java.net.URL;
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.utils.ResourceURL;
+import org.jboss.ws.core.utils.ResourceURL;
 import org.jboss.xb.binding.JBossXBException;
 import org.jboss.xb.binding.ObjectModelFactory;
 import org.jboss.xb.binding.Unmarshaller;
@@ -68,7 +67,7 @@ public class JavaWsdlMappingFactory implements ObjectModelFactory
    {
       if (mappingURL == null)
       {
-         throw NativeMessages.MESSAGES.illegalNullArgument("mappingURL");
+         throw new IllegalArgumentException("JAXRPC mapping URL cannot be null");
       }
 
       // setup the XML binding Unmarshaller
@@ -81,7 +80,7 @@ public class JavaWsdlMappingFactory implements ObjectModelFactory
       }
       catch (JBossXBException e)
       {
-         IOException ioex = NativeMessages.MESSAGES.cannotParse(mappingURL);
+         IOException ioex = new IOException("Cannot parse: " + mappingURL);
          Throwable cause = e.getCause();
          if (cause != null)
             ioex.initCause(cause);
@@ -261,7 +260,7 @@ public class JavaWsdlMappingFactory implements ObjectModelFactory
          }
          
          if (qname == null)
-            throw NativeMessages.MESSAGES.invalidAnonymousQName(value);
+            throw new IllegalArgumentException("Invalid anonymous qname: " + value);
          
          typeMapping.setAnonymousTypeQName(qname);
       }

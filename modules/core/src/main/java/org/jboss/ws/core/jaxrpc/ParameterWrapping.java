@@ -21,8 +21,6 @@
  */
 package org.jboss.ws.core.jaxrpc;
 
-import static org.jboss.ws.NativeMessages.MESSAGES;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -36,15 +34,15 @@ import javassist.CtNewMethod;
 import javassist.LoaderClassPath;
 import javassist.Modifier;
 
+import javax.jws.soap.SOAPBinding.ParameterStyle;
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.binding.TypeMappingImpl;
 import org.jboss.ws.core.jaxrpc.binding.JBossXBDeserializerFactory;
 import org.jboss.ws.core.jaxrpc.binding.JBossXBSerializerFactory;
-import org.jboss.ws.core.soap.utils.Style;
+import org.jboss.ws.core.soap.Style;
 import org.jboss.ws.core.utils.HolderUtils;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
@@ -53,6 +51,7 @@ import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.TypeMappingMetaData;
 import org.jboss.ws.metadata.umdm.TypesMetaData;
 import org.jboss.ws.metadata.umdm.WrappedParameter;
+import org.jboss.wsf.common.JavaUtils;
 
 /** A helper class to wrap/unwrap ducument style request/response structures.
  *
@@ -69,10 +68,10 @@ public class ParameterWrapping
    private static void assertOperationMetaData(OperationMetaData opMetaData)
    {
       if (opMetaData.getStyle() != Style.DOCUMENT)
-         throw MESSAGES.unexpectedStyle(opMetaData.getStyle());
+         throw new WSException("Unexpected style: " + opMetaData.getStyle());
 
-      if (!opMetaData.isWrappedParameterStyle())
-         throw MESSAGES.unexpectedParameterStyle();
+      if (opMetaData.getParameterStyle() != ParameterStyle.WRAPPED)
+         throw new WSException("Unexpected parameter style: " + opMetaData.getParameterStyle());
    }
 
    private static Object holderValue(Object holder)
@@ -85,7 +84,7 @@ public class ParameterWrapping
       return HolderUtils.getHolderValue(holder);
    }
 
-   public static Class<?> getWrappedType(String variable, Class<?> wrapperType)
+   public static Class getWrappedType(String variable, Class wrapperType)
    {
       try
       {
@@ -104,7 +103,7 @@ public class ParameterWrapping
    {
       assertOperationMetaData(request.getOperationMetaData());
 
-      Class<?> reqStructType = request.getJavaType();
+      Class reqStructType = request.getJavaType();
       if(log.isDebugEnabled()) log.debug("wrapRequestParameters: " + reqStructType.getName());
       List<WrappedParameter> wrappedParameters = request.getWrappedParameters();
       try
@@ -124,7 +123,7 @@ public class ParameterWrapping
       }
       catch (Exception e)
       {
-         throw new WSException(e);
+         throw new WSException("Cannot wrap request structure: " + e);
       }
    }
 
@@ -134,19 +133,19 @@ public class ParameterWrapping
       assertOperationMetaData(opMetaData);
 
       if (reqStruct == null)
-         throw MESSAGES.illegalNullArgument("reqStruct");
+         throw new IllegalArgumentException("Request struct cannot be null");
 
-      Class<?>[] targetParameterTypes = opMetaData.getJavaMethod().getParameterTypes();
+      Class[] targetParameterTypes = opMetaData.getJavaMethod().getParameterTypes();
       Map<Integer, Object> outParameters = new HashMap<Integer, Object>(targetParameterTypes.length);
       List<WrappedParameter> wrappedParameters = request.getWrappedParameters();
-      Class<?> reqStructType = reqStruct.getClass();
+      Class reqStructType = reqStruct.getClass();
 
       if(log.isDebugEnabled()) log.debug("unwrapRequestParameters: " + reqStructType.getName());
       try
       {
          for (WrappedParameter param : wrappedParameters)
          {
-            Class<?> targetType = targetParameterTypes[param.getIndex()];
+            Class targetType = targetParameterTypes[param.getIndex()];
             Object value = param.accessor().get(reqStruct);
 
             // INOUT Parameter
@@ -165,7 +164,7 @@ public class ParameterWrapping
       }
       catch (Exception e)
       {
-         throw new IllegalArgumentException(e);
+         throw new IllegalArgumentException("Cannot unwrap request structure: " + e);
       }
 
       return outParameters;
@@ -175,7 +174,7 @@ public class ParameterWrapping
    {
       assertOperationMetaData(returnMetaData.getOperationMetaData());
 
-      Class<?> resStructType = returnMetaData.getJavaType();
+      Class resStructType = returnMetaData.getJavaType();
       if (returnValue != null && returnValue.getClass() == resStructType)
       {
          if(log.isDebugEnabled()) log.debug("Response parameter already wrapped" + resStructType.getName());
@@ -201,7 +200,7 @@ public class ParameterWrapping
       }
       catch (Exception e)
       {
-         throw new WSException(e);
+         throw new WSException("Cannot wrap response structure: " + e);
       }
    }
 
@@ -213,11 +212,11 @@ public class ParameterWrapping
       Object retValue = null;
       if (resStruct != null)
       {
-         Class<?> resStructType = resStruct.getClass();
+         Class resStructType = resStruct.getClass();
 
          if(log.isDebugEnabled()) log.debug("unwrapResponseParameter: " + resStructType.getName());
          List<WrappedParameter> wrappedParameters = retMetaData.getWrappedParameters();
-         Class<?>[] targetTypes = operationMetaData.getJavaMethod().getParameterTypes();
+         Class[] targetTypes = operationMetaData.getJavaMethod().getParameterTypes();
          try
          {
             for (WrappedParameter param : wrappedParameters)
@@ -229,7 +228,7 @@ public class ParameterWrapping
                }
                else
                {
-                  Class<?> targetType = targetTypes[param.getIndex()];
+                  Class targetType = targetTypes[param.getIndex()];
                   if (HolderUtils.isHolderType(targetType))
                      HolderUtils.setHolderValue(methodParams[param.getIndex()], value);
                   methodParams[param.getIndex()] = value;
@@ -242,7 +241,7 @@ public class ParameterWrapping
          }
          catch (Exception e)
          {
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException("Cannot unwrap request structure: " + e);
          }
       }
       return retValue;
@@ -274,10 +273,10 @@ public class ParameterWrapping
       ClassLoader loader = serviceMetaData.getUnifiedMetaData().getClassLoader();
 
       if (operationMetaData.isDocumentWrapped() == false)
-         throw MESSAGES.operationIsNotDocLitWrapped();
+         throw new WSException("Operation is not document/literal (wrapped)");
 
       if (wrappedParameters == null)
-         throw MESSAGES.cannotGenerateTypeWithNoWrappedParams();
+         throw new WSException("Cannot generate a type when their is no wrapped parameters");
 
       String serviceName = serviceMetaData.getServiceName().getLocalPart();
       String parameterName = pmd.getXmlName().getLocalPart();
@@ -287,7 +286,7 @@ public class ParameterWrapping
       String wrapperName = packageName + "._JBossWS_" + serviceName + "_" + endpointName + "_" + parameterName;
       if(log.isDebugEnabled()) log.debug("Generating wrapper: " + wrapperName);
 
-      Class<?> wrapperType;
+      Class wrapperType;
       try
       {
          ClassPool pool = new ClassPool(true);
@@ -308,7 +307,7 @@ public class ParameterWrapping
       }
       catch (Exception e)
       {
-         throw MESSAGES.cannotGenerateWrapperType(wrapperName, e);
+         throw new WSException("Could not generate wrapper type: " + wrapperName, e);
       }
 
       // Register type mapping if needed

@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.ResourceBundle;
 
 import javax.mail.internet.ContentType;
 import javax.mail.internet.ParseException;
@@ -38,16 +37,17 @@ import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.WebServiceFeature;
+import javax.xml.ws.Service.Mode;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.core.soap.BundleUtils;
-import org.jboss.ws.api.util.ServiceLoader;
-import org.jboss.ws.common.IOUtils;
 import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.soap.attachment.MimeConstants;
 import org.jboss.ws.core.soap.attachment.MultipartRelatedDecoder;
-import org.jboss.ws.core.soap.utils.MessageContextAssociation;
-import org.jboss.ws.core.soap.utils.Style;
+import org.jboss.ws.feature.FastInfosetFeature;
+import org.jboss.ws.metadata.umdm.FeatureSet;
+import org.jboss.wsf.common.IOUtils;
+import org.jboss.wsf.spi.util.ServiceLoader;
 
 /**
  * MessageFactory implementation
@@ -56,14 +56,17 @@ import org.jboss.ws.core.soap.utils.Style;
  */
 public class MessageFactoryImpl extends MessageFactory
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(MessageFactoryImpl.class);
    private static Logger log = Logger.getLogger(MessageFactoryImpl.class);
 
    // The envelope namespace used by the MessageFactory
    private String envNamespace;
 
+   // The JAXWS ServiceMode
+   private Mode serviceMode;
    // The style used by this MessageFactory
    private Style style;
+   // The features used by this MessageFactory
+   private FeatureSet features = new FeatureSet();
    // Used if the style is dynamic
    private boolean dynamic;
 
@@ -81,7 +84,7 @@ public class MessageFactoryImpl extends MessageFactory
       else if (SOAPConstants.DYNAMIC_SOAP_PROTOCOL.equals(protocol))
          dynamic = true;
       else
-         throw new SOAPException(BundleUtils.getMessage(bundle, "UNKNOWN_PROTOCOL",  protocol));
+         throw new SOAPException("Unknown protocol: " + protocol);
    }
 
    /**
@@ -122,6 +125,26 @@ public class MessageFactoryImpl extends MessageFactory
       this.style = style;
    }
 
+   public Mode getServiceMode()
+   {
+      return serviceMode;
+   }
+
+   public void setServiceMode(Mode serviceMode)
+   {
+      this.serviceMode = serviceMode;
+   }
+
+   public void addFeature(WebServiceFeature feature)
+   {
+      this.features.addFeature(feature);
+   }
+   
+   public void setFeatures(FeatureSet features)
+   {
+      this.features = features;
+   }
+   
    /**
     * Creates a new SOAPMessage object with the default SOAPPart, SOAPEnvelope,
     * SOAPBody, and SOAPHeader objects. Profile-specific message factories can
@@ -141,7 +164,7 @@ public class MessageFactoryImpl extends MessageFactory
    public SOAPMessage createMessage() throws SOAPException
    {
       if (dynamic)
-         throw new UnsupportedOperationException(BundleUtils.getMessage(bundle, "CANNOT_CREATE_DEFAULT_MESSAGE"));
+         throw new UnsupportedOperationException("Cannot create default message when protocol is dynamic");
 
       SOAPMessageImpl soapMessage = new SOAPMessageImpl();
       SOAPPartImpl soapPart = (SOAPPartImpl)soapMessage.getSOAPPart();
@@ -187,9 +210,7 @@ public class MessageFactoryImpl extends MessageFactory
       }
 
       ContentType contentType = getContentType(mimeHeaders);
-      if (log.isDebugEnabled()) {
-         log.debug("createMessage: [contentType=" + contentType + "]");
-      }
+      log.debug("createMessage: [contentType=" + contentType + "]");
 
       SOAPMessageImpl soapMessage = new SOAPMessageImpl();
       String encoding = contentType.getParameterList().get("charset");
@@ -229,15 +250,26 @@ public class MessageFactoryImpl extends MessageFactory
             }
             catch (Exception ex)
             {
-               throw new SOAPException(BundleUtils.getMessage(bundle, "CANNOT_DECODE_MULTIPART_RELATED_MESSAGE"),  ex);
+               throw new SOAPException("Cannot decode multipart related message", ex);
             }
 
             inputStream = decoder.getRootPart().getDataHandler().getInputStream();
             attachments = decoder.getRelatedParts();
+            if (isXOPContent(contentType))
+            {
+               soapMessage.setXOPMessage(true);
+            }
+         }
+         else if (isFastInfosetContent(contentType))
+         {
+            if (!features.isFeatureEnabled(FastInfosetFeature.class))
+            {
+               throw new SOAPException("FastInfoset support is not enabled, use FastInfosetFeature to enable it.");
+            }
          }
          else if (isSoapContent(contentType) == false)
          {
-            throw new SOAPException(BundleUtils.getMessage(bundle, "UNSUPPORTED_CONTENT_TYPE",  contentType));
+            throw new SOAPException("Unsupported content type: " + contentType);
          }
 
          if (mimeHeaders != null)
@@ -247,16 +279,15 @@ public class MessageFactoryImpl extends MessageFactory
             soapMessage.setAttachments(attachments);
 
          // Get the SOAPEnvelope builder
-         final EnvelopeBuilder envBuilder = (EnvelopeBuilder)ServiceLoader.loadService(EnvelopeBuilder.class.getName(), null, this.getClass().getClassLoader());
-         //if inputstream is empty, no need to build
-         if (inputStream.markSupported()) {
-        	 inputStream.mark(1);
-    		 final int bytesRead = inputStream.read(new byte[1]);
-    		 inputStream.reset();
-    		 if (bytesRead == -1) {
-    			return soapMessage;
-    		 }
-    	  }
+         EnvelopeBuilder envBuilder;
+         if (features.isFeatureEnabled(FastInfosetFeature.class))
+         {
+            envBuilder = new FastInfosetEnvelopeBuilder();
+         }
+         else
+         {
+            envBuilder = (EnvelopeBuilder)ServiceLoader.loadService(EnvelopeBuilder.class.getName(), null);
+         }
 
          // Build the payload
          envBuilder.setStyle(getStyle());
@@ -284,7 +315,7 @@ public class MessageFactoryImpl extends MessageFactory
       }
       catch (ParseException e)
       {
-         throw new SOAPException(BundleUtils.getMessage(bundle, "COULD_NOT_PARSE_CONTENT_TYPE",  e));
+         throw new SOAPException("Could not parse content type:" + e);
       }
    }
 
@@ -294,9 +325,21 @@ public class MessageFactoryImpl extends MessageFactory
       return MimeConstants.TYPE_SOAP11.equalsIgnoreCase(baseType) || MimeConstants.TYPE_SOAP12.equalsIgnoreCase(baseType);
    }
    
+   private boolean isFastInfosetContent(ContentType type)
+   {
+      String baseType = type.getBaseType();
+      return MimeConstants.TYPE_FASTINFOSET.equalsIgnoreCase(baseType);
+   }
+
    private boolean isMultipartRelatedContent(ContentType type)
    {
       String baseType = type.getBaseType();
       return MimeConstants.TYPE_MULTIPART_RELATED.equalsIgnoreCase(baseType);
+   }
+   
+   private boolean isXOPContent(ContentType type)
+   {      
+      String paramType = type.getParameter("type");
+      return MimeConstants.TYPE_APPLICATION_XOP_XML.endsWith(paramType);
    }
 }

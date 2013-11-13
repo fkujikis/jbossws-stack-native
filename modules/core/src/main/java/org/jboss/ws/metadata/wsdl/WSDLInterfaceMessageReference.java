@@ -27,8 +27,8 @@ import java.util.LinkedHashMap;
 import javax.xml.namespace.QName;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
+import org.jboss.ws.WSException;
 
 /**
  * A Message Reference component associates a defined type with a message
@@ -76,16 +76,10 @@ public abstract class WSDLInterfaceMessageReference extends Extendable implement
     * Used for WSDL 1.1
     */
    private QName messageName;
-   
-   /**
-    * wsam:Action
-    */
-   private String action;
 
    public WSDLInterfaceMessageReference(WSDLInterfaceOperation wsdlOperation)
    {
-      if (log.isTraceEnabled())
-         log.trace("New part for wsdlOperation: " + wsdlOperation.getName());
+      log.trace("New part for wsdlOperation: " + wsdlOperation.getName());
       this.wsdlOperation = wsdlOperation;
    }
 
@@ -111,8 +105,7 @@ public abstract class WSDLInterfaceMessageReference extends Extendable implement
 
    public void setElement(QName element)
    {
-      if (log.isTraceEnabled())
-         log.trace("setElement: " + element);
+      log.trace("setElement: " + element);
       this.element = element;
    }
 
@@ -144,7 +137,7 @@ public abstract class WSDLInterfaceMessageReference extends Extendable implement
       }
 
       if (xmlType == null)
-         throw NativeMessages.MESSAGES.cannotObtainXmlType(element);
+         throw new WSException("Cannot obtain xmlType for element: " + element);
 
       return xmlType;
    }
@@ -222,26 +215,6 @@ public abstract class WSDLInterfaceMessageReference extends Extendable implement
    public QName getMessageName()
    {
       return messageName;
-   }
-
-   /**
-    * Sets wsam:Action
-    *
-    * @param action action
-    */
-   public void setAction(String action)
-   {
-      this.action = action;
-   }
-
-   /**
-    * Gets wsam:Action
-    *
-    * return action
-    */
-   public String getAction()
-   {
-      return this.action;
    }
 
    /**
