@@ -31,7 +31,6 @@ import java.net.URL;
 
 import org.apache.xerces.xs.XSModel;
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeMessages;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
 import org.jboss.ws.metadata.wsdl.xmlschema.WSSchemaUtils;
@@ -54,7 +53,7 @@ public class XSDWriter
    public void writeXSD(Writer writer, XSModel xsmodel, WSDLDefinitions wsdl)
    {
       if (xsmodel == null)
-         throw NativeMessages.MESSAGES.illegalNullArgument("xsmodel");
+         throw new IllegalArgumentException("xsmodel is NULL");
       
       this.wsdl = wsdl;
       
@@ -72,7 +71,7 @@ public class XSDWriter
    throws IOException
    {
       if(ns == null)
-         throw NativeMessages.MESSAGES.illegalNullArgument("ns");
+         throw new IllegalArgumentException("Illegal Null Argument:ns");
       String xsdString = "";
       if(xsmodel instanceof JBossXSModel)
       {
@@ -90,7 +89,7 @@ public class XSDWriter
       log.trace("serialize:\n" + xsdString); 
       
       // Write updated xsd file
-      File xsdFile = SchemaUtils.getSchemaTempFile(ns);
+      File xsdFile = SchemaUtils.getSchemaTempFile(ns, null);
       FileWriter writer = new FileWriter(xsdFile);
       try
       {

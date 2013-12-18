@@ -21,11 +21,16 @@
  */
 package org.jboss.ws.core.client;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.xml.ws.WebServiceFeature;
+
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
+import org.jboss.ws.metadata.umdm.FeatureSet;
 
 /** A wrapper object that associates the target address with some metadata
  * 
@@ -36,9 +41,11 @@ public class EndpointInfo
 {
    private String targetAddress;
    private Map<String, Object> properties;
+   private FeatureSet features;
    
    public EndpointInfo(EndpointMetaData epMetaData, String targetAddress, Map<String, Object> callProps)
    {
+      this.features = epMetaData.getFeatures();
       this.targetAddress = this.lowerCaseProtocol(targetAddress);
       this.properties = callProps;
 
@@ -55,6 +62,18 @@ public class EndpointInfo
             properties.put(key, val);
          }
       }
+
+      // Add the endpoint properties
+      Properties epProps = epMetaData.getProperties();
+      Iterator it = epProps.entrySet().iterator();
+      while (it.hasNext())
+      {
+         Map.Entry entry = (Map.Entry)it.next();
+         String key = (String)entry.getKey();
+         Object val = entry.getValue();
+         properties.put(key, val);
+      }
+
    }
 
    public Map<String, Object> getProperties()
@@ -67,6 +86,11 @@ public class EndpointInfo
       return targetAddress;
    }
    
+   public <T extends WebServiceFeature> boolean isFeatureEnabled(Class<T> key)
+   {
+      return features.isFeatureEnabled(key);
+   }
+
    public boolean equals(Object obj)
    {
       if (!(obj instanceof EndpointInfo))
@@ -87,10 +111,6 @@ public class EndpointInfo
    private String lowerCaseProtocol(String targetAddress)
    {
       int colonIndex = targetAddress.indexOf(':');
-      if (colonIndex == -1)
-      {
-    	  return targetAddress;
-      }
       String lowerCasedProtocol = targetAddress.substring(0, colonIndex).toLowerCase();
       return lowerCasedProtocol + targetAddress.substring(colonIndex);
    }

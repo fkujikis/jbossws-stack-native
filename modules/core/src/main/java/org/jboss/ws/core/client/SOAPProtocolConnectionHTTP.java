@@ -23,13 +23,18 @@ package org.jboss.ws.core.client;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 
+import org.jboss.remoting.marshal.Marshaller;
+import org.jboss.remoting.marshal.UnMarshaller;
+import org.jboss.ws.core.MessageAbstraction;
 import org.jboss.ws.core.soap.SOAPMessageMarshaller;
 import org.jboss.ws.core.soap.SOAPMessageUnMarshallerHTTP;
+import org.jboss.ws.extensions.xop.XOPContext;
 
 /**
  * SOAPConnection implementation
@@ -50,13 +55,16 @@ public class SOAPProtocolConnectionHTTP extends HTTPRemotingConnection
       return new SOAPMessageMarshaller();
    }
 
-   @Override
-   public SOAPMessage invoke(SOAPMessage reqMessage, Object endpoint, boolean oneway) throws IOException
+   public MessageAbstraction invoke(MessageAbstraction reqMessage, Object endpoint, boolean oneway) throws IOException
    {
       try
       {
+         // enforce xop transitions
+         // TODO: there should be a clear transition to an immutable object model
+         XOPContext.eagerlyCreateAttachments();
+
          // save object model changes
-         SOAPMessage soapMessage = reqMessage;
+         SOAPMessage soapMessage = (SOAPMessage)reqMessage;
          if (reqMessage != null && soapMessage.saveRequired())
             soapMessage.saveChanges();
 
@@ -70,37 +78,37 @@ public class SOAPProtocolConnectionHTTP extends HTTPRemotingConnection
       }
    }
 
-   protected void populateHeaders(SOAPMessage reqMessage, Map<String, Object> metadata)
+   protected void populateHeaders(MessageAbstraction reqMessage, Map<String, Object> metadata)
    {
       super.populateHeaders(reqMessage, metadata);
 
-      if (reqMessage != null)
+      Properties props = (Properties)metadata.get("HEADER");
+
+      // R2744 A HTTP request MESSAGE MUST contain a SOAPAction HTTP header field
+      // with a quoted value equal to the value of the soapAction attribute of
+      // soapbind:operation, if present in the corresponding WSDL description.
+
+      // R2745 A HTTP request MESSAGE MUST contain a SOAPAction HTTP header field
+      // with a quoted empty string value, if in the corresponding WSDL description,
+      // the soapAction attribute of soapbind:operation is either not present, or
+      // present with an empty string as its value.
+
+      MimeHeaders mimeHeaders = reqMessage.getMimeHeaders();
+      String[] action = mimeHeaders.getHeader("SOAPAction");
+      if (action != null && action.length > 0)
       {
-         // R2744 A HTTP request MESSAGE MUST contain a SOAPAction HTTP header field
-         // with a quoted value equal to the value of the soapAction attribute of
-         // soapbind:operation, if present in the corresponding WSDL description.
+         String soapAction = action[0];
 
-         // R2745 A HTTP request MESSAGE MUST contain a SOAPAction HTTP header field
-         // with a quoted empty string value, if in the corresponding WSDL description,
-         // the soapAction attribute of soapbind:operation is either not present, or
-         // present with an empty string as its value.
+         // R1109 The value of the SOAPAction HTTP header field in a HTTP request MESSAGE MUST be a quoted string.
+         if (soapAction.startsWith("\"") == false || soapAction.endsWith("\"") == false)
+            soapAction = "\"" + soapAction + "\"";
 
-         MimeHeaders mimeHeaders = reqMessage.getMimeHeaders();
-         String[] action = mimeHeaders.getHeader("SOAPAction");
-         if (action != null && action.length > 0)
-         {
-            String soapAction = action[0];
-
-            // R1109 The value of the SOAPAction HTTP header field in a HTTP request MESSAGE MUST be a quoted string.
-            if (soapAction.startsWith("\"") == false || soapAction.endsWith("\"") == false)
-               soapAction = "\"" + soapAction + "\"";
-
-            metadata.put("SOAPAction", soapAction);
-         }
-         else
-         {
-            metadata.put("SOAPAction", "\"\"");
-         }
+         props.put("SOAPAction", soapAction);
       }
+      else
+      {
+         props.put("SOAPAction", "\"\"");
+      }
+
    }
 }

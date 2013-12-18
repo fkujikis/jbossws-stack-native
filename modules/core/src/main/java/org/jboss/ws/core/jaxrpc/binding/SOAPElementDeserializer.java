@@ -29,7 +29,7 @@ import org.jboss.logging.Logger;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.core.binding.DeserializerSupport;
 import org.jboss.ws.core.binding.SerializationContext;
-import org.jboss.ws.core.soap.utils.SOAPUtils;
+import org.jboss.ws.core.soap.SOAPFactoryImpl;
 import org.w3c.dom.Element;
 
 /**
@@ -52,7 +52,7 @@ public class SOAPElementDeserializer extends DeserializerSupport
       if(log.isDebugEnabled()) log.debug("deserialize: [xmlName=" + xmlName + ",xmlType=" + xmlType + "]");
       try
       {
-         return SOAPUtils.newSOAP11Factory().createElement(xmlFragment);
+         return new SOAPFactoryImpl().createElement(xmlFragment);
       }
       catch (SOAPException se)
       {

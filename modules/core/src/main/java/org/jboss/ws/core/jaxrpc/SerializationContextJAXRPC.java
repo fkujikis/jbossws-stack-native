@@ -25,17 +25,18 @@ import javax.xml.namespace.QName;
 
 import org.apache.xerces.xs.XSModel;
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.ws.Constants;
+import org.jboss.ws.WSException;
 import org.jboss.ws.core.binding.SerializationContext;
 import org.jboss.ws.core.jaxrpc.handler.SOAPMessageContextJAXRPC;
-import org.jboss.ws.core.soap.utils.MessageContextAssociation;
+import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaXmlTypeMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.PackageMapping;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.TypesMetaData;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * The serialization context for JAXRPC endpoints/clients
@@ -115,7 +116,8 @@ public class SerializationContextJAXRPC extends SerializationContext
    public XSModel getXsModel()
    {
       SOAPMessageContextJAXRPC msgContext = (SOAPMessageContextJAXRPC)MessageContextAssociation.peekMessageContext();
-      assert(msgContext != null);
+      if (msgContext == null)
+         throw new WSException("MessageContext not available");
 
       OperationMetaData opMetaData = msgContext.getOperationMetaData();
       ServiceMetaData serviceMetaData = opMetaData.getEndpointMetaData().getServiceMetaData();
