@@ -21,9 +21,12 @@
  */
 package org.jboss.ws.metadata.umdm;
 
-import javax.xml.namespace.QName;
-
+import org.jboss.ws.core.jaxws.handler.PortInfoImpl;
+import org.jboss.ws.metadata.config.ConfigurationProvider;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.handler.PortInfo;
 
 /**
  * Client side endpoint meta data.
@@ -35,10 +38,21 @@ public class ClientEndpointMetaData extends EndpointMetaData
 {
    // The endpoint address
    private String endpointAddress;
-   
-   public ClientEndpointMetaData(ServiceMetaData service, QName qname, QName portTypeName)
+
+   public ClientEndpointMetaData(ServiceMetaData service, QName qname, QName portTypeName, Type type)
    {
-      super(service, qname, portTypeName);
+      super(service, qname, portTypeName, type);
+      String configName = ConfigurationProvider.DEFAULT_CLIENT_CONFIG_NAME;
+
+      String configFile;
+      if (type == Type.JAXRPC)
+         configFile = ConfigurationProvider.DEFAULT_JAXRPC_CLIENT_CONFIG_FILE;
+      else
+         configFile = ConfigurationProvider.DEFAULT_JAXWS_CLIENT_CONFIG_FILE;
+
+      EndpointConfigMetaData ecmd = getEndpointConfigMetaData();
+      ecmd.setConfigName(configName);
+      ecmd.setConfigFile(configFile);
    }
 
    public String getEndpointAddress()
@@ -51,14 +65,32 @@ public class ClientEndpointMetaData extends EndpointMetaData
       this.endpointAddress = endpointAddress;
    }
 
+   public PortInfo getPortInfo()
+   {
+      QName serviceName = getServiceMetaData().getServiceName();
+      QName portName = getPortName();
+      String bindingID = getBindingId();
+      PortInfo portInfo = new PortInfoImpl(serviceName, portName, bindingID);
+      return portInfo;
+   }
+
+   public EndpointConfigMetaData createEndpointConfigMetaData(String configName, String configFile)
+   {
+      return super.createEndpointConfigMetaData(configName, configFile);
+   }
+
    public String toString()
    {
       StringBuilder buffer = new StringBuilder("\nClientEndpointMetaData:");
+      buffer.append("\n type=").append(getType());
       buffer.append("\n qname=").append(getPortName());
       buffer.append("\n address=").append(getEndpointAddress());
       buffer.append("\n binding=").append(getBindingId());
       buffer.append("\n seiName=").append(getServiceEndpointInterfaceName());
+      buffer.append("\n configFile=").append(getConfigFile());
+      buffer.append("\n configName=").append(getConfigName());
       buffer.append("\n authMethod=").append(getAuthMethod());
+      buffer.append("\n properties=").append(getProperties());
 
       for (OperationMetaData opMetaData : getOperations())
       {

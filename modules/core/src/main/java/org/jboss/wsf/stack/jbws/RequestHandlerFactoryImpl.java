@@ -21,8 +21,8 @@
  */
 package org.jboss.wsf.stack.jbws;
 
-import org.jboss.wsf.spi.invocation.RequestHandler;
 import org.jboss.wsf.spi.invocation.RequestHandlerFactory;
+import org.jboss.wsf.spi.invocation.RequestHandler;
 
 /**
  * @author Heiko.Braun@jboss.com
@@ -30,15 +30,8 @@ import org.jboss.wsf.spi.invocation.RequestHandlerFactory;
  */
 public class RequestHandlerFactoryImpl extends RequestHandlerFactory
 {
-   @Deprecated
    public RequestHandler newRequestHandler()
    {
       return new RequestHandlerImpl(); 
-   }
-
-   @Override
-   public RequestHandler getRequestHandler()
-   {
-      return RequestHandlerImpl.getInstance(); 
    }
 }
