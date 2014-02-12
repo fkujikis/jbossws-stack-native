@@ -44,29 +44,18 @@ public class JBWS456TestCase extends JBossWSTest
    /** Deploy the test */
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS456TestCase.class, "jaxrpc-jbws456.war, jaxrpc-jbws456-appclient.ear#jaxrpc-jbws456-appclient.jar");
+      return new JBossWSTestSetup(JBWS456TestCase.class, "jaxrpc-jbws456.war, jaxrpc-jbws456-client.jar");
    }
 
    public void testEndpoint() throws Exception
    {
-      InitialContext iniCtx = null;
-      try
-      {
-         iniCtx = getAppclientInitialContext();
-         Service service = (Service)iniCtx.lookup("java:service/TestService");
-         TestSEI port = (TestSEI)service.getPort(TestSEI.class);
+      InitialContext iniCtx = getInitialContext();
+      Service service = (Service)iniCtx.lookup("java:comp/env/service/TestService");
+      TestSEI port = (TestSEI)service.getPort(TestSEI.class);
 
-         JavaType in = new JavaType("A more appropiate test string");
-         JavaType retObj = port.doStuff(in);
-         assertEquals(in.getValue() + " - Processed", TestHandler.getReturnParam());
-      }
-      finally
-      {
-         if (iniCtx != null)
-         {
-            iniCtx.close();
-         }
-      }
+      JavaType in = new JavaType("A more appropiate test string");
+      JavaType retObj = port.doStuff(in);
+      assertEquals(in.getValue() + " - Processed", TestHandler.getReturnParam());
    }
 
 }

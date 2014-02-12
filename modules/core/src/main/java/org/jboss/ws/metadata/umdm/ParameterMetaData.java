@@ -32,15 +32,18 @@ import javax.xml.namespace.QName;
 import javax.xml.rpc.ParameterMode;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
-import org.jboss.ws.NativeMessages;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.jaxrpc.ParameterWrapping;
+import org.jboss.ws.core.jaxws.DynamicWrapperGenerator;
 import org.jboss.ws.core.utils.HolderUtils;
+import org.jboss.ws.extensions.xop.jaxws.AttachmentScanResult;
+import org.jboss.ws.extensions.xop.jaxws.ReflectiveAttachmentRefScanner;
 import org.jboss.ws.metadata.accessor.AccessorFactoryCreator;
 import org.jboss.ws.metadata.accessor.ReflectiveMethodAccessorFactoryCreator;
+import org.jboss.ws.metadata.config.EndpointFeature;
+import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * A request/response parameter that a given operation supports.
@@ -61,11 +64,13 @@ public class ParameterMetaData implements InitalizableMetaData
    private String partName;
    private QName xmlType;
    private String javaTypeName;
-   private Class<?> javaType;
+   private Class javaType;
    private ParameterMode mode;
    private Set<String> mimeTypes;
    private boolean inHeader;
    private boolean isSwA;
+   private boolean isXOP;
+   private boolean isSwaRef;
    private List<WrappedParameter> wrappedParameters;
    private int index;
 
@@ -90,7 +95,7 @@ public class ParameterMetaData implements InitalizableMetaData
    public ParameterMetaData(OperationMetaData opMetaData, QName xmlName, String javaTypeName)
    {
       if (xmlName == null)
-         throw NativeMessages.MESSAGES.illegalNullArgument("xmlName");
+         throw new IllegalArgumentException("Invalid null xmlName argument");
 
       // Remove the prefixes
       if (xmlName.getNamespaceURI().length() > 0)
@@ -103,14 +108,14 @@ public class ParameterMetaData implements InitalizableMetaData
       this.partName = xmlName.getLocalPart();
    }
 
-   private static boolean matchParameter(Method method, int index, Class<?> expectedType, Set<Integer> matches, boolean exact, boolean holder)
+   private static boolean matchParameter(Method method, int index, Class expectedType, Set<Integer> matches, boolean exact, boolean holder)
    {
-      Class<?> returnType = method.getReturnType();
+      Class returnType = method.getReturnType();
 
       if (index == -1 && matchTypes(returnType, expectedType, exact, false))
          return true;
 
-      Class<?>[] classParameters = method.getParameterTypes();
+      Class[] classParameters = method.getParameterTypes();
       if (index < 0 || index >= classParameters.length)
          return false;
 
@@ -135,13 +140,13 @@ public class ParameterMetaData implements InitalizableMetaData
       return false;
    }
 
-   private static boolean matchTypes(java.lang.reflect.Type actualType, Class<?> expectedType, boolean exact, boolean holder)
+   private static boolean matchTypes(java.lang.reflect.Type actualType, Class expectedType, boolean exact, boolean holder)
    {
       if (holder && HolderUtils.isHolderType(actualType) == false)
          return false;
 
       java.lang.reflect.Type valueType = (holder ? HolderUtils.getValueType(actualType) : actualType);
-      Class<?> valueClass = JavaUtils.erasure(valueType);
+      Class valueClass = JavaUtils.erasure(valueType);
 
       return matchTypesInternal(valueClass, expectedType, exact);
    }
@@ -149,20 +154,20 @@ public class ParameterMetaData implements InitalizableMetaData
    // This duplication is needed because Class does not implement Type in 1.4, 
    // which makes retrotranslation not possible. This takes advantage of overloading to
    // prevent the problem.
-   private static boolean matchTypes(Class<?> actualType, Class<?> expectedType, boolean exact, boolean holder)
+   private static boolean matchTypes(Class actualType, Class expectedType, boolean exact, boolean holder)
    {
       if (holder && HolderUtils.isHolderType(actualType) == false)
          return false;
 
-      Class<?> valueClass = (holder ? HolderUtils.getValueType(actualType) : actualType);
+      Class valueClass = (holder ? HolderUtils.getValueType(actualType) : actualType);
 
       return matchTypesInternal(valueClass, expectedType, exact);
    }
 
-   private static boolean matchTypesInternal(Class<?> valueClass, Class<?> expectedType, boolean exact)
+   private static boolean matchTypesInternal(Class valueClass, Class expectedType, boolean exact)
    {
       // FIXME - Why do we need this hack? The method signature should _ALWAYS_ match, else we will get ambiguous or incorrect results
-      List<Class<?>> anyTypes = new ArrayList<Class<?>>();
+      List<Class> anyTypes = new ArrayList<Class>();
       anyTypes.add(javax.xml.soap.SOAPElement.class);
       anyTypes.add(org.w3c.dom.Element.class);
 
@@ -198,7 +203,7 @@ public class ParameterMetaData implements InitalizableMetaData
    public void setXmlType(QName xmlType)
    {
       if (xmlType == null)
-         throw NativeMessages.MESSAGES.illegalNullArgument("xmlType");
+         throw new IllegalArgumentException("Invalid null xmlType");
 
       // Remove potential prefix
       if (xmlType.getNamespaceURI().length() > 0)
@@ -225,14 +230,15 @@ public class ParameterMetaData implements InitalizableMetaData
       // Warn if this is called after eager initialization
       UnifiedMetaData wsMetaData = opMetaData.getEndpointMetaData().getServiceMetaData().getUnifiedMetaData();
       if (wsMetaData.isEagerInitialized() && UnifiedMetaData.isFinalRelease() == false)
-         NativeLoggers.ROOT_LOGGER.setJavaTypeAfterEagerInit(typeName);
+         log.warn("Set java type name after eager initialization", new IllegalStateException());
+
       javaTypeName = typeName;
       javaType = null;
    }
 
-   public Class<?> loadWrapperBean()
+   public Class loadWrapperBean()
    {
-      Class<?> wrapperBean = null;
+      Class wrapperBean = null;
       try
       {
          ClassLoader loader = getClassLoader();
@@ -248,9 +254,9 @@ public class ParameterMetaData implements InitalizableMetaData
    /** Load the java type.
     *  It should only be cached during eager initialization.
     */
-   public Class<?> getJavaType()
+   public Class getJavaType()
    {
-      Class<?> tmpJavaType = javaType;
+      Class tmpJavaType = javaType;
       if (tmpJavaType == null && javaTypeName != null)
       {
          try
@@ -267,7 +273,7 @@ public class ParameterMetaData implements InitalizableMetaData
          }
          catch (ClassNotFoundException ex)
          {
-            throw new WSException(ex);
+            throw new WSException("Cannot load java type: " + javaTypeName, ex);
          }
       }
       return tmpJavaType;
@@ -287,7 +293,7 @@ public class ParameterMetaData implements InitalizableMetaData
       else if ("OUT".equals(mode))
          setMode(ParameterMode.OUT);
       else
-         throw NativeMessages.MESSAGES.invalidMode(mode);
+         throw new IllegalArgumentException("Invalid mode: " + mode);
    }
 
    public void setMode(ParameterMode mode)
@@ -328,6 +334,26 @@ public class ParameterMetaData implements InitalizableMetaData
       this.isSwA = isSwA;
    }
 
+   public boolean isSwaRef()
+   {
+      return isSwaRef;
+   }
+
+   public void setSwaRef(boolean swaRef)
+   {
+      isSwaRef = swaRef;
+   }
+
+   public boolean isXOP()
+   {
+      return isXOP;
+   }
+
+   public void setXOP(boolean isXOP)
+   {
+      this.isXOP = isXOP;
+   }
+
    public boolean isSOAPArrayParam()
    {
       return soapArrayParam;
@@ -345,7 +371,7 @@ public class ParameterMetaData implements InitalizableMetaData
 
    public void setSOAPArrayCompType(QName compXmlType)
    {
-      if (log.isDebugEnabled() && compXmlType != null && !compXmlType.equals(soapArrayCompType))
+      if (compXmlType != null && !compXmlType.equals(soapArrayCompType))
       {
          String logmsg = "SOAPArrayCompType: [xmlType=" + xmlType + ",compType=" + compXmlType + "]";
          log.debug((soapArrayCompType == null ? "set" : "reset") + logmsg);
@@ -374,7 +400,7 @@ public class ParameterMetaData implements InitalizableMetaData
       StringBuilder mimeName = new StringBuilder(xmlType.getLocalPart());
       int pos = mimeName.indexOf("_");
       if (pos == -1)
-         throw NativeMessages.MESSAGES.invalidMimeType(xmlType);
+         throw new IllegalArgumentException("Invalid mime type: " + xmlType);
 
       mimeName.setCharAt(pos, '/');
       return mimeName.toString();
@@ -408,7 +434,14 @@ public class ParameterMetaData implements InitalizableMetaData
 
    public String getPartName()
    {
-      return partName;
+      // [JBWS-771] Use part names that are friendly to .NET
+      String auxPartName = partName;
+      if (opMetaData.getEndpointMetaData().getConfig().hasFeature(EndpointFeature.BINDING_WSDL_DOTNET))
+      {
+         if (opMetaData.isDocumentWrapped() && inHeader == false)
+            auxPartName = "parameters";
+      }
+      return auxPartName;
    }
 
    public void setPartName(String partName)
@@ -430,24 +463,55 @@ public class ParameterMetaData implements InitalizableMetaData
       javaType = null;
 
       // TODO - Remove messageType hack
+      Type epType = getOperationMetaData().getEndpointMetaData().getType();
       if (getOperationMetaData().isDocumentWrapped() && !isInHeader() && !isSwA() && !isMessageType())
       {
          if (loadWrapperBean() == null)
          {
-            throw NativeMessages.MESSAGES.jaxrpcWrapperBeanAutogenNotSupported();
+            if (epType == EndpointMetaData.Type.JAXRPC)
+               throw new WSException("Autogeneration of wrapper beans not supported with JAXRPC");
+
+            new DynamicWrapperGenerator(getClassLoader()).generate(this);
          }
       }
 
       javaType = getJavaType();
       if (javaType == null)
-         throw NativeMessages.MESSAGES.cannotLoad(javaTypeName);
+         throw new WSException("Cannot load java type: " + javaTypeName);
+
+      initializeAttachmentParameter(epType);
+   }
+
+   /**
+    * Identify MTOM and SWA:Ref parameter as these require special treatment.
+    * This only affects JAX-WS endpoints.
+    *
+    * Note: For SEI parameter annotations this happens within the metadata builder.
+    * @param epType
+    */
+   private void initializeAttachmentParameter(Type epType)
+   {
+      if (epType == Type.JAXWS)
+      {
+         ReflectiveAttachmentRefScanner scanner = new ReflectiveAttachmentRefScanner();
+         AttachmentScanResult scanResult = scanner.scanBean(javaType);
+         if (scanResult != null)
+         {
+            if (log.isDebugEnabled())
+               log.debug("Identified attachment reference: " + xmlName + ", type=" + scanResult.getType());
+            if (scanResult.getType() == AttachmentScanResult.Type.XOP)
+               setXOP(true);
+            else
+               setSwaRef(true);
+         }
+      }
    }
 
    private ClassLoader getClassLoader()
    {
       ClassLoader loader = opMetaData.getEndpointMetaData().getClassLoader();
       if (loader == null)
-         throw NativeMessages.MESSAGES.classloaderNotAvailable();
+         throw new WSException("ClassLoader not available");
       return loader;
    }
 
@@ -455,7 +519,7 @@ public class ParameterMetaData implements InitalizableMetaData
    {
       ClassLoader loader = getOperationMetaData().getEndpointMetaData().getClassLoader();
       List<WrappedParameter> wrappedParameters = getWrappedParameters();
-      Class<?> wrapperType = getJavaType();
+      Class wrapperType = getJavaType();
 
       // Standard type
       if (wrappedParameters == null)
@@ -468,7 +532,7 @@ public class ParameterMetaData implements InitalizableMetaData
 
          try
          {
-            Class<?> type = (typeName != null) ? JavaUtils.loadJavaType(typeName, loader) : ParameterWrapping.getWrappedType(wrapped.getVariable(), wrapperType);
+            Class type = (typeName != null) ? JavaUtils.loadJavaType(typeName, loader) : ParameterWrapping.getWrappedType(wrapped.getVariable(), wrapperType);
             if (type == null)
                return false;
             if (!matchParameter(method, wrapped.getIndex(), type, matches, exact, wrapped.isHolder()))
@@ -514,6 +578,12 @@ public class ParameterMetaData implements InitalizableMetaData
       if (isSwA())
       {
          buffer.append("\n isSwA=").append(isSwA());
+         buffer.append("\n mimeTypes=").append(getMimeTypes());
+      }
+
+      if (isXOP())
+      {
+         buffer.append("\n isXOP=").append(isXOP());
          buffer.append("\n mimeTypes=").append(getMimeTypes());
       }
 

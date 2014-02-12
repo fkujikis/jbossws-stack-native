@@ -26,6 +26,8 @@ import java.util.Iterator;
 import javax.xml.rpc.encoding.Serializer;
 import javax.xml.rpc.encoding.SerializerFactory;
 
+import org.jboss.util.NotImplementedException;
+
 /**
  * @author Thomas.Diesler@jboss.org
  * @since 04-Dec-2004
@@ -36,11 +38,11 @@ public abstract class AbstractSerializerFactory implements SerializerFactory
 
    public Serializer getSerializerAs(String mechanismType)
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 
    public Iterator getSupportedMechanismTypes()
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 }

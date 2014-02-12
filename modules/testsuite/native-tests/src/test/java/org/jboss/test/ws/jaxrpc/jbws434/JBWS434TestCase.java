@@ -30,10 +30,9 @@ import javax.xml.soap.SOAPFactory;
 
 import junit.framework.Test;
 
-import org.jboss.wsf.test.CleanupOperation;
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
-import org.jboss.ws.common.DOMUtils;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 
@@ -46,16 +45,10 @@ import org.w3c.dom.NamedNodeMap;
 public class JBWS434TestCase extends JBossWSTest
 {
    private static TestServiceEndpoint port;
-   private static InitialContext iniCtx;
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(JBWS434TestCase.class, "jaxrpc-jbws434.war, jaxrpc-jbws434-appclient.ear#jaxrpc-jbws434-appclient.jar", new CleanupOperation() {
-         @Override
-         public void cleanUp() {
-            port = null;
-         }
-      });
+      return new JBossWSTestSetup(JBWS434TestCase.class, "jaxrpc-jbws434.war, jaxrpc-jbws434-client.jar");
    }
 
    protected void setUp() throws Exception
@@ -63,20 +56,10 @@ public class JBWS434TestCase extends JBossWSTest
       super.setUp();
       if (port == null)
       {
-         iniCtx = getAppclientInitialContext();
-         Service service = (Service)iniCtx.lookup("java:service/TestService");
+         InitialContext iniCtx = getInitialContext();
+         Service service = (Service)iniCtx.lookup("java:comp/env/service/TestService");
          port = (TestServiceEndpoint)service.getPort(TestServiceEndpoint.class);
       }
-   }
-
-   protected void tearDown() throws Exception
-   {
-      if (iniCtx != null)
-      {
-         iniCtx.close();
-         iniCtx = null;
-      }
-      super.tearDown();
    }
 
    public void testWildCardArrayWithOtherNS() throws Exception

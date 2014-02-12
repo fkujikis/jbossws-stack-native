@@ -104,7 +104,7 @@ public class GetProperty
          {
             SOAPElement sel = _any[i];
             Name name = sel.getElementName();
-            builder.append("{" + name.getURI() + "}").append(name.getLocalName());
+            builder.append(name);
          }
       }
       return "[elmt=" + strElement + ",attr=" + strAttr + ",lang=" + lang + ",any=" + builder + "]";
