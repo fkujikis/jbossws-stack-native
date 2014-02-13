@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<project basedir="." name="JBossWS-Native">
+
+  <!-- ================================================================== -->
+  <!-- Setup                                                              -->
+  <!-- ================================================================== -->
+
+  <property name="stack.dir" value="${basedir}"/>
+  <property name="dist.dir" value="${stack.dir}/modules/dist"/>
+  <property name="dist.distro.dir" value="${dist.dir}/src/main/distro"/>
+  <property name="dist.output.dir" value="${dist.dir}/target"/>
+  <property name="stack.distro.dir" value="${stack.dir}/src/main/distro"/>
+  <property name="stack.output.dir" value="${stack.dir}/target"/>
+  <property name="stack.resources.dir" value="${stack.dir}/modules/resources/src/main/resources"/>
+  <property name="deploy.artifacts.dir" value="${dist.output.dir}/assembly/deploy-artifacts"/>
+
+  <import file="${dist.distro.dir}/build-setup.xml"/>
+  <import file="${dist.distro.dir}/build-deploy.xml"/>
+  <import file="${stack.resources.dir}/resources/jbossws-deploy-macros.xml"/>
+
+  <property name="target.properties.file" value="${basedir}/target.properties"/>
+
+  <!-- ================================================================== -->
+  <!-- Initialization                                                     -->
+  <!-- ================================================================== -->
+
+  <target name="os-init">
+    <condition property="ext" value=".bat">
+      <not>
+        <os family="unix"/>
+      </not>
+    </condition>
+    <property name="ext" value=""/>
+    <property name="mvn" value="mvn${ext}"/>
+  </target>
+
+  <target name="mvn-settings" depends="os-init">
+    <!-- Loads the properties from the effective maven settings -->
+    <mkdir dir="${dist.output.dir}"/>
+    <exec dir="${basedir}" executable="${mvn}" failonerror="true">
+      <arg value="-Doutput=${dist.output.dir}/effective-settings.xml"/>
+      <arg value="help:effective-settings"/>
+    </exec>
+    <xmlproperty file="${dist.output.dir}/effective-settings.xml" keeproot="false"/>
+    <condition property="jboss720.home" value="${profiles.profile.properties.jboss720.home}">
+      <isset property="profiles.profile.properties.jboss720.home"/>
+    </condition>
+    <condition property="jboss800.home" value="${profiles.profile.properties.jboss800.home}">
+      <isset property="profiles.profile.properties.jboss800.home"/>
+    </condition>
+
+  <fail message="jboss home not set, use jboss800.home=value or jboss720.home=value to set">
+     <condition>
+      <and>
+       <not>
+         <isset property="jboss800.home"/>
+       </not>
+       <not>
+         <isset property="jboss720.home"/>
+       </not>
+      </and>
+     </condition>
+    </fail>
+
+    <echo/>
+    <echo message="jboss800.home=${jboss800.home}"/>
+    <echo message="jboss720.home=${jboss720.home}"/>
+  </target>
+
+  <target name="init" depends="mvn-settings,prepare,os-init">
+
+    <xmlproperty file="${stack.dir}/pom.xml"/>
+    <property name="version.id" value="${project.version}"/>
+
+    <echo message="java.version=${java.version}"/>
+    <echo message="version.id=${version.id}"/>
+    <echo message="integration.target=${jbossws.integration.target}"/>
+
+    <fail message="jbossws.integration.target not set" unless="jbossws.integration.target"/>
+    <property name="deploy.structure" value="${dist.output.dir}/deploy-${jbossws.integration.target}"/>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Distribution                                                       -->
+  <!-- ================================================================== -->
+
+  <target name="prepare-deploy" depends="prepare,os-init">
+
+    <!-- Use a system property to overwrite the empty default value  -->
+    <property name="maven.opts" value=""/>
+
+    <echo/>
+    <echo message="${mvn} ${maven.opts} -Pdist -Dno-testsuite install"/>
+    <echo/>
+
+    <delete dir="${deploy.artifacts.dir}"/>
+    <exec dir="${basedir}" executable="${mvn}" failonerror="true">
+      <arg line="${maven.opts} -Pdist -Dno-testsuite install"/>
+    </exec>
+  </target>
+</project>
