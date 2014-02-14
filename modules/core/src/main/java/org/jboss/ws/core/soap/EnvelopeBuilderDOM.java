@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import java.util.ResourceBundle;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.Name;
@@ -39,13 +38,10 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.dom.DOMSource;
 
 import org.jboss.logging.Logger;
+import org.jboss.ws.Constants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.core.soap.BundleUtils;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.DOMUtils;
 import org.jboss.ws.core.CommonSOAPFaultException;
-import org.jboss.ws.core.soap.utils.Style;
-import org.jboss.ws.core.soap.utils.XMLFragment;
+import org.jboss.wsf.common.DOMUtils;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -62,9 +58,10 @@ import org.xml.sax.InputSource;
  */
 public class EnvelopeBuilderDOM implements EnvelopeBuilder
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(EnvelopeBuilderDOM.class);
    // provide logging
    private static Logger log = Logger.getLogger(EnvelopeBuilderDOM.class);
+   
+   private static final String IGNORE_PARSE_ERROR_PROPERTY = System.getProperty("org.jboss.ws.IgnoreParseError", "true");
 
    private SOAPFactoryImpl soapFactory = new SOAPFactoryImpl();
    private Style style;
@@ -91,13 +88,16 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
       }
       catch (IOException ex)
       {
-         if (ignoreParseError)
-         {
+         if(IGNORE_PARSE_ERROR_PROPERTY.equalsIgnoreCase("false")) { 
+            QName faultCode = Constants.SOAP11_FAULT_CODE_CLIENT;
+            throw new CommonSOAPFaultException(faultCode, ex);
+         }else if (ignoreParseError) { //kept for backward compatibility
             return null;
          }
-         log.error(BundleUtils.getMessage(bundle, "EXCEPTION_WHILE_BUILDING_ENVELOPE"),  ex);
+         
          QName faultCode = Constants.SOAP11_FAULT_CODE_CLIENT;
          throw new CommonSOAPFaultException(faultCode, ex.getMessage());
+         
       }
 
       return build(soapMessage, domEnv);
@@ -115,10 +115,13 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
       }
       catch (IOException ex)
       {
-         if (ignoreParseError)
-         {
+         if(IGNORE_PARSE_ERROR_PROPERTY.equalsIgnoreCase("false")) { 
+            QName faultCode = Constants.SOAP11_FAULT_CODE_CLIENT;
+            throw new CommonSOAPFaultException(faultCode, ex);
+         }else if (ignoreParseError) { //kept for backward compatibility
             return null;
          }
+         
          QName faultCode = Constants.SOAP11_FAULT_CODE_CLIENT;
          throw new CommonSOAPFaultException(faultCode, ex.getMessage());
       }
@@ -153,7 +156,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
    {
       // Construct the envelope
       SOAPPartImpl soapPart = (SOAPPartImpl)soapMessage.getSOAPPart();
-      SOAPEnvelopeImpl soapEnv = new SOAPEnvelopeImpl(soapPart, (SOAPElementImpl)soapFactory.createElement(domEnv, false), false);
+      SOAPEnvelopeImpl soapEnv = new SOAPEnvelopeImpl(soapPart, soapFactory.createElement(domEnv, false), false);
 
       DOMUtils.copyAttributes(soapEnv, domEnv);
 
@@ -175,7 +178,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
             }
             else
             {
-               log.warn(BundleUtils.getMessage(bundle, "IGNORE_ENVELOPE_CHILD",  elName));
+               log.warn("Ignore envelope child: " + elName);
             }
          }
       }
@@ -213,13 +216,9 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
             DOMUtils.copyAttributes(destElement, srcElement);
             destElement.setXMLFragment(xmlFragment);
          }
-         else if (childType == Node.TEXT_NODE) 
-         {
-            log.debug("Ignore child type: " + childType);
-         }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "IGNORE_CHILD_TYPE",  childType));
+            log.warn("Ignore child type: " + childType);
          }
       }
 
@@ -272,7 +271,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "IGNORE_CHILD_TYPE",  childType));
+            log.warn("Ignore child type: " + childType);
          }
       }
 
@@ -327,7 +326,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            throw new WSException(BundleUtils.getMessage(bundle, "UNSUPPORTED_MESSAGE_STYLE",  style));
+            throw new WSException("Unsupported message style: " + style);
          }
       }
 
@@ -385,7 +384,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "IGNORE_CHILD_TYPE",  childType));
+            log.warn("Ignore child type: " + childType);
          }
       }
 
@@ -425,7 +424,7 @@ public class EnvelopeBuilderDOM implements EnvelopeBuilder
          }
          else
          {
-            log.warn(BundleUtils.getMessage(bundle, "IGNORE_CHILD_TYPE",  childType));
+            log.warn("Ignore child type: " + childType);
          }
       }
 

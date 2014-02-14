@@ -33,9 +33,9 @@ import java.net.URL;
 
 import javax.xml.transform.stream.StreamSource;
 
-import org.jboss.ws.NativeLoggers;
+import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.ws.common.IOUtils;
+import org.jboss.wsf.common.IOUtils;
 
 /**
  * A StreamSource that can be read repeatedly. 
@@ -45,6 +45,7 @@ import org.jboss.ws.common.IOUtils;
  */
 public final class BufferedStreamSource extends StreamSource
 {
+   private static final Logger log = Logger.getLogger(BufferedStreamSource.class);
    private byte[] bytes;
    private char[] chars;
 
@@ -73,6 +74,7 @@ public final class BufferedStreamSource extends StreamSource
             }
             chars = charArrayWriter.toCharArray();
          }
+         
          //JBWS-3164:try to create InputStream from systemId
          String systemId = source.getSystemId();
          if (sourceInputStream == null && sourceReader == null && systemId != null) 
@@ -86,7 +88,7 @@ public final class BufferedStreamSource extends StreamSource
             }
             catch (Exception e)
             {
-               NativeLoggers.ROOT_LOGGER.failedToCreateInputStreamFromSystemID(systemId);
+               log.warn("Failed to create inputstream from systemId of StreamSource");
             }
          }
       }

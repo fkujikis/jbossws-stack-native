@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,21 +23,63 @@ package org.jboss.ws.core.soap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.soap.MimeHeaders;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
+
+import org.jboss.logging.Logger;
+import org.jboss.remoting.marshal.UnMarshaller;
+import org.jboss.remoting.transport.http.HTTPMetadataConstants;
 import org.jboss.ws.WSException;
-import org.jboss.ws.core.client.UnMarshaller;
-import org.jboss.ws.core.client.transport.NettyClient;
 
 public class OneWayUnMarshallerHTTP implements UnMarshaller
 {
-   public Object read(InputStream inputStream, Map<String, Object> metadata, Map<String, Object> headers) throws IOException
+   private static Logger log = Logger.getLogger(OneWayUnMarshallerHTTP.class);
+
+   public Object read(InputStream inputStream, Map metadata) throws IOException, ClassNotFoundException
    {
-      Integer resCode = (Integer)metadata.get(NettyClient.RESPONSE_CODE);
+      Integer resCode = (Integer)metadata.get(HTTPMetadataConstants.RESPONSE_CODE);
       if(!resCode.equals(200))
       {
          throw new WSException("One-way operation returned invalid HTTP response: " + resCode);
       }
       return null;
+   }
+
+   public UnMarshaller cloneUnMarshaller() throws CloneNotSupportedException
+   {
+      return new OneWayUnMarshallerHTTP();
+   }
+
+   public void setClassLoader(ClassLoader cl)
+   {
+      //noop
+   }
+
+   private MimeHeaders getMimeHeaders(Map metadata)
+   {
+      log.debug("getMimeHeaders from: " + metadata);
+
+      MimeHeaders headers = new MimeHeaders();
+      Iterator i = metadata.keySet().iterator();
+      while (i.hasNext())
+      {
+         String key = (String)i.next();
+         Object value = metadata.get(key);
+         if (key != null && value instanceof List)
+         {
+            for (Object listValue : (List)value)
+            {
+               headers.addHeader(key, listValue.toString());
+            }
+         }
+      }
+      return headers;
    }
 }

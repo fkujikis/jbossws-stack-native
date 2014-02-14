@@ -28,11 +28,14 @@ import java.util.HashMap;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.logging.Logger;
+import org.jboss.util.NotImplementedException;
+import org.jboss.ws.WSException;
+import org.jboss.ws.extensions.xop.jaxrpc.XOPMarshallerImpl;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaXmlTypeMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.VariableMapping;
+import org.jboss.wsf.common.JavaUtils;
 import org.jboss.xb.binding.Constants;
 import org.jboss.xb.binding.sunday.marshalling.MarshallerImpl;
 import org.jboss.xb.binding.sunday.unmarshalling.SchemaBinding;
@@ -47,6 +50,10 @@ import org.xml.sax.ContentHandler;
  * @since 05-Jul-2006
  */
 public class JBossXBMarshallerImpl implements JBossXBMarshaller {
+
+   // provide logging
+   private static final Logger log = Logger.getLogger(JBossXBMarshallerImpl.class);
+
    // The marshaller properties
    private HashMap properties = new HashMap();
 
@@ -106,7 +113,7 @@ public class JBossXBMarshallerImpl implements JBossXBMarshaller {
                   if (variableMappings != null)
                   {
                      String clsName = javaXmlMapping.getJavaType();
-                     Class cls = JavaUtils.loadJavaType(clsName, SecurityActions.getContextClassLoader());
+                     Class cls = JavaUtils.loadJavaType(clsName, Thread.currentThread().getContextClassLoader());
                      QName clsQName = javaXmlMapping.getRootTypeQName();
 
                      if (clsQName != null)
@@ -133,6 +140,7 @@ public class JBossXBMarshallerImpl implements JBossXBMarshaller {
 
          // the actual marshalling
          SchemaBinding schemaBinding = JBossXBSupport.getOrCreateSchemaBinding(properties);
+         schemaBinding.setXopMarshaller(new XOPMarshallerImpl());
          delegate.marshal(schemaBinding, null, obj, writer);
       }
       catch (RuntimeException e)
@@ -150,7 +158,7 @@ public class JBossXBMarshallerImpl implements JBossXBMarshaller {
     */
    public void marshal(Object obj, ContentHandler handler)
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 
    /**
@@ -158,7 +166,7 @@ public class JBossXBMarshallerImpl implements JBossXBMarshaller {
     */
    public void marshal(Object obj, Node node)
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 
    /**
@@ -176,7 +184,7 @@ public class JBossXBMarshallerImpl implements JBossXBMarshaller {
    public Object getProperty(String name)
    {
       if (name == null)
-         throw NativeMessages.MESSAGES.illegalNullArgument("name");
+         throw new IllegalArgumentException("name parameter is null");
 
       return properties.get(name);
    }
@@ -189,7 +197,7 @@ public class JBossXBMarshallerImpl implements JBossXBMarshaller {
    public void setProperty(String name, Object value)
    {
       if (name == null)
-         throw NativeMessages.MESSAGES.illegalNullArgument("name");
+         throw new IllegalArgumentException("name parameter is null");
 
       properties.put(name, value);
    }
@@ -199,7 +207,7 @@ public class JBossXBMarshallerImpl implements JBossXBMarshaller {
     */
    public Node getNode(Object contentTree)
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 
    /**
@@ -208,16 +216,16 @@ public class JBossXBMarshallerImpl implements JBossXBMarshaller {
    private void assertRequiredProperties()
    {
       if (getProperty(JBossXBConstants.JBXB_SCHEMA_READER) == null && getProperty(JBossXBConstants.JBXB_XS_MODEL) == null)
-         throw NativeMessages.MESSAGES.cannotFindRequiredProperty(JBossXBConstants.JBXB_XS_MODEL);
+         throw new WSException("Cannot find required property: " + JBossXBConstants.JBXB_XS_MODEL);
 
       if (getProperty(JBossXBConstants.JBXB_JAVA_MAPPING) == null)
-         throw NativeMessages.MESSAGES.cannotFindRequiredProperty(JBossXBConstants.JBXB_JAVA_MAPPING);
+         throw new WSException("Cannot find required property: " + JBossXBConstants.JBXB_JAVA_MAPPING);
 
       QName xmlName = (QName)getProperty(JBossXBConstants.JBXB_ROOT_QNAME);
       if (xmlName == null)
-         throw NativeMessages.MESSAGES.cannotFindRequiredProperty(JBossXBConstants.JBXB_ROOT_QNAME);
+         throw new WSException("Cannot find required property: " + JBossXBConstants.JBXB_ROOT_QNAME);
 
       if (xmlName.getNamespaceURI().length() > 0 && xmlName.getPrefix().length() == 0)
-         throw NativeMessages.MESSAGES.mustBePrefixQualified(xmlName);
+         throw new IllegalArgumentException("The given root element name must be prefix qualified: " + xmlName);
    }
 }

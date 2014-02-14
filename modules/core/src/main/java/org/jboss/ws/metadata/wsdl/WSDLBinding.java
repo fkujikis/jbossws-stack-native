@@ -26,8 +26,8 @@ import java.util.ArrayList;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.ws.NativeLoggers;
-import org.jboss.ws.NativeMessages;
+import org.jboss.logging.Logger;
+import org.jboss.ws.WSException;
 
 /**
  * A Binding component describes a concrete message format and transmission protocol which may be used
@@ -42,6 +42,9 @@ public class WSDLBinding extends Extendable implements Serializable
 {
    private static final long serialVersionUID = -7699953670233209811L;
 
+   // provide logging
+   private static final Logger log = Logger.getLogger(WSDLBinding.class);
+   
    // The parent WSDL definitions element.
    private final WSDLDefinitions wsdlDefinitions;
 
@@ -85,6 +88,7 @@ public class WSDLBinding extends Extendable implements Serializable
 
    public void setInterfaceName(QName interfaceName)
    {
+      log.trace("setInterfaceName: " + name);
       this.interfaceName = interfaceName;
    }
 
@@ -92,7 +96,7 @@ public class WSDLBinding extends Extendable implements Serializable
    {
       WSDLInterface wsdlInterface = wsdlDefinitions.getInterface(interfaceName);
       if (wsdlInterface == null)
-         throw NativeMessages.MESSAGES.cannotGetInterfaceForName(interfaceName);
+         throw new WSException("Cannot get interface for name: " + interfaceName);
       return wsdlInterface;
    }
 
@@ -133,13 +137,13 @@ public class WSDLBinding extends Extendable implements Serializable
          if (aux.getRef().equals(qname))
          {
             if (wsdlBindingOperation != null)
-               NativeLoggers.ROOT_LOGGER.multipleBindingOperationRefs(qname);
+               log.warn("Multiple binding operations reference: " + qname);
             wsdlBindingOperation = aux;
          }
       }
       
       if (wsdlBindingOperation == null)
-         NativeLoggers.ROOT_LOGGER.cannotObtainBindingOperationForRef(qname);
+         log.warn("Cannot obtain binding operation for ref: " + qname);
          
       return wsdlBindingOperation;
    }

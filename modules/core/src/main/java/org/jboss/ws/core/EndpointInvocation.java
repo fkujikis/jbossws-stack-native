@@ -37,10 +37,7 @@ import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.SOAPException;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
-import org.jboss.ws.NativeMessages;
 import org.jboss.ws.WSException;
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.core.jaxrpc.ParameterWrapping;
 import org.jboss.ws.core.soap.SOAPContentElement;
 import org.jboss.ws.core.utils.HolderUtils;
@@ -49,6 +46,7 @@ import org.jboss.ws.core.utils.MimeUtils.ByteArrayConverter;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.WrappedParameter;
+import org.jboss.wsf.common.JavaUtils;
 import org.w3c.dom.Element;
 
 /** A web service invocation.
@@ -166,7 +164,7 @@ public class EndpointInvocation
       paramValue = transformPayloadValue(paramMetaData, paramValue);
       if (paramValue != null)
       {
-         Class<?> valueType = paramValue.getClass();
+         Class valueType = paramValue.getClass();
          if (HolderUtils.isHolderType(valueType))
          {
             paramValue = HolderUtils.getHolderValue(paramValue);
@@ -174,12 +172,12 @@ public class EndpointInvocation
       }
       return paramValue;
    }
-
+  
    public void setReturnValue(Object value)
    {
       ParameterMetaData retMetaData = opMetaData.getReturnParameter();
       if (value != null && retMetaData == null)
-         throw NativeMessages.MESSAGES.operationDoesNotHaveReturnValue(opMetaData.getQName());
+         throw new WSException("Operation does not have a return value: " + opMetaData.getQName());
 
       if (log.isDebugEnabled())
          log.debug("setReturnValue: " + getTypeName(value));
@@ -188,7 +186,8 @@ public class EndpointInvocation
 
    public Object getReturnValue()
    {
-      log.debug("getReturnValue");
+      if (log.isDebugEnabled())
+         log.debug("getReturnValue");
       Object paramValue = returnValue;
       ParameterMetaData paramMetaData = opMetaData.getReturnParameter();
       if (paramMetaData != null)
@@ -213,7 +212,7 @@ public class EndpointInvocation
       String javaName = paramMetaData.getJavaTypeName();
 
       if (xmlType == null)
-         throw NativeMessages.MESSAGES.cannotObtainXmlType(xmlName);
+         throw new IllegalStateException("Cannot obtain xml type for: [xmlName=" + xmlName + ",javaName=" + javaName + "]");
 
       Object retValue = paramValue;
 
@@ -222,7 +221,7 @@ public class EndpointInvocation
       {
          AttachmentPart part = (AttachmentPart)paramValue;
 
-         Set<String> mimeTypes = paramMetaData.getMimeTypes();
+         Set mimeTypes = paramMetaData.getMimeTypes();
          if (DataHandler.class.isAssignableFrom(javaType) && !javaType.equals(Object.class))
          {
             DataHandler handler = part.getDataHandler();
@@ -232,7 +231,7 @@ public class EndpointInvocation
             // Conformance (MIME type mismatch): On receipt of a message where the MIME type of a part does not
             // match that described in the WSDL an implementation SHOULD throw a WebServiceException.
             if (mimeTypes != null && !MimeUtils.isMemberOf(mimeType, mimeTypes))
-               NativeLoggers.ROOT_LOGGER.mimeTypeNotAllowed(mimeType, xmlName, mimeTypes);
+               log.warn("Mime type " + mimeType + " not allowed for parameter " + xmlName + " allowed types are " + mimeTypes);
 
             retValue = part.getDataHandler();
          }
@@ -242,7 +241,7 @@ public class EndpointInvocation
             String mimeType = MimeUtils.getBaseMimeType(part.getContentType());
 
             if (mimeTypes != null && !MimeUtils.isMemberOf(mimeType, mimeTypes))
-               throw NativeMessages.MESSAGES.mimeTypeNotAllowed(mimeType, xmlName, mimeTypes);
+               throw new SOAPException("Mime type " + mimeType + " not allowed for parameter " + xmlName + " allowed types are " + mimeTypes);
 
             if (retValue != null)
             {
@@ -256,7 +255,7 @@ public class EndpointInvocation
                   }
                   else
                   {
-                     throw NativeMessages.MESSAGES.javaTypeIsNotAssignable(javaType.getName(), valueType.getName());
+                     throw new SOAPException("javaType [" + javaType.getName() + "] is not assignable from attachment content: " + valueType.getName());
                   }
                }
             }
@@ -294,7 +293,7 @@ public class EndpointInvocation
             continue;
 
          QName xmlName = paramMetaData.getXmlName();
-         Class<?> javaType = paramMetaData.getJavaType();
+         Class javaType = paramMetaData.getJavaType();
 
          Object value;
          if (opMetaData.isDocumentWrapped() && !paramMetaData.isInHeader() && !paramMetaData.isSwA())
@@ -306,7 +305,7 @@ public class EndpointInvocation
             value = inputParams[index];
             if (value != null)
             {
-               Class<?> inputType = value.getClass();
+               Class inputType = value.getClass();
 
                if (HolderUtils.isHolderType(inputType))
                {
@@ -318,10 +317,10 @@ public class EndpointInvocation
 
                // Verify that the java type matches a registered xmlType
                // Attachments are skipped because they don't use type mapping
-               if (value != null && !paramMetaData.isSwA())
+               if (value != null && !paramMetaData.isSwA() && !paramMetaData.isXOP())
                {
                   if (JavaUtils.isAssignableFrom(javaType, inputType) == false)
-                     throw NativeMessages.MESSAGES.parameterNotAssignable(javaType, inputType);
+                     throw new WSException("Parameter '" + javaType + "' not assignable from: " + inputType);
                }
             }
          }
@@ -337,7 +336,7 @@ public class EndpointInvocation
    {
       Object retValue = paramValue;
       Method method = opMetaData.getJavaMethod();
-      Class<?>[] targetParameterTypes = method.getParameterTypes();
+      Class[] targetParameterTypes = method.getParameterTypes();
 
       if (opMetaData.isDocumentWrapped() && !paramMetaData.isInHeader() && !paramMetaData.isSwA() && !paramMetaData.isMessageType())
       {
@@ -348,7 +347,7 @@ public class EndpointInvocation
       {
          // Replace INOUT and OUT parameters by their respective holder values
          int index = paramMetaData.getIndex();
-         Class<?> targetParameterType = targetParameterTypes[index];
+         Class targetParameterType = targetParameterTypes[index];
 
          if (paramMetaData.getMode() == ParameterMode.INOUT || paramMetaData.getMode() == ParameterMode.OUT)
          {
@@ -360,9 +359,9 @@ public class EndpointInvocation
 
          if (retValue != null)
          {
-            Class<?> valueType = retValue.getClass();
+            Class valueType = retValue.getClass();
             if (JavaUtils.isAssignableFrom(targetParameterType, valueType) == false)
-               throw NativeMessages.MESSAGES.parameterNotAssignable(targetParameterType.getName(), getTypeName(retValue));
+               throw new WSException("Parameter " + targetParameterType.getName() + " is not assignable from: " + getTypeName(retValue));
 
             if (valueType.isArray())
                retValue = JavaUtils.syncArray(retValue, targetParameterType);
@@ -374,7 +373,7 @@ public class EndpointInvocation
       }
    }
 
-   private void syncOutWrappedParameters(Class<?>[] targetParameterTypes, Object[] payload)
+   private void syncOutWrappedParameters(Class[] targetParameterTypes, Object[] payload)
    {
       ParameterMetaData returnMetaData = opMetaData.getReturnParameter();
       if (returnMetaData != null)
@@ -393,7 +392,7 @@ public class EndpointInvocation
             }
             catch (Exception e)
             {
-               throw new WSException(e);
+               throw new WSException("Could not add output param: " + param.getName(), e);
 
             }
          }

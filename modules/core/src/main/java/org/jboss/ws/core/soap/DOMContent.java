@@ -21,13 +21,10 @@
  */
 package org.jboss.ws.core.soap;
 
-import java.util.ResourceBundle;
-
+import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.core.soap.BundleUtils;
-import org.jboss.ws.core.soap.utils.XMLFragment;
 
 /**
  * Represents the DOM_VALID state of an {@link SOAPContentElement}.<br>
@@ -37,8 +34,9 @@ import org.jboss.ws.core.soap.utils.XMLFragment;
  */
 public class DOMContent extends SOAPContent
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(DOMContent.class);
    private static Logger log = Logger.getLogger(DOMContent.class);
+
+   private Source payload;
 
    protected DOMContent(SOAPContentElement container)
    {
@@ -59,8 +57,7 @@ public class DOMContent extends SOAPContent
          log.debug("getXMLFragment from DOM");
          DOMSource domSource = new DOMSource(container);
          XMLFragment fragment = new XMLFragment(domSource);
-         if (log.isDebugEnabled())
-            log.debug("xmlFragment: " + fragment);
+         log.debug("xmlFragment: " + fragment);
 
          SOAPContent xmlValid = new XMLContent(container);
          xmlValid.setXMLFragment(fragment);
@@ -83,29 +80,42 @@ public class DOMContent extends SOAPContent
       }
       else
       {
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "ILLEGAL_STATE_REQUESTED",  nextState));
+         throw new IllegalArgumentException("Illegal state requested: " + nextState);
       }
 
       return next;
    }
 
+   public Source getPayload()
+   {
+      return new DOMSource(container);
+   }
+
+   public void setPayload(Source source)
+   {
+      if (!(source instanceof DOMSource))
+         throw new IllegalArgumentException("DOMSource expected, but got: " + source);
+      
+      this.payload = source;
+   }
+
    public XMLFragment getXMLFragment()
    {
-      throw new IllegalStateException(BundleUtils.getMessage(bundle, "XMLFRAGMENT_NOT_AVAILABLE"));
+      throw new IllegalStateException("XMLFragment not available");
    }
 
    public void setXMLFragment(XMLFragment xmlFragment)
    {
-      throw new IllegalStateException(BundleUtils.getMessage(bundle, "XMLFRAGMENT_NOT_AVAILABLE"));
+      throw new IllegalStateException("XMLFragment not available");
    }
 
    public Object getObjectValue()
    {
-      throw new IllegalStateException(BundleUtils.getMessage(bundle, "OBJECT_VALUE_NOT_AVAILABLE"));
+      throw new IllegalStateException("Object value not available");
    }
 
    public void setObjectValue(Object objValue)
    {
-      throw new IllegalStateException(BundleUtils.getMessage(bundle, "OBJECT_VALUE_NOT_AVAILABLE"));
+      throw new IllegalStateException("Object value not available");
    }
 }
