@@ -21,10 +21,13 @@
  */
 package org.jboss.ws.core;
 
-import static org.jboss.ws.NativeMessages.MESSAGES;
-
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,27 +37,36 @@ import javax.xml.rpc.ParameterMode;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.ProtocolException;
+import javax.xml.ws.WebServiceException;
+import javax.xml.ws.addressing.AddressingProperties;
+import javax.xml.ws.addressing.JAXWSAConstants;
+import javax.xml.ws.handler.MessageContext;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeLoggers;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.ResourceLoaderAdapter;
+import org.jboss.ws.Constants;
+import org.jboss.ws.WSException;
 import org.jboss.ws.core.DirectionHolder.Direction;
 import org.jboss.ws.core.client.EndpointInfo;
 import org.jboss.ws.core.client.RemoteConnection;
 import org.jboss.ws.core.client.RemoteConnectionFactory;
-import org.jboss.ws.core.client.transport.NettyClient;
 import org.jboss.ws.core.jaxrpc.ParameterWrapping;
-import org.jboss.ws.core.soap.utils.MessageContextAssociation;
-import org.jboss.ws.core.soap.utils.Style;
+import org.jboss.ws.core.soap.MessageContextAssociation;
+import org.jboss.ws.core.soap.Style;
+import org.jboss.ws.core.soap.UnboundHeader;
 import org.jboss.ws.core.utils.HolderUtils;
+import org.jboss.ws.extensions.addressing.AddressingConstantsImpl;
+import org.jboss.ws.extensions.xop.XOPContext;
 import org.jboss.ws.metadata.umdm.ClientEndpointMetaData;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.ws.metadata.umdm.ParameterMetaData;
 import org.jboss.ws.metadata.umdm.ServiceMetaData;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
+import org.jboss.ws.metadata.umdm.EndpointMetaData.Type;
+import org.jboss.ws.metadata.wsse.WSSecurityConfigFactory;
+import org.jboss.ws.metadata.wsse.WSSecurityConfiguration;
+import org.jboss.wsf.common.ResourceLoaderAdapter;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 
@@ -77,8 +89,12 @@ public abstract class CommonClient implements StubExt, HeaderSource
    protected QName operationName;
    // The binding provider
    protected CommonBindingProvider bindingProvider;
+   // A Map<QName,UnboundHeader> of header entries
+   private Map<QName, UnboundHeader> unboundHeaders = new LinkedHashMap<QName, UnboundHeader>();
    // A List<AttachmentPart> of attachment parts set through the proxy
    private List<AttachmentPart> attachmentParts = new ArrayList<AttachmentPart>();
+   // The WS-Security config
+   private String securityConfig;
 
    /** Create a call that needs to be configured manually
     */
@@ -115,7 +131,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
          {
             epMetaData = serviceMetaData.getEndpoint(portName);
             if (epMetaData == null)
-               throw MESSAGES.cannotObtainEndpoint(portName);
+               throw new WSException("Cannot find endpoint for name: " + portName);
          }
 
          if (epMetaData != null)
@@ -160,6 +176,9 @@ public abstract class CommonClient implements StubExt, HeaderSource
     */
    public OperationMetaData getOperationMetaData()
    {
+      if (operationName == null)
+         throw new WSException("Operation name not set");
+
       return getOperationMetaData(operationName);
    }
 
@@ -168,7 +187,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
    public OperationMetaData getOperationMetaData(QName opName)
    {
       if (opName == null)
-         throw MESSAGES.illegalNullArgument("opName");
+         throw new IllegalArgumentException("Cannot get OperationMetaData for null");
 
       EndpointMetaData epMetaData = getEndpointMetaData();
       OperationMetaData opMetaData = epMetaData.getOperation(opName);
@@ -179,7 +198,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
       }
 
       if (opMetaData == null)
-         throw MESSAGES.cannotObtainOperationMetaData(opName);
+         throw new WSException("Cannot obtain operation meta data for: " + opName);
 
       return opMetaData;
    }
@@ -189,7 +208,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
    {
       if (epMetaData == null)
       {
-         ClassLoader ctxLoader = SecurityActions.getContextClassLoader();
+         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
          UnifiedVirtualFile vfsRoot = new ResourceLoaderAdapter();
          UnifiedMetaData wsMetaData = new UnifiedMetaData(vfsRoot);
          wsMetaData.setClassLoader(ctxLoader);
@@ -199,7 +218,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
 
          QName anonQName = new QName(Constants.NS_JBOSSWS_URI, "Anonymous");
          QName anonPort = new QName(Constants.NS_JBOSSWS_URI, "AnonymousPort");
-         epMetaData = new ClientEndpointMetaData(serviceMetaData, anonPort, anonQName);
+         epMetaData = new ClientEndpointMetaData(serviceMetaData, anonPort, anonQName, Type.JAXRPC);
          epMetaData.setStyle(Style.RPC);
 
          serviceMetaData.addEndpoint(epMetaData);
@@ -240,18 +259,14 @@ public abstract class CommonClient implements StubExt, HeaderSource
    {
       if (opName.equals(operationName) == false)
          setOperationName(opName);
-
       OperationMetaData opMetaData = getOperationMetaData();
       boolean oneway = forceOneway || opMetaData.isOneWay();
-
       // Associate a message context with the current thread
       CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
-      msgContext.setEndpointMetaData(getEndpointMetaData());
       msgContext.setOperationMetaData(opMetaData);
 
-      Map<String, Object> requestCtx = getRequestContext();
       // Copy properties to the message context
-      msgContext.putAll(requestCtx);
+      msgContext.putAll(getRequestContext());
 
       // The direction of the message
       DirectionHolder direction = new DirectionHolder(Direction.OutBound);
@@ -271,11 +286,26 @@ public abstract class CommonClient implements StubExt, HeaderSource
          EndpointInvocation epInv = createEndpointInvocation(opMetaData);
          epInv.initInputParams(inputParams);
 
+         if (opMetaData.getEndpointMetaData().getType() != Type.JAXRPC && opMetaData.isRPCLiteral()
+               && epInv.getRequestParamNames() != null)
+         {
+            for (QName qname : epInv.getRequestParamNames())
+            {
+               ParameterMetaData paramMetaData = opMetaData.getParameter(qname);
+               if ((paramMetaData.getMode().equals(ParameterMode.IN) || paramMetaData.getMode().equals(ParameterMode.INOUT)) 
+            		   && epInv.getRequestParamValue(qname) == null)
+               {
+                  throw new WebServiceException("The RPC/Literal Operation [" + opMetaData.getQName()
+                        + "] parameters can not be null");
+               }
+            }
+         }
+         
          // Set the required outbound properties
          setOutboundContextProperties();
 
          // Bind the request message
-         SOAPMessage reqMessage = binding.bindRequestMessage(opMetaData, epInv);
+         MessageAbstraction reqMessage = binding.bindRequestMessage(opMetaData, epInv, unboundHeaders);
 
          // Add possible attachment parts
          addAttachmentParts(reqMessage);
@@ -285,28 +315,54 @@ public abstract class CommonClient implements StubExt, HeaderSource
          handlerPass = handlerPass && callRequestHandlerChain(portName, handlerType[1]);
          handlerPass = handlerPass && callRequestHandlerChain(portName, handlerType[2]);
          
+         XOPContext.visitAndRestoreXOPData();
+
          // Handlers might have replaced the message
-         reqMessage = msgContext.getSOAPMessage();
+         reqMessage = msgContext.getMessageAbstraction();
 
          if (handlerPass)
          {
             String targetAddress = getTargetEndpointAddress();
 
+            // Fall back to wsa:To
+            AddressingProperties addrProps = (AddressingProperties)msgContext.get(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND);
+            if (targetAddress == null && addrProps != null && addrProps.getTo() != null)
+            {
+               AddressingConstantsImpl ADDR = new AddressingConstantsImpl();
+               String wsaTo = addrProps.getTo().getURI().toString();
+               if (wsaTo.equals(ADDR.getAnonymousURI()) == false)
+               {
+                  try
+                  {
+                     URL wsaToURL = new URL(wsaTo);
+                     log.debug("Sending request to addressing destination: " + wsaToURL);
+                     targetAddress = wsaToURL.toExternalForm();
+                  }
+                  catch (MalformedURLException ex)
+                  {
+                     log.debug("Not a valid URL: " + wsaTo);
+                  }
+               }
+            }
+
             // The endpoint address must be known beyond this point
             if (targetAddress == null)
-               throw MESSAGES.targetEndpointAddressNotSet();
+               throw new WSException("Target endpoint address not set");
 
-            Map<String, Object> callProps = new HashMap<String, Object>(requestCtx);
+            Map<String, Object> callProps = new HashMap<String, Object>(getRequestContext());
             EndpointInfo epInfo = new EndpointInfo(epMetaData, targetAddress, callProps);
-            boolean maintainSession = shouldMaintainSession();
-            if (maintainSession)
+            if (shouldMaintainSession())
                addSessionInfo(reqMessage, callProps);
             
-            RemoteConnection remoteConnection = new RemoteConnectionFactory().getRemoteConnection(epInfo);
-            SOAPMessage resMessage = remoteConnection.invoke(reqMessage, epInfo, oneway);
+            propagateRequestHeaders(reqMessage, getRequestContext());
 
-            if (maintainSession)
-               saveSessionInfo(callProps, requestCtx);
+            RemoteConnection remoteConnection = new RemoteConnectionFactory().getRemoteConnection(epInfo);
+            MessageAbstraction resMessage = remoteConnection.invoke(reqMessage, epInfo, oneway);
+
+            propagateResponseHeaders(callProps, getRequestContext());
+
+            if (shouldMaintainSession())
+               saveSessionInfo(callProps, getRequestContext());
 
             // At pivot the message context might be replaced
             msgContext = processPivotInternal(msgContext, direction);
@@ -315,7 +371,7 @@ public abstract class CommonClient implements StubExt, HeaderSource
             msgContext.put(CommonMessageContext.REMOTING_METADATA, callProps);
 
             // Associate response message with message context
-            msgContext.setSOAPMessage(resMessage);
+            msgContext.setMessageAbstraction(resMessage);
          }
 
          setInboundContextProperties();
@@ -336,8 +392,8 @@ public abstract class CommonClient implements StubExt, HeaderSource
             if (handlerPass)
             {
                // unbind the return values
-               SOAPMessage resMessage = msgContext.getSOAPMessage();
-               binding.unbindResponseMessage(opMetaData, resMessage, epInv);
+               MessageAbstraction resMessage = msgContext.getMessageAbstraction();
+               binding.unbindResponseMessage(opMetaData, resMessage, epInv, unboundHeaders);
             }
 
             handlerPass = handlerPass && callResponseHandlerChain(portName, handlerType[1]);
@@ -349,27 +405,35 @@ public abstract class CommonClient implements StubExt, HeaderSource
             if (msgContext.isModified())
             {
                log.debug("Handler modified body payload, unbind message again");
-               SOAPMessage resMessage = msgContext.getSOAPMessage();
-               binding.unbindResponseMessage(opMetaData, resMessage, epInv);
+               MessageAbstraction resMessage = msgContext.getMessageAbstraction();
+               binding.unbindResponseMessage(opMetaData, resMessage, epInv, unboundHeaders);
             }
-
             retObj = syncOutputParams(inputParams, epInv);
          }
-
+         
          return retObj;
       }
       catch (Exception ex)
       {
-    	  NativeLoggers.ROOT_LOGGER.exceptionWhilePreparingForInvocation(ex);
-    	  // Reverse the message direction
-    	  processPivotInternal(msgContext, direction);
-    	  if (faultType[2] != null)
-    		  callFaultHandlerChain(portName, faultType[2], ex);
-    	  if (faultType[1] != null)
-    		  callFaultHandlerChain(portName, faultType[1], ex);
-    	  if (faultType[0] != null)
-    		  callFaultHandlerChain(portName, faultType[0], ex);
-    	  throw ex;
+         Boolean isOutbound = (Boolean)msgContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
+         if (oneway && isOutbound && ex instanceof ProtocolException)
+         {
+            //swallow the outbound SOAPException threw in hanlders
+            return null;
+         }
+         else
+         {
+            log.error("Exception caught while (preparing for) performing the invocation: ", ex);
+            // Reverse the message direction
+            processPivotInternal(msgContext, direction);
+            if (faultType[2] != null)
+               callFaultHandlerChain(portName, faultType[2], ex);
+            if (faultType[1] != null)
+               callFaultHandlerChain(portName, faultType[1], ex);
+            if (faultType[0] != null)
+               callFaultHandlerChain(portName, faultType[0], ex);
+            throw ex;
+         } 
       }
       finally
       {
@@ -379,7 +443,11 @@ public abstract class CommonClient implements StubExt, HeaderSource
       }
    }
    
-   @SuppressWarnings({"unchecked", "rawtypes"})
+   private void propagateResponseHeaders(Map<String, Object> remotingMetadata, Map<String, Object> responseContext)
+   {
+      responseContext.put(MessageContext.HTTP_RESPONSE_HEADERS, remotingMetadata.get("ResponseHeaders"));
+   }
+
    private void saveSessionInfo(Map<String, Object> remotingMetadata, Map<String, Object> requestContext)
    {
       Map<String, String> cookies = (Map)requestContext.get(SESSION_COOKIES);
@@ -389,43 +457,38 @@ public abstract class CommonClient implements StubExt, HeaderSource
          requestContext.put(SESSION_COOKIES, cookies);
       }
 
-      Map<String, Object> headers = (Map<String, Object>)remotingMetadata.get(NettyClient.RESPONSE_HEADERS);
-      if (headers != null)
+      List<String> setCookies = new ArrayList<String>();
+
+      List<String> setCookies1 = (List)remotingMetadata.get("Set-Cookie");
+      if (setCookies1 != null)
+         setCookies.addAll(setCookies1);
+
+      List<String> setCookies2 = (List)remotingMetadata.get("Set-Cookie2");
+      if (setCookies2 != null)
+         setCookies.addAll(setCookies2);
+
+      // TODO: The parsing here should be improved to be fully compliant with the RFC
+      for (String setCookie : setCookies)
       {
-         List<String> setCookies = new ArrayList<String>();
+         int index = setCookie.indexOf(';');
+         if (index == -1)
+            continue;
 
-         List<String> setCookies1 = (List)headers.get("Set-Cookie");
-         if (setCookies1 != null)
-            setCookies.addAll(setCookies1);
+         String pair = setCookie.substring(0, index);
+         index = pair.indexOf('=');
+         if (index == -1)
+            continue;
 
-         List<String> setCookies2 = (List)headers.get("Set-Cookie2");
-         if (setCookies2 != null)
-            setCookies.addAll(setCookies2);
+         String name = pair.substring(0, index);
+         String value = pair.substring(index + 1);
 
-         // TODO: The parsing here should be improved to be fully compliant with the RFC
-         for (String setCookie : setCookies)
-         {
-            int index = setCookie.indexOf(';');
-            if (index == -1)
-               continue;
-
-            String pair = setCookie.substring(0, index);
-            index = pair.indexOf('=');
-            if (index == -1)
-               continue;
-
-            String name = pair.substring(0, index);
-            String value = pair.substring(index + 1);
-
-            cookies.put(name, value);
-         }
+         cookies.put(name, value);
       }
    }
 
-   @SuppressWarnings("unchecked")
-   protected void addSessionInfo(SOAPMessage reqMessage, Map<String, Object> callProperties)
+   protected void addSessionInfo(MessageAbstraction reqMessage, Map<String, Object> callProperties)
    {
-      Map<String, String> cookies = (Map<String, String>)callProperties.get(SESSION_COOKIES);
+      Map<String, String> cookies = (Map)callProperties.get(SESSION_COOKIES);
       if (cookies != null)
       {
          for (Map.Entry<String, String> cookie : cookies.entrySet())
@@ -435,6 +498,34 @@ public abstract class CommonClient implements StubExt, HeaderSource
       }
    }
    
+   private void propagateRequestHeaders(MessageAbstraction reqMessage, Map<String, Object> callProperties)
+   {
+      Map<String, List<String>> requestHeaders = (Map<String, List<String>>)callProperties.get(MessageContext.HTTP_REQUEST_HEADERS);
+      if (requestHeaders != null)
+      {
+         for (Map.Entry<String, List<String>> header : requestHeaders.entrySet())
+         {
+            final String key = header.getKey();
+            final List<String> values = header.getValue();
+            
+            if (key != null)
+            {
+               final StringBuilder sb = new StringBuilder();
+               for (int i = 0; i < values.size(); i++)
+               {
+                  boolean addLWS = (i != (values.size() - 1)); 
+                  sb.append(values.get(i));
+                  if (addLWS)
+                  {
+                     sb.append("\r\n ");
+                  }
+               }
+               reqMessage.getMimeHeaders().addHeader(key, sb.toString());
+            }
+         }
+      }
+   }
+
    private CommonMessageContext processPivotInternal(CommonMessageContext msgContext, DirectionHolder direction)
    {
       if (direction.getDirection() == Direction.OutBound)
@@ -445,13 +536,11 @@ public abstract class CommonClient implements StubExt, HeaderSource
       return msgContext;
    }
 
-   protected void addAttachmentParts(SOAPMessage reqMessage)
+   protected void addAttachmentParts(MessageAbstraction reqMessage)
    {
-      boolean debugEnabled = log.isDebugEnabled();
       for (AttachmentPart part : attachmentParts)
       {
-         if (debugEnabled)
-            log.debug("Adding attachment part: " + part.getContentId());
+         log.debug("Adding attachment part: " + part.getContentId());
          reqMessage.addAttachmentPart(part);
       }
    }
@@ -476,6 +565,10 @@ public abstract class CommonClient implements StubExt, HeaderSource
          retValue = epInv.getReturnValue();
          if (opMetaData.isDocumentWrapped() && retMetaData.isMessageType() == false)
             retValue = ParameterWrapping.unwrapResponseParameters(retMetaData, retValue, inParams);
+         if (opMetaData.getEndpointMetaData().getType() != Type.JAXRPC && opMetaData.isRPCLiteral() && retValue == null)
+            throw new WebServiceException("The RPC/Literal Operation [" + opMetaData.getQName()
+                  + "] return value can not be null, it's WS-BP:2211 violation)");
+            
       }
 
       // Set the holder values for INOUT parameters
@@ -488,6 +581,15 @@ public abstract class CommonClient implements StubExt, HeaderSource
          {
             QName xmlName = paramMetaData.getXmlName();
             Object value = epInv.getResponseParamValue(xmlName);
+            //JBWS-2969:Check if reponse parameter or return value is null
+            if (opMetaData.getEndpointMetaData().getType() != Type.JAXRPC && opMetaData.isRPCLiteral()) 
+            {
+            	if (value == null) 
+            	{
+                    throw new WebServiceException("The RPC/Literal Operation [" + opMetaData.getQName()
+                            + "] response parameter value can not be null, it's WS-BP:2211 violation)");
+            	}
+            }
             // document/literal wrapped return value header
             if (index == -1)
             {
@@ -503,6 +605,74 @@ public abstract class CommonClient implements StubExt, HeaderSource
       }
 
       return retValue;
+   }
+
+   /**
+    * Add a header that is not bound to an input parameter.
+    * A propriatory extension, that is not part of JAXRPC.
+    *
+    * @param xmlName The XML name of the header element
+    * @param xmlType The XML type of the header element
+    */
+   public void addUnboundHeader(QName xmlName, QName xmlType, Class javaType, ParameterMode mode)
+   {
+      UnboundHeader unboundHeader = new UnboundHeader(xmlName, xmlType, javaType, mode);
+      unboundHeaders.put(xmlName, unboundHeader);
+   }
+
+   /**
+    * Get the header value for the given XML name.
+    * A propriatory extension, that is not part of JAXRPC.
+    *
+    * @param xmlName The XML name of the header element
+    * @return The header value, or null
+    */
+   public Object getUnboundHeaderValue(QName xmlName)
+   {
+      UnboundHeader unboundHeader = unboundHeaders.get(xmlName);
+      return (unboundHeader != null ? unboundHeader.getHeaderValue() : null);
+   }
+
+   /**
+    * Set the header value for the given XML name.
+    * A propriatory extension, that is not part of JAXRPC.
+    *
+    * @param xmlName The XML name of the header element
+    */
+   public void setUnboundHeaderValue(QName xmlName, Object value)
+   {
+      UnboundHeader unboundHeader = unboundHeaders.get(xmlName);
+      if (unboundHeader == null)
+         throw new IllegalArgumentException("Cannot find unbound header: " + xmlName);
+
+      unboundHeader.setHeaderValue(value);
+   }
+
+   /**
+    * Clear all registered headers.
+    * A propriatory extension, that is not part of JAXRPC.
+    */
+   public void clearUnboundHeaders()
+   {
+      unboundHeaders.clear();
+   }
+
+   /**
+    * Remove the header for the given XML name.
+    * A propriatory extension, that is not part of JAXRPC.
+    */
+   public void removeUnboundHeader(QName xmlName)
+   {
+      unboundHeaders.remove(xmlName);
+   }
+
+   /**
+    * Get an Iterator over the registered header XML names.
+    * A propriatory extension, that is not part of JAXRPC.
+    */
+   public Iterator getUnboundHeaders()
+   {
+      return unboundHeaders.keySet().iterator();
    }
 
    /**
@@ -534,7 +704,56 @@ public abstract class CommonClient implements StubExt, HeaderSource
       }
       catch (SOAPException ex)
       {
-         throw new JAXRPCException(ex);
+         throw new JAXRPCException("Cannot create attachment part");
+      }
+   }
+
+   public String getConfigName()
+   {
+      EndpointMetaData epMetaData = getEndpointMetaData();
+      return epMetaData.getConfigName();
+   }
+
+   public void setConfigName(String configName)
+   {
+      setConfigName(configName, null);
+   }
+
+   public abstract void setConfigName(String configName, String configFile);
+
+   public String getConfigFile()
+   {
+      EndpointMetaData epMetaData = getEndpointMetaData();
+      return epMetaData.getConfigFile();
+   }
+
+   public String getSecurityConfig()
+   {
+      return securityConfig;
+   }
+
+   public void setSecurityConfig(String securityConfig)
+   {
+      this.securityConfig = securityConfig;
+
+      if (securityConfig != null)
+      {
+         EndpointMetaData epMetaData = getEndpointMetaData();
+         ServiceMetaData serviceMetaData = epMetaData.getServiceMetaData();
+         if (serviceMetaData.getSecurityConfiguration() == null)
+         {
+            try
+            {
+               WSSecurityConfigFactory wsseConfFactory = WSSecurityConfigFactory.newInstance();
+               UnifiedVirtualFile vfsRoot = serviceMetaData.getUnifiedMetaData().getRootFile();
+               WSSecurityConfiguration config = wsseConfFactory.createConfiguration(vfsRoot, securityConfig);
+               serviceMetaData.setSecurityConfiguration(config);
+            }
+            catch (IOException ex)
+            {
+               WSException.rethrow("Cannot set security config", ex);
+            }
+         }
       }
    }
 }

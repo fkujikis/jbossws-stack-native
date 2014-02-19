@@ -21,8 +21,6 @@
  */
 package org.jboss.ws.core.jaxrpc.handler;
 
-import static org.jboss.ws.NativeLoggers.JAXRPC_LOGGER;
-
 import javax.xml.namespace.QName;
 import javax.xml.rpc.JAXRPCException;
 import javax.xml.rpc.handler.Handler;
@@ -112,7 +110,7 @@ public class HandlerWrapper implements Handler
    {
       if (state == DOES_NOT_EXIST)
       {
-         JAXRPC_LOGGER.handlerDoesNotExistSkippingHandleRequest(delegate);
+         log.warn("Handler is in state DOES_NOT_EXIST, skipping Handler.handleRequest for: " + delegate);
          return true;
       }
 
@@ -133,7 +131,7 @@ public class HandlerWrapper implements Handler
    {
       if (state == DOES_NOT_EXIST)
       {
-         JAXRPC_LOGGER.handlerDoesNotExistSkippingHandleResponse(delegate);
+         log.warn("Handler is in state DOES_NOT_EXIST, skipping Handler.handleResponse for: " + delegate);
          return true;
       }
 
@@ -154,7 +152,7 @@ public class HandlerWrapper implements Handler
    {
       if (state == DOES_NOT_EXIST)
       {
-         JAXRPC_LOGGER.handlerDoesNotExistSkippingHandleFault(delegate);
+         log.warn("Handler is in state DOES_NOT_EXIST, skipping Handler.handleFault for: " + delegate);
          return true;
       }
 
@@ -176,7 +174,7 @@ public class HandlerWrapper implements Handler
    {
       if ((e instanceof SOAPFaultException) == false)
       {
-         JAXRPC_LOGGER.handlerTransitionToDoesNotExist();
+         log.warn("RuntimeException in handler method, transition to DOES_NOT_EXIST");
          destroy();
       }
 

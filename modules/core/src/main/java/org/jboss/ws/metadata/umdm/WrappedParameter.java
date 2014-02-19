@@ -23,8 +23,8 @@ package org.jboss.ws.metadata.umdm;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.ws.common.JavaUtils;
 import org.jboss.ws.metadata.accessor.Accessor;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * WrappedParameter represents a document/literal wrapped parameter.
@@ -41,6 +41,8 @@ public class WrappedParameter
    private boolean holder = false;
    private int index = -2;
    private Accessor accessor;
+   private boolean swaRef;
+   private boolean xop;
    private boolean xmlList;
    private String adapter = null;
 
@@ -131,6 +133,26 @@ public class WrappedParameter
    void setAccessor(Accessor accessor)
    {
       this.accessor = accessor;
+   }
+
+   public boolean isSwaRef()
+   {
+      return swaRef;
+   }
+
+   public void setSwaRef(boolean swaRef)
+   {
+      this.swaRef = swaRef;
+   }
+
+   public boolean isXop()
+   {
+      return xop;
+   }
+
+   public void setXOP(boolean xop)
+   {
+      this.xop = xop;
    }
 
    public boolean isXmlList()

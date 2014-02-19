@@ -41,8 +41,8 @@ import junit.framework.Test;
 
 import org.jboss.wsf.test.JBossWSTest;
 import org.jboss.wsf.test.JBossWSTestSetup;
-import org.jboss.ws.common.DOMUtils;
-import org.jboss.ws.common.DOMWriter;
+import org.jboss.wsf.common.DOMUtils;
+import org.jboss.wsf.common.DOMWriter;
 import org.w3c.dom.Element;
 
 /** 
@@ -67,7 +67,7 @@ public class JBWS812TestCase extends JBossWSTest
    
    public static Test suite() throws Exception
    {
-      return new JBossWSTestSetup(JBWS812TestCase.class, "jaxrpc-jbws812.war, jaxrpc-jbws812-appclient.ear#jaxrpc-jbws812-appclient.jar");
+      return new JBossWSTestSetup(JBWS812TestCase.class, "jaxrpc-jbws812.war, jaxrpc-jbws812-client.jar");
    }
 
    /** Send the raw bytes via an HttpURLConnection
@@ -156,24 +156,15 @@ public class JBWS812TestCase extends JBossWSTest
    }
 
 
-   public void testAppclientProxy() throws Exception
+   /** Test client proxy API
+    */
+   public void testClientProxy() throws Exception
    {
-      InitialContext iniCtx = null;
-      try
-      {
-         iniCtx = getAppclientInitialContext();
-         Service service = (Service)iniCtx.lookup("java:service/TestService");
-         TestEndpoint port = (TestEndpoint)service.getPort(TestEndpoint.class);
-         
-         String resStr = port.echoSimple("\u00a0");
-         assertEquals(160, resStr.charAt(0));
-      }
-      finally
-      {
-         if (iniCtx != null)
-         {
-            iniCtx.close();
-         }
-      }
+      InitialContext iniCtx = getInitialContext();
+      Service service = (Service)iniCtx.lookup("java:comp/env/service/TestService");
+      TestEndpoint port = (TestEndpoint)service.getPort(TestEndpoint.class);
+      
+      String resStr = port.echoSimple("\u00a0");
+      assertEquals(160, resStr.charAt(0));
    }
 }

@@ -25,7 +25,6 @@ import java.util.Set;
 
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.NativeMessages;
 import org.jboss.ws.core.CommonSOAP11Binding;
 import org.jboss.ws.core.RoleSource;
 import org.jboss.ws.core.soap.SOAPFaultImpl;
@@ -41,6 +40,16 @@ public class SOAP11BindingJAXRPC extends CommonSOAP11Binding
 {
    // Delegate to JAXWS SOAP binding
    private SOAPBindingJAXRPC delegate = new SOAPBindingJAXRPC();
+
+   public SOAP11BindingJAXRPC()
+   {
+      setMTOMEnabled(false);
+   }
+
+   public SOAP11BindingJAXRPC(boolean mtomEnabled)
+   {
+      setMTOMEnabled(mtomEnabled);
+   }
 
    public void setSOAPActionHeader(OperationMetaData opMetaData, SOAPMessage reqMessage)
    {
@@ -61,7 +70,7 @@ public class SOAP11BindingJAXRPC extends CommonSOAP11Binding
    public Set<String> getRoles()
    {
       if (!(headerSource instanceof RoleSource))
-         throw NativeMessages.MESSAGES.roleSourceNotAvailable();
+         throw new IllegalStateException("RoleSource was not available");
 
       return ((RoleSource)headerSource).getRoles();
    }
