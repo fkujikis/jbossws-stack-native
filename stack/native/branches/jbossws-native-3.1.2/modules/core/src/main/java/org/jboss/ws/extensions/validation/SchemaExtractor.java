@@ -23,10 +23,10 @@ package org.jboss.ws.extensions.validation;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.File;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.ArrayList;
@@ -62,8 +62,10 @@ public class SchemaExtractor
    // provide logging
    private static Logger log = Logger.getLogger(SchemaExtractor.class);
    private static Transformer transformer = null;
-   private String path; 
-   static {
+   private URL topLevelResource; 
+
+   static 
+   {
       try
       {
          transformer = TransformerFactory.newInstance().newTransformer();
@@ -72,18 +74,31 @@ public class SchemaExtractor
       {
          throw new RuntimeException(e);
       }
-
    }
-   public Map<String, byte[]> getSchemas(URL wsdlURL) throws IOException
+
+   public SchemaExtractor(URL wsdlURL)
+   {
+      this.topLevelResource = wsdlURL;
+   }
+
+   public Map<String, byte[]> getSchemas() throws IOException
    {
       Map<String, byte[]> streams = new HashMap<String, byte[]>();
-      //Get the path to the WSDL
-      String wsdlFile = wsdlURL.getFile();
-      int lastSlash = wsdlFile.lastIndexOf(File.separator);
-      path = wsdlFile.substring(0, lastSlash+1);
+      Element root = DOMUtils.parse(topLevelResource.openStream());
+      List<Element> list = new ArrayList<Element>();
+      list.add(root);
+      //no need to propagate any namespaces here
+      List<Attr> nsAttrs = new ArrayList<Attr>();
+      processSchemas(streams, list, nsAttrs);
+      return streams;
+   }
+
+   public Map<String, byte[]> getSchemasFromWsdl() throws IOException
+   {
+      Map<String, byte[]> streams = new HashMap<String, byte[]>();
 
       // parse the wsdl
-      Element root = DOMUtils.parse(wsdlURL.openStream());
+      Element root = DOMUtils.parse(topLevelResource.openStream());
 
       List<Attr> nsAttrs = getNamespaceAttrs(root);
 
@@ -105,6 +120,14 @@ public class SchemaExtractor
          return null;
       }
 
+      processSchemas(streams, schemaElements, nsAttrs);
+
+      return streams;
+   }
+
+   private void processSchemas(Map<String, byte[]> streams, List<Element> schemaElements, List<Attr> nsAttrs)
+      throws IOException
+   {
       for (Element schemaElement : schemaElements)
       {
 
@@ -124,8 +147,6 @@ public class SchemaExtractor
                   + schemaElement.getAttribute("targetNamespace"));
          }
 
-
-         
          for (Attr nsAttr : nsAttrs)
          {  
             
@@ -147,8 +168,6 @@ public class SchemaExtractor
          String tns = newSchemeElement.getAttribute("targetNamespace");
          streams.put(tns, outStream.toByteArray());
       }
-
-      return streams;
    }
 
    private List<Attr> getNamespaceAttrs(Element element)
@@ -191,7 +210,9 @@ public class SchemaExtractor
 
          try
          {
-            FileInputStream in = new FileInputStream( path + schemaLocation );
+            URL url = new URL(topLevelResource, schemaLocation);
+            schemaLocation = url.toString();
+            InputStream in = url.openStream();
             outStream = new ByteArrayOutputStream();
  
             int bt = 0;
@@ -212,7 +233,7 @@ public class SchemaExtractor
          }
          catch(IOException ioe)
          {
-            log.warn("Error obtaining schema: " + path + schemaLocation);
+            log.warn("Error obtaining schema: " + schemaLocation);
          }
       }
    }
