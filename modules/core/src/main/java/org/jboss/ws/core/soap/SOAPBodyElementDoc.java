@@ -98,14 +98,13 @@ public class SOAPBodyElementDoc extends SOAPContentElement implements SOAPBodyEl
 
    private void validatePayload(Source source) 
    {
-      SchemaExtractor schemaExtractor = new SchemaExtractor();
       try
       {
          CommonMessageContext msgContext = MessageContextAssociation.peekMessageContext();
          EndpointMetaData epMetaData = msgContext.getEndpointMetaData();
          feature = epMetaData.getFeature(SchemaValidationFeature.class);
          URL xsdURL = feature.getSchemaLocation() != null ? new URL(feature.getSchemaLocation()) : null;
-         Map<String, byte[]> xsdStreams = new HashMap<String, byte[]>();
+         Map<String, byte[]> xsdStreams = null;
          if (xsdURL == null)
          {
             URL wsdlURL = epMetaData.getServiceMetaData().getWsdlFileOrLocation();
@@ -115,21 +114,18 @@ public class SOAPBodyElementDoc extends SOAPContentElement implements SOAPBodyEl
             }
             else
             {
-               xsdStreams = schemaExtractor.getSchemas(wsdlURL);
+               SchemaExtractor schemaExtractor = new SchemaExtractor(wsdlURL);
+               xsdStreams = schemaExtractor.getSchemasFromWsdl();
             }
          }
-         if (xsdURL != null)
+         else
          {
-            ErrorHandler errorHandler = feature.getErrorHandler();
-            Element xmlDOM = DOMUtils.sourceToElement(source);
-            new SchemaValidationHelper(xsdURL).setErrorHandler(errorHandler).validateDocument(xmlDOM);
+            SchemaExtractor schemaExtractor = new SchemaExtractor(xsdURL);
+            xsdStreams = schemaExtractor.getSchemas();
          }
-         else //xsdStreams != null
-         {
-            ErrorHandler errorHandler = feature.getErrorHandler();
-            Element xmlDOM = DOMUtils.sourceToElement(source);
-            new SchemaValidationHelper(xsdStreams).setErrorHandler(errorHandler).validateDocument(xmlDOM);
-         }
+         ErrorHandler errorHandler = feature.getErrorHandler();
+         Element xmlDOM = DOMUtils.sourceToElement(source);
+         new SchemaValidationHelper(xsdStreams).setErrorHandler(errorHandler).validateDocument(xmlDOM);
       }
       catch (RuntimeException rte)
       {
