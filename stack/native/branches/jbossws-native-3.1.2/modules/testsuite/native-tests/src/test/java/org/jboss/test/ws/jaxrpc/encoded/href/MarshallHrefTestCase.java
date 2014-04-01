@@ -35,13 +35,13 @@ import org.jboss.wsf.test.JBossWSTestSetup;
  * @author Thomas.Diesler@jboss.org
  * @since 23-Mar-2007
  */
-public class MarshallTestCase extends JBossWSTest
+public class MarshallHrefTestCase extends JBossWSTest
 {
    private static MarshallTest port;
 
    public static Test suite()
    {
-      return new JBossWSTestSetup(MarshallTestCase.class, "jaxrpc-encoded-href.war, jaxrpc-encoded-href-client.jar");
+      return new JBossWSTestSetup(MarshallHrefTestCase.class, "jaxrpc-encoded-href.war, jaxrpc-encoded-href-client.jar");
    }
 
    protected void setUp() throws Exception
@@ -54,11 +54,11 @@ public class MarshallTestCase extends JBossWSTest
          port = (MarshallTest)service.getPort(MarshallTest.class);
       }
    }
-
-   public void testByteArrayTest() throws Exception
+   
+   public void testHrefMessage() throws Exception
    {
-      HRefHandler.setHrefEncoding(false);
-      byte[] retObj = port.base64BinaryTest("Hello World!".getBytes());
-      assertEquals("Hello World!", new String(retObj));
+      HRefHandler.setHrefEncoding(true);
+      byte[] retObj = port.base64BinaryTest("HandlerReplacesThis".getBytes());
+      assertEquals("HrefEncodedResponse", new String(retObj));
    }
 }
