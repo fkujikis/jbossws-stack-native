@@ -63,7 +63,7 @@ public class JBWS1172TestCase extends JBossWSTest
    public void testSchemaValidationPositive() throws Exception
    {
       URL wsdlURL = getResourceURL("jaxws/jbws1172/WEB-INF/wsdl/TestService.wsdl");
-      Map<String, byte[]> xsdStreams = new SchemaExtractor().getSchemas(wsdlURL);
+      Map<String, byte[]> xsdStreams = new SchemaExtractor(wsdlURL).getSchemas();
       String inxml = "<tns:performTest xmlns:tns='http://www.my-company.it/ws/my-test'><Code>1000</Code></tns:performTest>";
       new SchemaValidationHelper(xsdStreams).validateDocument(inxml);
    }
@@ -71,7 +71,7 @@ public class JBWS1172TestCase extends JBossWSTest
    public void testSchemaValidationNegative() throws Exception
    {
       URL wsdlURL = getResourceURL("jaxws/jbws1172/WEB-INF/wsdl/TestService.wsdl");
-      Map<String, byte[]> xsdStreams = new SchemaExtractor().getSchemas(wsdlURL);
+      Map<String, byte[]> xsdStreams = new SchemaExtractor(wsdlURL).getSchemas();
       String inxml = "<tns:performTest xmlns:tns='http://www.my-company.it/ws/my-test'><Code>2000</Code></tns:performTest>";
       try
       {
@@ -87,7 +87,7 @@ public class JBWS1172TestCase extends JBossWSTest
    public void testEndpointWsdlValidation() throws Exception
    {
       URL wsdlURL = new URL("http://" + getServerHost() + ":8080/jaxws-jbws1172/noval?wsdl");
-      Map<String, byte[]> xsdStreams = new SchemaExtractor().getSchemas(wsdlURL);
+      Map<String, byte[]> xsdStreams = new SchemaExtractor(wsdlURL).getSchemas();
       String inxml = "<tns:performTest xmlns:tns='http://www.my-company.it/ws/my-test'><Code>1000</Code></tns:performTest>";
       new SchemaValidationHelper(xsdStreams).validateDocument(inxml);
    }
