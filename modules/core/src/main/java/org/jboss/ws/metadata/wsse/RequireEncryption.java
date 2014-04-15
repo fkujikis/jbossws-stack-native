@@ -30,7 +30,7 @@ package org.jboss.ws.metadata.wsse;
  */
 public class RequireEncryption extends Targetable
 {
-   private static final long serialVersionUID = 3765798680988205647L;
+   private static final long serialVersionUID = 3765798680988205648L;
    
    private boolean includeFaults;
    
