@@ -416,6 +416,10 @@ public abstract class CommonClient implements StubExt, HeaderSource
       catch (Exception ex)
       {
          Boolean isOutbound = (Boolean)msgContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
+         if(isOutbound == null)
+         {
+             isOutbound = Boolean.FALSE;
+         }
          if (oneway && isOutbound && ex instanceof ProtocolException)
          {
             //swallow the outbound SOAPException threw in hanlders
