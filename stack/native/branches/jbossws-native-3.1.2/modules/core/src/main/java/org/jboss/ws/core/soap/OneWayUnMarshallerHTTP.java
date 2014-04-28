@@ -23,15 +23,11 @@ package org.jboss.ws.core.soap;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.soap.MimeHeaders;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPMessage;
 
 import org.jboss.logging.Logger;
 import org.jboss.remoting.marshal.UnMarshaller;
@@ -45,7 +41,7 @@ public class OneWayUnMarshallerHTTP implements UnMarshaller
    public Object read(InputStream inputStream, Map metadata) throws IOException, ClassNotFoundException
    {
       Integer resCode = (Integer)metadata.get(HTTPMetadataConstants.RESPONSE_CODE);
-      if(!resCode.equals(200))
+      if(!resCode.equals(200) && !resCode.equals(202))
       {
          throw new WSException("One-way operation returned invalid HTTP response: " + resCode);
       }
