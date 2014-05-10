@@ -385,7 +385,17 @@ public class ServiceEndpointInvoker
             if (JavaUtils.isPrimitive(paramType) == false)
             {
                String paramTypeName = paramType.getName();
-               paramType = JavaUtils.loadJavaType(paramTypeName);
+               try
+               {
+                  paramType = JavaUtils.loadJavaType(paramTypeName);
+               }
+               catch(Exception e)
+               {
+                  if(log.isDebugEnabled())
+                     log.debug("Failed to load param type from TCCL", e);
+                  //Maybe the impl class is somehow using a different CL...
+                  paramType = JavaUtils.loadJavaType(paramTypeName, implClass.getClassLoader());
+               }
                paramTypes[i] = paramType;
             }
          }
