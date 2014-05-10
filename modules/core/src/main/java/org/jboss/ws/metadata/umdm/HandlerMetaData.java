@@ -29,10 +29,10 @@ import java.util.Set;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.ws.NativeMessages;
+import org.jboss.logging.Logger;
 import org.jboss.ws.WSException;
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedInitParamMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData.HandlerType;
 
 /**
  * The common metdata data for a handler element
@@ -42,6 +42,9 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedInitParamMetaData;
  */
 public abstract class HandlerMetaData implements InitalizableMetaData, Serializable
 {
+   // provide logging
+   private final Logger log = Logger.getLogger(HandlerMetaData.class);
+   
    private transient EndpointMetaData epMetaData;
 
    // The required <handler-name> element
@@ -55,7 +58,7 @@ public abstract class HandlerMetaData implements InitalizableMetaData, Serializa
    // The optional <init-param> elements
    private List<UnifiedInitParamMetaData> initParams = new ArrayList<UnifiedInitParamMetaData>();
    // The cached handler class
-   private Class<?> handlerClass;
+   private Class handlerClass;
 
    public HandlerMetaData(HandlerType type)
    {
@@ -92,12 +95,12 @@ public abstract class HandlerMetaData implements InitalizableMetaData, Serializa
       return handlerClassName;
    }
 
-   public Class<?> getHandlerClass()
+   public Class getHandlerClass()
    {
       if (handlerClassName == null)
-         throw NativeMessages.MESSAGES.handlerClassNameCannotBeNull();
+         throw new IllegalStateException("Handler class name cannot be null");
       
-      Class<?> localClass = handlerClass;
+      Class localClass = handlerClass;
       if (localClass == null)
       {
          try
@@ -107,7 +110,7 @@ public abstract class HandlerMetaData implements InitalizableMetaData, Serializa
          }
          catch (ClassNotFoundException ex)
          {
-            throw new WSException(ex);
+            throw new WSException("Cannot load handler: " + handlerClassName, ex);
          }
       }
       return localClass;
@@ -116,7 +119,7 @@ public abstract class HandlerMetaData implements InitalizableMetaData, Serializa
    private ClassLoader getClassLoader()
    {
       // The EndpointMetaData classloader is not availabel for a handler associaated with a JAXWS Service.handlerResolver
-      ClassLoader ctxLoader = SecurityActions.getContextClassLoader();
+      ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
       return (epMetaData != null ? epMetaData.getClassLoader() : ctxLoader);
    }
 
@@ -143,6 +146,21 @@ public abstract class HandlerMetaData implements InitalizableMetaData, Serializa
    public List<UnifiedInitParamMetaData> getInitParams()
    {
       return initParams;
+   }
+
+   public void validate()
+   {
+      List<String> securityHandlers = new ArrayList<String>();
+      securityHandlers.add(org.jboss.ws.extensions.security.jaxrpc.WSSecurityHandlerInbound.class.getName());
+      securityHandlers.add(org.jboss.ws.extensions.security.jaxrpc.WSSecurityHandlerOutbound.class.getName());
+      securityHandlers.add(org.jboss.ws.extensions.security.jaxws.WSSecurityHandlerServer.class.getName());
+      securityHandlers.add(org.jboss.ws.extensions.security.jaxws.WSSecurityHandlerClient.class.getName());
+      
+      if (securityHandlers.contains(handlerClassName) && epMetaData != null)
+      {
+         if (epMetaData.getServiceMetaData().getSecurityConfiguration() == null)
+            log.warn("WS-Security requires security configuration");
+      }
    }
 
    public void eagerInitialize()

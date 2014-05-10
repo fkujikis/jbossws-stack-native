@@ -21,13 +21,12 @@
  */
 package org.jboss.ws.core.server;
 
-import java.util.Iterator;
-
-import org.jboss.ws.NativeLoggers;
+import org.jboss.logging.Logger;
 import org.jboss.ws.metadata.umdm.ServerEndpointMetaData;
 import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.deployment.EndpointState;
 import org.jboss.wsf.spi.management.EndpointResolver;
+
+import java.util.Iterator;
 
 /**
  * @author Heiko.Braun@jboss.com
@@ -35,7 +34,10 @@ import org.jboss.wsf.spi.management.EndpointResolver;
  */
 public class PortComponentResolver implements EndpointResolver
 {
+   private static final Logger log = Logger.getLogger(PortComponentResolver.class);
+
    private String pcLink;
+   private Endpoint result;
 
    public PortComponentResolver(String pcref)
    {
@@ -56,19 +58,16 @@ public class PortComponentResolver implements EndpointResolver
       while(endpoints.hasNext())
       {
          Endpoint auxEndpoint = endpoints.next();
-         if (EndpointState.STARTED.equals(auxEndpoint.getState()))
+         ServerEndpointMetaData sepMetaData = auxEndpoint.getAttachment(ServerEndpointMetaData.class);
+         if (pcName.equals(sepMetaData.getPortComponentName()))
          {
-            ServerEndpointMetaData sepMetaData = auxEndpoint.getAttachment(ServerEndpointMetaData.class);
-            if (pcName.equals(sepMetaData.getPortComponentName()))
+            if (endpoint != null)
             {
-               if (endpoint != null)
-               {
-                  NativeLoggers.ROOT_LOGGER.multipleServiceEndpointFoundFor(pcLink);
-                  endpoint = null;
-                  break;
-               }
-               endpoint = auxEndpoint;
+               log.warn("Multiple service endoints found for: " + pcLink);
+               endpoint = null;
+               break;
             }
+            endpoint = auxEndpoint;
          }
 
       }

@@ -24,40 +24,36 @@ package org.jboss.ws.core.soap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.core.soap.BundleUtils;
-import org.jboss.ws.core.client.UnMarshaller;
+import org.jboss.remoting.marshal.UnMarshaller;
 
 /**
  * @author Thomas.Diesler@jboss.org
- * @author alessio.soldano@jboss.com
  * @since 25-Nov-2004
  */
 public class SOAPMessageUnMarshaller implements UnMarshaller
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPMessageUnMarshaller.class);
    // Provide logging
    private static Logger log = Logger.getLogger(SOAPMessageUnMarshaller.class);
 
-   public Object read(InputStream inputStream, Map<String, Object> metadata, Map<String, Object> headers) throws IOException
+   public Object read(InputStream inputStream, Map metadata) throws IOException, ClassNotFoundException
    {
       if (log.isTraceEnabled())
          log.trace("Read input stream with metadata=" + metadata);
 
       try
       {
-         SOAPMessage soapMsg = getMessageFactory().createMessage(null, inputStream, false);
+         SOAPMessage soapMsg = getMessageFactory().createMessage(null, inputStream, true);
 
          return soapMsg;
       }
       catch (SOAPException e)
       {
-         log.error(BundleUtils.getMessage(bundle, "CANNOT_UNMARSHALL_SOAPMESSAGE"),  e);
+         log.error("Cannot unmarshall SOAPMessage", e);
          IOException e2 = new IOException(e.toString());
          e2.initCause(e);
          throw e2;
@@ -67,5 +63,14 @@ public class SOAPMessageUnMarshaller implements UnMarshaller
    protected MessageFactoryImpl getMessageFactory()
    {
       return new MessageFactoryImpl();
+   }
+
+   public void setClassLoader(ClassLoader classloader)
+   {
+   }
+
+   public UnMarshaller cloneUnMarshaller() throws CloneNotSupportedException
+   {
+      return new SOAPMessageUnMarshaller();
    }
 }

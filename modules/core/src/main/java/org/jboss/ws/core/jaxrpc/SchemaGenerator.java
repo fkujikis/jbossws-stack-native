@@ -25,9 +25,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
+import javax.xml.rpc.JAXRPCException;
 
 import org.jboss.logging.Logger;
-import org.jboss.ws.NativeMessages;
+import org.jboss.ws.WSException;
 import org.jboss.ws.metadata.wsdl.xmlschema.JBossXSModel;
 import org.jboss.ws.tools.JavaToXSD;
 
@@ -39,7 +40,6 @@ import org.jboss.ws.tools.JavaToXSD;
  */
 public class SchemaGenerator
 {
-//   private static final ResourceBundle bundle = BundleUtils.getBundle(SchemaGenerator.class);
    // provide logging
    private static final Logger log = Logger.getLogger(SchemaGenerator.class);
 
@@ -68,7 +68,7 @@ public class SchemaGenerator
 
          JBossXSModel xsModel = javaToXSD.generateForSingleType(xmlType, javaType);
          if (xsModel == null)
-            throw NativeMessages.MESSAGES.cannotGenerateXsdModel();
+            throw new WSException("Cannot generate XSModel");
 
          if(log.isDebugEnabled()) log.debug("\n" + xsModel.serialize());
          return xsModel;
@@ -79,7 +79,7 @@ public class SchemaGenerator
       }
       catch (Exception e)
       {
-         throw NativeMessages.MESSAGES.cannotGenerateXsdSchemaFor(xmlType, e);
+         throw new JAXRPCException("Cannot generate xsdSchema for: " + xmlType, e);
       }
    }
 
@@ -99,6 +99,6 @@ public class SchemaGenerator
    {
       String nsURI = xmlType.getNamespaceURI();
       if (nsURI.length() == 0)
-         throw new IllegalArgumentException();
+         throw new IllegalArgumentException("Invalid namespace for type: " + xmlType);
    }
 }

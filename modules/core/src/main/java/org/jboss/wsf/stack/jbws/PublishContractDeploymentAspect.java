@@ -23,11 +23,10 @@ package org.jboss.wsf.stack.jbws;
 
 import java.io.IOException;
 
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.ws.metadata.umdm.UnifiedMetaData;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.WSFDeploymentException;
 
 /**
@@ -36,14 +35,14 @@ import org.jboss.wsf.spi.deployment.WSFDeploymentException;
  * @author Thomas.Diesler@jboss.org
  * @since 25-Apr-2007
  */
-public class PublishContractDeploymentAspect extends AbstractDeploymentAspect
+public class PublishContractDeploymentAspect extends DeploymentAspect
 {
    @Override
    public void start(Deployment dep)
    {
       UnifiedMetaData umd = dep.getAttachment(UnifiedMetaData.class);
       if (umd == null)
-         throw NativeMessages.MESSAGES.cannotObtainUnifiedMetaData(dep);
+         throw new IllegalStateException("Cannot obtain unified meta data");
 
       try
       {
