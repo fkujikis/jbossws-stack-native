@@ -62,18 +62,17 @@ public class AttachmentPartImpl extends AttachmentPart
 
    private String cachedContentLocation;
 
-   static
-   {
-      // Load JAF content handlers
-      ContentHandlerRegistry.register();
-   }
-
    public AttachmentPartImpl()
    {
+       // Load JAF content handlers
+      if (!ContentHandlerRegistry.isRegistered()) {
+         ContentHandlerRegistry.register();
+      }
    }
 
    public AttachmentPartImpl(DataHandler handler)
    {
+      this();
       this.dataHandler = handler;
    }
 

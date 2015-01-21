@@ -57,6 +57,7 @@ public class ContentHandlerRegistry
       addRegistryEntry(text_plain.class);
       addRegistryEntry(text_html.class);
       addRegistryEntry(multipart_mixed.class);
+      addRegistryEntry(DummyDataContentHandler.class);
    }
    
    private static void addRegistryEntry(Class contentHandler) 
@@ -99,5 +100,16 @@ public class ContentHandlerRegistry
       Iterator i = handlerRegistry.iterator();
       while (i.hasNext())
          registerContentHandler((Class) i.next());
-   }   
+   }
+
+   /**
+    * Determine if the dummy mime type is present, indicating this thread,
+    * classloader has been setup as needed.  (bz-1104273 workaround)
+    *
+    * @return
+    */
+   public static boolean isRegistered() {
+      MailcapCommandMap mailcap = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
+      return (mailcap.getAllCommands(DummyDataContentHandler.DUMMY_DATA_FLAVOR).length > 0);
+   }
 }
