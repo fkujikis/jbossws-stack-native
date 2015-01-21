@@ -1,0 +1,59 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <name>JBoss Web Services - Stack Native Resources</name>
+  <artifactId>jbossws-native-resources</artifactId>
+  <packaging>jar</packaging>
+  
+  <!-- Parent -->
+  <parent>
+    <groupId>org.jboss.ws.native</groupId>
+    <artifactId>jbossws-native</artifactId>
+    <version>4.2.1.Final</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+  
+  <!-- plugins -->
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <ant antfile="src/main/scripts/zip-other-configs.xml">
+                  <property name="project.build.finalName" value="${project.build.finalName}" />
+                </ant>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+           <execution>
+            <id>all</id>
+            <goals><goal>jar</goal></goals>
+            <phase>package</phase>
+          </execution>
+          <execution>
+            <id>jboss720</id>
+            <goals><goal>jar</goal></goals>
+            <phase>package</phase>
+            <configuration>
+              <classifier>jboss720</classifier>
+              <classesDirectory>${project.build.directory}/classes/resources/jbossws-jboss720/jbossws.beans</classesDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
