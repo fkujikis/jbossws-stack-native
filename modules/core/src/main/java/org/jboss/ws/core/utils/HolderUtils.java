@@ -21,9 +21,8 @@
  */
 package org.jboss.ws.core.utils;
 
-import static org.jboss.ws.NativeMessages.MESSAGES;
-
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -52,7 +51,8 @@ import javax.xml.rpc.holders.ShortHolder;
 import javax.xml.rpc.holders.ShortWrapperHolder;
 import javax.xml.rpc.holders.StringHolder;
 
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.logging.Logger;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * HolderUtils provides static utility functions for both JAX-RPC
@@ -64,10 +64,12 @@ import org.jboss.ws.common.JavaUtils;
  */
 public class HolderUtils
 {
+   private static final Logger log = Logger.getLogger(HolderUtils.class);
+
    /** True if the given type is a holder. */
-   public static boolean isHolderType(Class<?> javaType)
+   public static boolean isHolderType(Class javaType)
    {
-      return javax.xml.rpc.holders.Holder.class.isAssignableFrom(javaType);
+      return javax.xml.rpc.holders.Holder.class.isAssignableFrom(javaType) || javax.xml.ws.Holder.class.isAssignableFrom(javaType);
    }
 
    /** True if the given type is a holder. */
@@ -82,13 +84,13 @@ public class HolderUtils
     * @param valueType the value
     * @return the holder, or null if there is no match
     */
-   public static Class<?> getJAXRPCHolderType(Class<?> valueType)
+   public static Class getJAXRPCHolderType(Class valueType)
    {
       if (valueType == null)
-         throw MESSAGES.illegalNullArgument("valueType");
+         throw new IllegalArgumentException("Illegal null parameter");
 
       if (javax.xml.rpc.holders.Holder.class.isAssignableFrom(valueType))
-         throw MESSAGES.alreadyAHolder(valueType.getName());
+         throw new IllegalArgumentException("Is already a holder: " + valueType.getName());
 
       if (valueType == BigDecimal.class)
          return BigDecimalHolder.class;
@@ -133,6 +135,8 @@ public class HolderUtils
       if (valueType == Object.class)
          return ObjectHolder.class;
 
+      log.warn("Cannot get holder type for: " + valueType);
+
       return null;
    }
 
@@ -147,8 +151,12 @@ public class HolderUtils
       Class holderClass = JavaUtils.erasure(holderType);
 
       boolean jaxrpcHolder = javax.xml.rpc.holders.Holder.class.isAssignableFrom(holderClass);
-      if (!jaxrpcHolder)
-         throw MESSAGES.notAHolder(holderClass.getName());
+      boolean jaxwsHolder = javax.xml.ws.Holder.class.isAssignableFrom(holderClass);
+      if (!jaxrpcHolder && !jaxwsHolder)
+         throw new IllegalArgumentException("Is not a holder: " + holderClass.getName());
+
+      if (jaxwsHolder)
+         return JavaUtils.erasure(getGenericValueType(holderType));
 
       // Holder is supposed to have a public value field.
       Field field;
@@ -158,7 +166,7 @@ public class HolderUtils
       }
       catch (NoSuchFieldException e)
       {
-         throw MESSAGES.cannotFindOrAccessPublicFieldValue(holderClass);
+         throw new IllegalArgumentException("Cannot find public value field: " + holderClass);
       }
 
       return field.getType();
@@ -175,8 +183,13 @@ public class HolderUtils
    public static Class getValueType(Class holderClass)
    {
       boolean jaxrpcHolder = javax.xml.rpc.holders.Holder.class.isAssignableFrom(holderClass);
-      if (!jaxrpcHolder)
-         throw MESSAGES.notAHolder(holderClass.getName());
+      boolean jaxwsHolder = javax.xml.ws.Holder.class.isAssignableFrom(holderClass);
+      if (!jaxrpcHolder && !jaxwsHolder)
+         throw new IllegalArgumentException("Is not a holder: " + holderClass.getName());
+
+      // No generic info
+      if (jaxwsHolder)
+         return Object.class;
 
       // Holder is supposed to have a public value field.
       Field field;
@@ -186,7 +199,7 @@ public class HolderUtils
       }
       catch (NoSuchFieldException e)
       {
-         throw MESSAGES.cannotFindOrAccessPublicFieldValue(holderClass);
+         throw new IllegalArgumentException("Cannot find public value field: " + holderClass);
       }
 
       return field.getType();
@@ -201,10 +214,10 @@ public class HolderUtils
    public static Object getHolderValue(Object holder)
    {
       if (holder == null)
-         throw MESSAGES.illegalNullArgument("holder");
+         throw new IllegalArgumentException("Illegal null parameter");
 
-      if (!javax.xml.rpc.holders.Holder.class.isInstance(holder))
-         throw MESSAGES.notAHolder(holder);
+      if (!javax.xml.rpc.holders.Holder.class.isInstance(holder) && !javax.xml.ws.Holder.class.isInstance(holder))
+         throw new IllegalArgumentException("Is not a holder: " + holder);
 
       try
       {
@@ -218,7 +231,7 @@ public class HolderUtils
       }
       catch (Exception e)
       {
-         throw MESSAGES.cannotFindOrAccessPublicFieldValue(holder);
+         throw new IllegalArgumentException("Cannot access public value field: " + holder);
       }
    }
 
@@ -233,15 +246,15 @@ public class HolderUtils
    public static void setHolderValue(Object holder, Object value)
    {
       if (holder == null)
-         throw MESSAGES.illegalNullArgument("holder");
+         throw new IllegalArgumentException("Holder instance was null");
 
-      if (!javax.xml.rpc.holders.Holder.class.isInstance(holder))
-         throw MESSAGES.notAHolder(holder);
+      if (!javax.xml.rpc.holders.Holder.class.isInstance(holder) && !javax.xml.ws.Holder.class.isInstance(holder))
+         throw new IllegalArgumentException("Is not a holder: " + holder);
 
       Class valueType = getValueType(holder.getClass());
 
       if (value != null && JavaUtils.isAssignableFrom(valueType, value.getClass()) == false)
-         throw MESSAGES.holderValueNotAssignable(holder.getClass().getName(), value);
+         throw new IllegalArgumentException("Holder [" + holder.getClass().getName() + "] value not assignable: " + value);
 
       if (valueType.isArray())
          value = JavaUtils.syncArray(value, valueType);
@@ -258,9 +271,27 @@ public class HolderUtils
       }
       catch (Exception e)
       {
-         throw MESSAGES.cannotFindOrAccessPublicFieldValue(holder);
+         throw new IllegalArgumentException("Cannot access public value field: " + holder);
       }
    }
+
+   /**
+    * Gets the generic value type of a JAX-WS Holder.
+    * If there is no generic information, Object.class will be returned
+    *
+    * @param holder JAX-WS holder type
+    * @return generic value type
+    */
+   public static Type getGenericValueType(Type holder)
+   {
+      // For some reason the JDK 4 bytecode verifier trips up on this function if you use the ternary operator
+      // The only difference between it and the working form here is the use of a goto instruction. JDK bug perhaps?
+      if (holder instanceof ParameterizedType)
+        return ((ParameterizedType)holder).getActualTypeArguments()[0];
+
+      return Object.class;
+   }
+
 
    /**
     * Creates a JAX-WS or JAX-RPC holder instance.
@@ -272,7 +303,7 @@ public class HolderUtils
    public static Object createHolderInstance(Object value, Class<?> holderType)
    {
       if (! isHolderType(holderType))
-         throw MESSAGES.notAHolder(holderType);
+         throw new IllegalArgumentException("Not a holder type:" + holderType.getName());
 
       Object holder;
 
@@ -286,7 +317,7 @@ public class HolderUtils
       }
       catch (Exception e)
       {
-         throw new IllegalArgumentException(e);
+         throw new IllegalArgumentException("Cannot instanciate holder: " + holderType);
       }
 
       setHolderValue(holder, value);

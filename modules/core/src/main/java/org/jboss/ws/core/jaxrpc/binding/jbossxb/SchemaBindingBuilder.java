@@ -33,16 +33,15 @@ import javax.xml.soap.SOAPFactory;
 import org.apache.xerces.xs.XSModel;
 import org.jboss.logging.Logger;
 import org.jboss.util.xml.JBossEntityResolver;
-import org.jboss.ws.NativeLoggers;
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.utils.JBossWSEntityResolver;
+import org.jboss.ws.Constants;
+import org.jboss.ws.WSException;
+import org.jboss.ws.core.utils.JBossWSEntityResolver;
+import org.jboss.ws.extensions.xop.jaxrpc.JBossXBContentAdapter;
 import org.jboss.ws.metadata.jaxrpcmapping.ExceptionMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaXmlTypeMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.PackageMapping;
 import org.jboss.ws.metadata.jaxrpcmapping.VariableMapping;
-import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.xb.binding.metadata.ClassMetaData;
 import org.jboss.xb.binding.metadata.PackageMetaData;
 import org.jboss.xb.binding.metadata.PropertyMetaData;
@@ -84,7 +83,7 @@ public class SchemaBindingBuilder
     */
    public SchemaBinding buildSchemaBinding(XSModel model, JavaWsdlMapping wsdlMapping)
    {
-      JBossEntityResolver resolver = new JBossWSEntityResolver(ClassLoaderProvider.getDefaultProvider().getServerJAXRPCIntegrationClassLoader());
+      JBossEntityResolver resolver = new JBossWSEntityResolver();
       SchemaBinding schemaBinding = XsdBinder.bind(model, new DefaultSchemaResolver(resolver));
 
       schemaBinding.setIgnoreLowLine(false);
@@ -97,6 +96,9 @@ public class SchemaBindingBuilder
       {
          bindSchemaToJava(schemaBinding, wsdlMapping);
       }
+
+      // setup MTOM handler
+      JBossXBContentAdapter.register(schemaBinding);
 
       return schemaBinding;
    }
@@ -234,7 +236,7 @@ public class SchemaBindingBuilder
       }
       else
       {
-         NativeLoggers.JAXRPC_LOGGER.cannotObtainTypeBindingFor(xmlType);
+         log.warn("Cannot obtain type binding for: " + xmlType);
       }
    }
 
@@ -254,7 +256,7 @@ public class SchemaBindingBuilder
             if (auxBinding.getQName().getLocalPart().equals(xmlAttrName))
             {
                if (attrBinding != null)
-                  NativeLoggers.JAXRPC_LOGGER.ambiguosBinding(xmlAttrName);
+                  log.warn("Ambiguous binding for attribute: " + xmlAttrName);
 
                attrBinding = auxBinding;
             }
@@ -277,7 +279,7 @@ public class SchemaBindingBuilder
       if (attrBinding == null)
       {
          QName typeQName = typeBinding.getQName();
-         throw NativeMessages.MESSAGES.attributeNotInSchema(xmlName, typeQName);
+         throw new WSException("Attribute " + xmlName + " found in jaxrpc-mapping but not in the schema: " + typeQName);
       }
 
       String javaVariableName = varMapping.getJavaVariableName();
@@ -320,7 +322,7 @@ public class SchemaBindingBuilder
       }
 
       if (element == null)
-         throw NativeMessages.MESSAGES.elementNotInSchema(xmlName, typeQName);
+         throw new WSException("Element " + xmlName + " found in jaxrpc-mapping but not in the schema: " + typeQName);
 
       String javaVariableName = varMapping.getJavaVariableName();
       if (javaVariableName != null)
@@ -378,7 +380,7 @@ public class SchemaBindingBuilder
          typeBinding = schemaBinding.getType(xmlType);
          if (typeBinding == null)
          {
-            NativeLoggers.JAXRPC_LOGGER.typeDefinitionNotInSchema(xmlType);
+            log.warn("Type definition not found in schema: " + xmlType);
          }
       }
       else if ("element".equals(qnameScope))
@@ -390,12 +392,12 @@ public class SchemaBindingBuilder
          }
          else
          {
-            NativeLoggers.JAXRPC_LOGGER.globalElementNotInSchema(xmlType);
+            log.warn("Global element not found in schema: " + xmlType);
          }
       }
       else
       {
-         throw NativeMessages.MESSAGES.unexpectedQNameScope(typeMapping.getJavaType(), qnameScope);
+         throw new WSException("Unexpected qname-scope for " + typeMapping.getJavaType() + ": " + qnameScope);
       }
       return typeBinding;
    }
@@ -453,14 +455,11 @@ public class SchemaBindingBuilder
       if (typeBinding != null)
       {
          if(!isAnonymousType)
-         {
-            ElementBinding eb = schemaBinding.addElement(xmlName, typeBinding);
-            eb.setNillable(true);
-         }
+            schemaBinding.addElement(xmlName, typeBinding);
       }
       else if (xmlType.equals(Constants.TYPE_LITERAL_ANYTYPE) == false)
       {
-         throw NativeMessages.MESSAGES.rootTypeNotFoundInSchema(xmlType);
+         throw new WSException("Root type " + xmlType + " not found in the schema.");
       }
    }
 
@@ -603,7 +602,7 @@ public class SchemaBindingBuilder
          }
          catch (SOAPException e)
          {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("Failed to create SOAPElement", e);
          }
 
          if (attrs != null)
@@ -644,7 +643,7 @@ public class SchemaBindingBuilder
             }
             catch (SOAPException e)
             {
-               throw new IllegalStateException(e);
+               throw new IllegalStateException("Failed to create soap element factory", e);
             }
          }
          return factory;

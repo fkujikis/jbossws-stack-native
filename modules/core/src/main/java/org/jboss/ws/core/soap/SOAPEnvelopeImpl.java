@@ -21,10 +21,11 @@
  */
 package org.jboss.ws.core.soap;
 
-import java.util.ResourceBundle;
+import java.util.Iterator;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.Name;
+import javax.xml.soap.Node;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
@@ -32,8 +33,7 @@ import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPHeader;
 import javax.xml.soap.SOAPMessage;
 
-import org.jboss.ws.core.soap.BundleUtils;
-import org.jboss.ws.common.Constants;
+import org.jboss.ws.Constants;
 import org.jboss.ws.core.CommonSOAPFaultException;
 import org.w3c.dom.Document;
 
@@ -47,15 +47,14 @@ import org.w3c.dom.Document;
  */
 public class SOAPEnvelopeImpl extends SOAPElementImpl implements SOAPEnvelope
 {
-   private static final ResourceBundle bundle = BundleUtils.getBundle(SOAPEnvelopeImpl.class);
    // Reference the enclosing SOAPPart, so that getOwnerDocument() works correctly
    private SOAPPartImpl soapPart;
 
    /** Construct a SOAP envelope for the given SOAP version URI prefix, etc.
     */
-   public SOAPEnvelopeImpl(SOAPPartImpl soapPart, SOAPElementImpl element, boolean addHeaderAndBody) throws SOAPException
+   public SOAPEnvelopeImpl(SOAPPartImpl soapPart, SOAPElement element, boolean addHeaderAndBody) throws SOAPException
    {
-      super(element);
+      super((SOAPElementImpl)element);
 
       this.soapPart = soapPart;
       soapPart.setEnvelope(this);
@@ -65,7 +64,7 @@ public class SOAPEnvelopeImpl extends SOAPElementImpl implements SOAPEnvelope
       String localName = getLocalName();
 
       if ("Envelope".equals(localName) == false)
-         throw new IllegalArgumentException(BundleUtils.getMessage(bundle, "CANNOT_CREATE_SOAP_ENVELOPE",  element.getElementQName()));
+         throw new IllegalArgumentException("Cannot create SOAP envelope from: " + element.getElementQName());
 
       assertEnvelopeNamespace(namespaceURI);
       addNamespaceDeclaration(prefix, namespaceURI);
@@ -105,7 +104,7 @@ public class SOAPEnvelopeImpl extends SOAPElementImpl implements SOAPEnvelope
    {
       SOAPBody body = getBody();
       if (body != null)
-         throw new SOAPException(BundleUtils.getMessage(bundle, "SOAPENVELOPE_ALREADY_HAS_A_BODY_ELEMENT"));
+         throw new SOAPException("SOAPEnvelope already has a body element");
 
       body = new SOAPBodyImpl(getPrefix(), getNamespaceURI());
       addChildElement(body);
@@ -116,7 +115,7 @@ public class SOAPEnvelopeImpl extends SOAPElementImpl implements SOAPEnvelope
    {
       SOAPHeader header = getHeader();
       if (header != null)
-         throw new SOAPException(BundleUtils.getMessage(bundle, "SOAPENVELOPE_ALREADY_HAS_A_HEADER_ELEMENT"));
+         throw new SOAPException("SOAPEnvelope already has a header element");
 
       header = new SOAPHeaderImpl(getPrefix(), getNamespaceURI());
       return (SOAPHeader)addChildElement(header);
@@ -127,7 +126,7 @@ public class SOAPEnvelopeImpl extends SOAPElementImpl implements SOAPEnvelope
    {
       String envNamespace = getNamespaceURI();
       if (Constants.NS_SOAP12_ENV.equals(envNamespace) && name.equals(new NameImpl("encodingStyle", Constants.PREFIX_ENV, envNamespace)))
-         throw new SOAPException(BundleUtils.getMessage(bundle, "CANNOT_SET_ENCODINGSTYLE",  getElementQName()));
+         throw new SOAPException("Cannot set encodingStyle on: " + getElementQName());
 
       return super.addAttribute(name, value);
    }
@@ -137,7 +136,7 @@ public class SOAPEnvelopeImpl extends SOAPElementImpl implements SOAPEnvelope
    {
       String envNamespace = getNamespaceURI();
       if (Constants.NS_SOAP12_ENV.equals(envNamespace) && !(child instanceof SOAPHeader) && !(child instanceof SOAPBody))
-         throw new SOAPException(BundleUtils.getMessage(bundle, "SOAPHEADER_OR_SOAPBODY_EXPECTED"));
+         throw new SOAPException("SOAPHeader or SOAPBody expected");
 
       return super.addChildElement(child);
    }
@@ -154,12 +153,26 @@ public class SOAPEnvelopeImpl extends SOAPElementImpl implements SOAPEnvelope
 
    public SOAPBody getBody() throws SOAPException
    {
-      return (SOAPBody)getFirstChildElementByLocalName("Body");
+      Iterator it = getChildElements();
+      while (it.hasNext())
+      {
+         Node node = (Node)it.next();
+         if ("Body".equals(node.getLocalName()))
+            return (SOAPBody)node;
+      }
+      return null;
    }
 
    public SOAPHeader getHeader() throws SOAPException
    {
-      return (SOAPHeader)getFirstChildElementByLocalName("Header");
+      Iterator it = getChildElements();
+      while (it.hasNext())
+      {
+         Node node = (Node)it.next();
+         if ("Header".equals(node.getLocalName()))
+            return (SOAPHeader)node;
+      }
+      return null;
    }
 
    /**
@@ -168,7 +181,7 @@ public class SOAPEnvelopeImpl extends SOAPElementImpl implements SOAPEnvelope
    public SOAPElement addTextNode(String value) throws SOAPException
    {
       if (value.trim().length() > 0)
-         throw new SOAPException(BundleUtils.getMessage(bundle, "CANNOT_ADD_TEXT_NODE_TO_SOAPENVELOPE"));
+         throw new SOAPException("Cannot add Text node to SOAPEnvelope");
 
       return super.addTextNode(value);
    }

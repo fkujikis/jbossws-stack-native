@@ -28,6 +28,8 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import org.jboss.logging.Logger;
+
 /**
  * An Interface component describes sequences of messages that a service sends and/or receives. It does this
  * by grouping related messages into operations. An operation is a sequence of input and output messages,
@@ -39,6 +41,9 @@ import javax.xml.namespace.QName;
  */
 public class WSDLInterface extends Extendable
 {
+   // provide logging
+   private static final Logger log = Logger.getLogger(WSDLInterface.class);
+   
    private static final long serialVersionUID = 2453454924501233964L;
 
    // The parent WSDL definitions element.
@@ -59,6 +64,8 @@ public class WSDLInterface extends Extendable
    private Map<QName, WSDLInterfaceOperation> operations = new LinkedHashMap<QName, WSDLInterfaceOperation>();
    /** Zero or more fault element information items */
    private Map<QName, WSDLInterfaceFault> faults = new LinkedHashMap<QName, WSDLInterfaceFault>();
+   
+   private WSDLDocumentation documentationElement;
 
    /** Construct a WSDL interface for a given WSDL definition */
    public WSDLInterface(WSDLDefinitions wsdlDefinitions, QName name)
@@ -150,5 +157,15 @@ public class WSDLInterface extends Extendable
    public void addFault(WSDLInterfaceFault fault)
    {
       faults.put(fault.getName(), fault);
+   }
+
+   public WSDLDocumentation getDocumentationElement()
+   {
+      return documentationElement;
+   }
+
+   public void setDocumentationElement(WSDLDocumentation documentationElement)
+   {
+      this.documentationElement = documentationElement;
    }
 }
