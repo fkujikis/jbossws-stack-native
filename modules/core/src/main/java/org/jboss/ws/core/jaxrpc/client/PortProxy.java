@@ -32,14 +32,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.rpc.JAXRPCException;
 import javax.xml.rpc.Stub;
 import javax.xml.rpc.soap.SOAPFaultException;
 
-import org.jboss.ws.NativeMessages;
-import org.jboss.ws.common.JavaUtils;
+import org.jboss.logging.Logger;
+import org.jboss.ws.WSException;
 import org.jboss.ws.core.StubExt;
 import org.jboss.ws.metadata.umdm.EndpointMetaData;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
+import org.jboss.wsf.common.JavaUtils;
 
 /**
  * The dynamic proxy that delegates to the underlying Call implementation
@@ -49,6 +51,9 @@ import org.jboss.ws.metadata.umdm.OperationMetaData;
  */
 public class PortProxy implements InvocationHandler
 {
+   // provide logging
+   private static final Logger log = Logger.getLogger(PortProxy.class);
+   
    // The underlying Call
    private CallImpl call;
    // List<Method> of the Stub methods
@@ -133,7 +138,7 @@ public class PortProxy implements InvocationHandler
          EndpointMetaData epMetaData = call.getEndpointMetaData();
          OperationMetaData opMetaData = epMetaData.getOperation(method);
          if (opMetaData == null)
-            throw NativeMessages.MESSAGES.cannotObtainOperationMetaData(methodName);
+            throw new WSException("Cannot obtain operation meta data for: " + methodName);
 
          call.setOperationName(opMetaData.getQName());
 
@@ -151,7 +156,7 @@ public class PortProxy implements InvocationHandler
                {
                   Class retType = method.getReturnType();
                   if (retType == null)
-                     throw NativeMessages.MESSAGES.returnValueNotSupportedBy(opMetaData);
+                     throw new WSException("Return value not supported by: " + opMetaData);
 
                   if (JavaUtils.isPrimitive(retType))
                      retObj = JavaUtils.getPrimitiveValueArray(retObj);
@@ -182,11 +187,12 @@ public class PortProxy implements InvocationHandler
    private String assertPropertyName(String name)
    {
       if (name != null && name.startsWith("javax.xml.rpc") && standardProperties.contains(name) == false)
-         throw NativeMessages.MESSAGES.unsupportedPropery(name);
+         throw new JAXRPCException("Unsupported property: " + name);
       
       if (legacyPropertyMap.keySet().contains(name))
       {
          String jbosswsName = legacyPropertyMap.get(name);
+         log.warn("Legacy propery '" + name + "' mapped to '" + jbosswsName + "'");
          name = jbosswsName;
       }
 

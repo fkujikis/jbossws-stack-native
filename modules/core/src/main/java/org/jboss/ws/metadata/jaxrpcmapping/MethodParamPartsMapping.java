@@ -88,6 +88,8 @@ public class MethodParamPartsMapping implements Serializable
       StringBuffer sb = new StringBuffer();
       sb.append("<method-param-parts-mapping><param-position>").append(paramPosition).append("</param-position>");
       sb.append("<param-type>").append(paramType).append("</param-type>");
+      if(wsdlMessageMapping == null)
+         throw new IllegalStateException("wsdlMessageMapping is null");
       sb.append(wsdlMessageMapping.serialize()); 
       
       sb.append("</method-param-parts-mapping>");

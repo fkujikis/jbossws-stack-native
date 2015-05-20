@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.jboss.ws.NativeMessages;
+import org.jboss.logging.Logger;
 import org.jboss.ws.metadata.jaxrpcmapping.JavaWsdlMapping;
 import org.jboss.ws.metadata.wsdl.WSDLDefinitions;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
@@ -48,6 +48,9 @@ import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
  */
 public class UnifiedMetaData implements InitalizableMetaData
 {
+   // provide logging
+   private static Logger log = Logger.getLogger(UnifiedMetaData.class);
+
    // The canonical deployment name
    private String deploymentName;
    // The modules class loader
@@ -75,22 +78,17 @@ public class UnifiedMetaData implements InitalizableMetaData
 
    public UnifiedMetaData(UnifiedVirtualFile vfsRoot)
    {
-      this(vfsRoot, SecurityActions.getContextClassLoader());
-   }
-
-   public UnifiedMetaData(UnifiedVirtualFile vfsRoot, ClassLoader classLoader)
-   {
       if (vfsRoot == null)
-         throw NativeMessages.MESSAGES.illegalNullArgument("VFS root");
+         throw new IllegalArgumentException("VFS root cannot be null");
 
       this.vfsRoot = vfsRoot;
-      this.classLoader = classLoader;
+      this.classLoader = Thread.currentThread().getContextClassLoader();
    }
 
    public ClassLoader getClassLoader()
    {
       if (classLoader == null)
-         throw NativeMessages.MESSAGES.classloaderNotAvailable();
+         throw new IllegalStateException("Class loader not available");
 
       return classLoader;
    }
@@ -190,6 +188,7 @@ public class UnifiedMetaData implements InitalizableMetaData
    {
       if (eagerInitialized == false)
       {
+         log.debug("Eagerly initialize the meta data model");
          for (ServiceMetaData service : services)
          {
             service.eagerInitialize();

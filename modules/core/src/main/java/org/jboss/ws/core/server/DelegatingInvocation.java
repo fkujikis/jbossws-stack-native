@@ -21,9 +21,6 @@
  */
 package org.jboss.ws.core.server;
 
-import javax.xml.rpc.handler.soap.SOAPMessageContext;
-import javax.xml.soap.SOAPMessage;
-
 import org.jboss.ws.WSException;
 import org.jboss.ws.core.CommonBinding;
 import org.jboss.ws.core.CommonBindingProvider;
@@ -31,6 +28,9 @@ import org.jboss.ws.core.EndpointInvocation;
 import org.jboss.ws.core.binding.BindingException;
 import org.jboss.ws.metadata.umdm.OperationMetaData;
 import org.jboss.wsf.spi.invocation.Invocation;
+
+import javax.xml.rpc.handler.soap.SOAPMessageContext;
+import javax.xml.soap.SOAPMessage;
 
 /** An invocation that delegates to the jbossws-core EndpointInvocation
  *
@@ -41,7 +41,11 @@ public class DelegatingInvocation extends Invocation
 {
    private EndpointInvocation getEndpointInvocation()
    {
-      return getInvocationContext().getAttachment(EndpointInvocation.class);
+      EndpointInvocation epInv = getInvocationContext().getAttachment(EndpointInvocation.class);
+      if (epInv == null)
+         throw new IllegalStateException("Cannot obtain endpoint invocation");
+
+      return epInv;
    }
 
    @Override
@@ -86,6 +90,6 @@ public class DelegatingInvocation extends Invocation
    @Override
    public void setArgs(Object[] args)
    {
-      throw new UnsupportedOperationException();
+      throw new IllegalArgumentException("Cannot set args on this invocation");
    }
 }

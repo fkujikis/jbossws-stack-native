@@ -34,9 +34,9 @@ import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.jboss.logging.Logger;
-import org.jboss.ws.common.Constants;
-import org.jboss.ws.common.IOUtils;
-import org.jboss.ws.common.utils.ResourceURL;
+import org.jboss.ws.Constants;
+import org.jboss.ws.core.utils.ResourceURL;
+import org.jboss.wsf.common.IOUtils;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -68,9 +68,7 @@ public class JBossXSEntityResolver implements XMLEntityResolver
     */
    public XMLInputSource resolveEntity(XMLResourceIdentifier resId) throws XNIException, IOException
    {
-      final boolean trace = log.isTraceEnabled();
-      if (trace)
-         log.trace("Resolve entity: " + resId);
+      log.trace("Resolve entity: " + resId);
 
       // First try the JBossEntityResolver
       String publicId = resId.getPublicId();
@@ -88,8 +86,7 @@ public class JBossXSEntityResolver implements XMLEntityResolver
       }
       catch (Exception ex)
       {
-         if (trace)
-            log.trace(ex);
+         log.trace(ex);
       }
 
       try
@@ -97,30 +94,26 @@ public class JBossXSEntityResolver implements XMLEntityResolver
          String expandedSysId = resId.getExpandedSystemId();
          if (expandedSysId != null)
          {
-            if (trace)
-               log.trace("Use ExpandedSystemId: " + expandedSysId);
+            log.trace("Use ExpandedSystemId: " + expandedSysId);
             return getXMLInputSource(new URL(expandedSysId), resId);
          }
       }
       catch (IOException e)
       {
-         if (trace)
-            log.trace(e);
+         log.trace(e);
       }
 
       try
       {
          if (systemId != null)
          {
-            if (trace)
-               log.trace("Use LiteralSystemId: " + systemId);
+            log.trace("Use LiteralSystemId: " + systemId);
             return getXMLInputSource(new URL(systemId), resId);
          }
       }
       catch (IOException e)
       {
-         if (trace)
-            log.trace(e);
+         log.trace(e);
       }
 
       // in case of a DOCTYPE declaration ew refer to systemId
@@ -135,8 +128,7 @@ public class JBossXSEntityResolver implements XMLEntityResolver
          URL url = schemaLocationByNamespace.get(namespaceURI);
          if (url != null)
          {
-            if (trace)
-               log.trace("Use SchemaLocationByNamespace: " + url);
+            log.trace("Use SchemaLocationByNamespace: " + url);
             return getXMLInputSource(url, resId);
          }
 
@@ -147,24 +139,20 @@ public class JBossXSEntityResolver implements XMLEntityResolver
       }
       catch (SAXException e)
       {
-         if (trace)
-            log.trace(e);
+         log.trace(e);
       }
 
       try
       {
-         if (trace)
-            log.trace("Use NamespaceURI: " + namespaceURI);
+         log.trace("Use NamespaceURI: " + namespaceURI);
          return getXMLInputSource(new URL(namespaceURI), resId);
       }
       catch (IOException e)
       {
-         if (trace)
-            log.trace(e);
+         log.trace(e);
       }
 
-      if (trace)
-         log.trace("Cannot obtain XMLInputSource for: " + resId);
+      log.trace("Cannot obtain XMLInputSource for: " + resId);
       return null;
    }
 

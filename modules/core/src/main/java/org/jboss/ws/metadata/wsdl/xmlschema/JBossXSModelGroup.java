@@ -28,6 +28,7 @@ import org.apache.xerces.xs.XSAnnotation;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSModelGroup;
 import org.apache.xerces.xs.XSObjectList;
+import org.jboss.util.NotImplementedException;
 
 /**
  * Implements a ModelGroup of the Xerces Schema API
@@ -108,6 +109,6 @@ public class JBossXSModelGroup extends JBossXSObject implements XSModelGroup
 
    public XSObjectList getAnnotations()
    {
-      throw new UnsupportedOperationException();
+      throw new NotImplementedException();
    }
 }
